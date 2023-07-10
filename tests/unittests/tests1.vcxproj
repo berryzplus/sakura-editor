@@ -204,6 +204,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="eval_outputs.hpp" />
+    <ClInclude Include="MockComCtl32Dll.hpp" />
     <ClInclude Include="MockKernel32Dll.hpp" />
     <ClInclude Include="MockOle32Dll.hpp" />
     <ClInclude Include="MockShareDataAccessor.hpp" />

@@ -138,6 +138,7 @@
     <ClInclude Include="$(IntDir)githash.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\sakura_core\apimodule\ComCtl32Dll.hpp" />
     <ClInclude Include="..\sakura_core\apimodule\Kernel32Dll.hpp" />
     <ClInclude Include="..\sakura_core\apimodule\Ole32Dll.hpp" />
     <ClInclude Include="..\sakura_core\apimodule\Shell32Dll.hpp" />

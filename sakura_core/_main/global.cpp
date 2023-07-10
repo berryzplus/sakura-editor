@@ -22,6 +22,7 @@
 #include "apimodule/Kernel32Dll.hpp"
 #include "apimodule/Shell32Dll.hpp"
 #include "apimodule/Ole32Dll.hpp"
+#include "apimodule/ComCtl32Dll.hpp"
 
 #include <mutex>
 
@@ -149,4 +150,12 @@ const Ole32Dll& GetOle32Dll() {
 		Ole32Dll_ = std::make_unique<Ole32Dll>();
 	}
 	return *Ole32Dll_;
+}
+
+const ComCtl32Dll& GetComCtl32Dll() {
+	static std::unique_ptr<ComCtl32Dll> ComCtl32Dll_;
+	if (!ComCtl32Dll_) {
+		ComCtl32Dll_ = std::make_unique<ComCtl32Dll>();
+	}
+	return *ComCtl32Dll_;
 }
