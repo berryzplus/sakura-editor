@@ -17,8 +17,12 @@
 	Please contact the copyright holders to use this code for other purpose.
 */
 #include "StdAfx.h"
+#include <array>
 #include <memory>
 #include "CHokanMgr.h"
+
+#include "apiwrap/apiwrap.hpp"
+
 #include "env/CShareData.h"
 #include "view/CEditView.h"
 #include "plugin/CJackManager.h"
@@ -29,37 +33,37 @@
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
 
-WNDPROC			gm_wpHokanListProc;
-
-LRESULT APIENTRY HokanList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CHokanMgr::CHokanList::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// Modified by KEITA for WIN64 2003.9.6
-	CDialog* pCDialog = ( CDialog* )::GetWindowLongPtr( ::GetParent( hwnd ), DWLP_USER );
-	CHokanMgr* pCHokanMgr = (CHokanMgr*)::GetWindowLongPtr( ::GetParent( hwnd ), DWLP_USER );
-
-	switch( uMsg ){
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONDBLCLK:
-		{
-			// アクティブ化を防止するために自前でリスト選択処理を実施する
-			LRESULT lResult = ::SendMessageAny( hwnd, LB_ITEMFROMPOINT, 0, lParam );
-			if( HIWORD(lResult) == 0 ){	// クライアントエリア内
-				if( uMsg == WM_LBUTTONDOWN ){
-					List_SetCurSel( hwnd, LOWORD(lResult) );
-					pCHokanMgr->OnLbnSelChange( hwnd, IDC_LIST_WORDS );
-				}
-				else if( uMsg == WM_LBUTTONDBLCLK ){
-					pCHokanMgr->DoHokan(0);
-				}
-			}
-		}
-		return 0;	// 本来のウィンドウプロシージャは呼ばない（アクティブ化しない）
+	const auto clicked       = uMsg == WM_LBUTTONDOWN;
+	const auto doubleClicked = uMsg == WM_LBUTTONDBLCLK;
+	if (!clicked && !doubleClicked)
+	{
+		return __super::DispatchEvent(hWnd, uMsg, wParam, lParam);
 	}
-	return CallWindowProc( gm_wpHokanListProc, hwnd, uMsg, wParam, lParam);
+
+	// アクティブ化を防止するために自前でリスト選択処理を実施する
+	if (const auto lResult = SendMessageW(hWnd, LB_ITEMFROMPOINT, 0, lParam);
+		!HIWORD(lResult))
+	{
+		if (doubleClicked)
+		{
+			constexpr auto VK_NULL = 0x00;
+			_pThis->DoHokan(VK_NULL);
+		}
+		else
+		{
+			List_SetCurSel(hWnd, LOWORD(lResult));
+			_pThis->OnLbnSelChange(hWnd, IDC_LIST_WORDS);
+		}
+	}
+
+	return 0L;	// 本来のウィンドウプロシージャは呼ばない（アクティブ化しない）
 }
 
-CHokanMgr::CHokanMgr(const ShareDataAccessor& ShareDataAccessor_)
-	: CSakuraDialog(IDD_HOKAN, ShareDataAccessor_)
+CHokanMgr::CHokanMgr(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_)
+	: CSakuraDialog(IDD_HOKAN, ShareDataAccessor_, User32Dll_)
+	, _HokanList(this, GetUser32Dll())
 {
 	m_cmemCurWord.SetString(L"");
 
@@ -70,15 +74,7 @@ CHokanMgr::CHokanMgr(const ShareDataAccessor& ShareDataAccessor_)
 /* モードレスダイアログの表示 */
 HWND CHokanMgr::DoModeless( HINSTANCE hInstance , HWND hwndParent, LPARAM lParam )
 {
-	HWND hwndWork;
-	hwndWork = CDialog::DoModeless( hInstance, hwndParent, IDD_HOKAN, lParam, SW_HIDE );
-	::SetFocus( ((CEditView*)m_lParam)->GetHwnd() );	//エディタにフォーカスを戻す
-	OnSize( 0, 0 );
-	/* リストをフック */
-	// Modified by KEITA for WIN64 2003.9.6
-	::gm_wpHokanListProc = (WNDPROC) ::SetWindowLongPtr( GetItemHwnd( IDC_LIST_WORDS ), GWLP_WNDPROC, (LONG_PTR)HokanList_SubclassProc  );
-
-	return hwndWork;
+	return CDialog::DoModeless( hInstance, hwndParent, IDD_HOKAN, lParam, SW_HIDE );
 }
 
 /* モードレス時：対象となるビューの変更 */
@@ -447,80 +443,69 @@ INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lP
 
 BOOL CHokanMgr::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-	_SetHwnd( hwndDlg );
-	/* 基底クラスメンバ */
-//-	CreateSizeBox();
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	CDialog::OnInitDialog(hwndDlg, wParam, lParam);
+
+	_HokanList.Attach(GetItemHwnd(IDC_LIST_WORDS));
+
+	RECT rc = {};
+	GetClientRect(hwndDlg, &rc);
+
+	OnWndSize(hwndDlg, SIZE_RESTORED, rc.right, rc.bottom);
+
+	SetFocus(((CEditView*)m_lParam)->GetHwnd());	//エディタにフォーカスを戻す
+
+	return FALSE;
 }
 
-BOOL CHokanMgr::OnDestroy( void )
+/*!
+ * WM_SIZEハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] state ウインドウの表示状態
+ * @param [in] cx クライアント領域の幅
+ * @param [in] cy クライアント領域の高さ
+ */
+void CHokanMgr::OnWndSize(HWND hWnd, UINT state, int cx, int cy)
 {
-	/* 基底クラスメンバ */
-	CreateSizeBox();
-	return CDialog::OnDestroy();
-}
+	UNREFERENCED_PARAMETER(state);
 
-BOOL CHokanMgr::OnSize( WPARAM wParam, LPARAM lParam )
-{
-	/* 基底クラスメンバ */
-	CDialog::OnSize( wParam, lParam );
-
-	int	Controls[] = {
+	std::array<int, 1> controlIds = {
 		IDC_LIST_WORDS
 	};
-	int		nControls = _countof( Controls );
-	int		i;
-	RECT	rc;
-	HWND	hwndCtrl;
-	POINT	po;
-	RECT	rcDlg;
 
-	::GetWindowRect(GetHwnd(), &rcDlg);
-	m_xPos = rcDlg.left;
-	m_yPos = rcDlg.top;
-	m_nWidth = rcDlg.right - rcDlg.left;
+	RECT rcDlg = {};
+	::GetWindowRect(hWnd, &rcDlg);
+
+	m_poWin = { rcDlg.left, rcDlg.top };
+
+	m_nWidth  = rcDlg.right - rcDlg.left;
 	m_nHeight = rcDlg.bottom - rcDlg.top;
 
-	::GetClientRect( GetHwnd(), &rcDlg );
-	int nClientWidth = rcDlg.right - rcDlg.left;  // width of client area
-	int nClientHeight = rcDlg.bottom - rcDlg.top; // height of client area
+	for (const auto controlId : controlIds)
+	{
+		const auto hwndCtrl = GetItemHwnd(controlId);
 
-//	2001/06/18 Start by asa-o: サイズ変更後の位置を保存
-	m_poWin.x = rcDlg.left - 4;
-	m_poWin.y = rcDlg.top - 3;
-	::ClientToScreen(GetHwnd(),&m_poWin);
-//	2001/06/18 End
-
-	for ( i = 0; i < nControls; ++i ){
-		hwndCtrl = GetItemHwnd( Controls[i] );
+		RECT rc = {};
 		::GetWindowRect( hwndCtrl, &rc );
-		po.x = rc.left;
-		po.y = rc.top;
-		::ScreenToClient( GetHwnd(), &po );
-		rc.left = po.x;
-		rc.top  = po.y;
-		po.x = rc.right;
-		po.y = rc.bottom;
-		::ScreenToClient( GetHwnd(), &po );
-		rc.right = po.x;
-		rc.bottom  = po.y;
-		if( Controls[i] == IDC_LIST_WORDS ){
-			::SetWindowPos(
-				hwndCtrl,
-				NULL,
-				rc.left,
-				rc.top,
-				nClientWidth - rc.left * 2,
-				nClientHeight - rc.top * 2/* - 20*/,
-				SWP_NOOWNERZORDER | SWP_NOZORDER
-			);
-		}
+
+		apiwrap::ScreenToClient(hWnd, &rc, GetUser32Dll());
+
+		rc.right  = cx - rc.left * 2;
+		rc.bottom = cy - rc.top * 2;
+
+		SetWindowPos(
+			hwndCtrl,
+			NULL,
+			rc.left,
+			rc.top,
+			rc.right,
+			rc.bottom,
+			SWP_NOOWNERZORDER | SWP_NOZORDER
+		);
 	}
 
 //	2001/06/18 asa-o:
 	ShowTip();	// 補完ウィンドウで選択中の単語にキーワードヘルプを表示
-
-	return TRUE;
 }
 
 BOOL CHokanMgr::OnLbnSelChange( HWND hwndCtl, int wID )
@@ -619,7 +604,7 @@ int CHokanMgr::KeyProc( WPARAM wParam, LPARAM lParam )
 	case VK_PRIOR:
 	case VK_NEXT:
 		/* リストボックスのデフォルトの動作をさせる */
-		::CallWindowProc( (WNDPROC)gm_wpHokanListProc, GetItemHwnd( IDC_LIST_WORDS ), WM_KEYDOWN, wParam, lParam );
+		FORWARD_WM_KEYDOWN(GetItemHwnd(IDC_LIST_WORDS), vkey, LOWORD(lParam), HIWORD(lParam), _HokanList.DispatchEvent);
 		return -1;
 	case VK_RETURN:
 	case VK_TAB:

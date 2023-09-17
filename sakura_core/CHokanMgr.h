@@ -21,18 +21,28 @@
 #include "dlg/CDialog.h"
 #include "util/container.h"
 #include "mem/CNativeW.h"
+#include "window/CSubClassedWnd.hpp"
 
-/*! @brief キーワード補完
-
-	@date 2003.06.25 Moca ファイル内からの補完機能を追加
-*/
+/*!
+ * @brief キーワード補完
+ *
+ * @date 2003.06.25 Moca ファイル内からの補完機能を追加
+ */
 class CHokanMgr final : public CSakuraDialog
 {
+public:
+	using CHokanList = TSubClassedWnd<CHokanMgr>;
+
+private:
+	using Me = CHokanMgr;
+
+	CHokanList _HokanList;
+
 public:
 	/*
 	||  Constructors
 	*/
-	explicit CHokanMgr(const ShareDataAccessor& ShareDataAccessor_);
+	explicit CHokanMgr(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CHokanMgr() override = default;
 
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);/* モードレスダイアログの表示 */
@@ -61,8 +71,7 @@ public:
 
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
 	BOOL OnInitDialog( HWND, WPARAM wParam, LPARAM lParam ) override;
-	BOOL OnDestroy( void ) override;
-	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
+	void    OnWndSize(HWND hWnd, UINT state, int cx, int cy);
 	BOOL OnLbnSelChange( HWND hwndCtl, int wID ) override;
 
 	int KeyProc(WPARAM wParam, LPARAM lParam);
@@ -89,4 +98,5 @@ protected:
 	*/
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add
 };
+
 #endif /* SAKURA_CHOKANMGR_0CB0AF1A_1F22_482E_9221_B9FAE4F0D8A0_H_ */
