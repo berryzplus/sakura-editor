@@ -179,17 +179,6 @@ LPVOID CDlgWindowList::GetHelpIdTable()
 	return (LPVOID)p_helpids;
 }
 
-INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
-{
-	INT_PTR result;
-	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
-
-	if (wMsg == WM_GETMINMAXINFO) {
-		return OnMinMaxInfo(lParam);
-	}
-	return result;
-}
-
 BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 {
 	_SetHwnd(hwndDlg);

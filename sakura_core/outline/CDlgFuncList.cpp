@@ -234,7 +234,7 @@ CDlgFuncList::CDlgFuncList(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_
 INT_PTR CDlgFuncList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
 	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	result = __super::DispatchEvent( hWnd, wMsg, wParam, lParam );
 
 	switch( wMsg ){
 	case WM_ACTIVATEAPP:
@@ -279,10 +279,7 @@ INT_PTR CDlgFuncList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 			return 1L;
 		}
 		break;
-	case WM_TIMER:
-		return OnTimer( hWnd, wMsg, wParam, lParam );
-	case WM_GETMINMAXINFO:
-		return OnMinMaxInfo( lParam );
+
 	case WM_SETTEXT:
 		if( IsDocking() ){
 			// キャプションを再描画する

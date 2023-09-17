@@ -36,4 +36,10 @@ class CSizeRestorableDialog : public CSakuraDialog
 public:
 	explicit CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
 	~CSizeRestorableDialog() override = default;
+
+protected:
+	INT_PTR DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	INT_PTR DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	virtual BOOL	OnMinMaxInfo(LPARAM lParam) { return FALSE; }
 };

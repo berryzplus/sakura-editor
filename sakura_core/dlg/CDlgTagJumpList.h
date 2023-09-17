@@ -80,7 +80,6 @@ protected:
 	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL	OnDestroy( void ) override;
 	BOOL	OnBnClicked(int wID) override;
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
 	BOOL	OnSize( WPARAM wParam, LPARAM lParam ) override;
 	BOOL	OnMinMaxInfo( LPARAM lParam );
 	BOOL	OnNotify(NMHDR* pNMHDR) override;

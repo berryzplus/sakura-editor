@@ -67,7 +67,6 @@ protected:
 	BOOL	OnLbnDblclk( int wID ) override;
 	BOOL	OnEnChange( HWND hwndCtl, int wID ) override;
 	LPVOID	GetHelpIdTable(void) override;
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;	// 標準以外のメッセージを捕捉する
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;

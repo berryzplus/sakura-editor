@@ -597,17 +597,6 @@ BOOL CDlgTagJumpList::OnBnClicked( int wID )
 	return CDialog::OnBnClicked( wID );
 }
 
-INT_PTR CDlgTagJumpList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
-{
-	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
-
-	if( wMsg == WM_GETMINMAXINFO ){
-		return OnMinMaxInfo( lParam );
-	}
-	return result;
-}
-
 BOOL CDlgTagJumpList::OnSize( WPARAM wParam, LPARAM lParam )
 {
 	/* 基底クラスメンバ */

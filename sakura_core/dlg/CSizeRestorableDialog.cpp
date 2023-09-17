@@ -32,3 +32,41 @@ CSizeRestorableDialog::CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<Sha
 	: CSakuraDialog(idDialog_, std::move(ShareDataAccessor_), std::move(User32Dll_))
 {
 }
+
+/*!
+ * ダイアログのメッセージ配送
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] uMsg メッセージコード
+ * @param [in, opt] wParam 第1パラメーター
+ * @param [in, opt] lParam 第2パラメーター
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
+INT_PTR CSizeRestorableDialog::DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	// 既存コード互換のために旧関数を呼び出す。
+	return DispatchEvent(hDlg, uMsg, wParam, lParam);
+}
+
+/*!
+ * ダイアログのメッセージ配送
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] uMsg メッセージコード
+ * @param [in, opt] wParam 第1パラメーター
+ * @param [in, opt] lParam 第2パラメーター
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
+INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	// WM_GETMINMAXINFOが来た場合、個別に処理する
+	if (uMsg == WM_GETMINMAXINFO)
+	{
+		return OnMinMaxInfo(lParam);
+	}
+
+	// 基底クラスのハンドラを呼び出す。
+	return __super::DispatchEvent(hDlg, uMsg, wParam, lParam);
+}

@@ -470,17 +470,6 @@ LPVOID CDlgDiff::GetHelpIdTable( void )
 	return (LPVOID)p_helpids;
 }
 
-INT_PTR CDlgDiff::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
-{
-	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
-
-	if( wMsg == WM_GETMINMAXINFO ){
-		return OnMinMaxInfo( lParam );
-	}
-	return result;
-}
-
 BOOL CDlgDiff::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd(hwndDlg);

@@ -226,17 +226,6 @@ LPVOID CDlgCompare::GetHelpIdTable(void)
 }
 //@@@ 2002.01.18 add end
 
-INT_PTR CDlgCompare::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
-{
-	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
-
-	if( wMsg == WM_GETMINMAXINFO ){
-		return OnMinMaxInfo( lParam );
-	}
-	return result;
-}
-
 BOOL CDlgCompare::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd(hwndDlg);
