@@ -397,7 +397,7 @@ void CDialog::SetDialogPosSize()
 /*!
  * WM_DESTROYハンドラ
  *
- * @retval TRUE メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
  * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
  */
 BOOL CDialog::OnDlgDestroy(HWND hDlg)
@@ -408,24 +408,6 @@ BOOL CDialog::OnDlgDestroy(HWND hDlg)
 
 BOOL CDialog::OnDestroy( void )
 {
-	/* ウィンドウ位置・サイズを記憶 */
-	WINDOWPLACEMENT cWindowPlacement;
-	cWindowPlacement.length = sizeof( cWindowPlacement );
-	if (::GetWindowPlacement( m_hWnd, &cWindowPlacement )){
-		m_xPos = cWindowPlacement.rcNormalPosition.left;
-		m_yPos = cWindowPlacement.rcNormalPosition.top;
-		m_nWidth = cWindowPlacement.rcNormalPosition.right - cWindowPlacement.rcNormalPosition.left;
-		m_nHeight = cWindowPlacement.rcNormalPosition.bottom - cWindowPlacement.rcNormalPosition.top;
-	}
-	if( !m_bSizable ){
-		m_nWidth = -1;
-		m_nHeight = -1;
-	}
-	/* 破棄 */
-	if( NULL != m_hwndSizeBox ){
-		::DestroyWindow( m_hwndSizeBox );
-		m_hwndSizeBox = NULL;
-	}
 	return TRUE;
 }
 

@@ -61,6 +61,18 @@ INT_PTR CSizeRestorableDialog::DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wPa
  */
 INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	// WM_WINDOWPOSCHANGEDが来た場合、個別に処理する
+	if (uMsg == WM_WINDOWPOSCHANGED)
+	{
+		if (const auto lpwpos = std::bit_cast<LPWINDOWPOS>(lParam))
+		{
+			m_xPos    = lpwpos->x;
+			m_yPos    = lpwpos->y;
+			m_nWidth  = lpwpos->cx;
+			m_nHeight = lpwpos->cy;
+		}
+	}
+
 	// WM_GETMINMAXINFOが来た場合、個別に処理する
 	if (uMsg == WM_GETMINMAXINFO)
 	{
@@ -75,6 +87,25 @@ INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam
 
 	// 基底クラスのハンドラを呼び出す。
 	return __super::DispatchEvent(hDlg, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
+BOOL CSizeRestorableDialog::OnDlgDestroy(HWND hDlg)
+{
+	// 戻り値は無視する
+	OnDestroy();
+
+	if (const auto hWndSizeGrip = m_hwndSizeBox) {
+		DestroyWindow(hWndSizeGrip);
+		m_hwndSizeBox = NULL;
+	}
+
+	return TRUE;
 }
 
 /*!

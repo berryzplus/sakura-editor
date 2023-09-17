@@ -254,15 +254,20 @@ BOOL CDlgCompare::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
 
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
 BOOL CDlgCompare::OnDestroy( void )
 {
-	CDialog::OnDestroy();
-	RECT& rect = GetShareData()->m_Common.m_sOthers.m_rcCompareDialog;
-	rect.left = m_xPos;
-	rect.top = m_yPos;
-	rect.right = rect.left + m_nWidth;
-	rect.bottom = rect.top + m_nHeight;
-	return TRUE;
+	auto& rcDialog  = GetShareData()->m_Common.m_sOthers.m_rcCompareDialog;
+	rcDialog.left   = m_xPos;
+	rcDialog.top    = m_yPos;
+	rcDialog.right  = rcDialog.left + m_nWidth;
+	rcDialog.bottom = rcDialog.top  + m_nHeight;
+	return __super::OnDestroy();
 }
 
 BOOL CDlgCompare::OnSize( WPARAM wParam, LPARAM lParam )

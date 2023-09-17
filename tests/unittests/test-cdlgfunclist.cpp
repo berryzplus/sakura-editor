@@ -45,6 +45,8 @@ TEST(CDlgFuncList, Construct)
 TEST(CDlgFuncList, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
+	auto& sOutline = pDllShareData->m_Common.m_sOutline;
+	sOutline.m_bRememberOutlineWindowPos = TRUE;
 	CEditDoc     doc(pShareDataAccessor);
 	CEditWnd     wnd(pShareDataAccessor);
 	CEditView    view;

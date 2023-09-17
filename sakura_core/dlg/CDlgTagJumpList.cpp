@@ -538,15 +538,20 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	return bRet;
 }
 
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
 BOOL CDlgTagJumpList::OnDestroy( void )
 {
-	CDialog::OnDestroy();
-	RECT& rect = GetShareData()->m_Common.m_sOthers.m_rcTagJumpDialog;
-	rect.left = m_xPos;
-	rect.top = m_yPos;
-	rect.right = rect.left + m_nWidth;
-	rect.bottom = rect.top + m_nHeight;
-	return TRUE;
+	auto& rcDialog  = GetShareData()->m_Common.m_sOthers.m_rcTagJumpDialog;
+	rcDialog.left   = m_xPos;
+	rcDialog.top    = m_yPos;
+	rcDialog.right  = rcDialog.left + m_nWidth;
+	rcDialog.bottom = rcDialog.top  + m_nHeight;
+	return __super::OnDestroy();
 }
 
 BOOL CDlgTagJumpList::OnBnClicked( int wID )

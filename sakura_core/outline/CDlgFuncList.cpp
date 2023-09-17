@@ -2259,26 +2259,25 @@ static int CALLBACK Compare_by_ItemTextDesc(LPARAM lParam1, LPARAM lParam2, LPAR
 	return Compare_by_ItemText(lParam2, lParam1, lParamSort);
 }
 
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * @retval TRUE  メッセージは処理された（≒デフォルト処理は呼び出されない。）
+ * @retval FALSE メッセージは処理されなかった（≒デフォルト処理が呼び出される。）
+ */
 BOOL CDlgFuncList::OnDestroy( void )
 {
-	CDialog::OnDestroy();
-
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
-	// 前提条件：m_lParam が CDialog::OnDestroy でクリアされないこと
-	CEditView* pcEditView=(CEditView*)m_lParam;
-	HWND hwndEdit = GetEditWnd().GetHwnd();
-	if( !IsDocking() && m_pShareData->m_Common.m_sOutline.m_bRememberOutlineWindowPos ){
-		/* 親のウィンドウ位置・サイズを記憶 */
-		WINDOWPLACEMENT cWindowPlacement;
-		cWindowPlacement.length = sizeof( cWindowPlacement );
-		if (::GetWindowPlacement( hwndEdit, &cWindowPlacement )){
-			/* ウィンドウ位置・サイズを記憶 */
-			m_pShareData->m_Common.m_sOutline.m_xOutlineWindowPos = m_xPos - cWindowPlacement.rcNormalPosition.left;
-			m_pShareData->m_Common.m_sOutline.m_yOutlineWindowPos = m_yPos - cWindowPlacement.rcNormalPosition.top;
-			m_pShareData->m_Common.m_sOutline.m_widthOutlineWindow = m_nWidth;
-			m_pShareData->m_Common.m_sOutline.m_heightOutlineWindow = m_nHeight;
-		}
+	if (auto& sOutline = GetShareData()->m_Common.m_sOutline;
+		!IsDocking() && sOutline.m_bRememberOutlineWindowPos)
+	{
+		sOutline.m_xOutlineWindowPos   = m_xPos;
+		sOutline.m_yOutlineWindowPos   = m_yPos;
+		sOutline.m_widthOutlineWindow  = m_nWidth;
+		sOutline.m_heightOutlineWindow = m_nHeight;
 	}
+
+	HWND hwndEdit = GetEditWnd().GetHwnd();
 
 	// ドッキング画面を閉じるときは画面を再レイアウトする
 	// ドッキングでアプリ終了時には hwndEdit は NULL になっている（親に先に WM_DESTROY が送られるため）
@@ -2308,7 +2307,7 @@ BOOL CDlgFuncList::OnDestroy( void )
 	}
 	::KillTimer( GetHwnd(), 1 );
 
-	return TRUE;
+	return __super::OnDestroy();
 }
 
 /*!
