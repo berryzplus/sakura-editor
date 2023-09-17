@@ -58,7 +58,6 @@ protected:
 	void CommandClose();
 	void CommandSave();
 private:
-	POINT		m_ptDefaultSize;
 	RECT		m_rcItems[5];
 };
 #endif /* SAKURA_CDLGWINDOWLIST_EBED03A4_1BD8_4EEE_93D0_32E8C3A1F5FD_H_ */

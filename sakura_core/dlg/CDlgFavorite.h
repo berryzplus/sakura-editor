@@ -137,7 +137,6 @@ private:
 
 	FavoriteInfo        m_aFavoriteInfo[FAVORITE_INFO_MAX];
 	ListViewSortInfo    m_aListViewInfo[FAVORITE_INFO_MAX];
-	POINT				m_ptDefaultSize;
 	RECT				m_rcListDefault;
 	RECT				m_rcItems[10];
 

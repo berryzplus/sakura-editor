@@ -77,7 +77,6 @@ protected:
 
 private:
 	int			m_nIndexSave;		// 最後に選択されていた番号
-	POINT		m_ptDefaultSize;
 	RECT		m_rcItems[22];
 
 public:

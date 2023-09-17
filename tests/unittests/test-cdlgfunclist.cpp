@@ -63,3 +63,29 @@ TEST(CDlgFuncList, SimpleShowDialog)
 	EXPECT_NE(nullptr, hDlg);
 	dlg.CloseDialog(0);
 }
+
+TEST(CDlgFuncList, ShowDialogWithSizeRestor)
+{
+	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
+	auto& sOutline = pDllShareData->m_Common.m_sOutline;
+	sOutline.m_bRememberOutlineWindowPos = true;
+	sOutline.m_xOutlineWindowPos         = 1;
+	sOutline.m_yOutlineWindowPos         = 2;
+	sOutline.m_widthOutlineWindow        = 3;
+	sOutline.m_heightOutlineWindow       = 4;
+	CEditDoc     doc(pShareDataAccessor);
+	CEditWnd     wnd(pShareDataAccessor);
+	CEditView    view;
+	CDlgFuncList dlg(std::move(pShareDataAccessor));
+
+	auto pcFuncInfoArr = std::make_shared<CFuncInfoArr>();
+	dlg.SetFuncInfoForTest(pcFuncInfoArr);
+	auto pDlg = static_cast<CDialog*>(&dlg);
+
+	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
+	const auto hWndParent = static_cast<HWND>(nullptr);
+	const auto lParam     = std::bit_cast<LPARAM>(&view);
+	const auto hDlg       = pDlg->DoModeless(hInstance, hWndParent, IDD_FUNCLIST, lParam, SW_SHOW);
+	EXPECT_NE(nullptr, hDlg);
+	dlg.CloseDialog(0);
+}

@@ -244,8 +244,6 @@ CDlgFavorite::CDlgFavorite(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_
 		m_aListViewInfo[i].nSortColumn = -1;
 		m_aListViewInfo[i].bSortAscending = false;
 	}
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 }
 
 CDlgFavorite::~CDlgFavorite()
@@ -376,8 +374,20 @@ int CDlgFavorite::GetData( void )
 	return TRUE;
 }
 
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
 BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog( GetHwnd(), wParam, lParam );
+
 	HWND		hwndList;
 	HWND		hwndBaseList;
 	HWND		hwndTab;
@@ -387,26 +397,16 @@ BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	int			nTab;
 	long		lngStyle;
 
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
-
-	::GetWindowRect( hwndDlg, &rc );
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
-
 	for( int i = 0; i < _countof(anchorList); i++ ){
 		GetItemClientRect( anchorList[i].id, m_rcItems[i] );
 	}
 
-	CreateSizeBox();
-	CDialog::OnSize();
-
-	RECT rcDialog = GetShareData()->m_Common.m_sOthers.m_rcFavoriteDialog;
-	if( rcDialog.left != 0 ||
-		rcDialog.bottom != 0 ){
-		m_xPos = rcDialog.left;
-		m_yPos = rcDialog.top;
-		m_nWidth = rcDialog.right - rcDialog.left;
+	if (const auto& rcDialog = GetShareData()->m_Common.m_sOthers.m_rcFavoriteDialog;
+		rcDialog.left != 0 || rcDialog.bottom != 0)
+	{
+		m_xPos    = rcDialog.left;
+		m_yPos    = rcDialog.top;
+		m_nWidth  = rcDialog.right  - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
 
@@ -418,9 +418,6 @@ BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		GetItemClientRect( m_aFavoriteInfo[0].m_nId, rc );
 		m_rcListDefault = rc;
 	}
-
-	// ウィンドウのリサイズ
-	SetDialogPosSize();
 
 	hwndTab = ::GetDlgItem( hwndDlg, IDC_TAB_FAVORITE );
 	TabCtrl_DeleteAllItems( hwndTab );
@@ -492,7 +489,7 @@ BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	TabCtrl_SetCurSel( hwndTab, m_nCurrentTab );
 	//ChangeSlider( m_nCurrentTab );
 
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return ret;
 }
 
 /*!

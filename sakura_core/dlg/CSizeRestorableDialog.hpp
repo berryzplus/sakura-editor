@@ -33,6 +33,9 @@
   */
 class CSizeRestorableDialog : public CSakuraDialog
 {
+protected:
+	POINT   m_ptDefaultSize = { -1, -1 };
+
 public:
 	explicit CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
 	~CSizeRestorableDialog() override = default;
@@ -41,6 +44,7 @@ protected:
 	INT_PTR DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	INT_PTR DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
+	BOOL    OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL    OnDlgDestroy(HWND hDlg) override;
 
 	virtual void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo);

@@ -168,7 +168,6 @@ private:
 
 	CRecentTagjumpKeyword	m_cRecentKeyword;
 
-	POINT	m_ptDefaultSize;
 	RECT	m_rcItems[11];
 
 	DISALLOW_COPY_AND_ASSIGN(CDlgTagJumpList);

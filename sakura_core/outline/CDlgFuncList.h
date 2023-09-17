@@ -242,7 +242,6 @@ private:
 	static DWORD m_dwDlgTmpSize;
 	static HINSTANCE m_lastRcInstance;		// リソース生存チェック用
 
-	POINT				m_ptDefaultSize;
 	POINT				m_ptDefaultSizeClient;
 	RECT				m_rcItems[12];
 

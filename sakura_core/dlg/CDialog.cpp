@@ -241,8 +241,6 @@ INT_PTR CDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 		const auto ret = FORWARD_WM_INITDIALOG(hDlg, wParam, lParam, __super::DispatchDlgEvent);
 
-		SetDialogPosSize();
-
 		m_bInited = TRUE;
 
 		return ret;

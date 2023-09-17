@@ -163,8 +163,6 @@ CDlgTagJumpList::CDlgTagJumpList(bool bDirectTagJump, std::shared_ptr<ShareDataA
 	m_pcList = new CSortedTagJumpList(50);
 	m_psFindPrev = new STagFindState();
 	m_psFind0Match = new STagFindState();
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 	ClearPrevFindInfo();
 }
 
@@ -422,42 +420,40 @@ int CDlgTagJumpList::GetData( void )
 }
 
 /*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+
 	@date 2005.03.31 MIK
 		階層カラムの追加．キーワード指定欄の追加
-*/
+ */
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	// 基底クラスのハンドラを呼び出す。
+	__super::OnInitDialog(hwndDlg, wParam, lParam);
+	
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
 	long		lngStyle;
 	BOOL		bRet;
 
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
-
-	CreateSizeBox();
-	CDialog::OnSize();
-	
-	::GetWindowRect( hwndDlg, &rc );
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
-
 	for( int i = 0; i < _countof(anchorList); i++ ){
 		GetItemClientRect( anchorList[i].id, m_rcItems[i] );
 	}
 
-	RECT rcDialog = GetShareData()->m_Common.m_sOthers.m_rcTagJumpDialog;
-	if( rcDialog.left != 0 ||
-		rcDialog.bottom != 0 ){
-		m_xPos = rcDialog.left;
-		m_yPos = rcDialog.top;
-		m_nWidth = rcDialog.right - rcDialog.left;
+	if (const auto& rcDialog = GetShareData()->m_Common.m_sOthers.m_rcTagJumpDialog;
+		rcDialog.left != 0 || rcDialog.bottom != 0)
+	{
+		m_xPos    = rcDialog.left;
+		m_yPos    = rcDialog.top;
+		m_nWidth  = rcDialog.right  - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
-
-	// ウィンドウのリサイズ
-	SetDialogPosSize();
 
 	//リストビューの表示位置を取得する。
 	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_TAGJUMP );
@@ -532,9 +528,6 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	SetComboBoxDeleter(hwndKey, &m_cRecentKeyword);
 
-	/* 基底クラスメンバ */
-	CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
-	
 	return bRet;
 }
 

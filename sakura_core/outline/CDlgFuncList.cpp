@@ -221,8 +221,6 @@ CDlgFuncList::CDlgFuncList(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_
 	m_bEditWndReady = false;	/* エディタ画面の準備完了 */
 	m_bInChangeLayout = false;
 	m_pszTimerJumpFile = NULL;
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 	m_bDummyLParamMode = false;
 }
 
@@ -1668,14 +1666,24 @@ void CDlgFuncList::SetTreeFileSub( HTREEITEM hParent, const WCHAR* pszFile )
 	}
 }
 
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
 BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog(hwndDlg, wParam, lParam);
+
 	m_bStretching = false;
 	m_bHovering = false;
 	m_nHilightedBtn = -1;
 	m_nCapturingBtn = -1;
-
-	_SetHwnd( hwndDlg );
 
 	HWND		hwndList;
 	int			nCxVScroll;
@@ -1777,11 +1785,6 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-	if( !IsDocking() ){
-		/* 基底クラスメンバ */
-		CreateSizeBox();
-	}
-
 	m_hwndToolTip = NULL;
 	if( IsDocking() ){
 		//ツールチップを作成する。（「閉じる」などのボタン用）
@@ -1837,10 +1840,6 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	SyncColor();
 
-	::GetWindowRect( hwndDlg, &rc );
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
-	
 	::GetClientRect( hwndDlg, &rc );
 	m_ptDefaultSizeClient.x = rc.right;
 	m_ptDefaultSizeClient.y = rc.bottom;
@@ -1857,7 +1856,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return ret;
 }
 
 BOOL CDlgFuncList::OnBnClicked( int wID )

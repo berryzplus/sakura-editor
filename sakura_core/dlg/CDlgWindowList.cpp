@@ -56,8 +56,6 @@ CDlgWindowList::CDlgWindowList(std::shared_ptr<ShareDataAccessor> ShareDataAcces
 {
 	/* サイズ変更時に位置を制御するコントロール数 */
 	assert(_countof(anchorList) == _countof(m_rcItems));
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 	return;
 }
 
@@ -179,30 +177,32 @@ LPVOID CDlgWindowList::GetHelpIdTable()
 	return (LPVOID)p_helpids;
 }
 
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
 BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 {
-	_SetHwnd(hwndDlg);
-
-	CreateSizeBox();
-
-	RECT rc;
-	::GetWindowRect(hwndDlg, &rc);
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog(hwndDlg, wParam, lParam);
 
 	for (int i = 0; i < _countof(anchorList); i++) {
 		GetItemClientRect(anchorList[i].id, m_rcItems[i]);
 	}
 
-	RECT rcDialog = GetShareData()->m_Common.m_sOthers.m_rcWindowListDialog;
-	if (rcDialog.left != 0 || rcDialog.bottom != 0) {
-		m_xPos = rcDialog.left;
-		m_yPos = rcDialog.top;
-		m_nWidth = rcDialog.right - rcDialog.left;
+	if (const auto& rcDialog = GetShareData()->m_Common.m_sOthers.m_rcWindowListDialog;
+		rcDialog.left != 0 || rcDialog.bottom != 0)
+	{
+		m_xPos    = rcDialog.left;
+		m_yPos    = rcDialog.top;
+		m_nWidth  = rcDialog.right  - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
-	SetDialogPosSize();
-	OnSize(0, 0);
 
 	HWND hwndList = GetItemHwnd(IDC_LIST_WINDOW);
 	RECT rcListView;
@@ -222,7 +222,8 @@ BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 
 	::SetForegroundWindow(hwndDlg);
 	::BringWindowToTop(hwndDlg);
-	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
+
+	return ret;
 }
 
 /*!

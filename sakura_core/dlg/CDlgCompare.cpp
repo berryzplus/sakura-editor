@@ -59,8 +59,6 @@ CDlgCompare::CDlgCompare(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
 
 	m_bCompareAndTileHorz = TRUE;	/* 左右に並べて表示 */
 
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 	return;
 }
 
@@ -226,32 +224,34 @@ LPVOID CDlgCompare::GetHelpIdTable(void)
 }
 //@@@ 2002.01.18 add end
 
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hwndDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
 BOOL CDlgCompare::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-	_SetHwnd(hwndDlg);
-
-	CreateSizeBox();
-	CDialog::OnSize();
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog(hwndDlg, wParam, lParam);
 	
-	RECT rc;
-	::GetWindowRect( hwndDlg, &rc );
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
-
 	for( int i = 0; i < _countof(anchorList); i++ ){
 		GetItemClientRect( anchorList[i].id, m_rcItems[i] );
 	}
 
-	RECT rcDialog = GetShareData()->m_Common.m_sOthers.m_rcCompareDialog;
-	if( rcDialog.left != 0 ||
-		rcDialog.bottom != 0 ){
-		m_xPos = rcDialog.left;
-		m_yPos = rcDialog.top;
-		m_nWidth = rcDialog.right - rcDialog.left;
+	if (const auto& rcDialog = GetShareData()->m_Common.m_sOthers.m_rcCompareDialog;
+		rcDialog.left != 0 || rcDialog.bottom != 0)
+	{
+		m_xPos    = rcDialog.left;
+		m_yPos    = rcDialog.top;
+		m_nWidth  = rcDialog.right  - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return ret;
 }
 
 /*!

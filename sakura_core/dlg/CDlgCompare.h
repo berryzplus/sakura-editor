@@ -58,7 +58,6 @@ protected:
 	int GetData( void ) override;	/* ダイアログデータの取得 */
 
 private:
-	POINT			m_ptDefaultSize;
 	RECT			m_rcItems[6];
 };
 #endif /* SAKURA_CDLGCOMPARE_58A610D8_1E87_4096_96E2_724BEAC310F1_H_ */

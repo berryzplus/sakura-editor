@@ -96,8 +96,6 @@ CDlgDiff::CDlgDiff(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
 	m_nCodeTypeDst = CODE_ERROR;
 	m_bBomDst = false;
 	m_hWnd_Dst       = NULL;
-	m_ptDefaultSize.x = -1;
-	m_ptDefaultSize.y = -1;
 	return;
 }
 
@@ -470,13 +468,20 @@ LPVOID CDlgDiff::GetHelpIdTable( void )
 	return (LPVOID)p_helpids;
 }
 
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
 BOOL CDlgDiff::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
-	_SetHwnd(hwndDlg);
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog(hwndDlg, wParam, lParam);
 
-	CreateSizeBox();
-	CDialog::OnSize();
-	
 	LONG_PTR lStyle;
 	lStyle = ::GetWindowLongPtr( GetItemHwnd(IDC_FRAME_DIFF_DST ), GWL_EXSTYLE );
 	::SetWindowLongPtr( GetItemHwnd(IDC_FRAME_DIFF_DST ), GWL_EXSTYLE, lStyle | WS_EX_TRANSPARENT );
@@ -485,25 +490,20 @@ BOOL CDlgDiff::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	lStyle = ::GetWindowLongPtr( GetItemHwnd(IDC_FRAME_SEARCH_MSG ), GWL_EXSTYLE );
 	::SetWindowLongPtr( GetItemHwnd(IDC_FRAME_SEARCH_MSG ), GWL_EXSTYLE, lStyle | WS_EX_TRANSPARENT );
 
-	RECT rc;
-	::GetWindowRect( hwndDlg, &rc );
-	m_ptDefaultSize.x = rc.right - rc.left;
-	m_ptDefaultSize.y = rc.bottom - rc.top;
-
 	for( int i = 0; i < _countof(anchorList); i++){
 		GetItemClientRect( anchorList[i].id, m_rcItems[i] );
 	}
 
-	RECT rcDialog = GetShareData()->m_Common.m_sOthers.m_rcDiffDialog;
-	if( rcDialog.left != 0 ||
-		rcDialog.bottom != 0 ){
-		m_xPos = rcDialog.left;
-		m_yPos = rcDialog.top;
-		m_nWidth = rcDialog.right - rcDialog.left;
+	if (const auto& rcDialog = GetShareData()->m_Common.m_sOthers.m_rcDiffDialog;
+		rcDialog.left != 0 || rcDialog.bottom != 0)
+	{
+		m_xPos    = rcDialog.left;
+		m_yPos    = rcDialog.top;
+		m_nWidth  = rcDialog.right  - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return ret;
 }
 
 /*!

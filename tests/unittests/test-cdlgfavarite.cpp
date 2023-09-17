@@ -47,3 +47,18 @@ TEST(CDlgFavorite, SimpleShowDialog)
 	EXPECT_NE(nullptr, hDlg);
 	dlg.CloseDialog(0);
 }
+
+TEST(CDlgFavorite, ShowDialogWithSizeRestor)
+{
+	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
+	auto& rect  = pDllShareData->m_Common.m_sOthers.m_rcFavoriteDialog;
+	rect.left   = 1;
+	rect.top    = 2;
+	rect.right  = rect.left + 3;
+	rect.bottom = rect.top  + 4;
+	CDlgFavorite dlg(std::move(pShareDataAccessor));
+	const auto hWndParent = static_cast<HWND>(nullptr);
+	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_FAVORITE, static_cast<LPARAM>(0), SW_SHOW);
+	EXPECT_NE(nullptr, hDlg);
+	dlg.CloseDialog(0);
+}

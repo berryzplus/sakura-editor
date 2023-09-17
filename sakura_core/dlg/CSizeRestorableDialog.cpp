@@ -85,8 +85,44 @@ INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam
 		return FALSE;
 	}
 
+	// WM_INITDIALOGの戻り値は他と意味が異なるので個別に処理する
+	if (uMsg == WM_INITDIALOG)
+	{
+		RECT rc = {};
+		GetClientRect(hDlg, &rc);
+		m_ptDefaultSize.x = rc.right - rc.left;
+		m_ptDefaultSize.y = rc.bottom - rc.top;
+
+		const auto ret = HANDLE_WM_INITDIALOG(hDlg, wParam, lParam, OnDlgInitDialog);
+
+		SetDialogPosSize();
+
+		m_bInited = TRUE;
+
+		return ret;
+	}
+
 	// 基底クラスのハンドラを呼び出す。
 	return __super::DispatchEvent(hDlg, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_INITDIALOGハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] wParam フォーカスを受け取る子ウインドウのハンドル
+ * @param [in] lParam ダイアログパラメーター
+ * @retval TRUE  フォーカスを設定する
+ * @retval FALSE フォーカスを設定しない
+ */
+BOOL CSizeRestorableDialog::OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam)
+{
+	// 基底クラスのハンドラを呼び出す。
+	const auto ret = __super::OnInitDialog(hDlg, wParam, lParam);
+
+	CreateSizeBox();
+
+	return ret;
 }
 
 /*!
