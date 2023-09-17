@@ -1780,10 +1780,6 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	if( !IsDocking() ){
 		/* 基底クラスメンバ */
 		CreateSizeBox();
-
-		LONG_PTR lStyle = ::GetWindowLongPtr( GetHwnd(), GWL_STYLE );
-		::SetWindowLongPtr( GetHwnd(), GWL_STYLE, lStyle | WS_THICKFRAME );
-		::SetWindowPos( GetHwnd(), NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
 	}
 
 	m_hwndToolTip = NULL;
