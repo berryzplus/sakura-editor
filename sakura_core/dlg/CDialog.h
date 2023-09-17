@@ -234,19 +234,4 @@ protected:
 	HFONT SetMainFont(HWND hTarget);
 };
 
-/*!
- * 可変ダイアログの基底クラス
- *
- * 表示位置とサイズを復元する機能を付加する。
- */
-class CSizeRestorableDialog : public CSakuraDialog
-{
-public:
-	explicit CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>())
-		: CSakuraDialog(idDialog_, std::move(ShareDataAccessor_), std::move(User32Dll_))
-	{
-	}
-	~CSizeRestorableDialog() override = default;
-};
-
 #endif /* SAKURA_CDIALOG_17C8C15C_881C_4C1F_B953_CB11FCC8B70B_H_ */

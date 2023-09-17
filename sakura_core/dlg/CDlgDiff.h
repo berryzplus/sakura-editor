@@ -34,7 +34,7 @@
 #define SAKURA_CDLGDIFF_57739DBD_0797_4F83_9DB0_F4D51A54157F_H_
 #pragma once
 
-#include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 #include "basis/CMyString.h"
 #include "charset/charset.h"
 

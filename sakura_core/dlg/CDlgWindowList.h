@@ -33,7 +33,7 @@
 #define SAKURA_CDLGWINDOWLIST_EBED03A4_1BD8_4EEE_93D0_32E8C3A1F5FD_H_
 #pragma once
 
-#include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 
 class CDlgWindowList final : public CSizeRestorableDialog
 {

@@ -35,7 +35,7 @@
 #define SAKURA_CDLGTAGJUMPLIST_D44C3C98_9BF7_4B99_923B_9005CD54872F_H_
 #pragma once
 
-#include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 #include "recent/CRecentTagjumpKeyword.h"
 #include "mem/CNativeW.h"
 

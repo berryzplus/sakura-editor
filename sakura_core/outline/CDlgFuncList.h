@@ -23,10 +23,9 @@
 #define SAKURA_CDLGFUNCLIST_B22A3877_572A_49B7_B683_50ECA451A6F8_H_
 #pragma once
 
-#include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 #include "doc/CEditDoc.h"
 
-#include <Windows.h>
 #include <CommCtrl.h>
 
 class CFuncInfo;

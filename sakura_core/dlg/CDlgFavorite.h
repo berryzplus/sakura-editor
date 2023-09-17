@@ -34,7 +34,7 @@
 #define SAKURA_CDLGFAVORITE_D3C5AE69_3DBD_4C29_9918_BCC0D3BE61FE_H_
 #pragma once
 
-#include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 #include "recent/CRecentFile.h"
 #include "recent/CRecentFolder.h"
 #include "recent/CRecentExceptMru.h"

@@ -16,9 +16,10 @@
 #define SAKURA_CDLGCOMPARE_58A610D8_1E87_4096_96E2_724BEAC310F1_H_
 #pragma once
 
+#include "dlg/CSizeRestorableDialog.hpp"
+
 class CDlgCompare;
 
-#include "dlg/CDialog.h"
 /*!
 	@brief ファイル比較ダイアログボックス
 */

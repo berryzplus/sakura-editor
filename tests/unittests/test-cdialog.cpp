@@ -23,14 +23,13 @@
 		   distribution.
  */
 #include "dlg/CDialog.h"
+#include "dlg/CSizeRestorableDialog.hpp"
 
 #include "MockShareDataAccessor.hpp"
 
 #include "MockUser32Dll.hpp"
 
 #include "TAutoCloseDialog.hpp"
-
-#include <functional>
 
 extern HINSTANCE GetLanguageResourceLibrary();
 
