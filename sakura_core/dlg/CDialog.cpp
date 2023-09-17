@@ -100,7 +100,7 @@ HWND CDialog::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete
 	_idDialog = static_cast<WORD>(nDlgTemplete);
 
 	m_bModal   = FALSE;
-	m_nShowCmd = nCmdShow;
+	m_nShowCmd = SW_HIDE;
 	m_bInited  = FALSE;
 
 	// 既存コード互換のため暫定で残しておく代入
@@ -113,10 +113,21 @@ HWND CDialog::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete
 
 	if (hWnd)
 	{
-		GetUser32Dll()->ShowWindow(hWnd, nCmdShow);
+		ShowWindow(hWnd, nCmdShow);
 	}
 
 	return hWnd;
+}
+
+bool CDialog::ShowWindow(HWND hWnd, int nCmdShow)
+{
+	const auto ret = GetUser32Dll()->ShowWindow(hWnd, nCmdShow);
+	if (ret)
+	{
+		m_nShowCmd = nCmdShow;
+	}
+
+	return ret;
 }
 
 /*!
@@ -401,7 +412,6 @@ BOOL CDialog::OnDestroy( void )
 	WINDOWPLACEMENT cWindowPlacement;
 	cWindowPlacement.length = sizeof( cWindowPlacement );
 	if (::GetWindowPlacement( m_hWnd, &cWindowPlacement )){
-		m_nShowCmd = cWindowPlacement.showCmd;	//	最大化・最小化
 		m_xPos = cWindowPlacement.rcNormalPosition.left;
 		m_yPos = cWindowPlacement.rcNormalPosition.top;
 		m_nWidth = cWindowPlacement.rcNormalPosition.right - cWindowPlacement.rcNormalPosition.left;

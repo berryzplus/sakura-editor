@@ -109,7 +109,7 @@ public:
 		const auto hWnd = CreateIndirect(m_hLangRsrcInstance, func, hWndParent);
 		if (hWnd)
 		{
-			GetUser32Dll()->ShowWindow(hWnd, nCmdShow);
+			ShowWindow(hWnd, nCmdShow);
 		}
 
 		return hWnd;
@@ -118,6 +118,8 @@ public:
 	void CloseDialog(INT_PTR nModalRetVal);
 
 protected:
+	bool    ShowWindow(HWND hWnd, int nCmdShow);
+
 	void    SetDlgData(HWND hDlg) const override;
 	INT_PTR GetDlgData(HWND hDlg) override;
 
