@@ -64,9 +64,27 @@ INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam
 	// WM_GETMINMAXINFOが来た場合、個別に処理する
 	if (uMsg == WM_GETMINMAXINFO)
 	{
-		return OnMinMaxInfo(lParam);
+		if (const auto lpMinMaxInfo = std::bit_cast<LPMINMAXINFO>(lParam))
+		{
+			// 戻り値は無視する
+			HANDLE_WM_GETMINMAXINFO(hDlg, wParam, lParam, OnGetMinMaxInfo);
+		}
+
+		return FALSE;
 	}
 
 	// 基底クラスのハンドラを呼び出す。
 	return __super::DispatchEvent(hDlg, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_GETMINMAXINFOハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [out] lpMinMaxInfo サイズ情報
+ */
+void CSizeRestorableDialog::OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo)
+{
+	UNREFERENCED_PARAMETER(hDlg);
+	UNREFERENCED_PARAMETER(lpMinMaxInfo);
 }

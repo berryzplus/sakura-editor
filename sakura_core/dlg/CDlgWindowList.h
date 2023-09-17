@@ -48,7 +48,7 @@ protected:
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
 	BOOL OnSize(WPARAM wParam, LPARAM lParam) override;
-	BOOL OnMinMaxInfo(LPARAM lParam);
+	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 	BOOL OnActivate(WPARAM wParam, LPARAM lParam) override;
 
 	void SetData() override;

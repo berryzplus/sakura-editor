@@ -2206,18 +2206,22 @@ BOOL CDlgFuncList::OnSize( WPARAM wParam, LPARAM lParam )
 	return TRUE;
 }
 
-BOOL CDlgFuncList::OnMinMaxInfo( LPARAM lParam )
+/*!
+ * WM_GETMINMAXINFOハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [out] lpMinMaxInfo サイズ情報
+ */
+void CDlgFuncList::OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo)
 {
-	LPMINMAXINFO lpmmi = (LPMINMAXINFO) lParam;
-	if( m_ptDefaultSize.x < 0 ){
-		return 0;
-	}
-	lpmmi->ptMinTrackSize.x = m_ptDefaultSize.x/2;
-	lpmmi->ptMinTrackSize.y = m_ptDefaultSize.y/3;
-	lpmmi->ptMaxTrackSize.x = m_ptDefaultSize.x*2;
-	lpmmi->ptMaxTrackSize.y = m_ptDefaultSize.y*2;
-	return 0;
+	UNREFERENCED_PARAMETER(hDlg);
+
+	lpMinMaxInfo->ptMinTrackSize.x = m_ptDefaultSize.x / 2;
+	lpMinMaxInfo->ptMinTrackSize.y = m_ptDefaultSize.y / 3;
+	lpMinMaxInfo->ptMaxTrackSize.x = m_ptDefaultSize.x * 2;
+	lpMinMaxInfo->ptMaxTrackSize.y = m_ptDefaultSize.y * 2;
 }
+
 static inline int CALLBACK Compare_by_ItemData(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	if( lParam1< lParam2 )

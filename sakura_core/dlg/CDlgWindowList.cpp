@@ -253,17 +253,20 @@ BOOL CDlgWindowList::OnSize(WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-BOOL CDlgWindowList::OnMinMaxInfo(LPARAM lParam)
+/*!
+ * WM_GETMINMAXINFOハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [out] lpMinMaxInfo サイズ情報
+ */
+void CDlgWindowList::OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo)
 {
-	LPMINMAXINFO lpmmi = (LPMINMAXINFO) lParam;
-	if (m_ptDefaultSize.x < 0) {
-		return 0;
-	}
-	lpmmi->ptMinTrackSize.x = m_ptDefaultSize.x;
-	lpmmi->ptMinTrackSize.y = m_ptDefaultSize.y;
-	lpmmi->ptMaxTrackSize.x = m_ptDefaultSize.x*3;
-	lpmmi->ptMaxTrackSize.y = m_ptDefaultSize.y*3;
-	return 0;
+	UNREFERENCED_PARAMETER(hDlg);
+
+	lpMinMaxInfo->ptMinTrackSize.x = m_ptDefaultSize.x;
+	lpMinMaxInfo->ptMinTrackSize.y = m_ptDefaultSize.y;
+	lpMinMaxInfo->ptMaxTrackSize.x = m_ptDefaultSize.x * 3;
+	lpMinMaxInfo->ptMaxTrackSize.y = m_ptDefaultSize.y * 3;
 }
 
 BOOL CDlgWindowList::OnActivate(WPARAM wParam, LPARAM lParam)

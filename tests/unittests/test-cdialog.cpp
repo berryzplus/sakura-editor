@@ -139,6 +139,7 @@ public:
 	}
 
 	MOCK_METHOD2_T(OnSize, BOOL(WPARAM, LPARAM));
+	MOCK_METHOD2(OnGetMinMaxInfo, void(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo));
 };
 
 using ::testing::_;
@@ -442,6 +443,23 @@ TEST(CDialog, MockedDispachDlgEvent_OnSize)
 	EXPECT_CALL(mock, OnSize(wParam, lParam)).WillOnce(Return(false));
 
 	EXPECT_FALSE(mock.DispatchDlgEvent(hDlg, WM_SIZE, wParam, lParam));
+}
+
+TEST(CSizeRestorableDialog, MockedDispachDlgEvent_OnGetMinMaxInfo)
+{
+	// 作成されたウインドウのハンドル(ダミー)
+	const auto hDlg = (HWND)0x4321;
+
+	// サイズ情報
+	MINMAXINFO minMaxInfo = {};
+
+	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
+	mock_dialog_2 mock(pShareDataAccessor);
+	EXPECT_CALL(mock, OnGetMinMaxInfo(hDlg, &minMaxInfo)).Times(1);
+	EXPECT_FALSE(mock.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, std::bit_cast<LPARAM>(&minMaxInfo)));
+
+	CDialog2 dlg(pShareDataAccessor);
+	EXPECT_FALSE(dlg.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, std::bit_cast<LPARAM>(&minMaxInfo)));
 }
 
 TEST(CSizeRestorableDialog, MockedDispachDlgEvent_OnDrawItem)

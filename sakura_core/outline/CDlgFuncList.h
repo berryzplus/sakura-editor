@@ -142,7 +142,7 @@ protected:
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnNotify(NMHDR* pNMHDR) override;
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
-	BOOL OnMinMaxInfo( LPARAM lParam );
+	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 	BOOL OnDestroy(void) override; // 20060201 aroka
 	BOOL OnCbnSelEndOk( HWND hwndCtl, int wID );
 	BOOL OnContextMenu(WPARAM wParam, LPARAM lParam) override;

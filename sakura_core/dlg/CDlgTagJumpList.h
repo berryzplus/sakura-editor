@@ -81,7 +81,7 @@ protected:
 	BOOL	OnDestroy( void ) override;
 	BOOL	OnBnClicked(int wID) override;
 	BOOL	OnSize( WPARAM wParam, LPARAM lParam ) override;
-	BOOL	OnMinMaxInfo( LPARAM lParam );
+	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 	BOOL	OnNotify(NMHDR* pNMHDR) override;
 	//	@@ 2005.03.31 MIK キーワード入力エリアのイベント処理
 	BOOL	OnCbnSelChange( HWND hwndCtl, int wID ) override;

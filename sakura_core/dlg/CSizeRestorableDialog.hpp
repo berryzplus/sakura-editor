@@ -41,5 +41,5 @@ protected:
 	INT_PTR DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	INT_PTR DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-	virtual BOOL	OnMinMaxInfo(LPARAM lParam) { return FALSE; }
+	virtual void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo);
 };

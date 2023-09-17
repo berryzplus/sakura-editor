@@ -1216,15 +1216,18 @@ BOOL CDlgFavorite::OnSize( WPARAM wParam, LPARAM lParam )
 	return TRUE;
 }
 
-BOOL CDlgFavorite::OnMinMaxInfo( LPARAM lParam )
+/*!
+ * WM_GETMINMAXINFOハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [out] lpMinMaxInfo サイズ情報
+ */
+void CDlgFavorite::OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo)
 {
-	LPMINMAXINFO lpmmi = (LPMINMAXINFO) lParam;
-	if( m_ptDefaultSize.x < 0 ){
-		return 0;
-	}
-	lpmmi->ptMinTrackSize.x = m_ptDefaultSize.x;
-	lpmmi->ptMinTrackSize.y = m_ptDefaultSize.y;
-	lpmmi->ptMaxTrackSize.x = m_ptDefaultSize.x*2;
-	lpmmi->ptMaxTrackSize.y = m_ptDefaultSize.y*2;
-	return 0;
+	UNREFERENCED_PARAMETER(hDlg);
+
+	lpMinMaxInfo->ptMinTrackSize.x = m_ptDefaultSize.x;
+	lpMinMaxInfo->ptMinTrackSize.y = m_ptDefaultSize.y;
+	lpMinMaxInfo->ptMaxTrackSize.x = m_ptDefaultSize.x * 2;
+	lpMinMaxInfo->ptMaxTrackSize.y = m_ptDefaultSize.y * 2;
 }

@@ -72,7 +72,7 @@ protected:
 	BOOL	OnActivate( WPARAM wParam, LPARAM lParam ) override;
 	LPVOID	GetHelpIdTable( void ) override;
 	BOOL	OnSize( WPARAM wParam, LPARAM lParam ) override;
-	BOOL	OnMinMaxInfo( LPARAM lParam );
+	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 
 	void	SetData( void ) override;	/* ダイアログデータの設定 */
 	int		GetData( void ) override;	/* ダイアログデータの取得 */
