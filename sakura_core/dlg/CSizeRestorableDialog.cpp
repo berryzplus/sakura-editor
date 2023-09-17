@@ -145,6 +145,22 @@ BOOL CSizeRestorableDialog::OnDlgDestroy(HWND hDlg)
 }
 
 /*!
+ * WM_SIZEハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] state ウインドウの表示状態
+ * @param [in] cx クライアント領域の幅
+ * @param [in] cy クライアント領域の高さ
+ */
+void CSizeRestorableDialog::OnWndSize(HWND hDlg, UINT state, int cx, int cy)
+{
+	UNREFERENCED_PARAMETER(hDlg);
+	UNREFERENCED_PARAMETER(state);
+	UNREFERENCED_PARAMETER(cx);
+	UNREFERENCED_PARAMETER(cy);
+}
+
+/*!
  * WM_GETMINMAXINFOハンドラ
  *
  * @param [in] hDlg 宛先ウインドウのハンドル

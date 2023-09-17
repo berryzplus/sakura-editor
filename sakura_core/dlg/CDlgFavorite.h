@@ -71,7 +71,7 @@ protected:
 	BOOL	OnNotify(NMHDR* pNMHDR) override;
 	BOOL	OnActivate( WPARAM wParam, LPARAM lParam ) override;
 	LPVOID	GetHelpIdTable( void ) override;
-	BOOL	OnSize( WPARAM wParam, LPARAM lParam ) override;
+	void    OnWndSize(HWND hDlg, UINT state, int cx, int cy) override;
 	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 
 	void	SetData( void ) override;	/* ダイアログデータの設定 */

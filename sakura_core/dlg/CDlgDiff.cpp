@@ -522,22 +522,23 @@ BOOL CDlgDiff::OnDestroy( void )
 	return __super::OnDestroy();
 }
 
-BOOL CDlgDiff::OnSize( WPARAM wParam, LPARAM lParam )
+/*!
+ * WM_SIZEハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] state ウインドウの表示状態
+ * @param [in] cx クライアント領域の幅
+ * @param [in] cy クライアント領域の高さ
+ */
+void CDlgDiff::OnWndSize(HWND hDlg, UINT state, int cx, int cy)
 {
-	/* 基底クラスメンバ */
-	CDialog::OnSize( wParam, lParam );
+	UNREFERENCED_PARAMETER(state);
 
-	RECT  rc;
-	POINT ptNew;
-	::GetWindowRect( GetHwnd(), &rc );
-	ptNew.x = rc.right - rc.left;
-	ptNew.y = rc.bottom - rc.top;
-
+	POINT ptNew = { cx, cy };
 	for( int i = 0; i < _countof(anchorList); i++){
 		ResizeItem( GetItemHwnd(anchorList[i].id), m_ptDefaultSize, ptNew, m_rcItems[i], anchorList[i].anchor );
 	}
-	::InvalidateRect( GetHwnd(), NULL, TRUE );
-	return TRUE;
+	InvalidateRect(hDlg, NULL, TRUE);
 }
 
 /*!

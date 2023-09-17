@@ -80,7 +80,7 @@ protected:
 	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL	OnDestroy( void ) override;
 	BOOL	OnBnClicked(int wID) override;
-	BOOL	OnSize( WPARAM wParam, LPARAM lParam ) override;
+	void    OnWndSize(HWND hDlg, UINT state, int cx, int cy) override;
 	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 	BOOL	OnNotify(NMHDR* pNMHDR) override;
 	//	@@ 2005.03.31 MIK キーワード入力エリアのイベント処理

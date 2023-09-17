@@ -47,5 +47,6 @@ protected:
 	BOOL    OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL    OnDlgDestroy(HWND hDlg) override;
 
+	virtual void    OnWndSize(HWND hDlg, UINT state, int cx, int cy);
 	virtual void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo);
 };

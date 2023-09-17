@@ -2157,48 +2157,28 @@ void CDlgFuncList::SortListView(HWND hwndList, int sortcol)
 		FALSE );
 }
 
-/*!	ウィンドウサイズが変更された
-
+/*!
+ * WM_SIZEハンドラ
+ *
+ * @param [in] hDlg 宛先ウインドウのハンドル
+ * @param [in] state ウインドウの表示状態
+ * @param [in] cx クライアント領域の幅
+ * @param [in] cy クライアント領域の高さ
 	@date 2003.06.22 Moca コードの整理(コントロールの処理方法をテーブルに持たせる)
 	@date 2003.08.16 genta 配列はstaticに(無駄な初期化を行わないため)
-*/
-BOOL CDlgFuncList::OnSize( WPARAM wParam, LPARAM lParam )
+ */
+void CDlgFuncList::OnWndSize(HWND hDlg, UINT state, int cx, int cy)
 {
+	UNREFERENCED_PARAMETER(state);
+
 	// 今のところ CEditWnd::OnSize() からの呼び出しでは lParam は CEditWnd 側 の lParam のまま渡される	// 2010.06.05 ryoji
-	RECT rcDlg;
-	::GetClientRect( GetHwnd(), &rcDlg );
-	lParam = MAKELONG(rcDlg.right - rcDlg.left, rcDlg.bottom -  rcDlg.top);	// 自前で補正
-
-	/* 基底クラスメンバ */
-	CDialog::OnSize( wParam, lParam );
-
-	RECT  rc;
-	POINT ptNew;
-	ptNew.x = rcDlg.right - rcDlg.left;
-	ptNew.y = rcDlg.bottom - rcDlg.top;
-
+	RECT rcDlg = {};
+	GetClientRect(hDlg, &rcDlg);
+	POINT ptNew = { rcDlg.right - rcDlg.left, rcDlg.bottom - rcDlg.top };
 	for( int i = 0 ; i < _countof(anchorList); i++ ){
-		HWND hwndCtrl = GetItemHwnd(anchorList[i].id);
-		ResizeItem( hwndCtrl, m_ptDefaultSizeClient, ptNew, m_rcItems[i], anchorList[i].anchor, (anchorList[i].anchor != ANCHOR_ALL));
-//	2013.2.6 aroka ちらつき防止用の試行錯誤
-		if(anchorList[i].anchor == ANCHOR_ALL){
-			::UpdateWindow( hwndCtrl );
-		}
+		ResizeItem( GetItemHwnd(anchorList[i].id), m_ptDefaultSizeClient, ptNew, m_rcItems[i], anchorList[i].anchor, (anchorList[i].anchor != ANCHOR_ALL));
 	}
-
-//	if( IsDocking() )
-	{
-		// ダイアログ部分を再描画（ツリー／リストの範囲はちらつかないように除外）
-		::InvalidateRect( GetHwnd(), NULL, FALSE );
-		POINT pt;
-		::GetWindowRect( GetItemHwnd( IDC_TREE_FL ), &rc );
-		pt.x = rc.left;
-		pt.y = rc.top;
-		::ScreenToClient( GetHwnd(), &pt );
-		::OffsetRect( &rc, pt.x - rc.left, pt.y - rc.top );
-		::ValidateRect( GetHwnd(), &rc );
-	}
-	return TRUE;
+	InvalidateRect(hDlg, NULL, FALSE);
 }
 
 /*!

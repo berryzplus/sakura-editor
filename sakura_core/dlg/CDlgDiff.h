@@ -69,7 +69,7 @@ protected:
 	LPVOID	GetHelpIdTable(void) override;
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
-	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
+	void    OnWndSize(HWND hDlg, UINT state, int cx, int cy) override;
 	void    OnGetMinMaxInfo(HWND hDlg, _In_ LPMINMAXINFO lpMinMaxInfo) override;
 
 	void	SetData( void ) override;	/* ダイアログデータの設定 */
