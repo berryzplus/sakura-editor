@@ -32,7 +32,7 @@
 TEST(CDlgGrep, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgGrep dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgGrep dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -44,7 +44,7 @@ TEST(CDlgGrep, SimpleShowDialog)
 
 	pDllShareData->m_Common.m_sSearch.m_sSearchOption.bRegularExp = true;
 
-	CDlgGrep dlg(std::move(pShareDataAccessor));
+	CDlgGrep dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_GREP, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

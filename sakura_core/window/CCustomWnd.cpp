@@ -77,8 +77,8 @@ LRESULT CALLBACK CCustomWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 /*!
  * コンストラクタ
  */
-CCustomWnd::CCustomWnd(std::shared_ptr<User32Dll> User32Dll_) noexcept
-	: User32DllClient(std::move(User32Dll_))
+CCustomWnd::CCustomWnd(const User32Dll& User32Dll_) noexcept
+	: User32DllClient(User32Dll_)
 {
 }
 
@@ -117,7 +117,7 @@ bool CCustomWnd::RegisterWnd(
         wc.lpszClassName = className.data();
         wc.hIconSm       = hIconSm;
 
-		if (!GetUser32Dll()->RegisterClassExW(&wc))
+		if (!GetUser32Dll().RegisterClassExW(&wc))
 		{
 			return false;
 		}
@@ -156,7 +156,7 @@ HWND CCustomWnd::CreateWnd(
         rcWin.bottom = prcWin->bottom;
 	}
 
-	const auto hWnd = GetUser32Dll()->CreateWindowExW(
+	const auto hWnd = GetUser32Dll().CreateWindowExW(
 		dwExStyle,
 		_ClassName.data(),
 		windowTitle.data(),
@@ -228,5 +228,5 @@ bool CCustomWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
  */
 LRESULT CCustomWnd::DefWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const
 {
-	return GetUser32Dll()->DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return GetUser32Dll().DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }

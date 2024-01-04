@@ -84,8 +84,8 @@ GEN_PROPTYPES_CALLBACK(PropTypesKeyHelp,	CPropTypesKeyHelp)
 //                        生成と破棄                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CPropTypes::CPropTypes(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CPropTypes::CPropTypes(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	{
 		assert( sizeof(CPropTypesScreen)  - sizeof(CPropTypes) == 0 );

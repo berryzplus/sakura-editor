@@ -32,5 +32,5 @@
 TEST(CPropTypes, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CPropTypes dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CPropTypes dlg(*pShareDataAccessor); });
 }

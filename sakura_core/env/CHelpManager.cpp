@@ -32,8 +32,8 @@
 /*!
  * コンストラクタ
  */
-CHelpManager::CHelpManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CHelpManager::CHelpManager(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 }
 

@@ -198,9 +198,9 @@ CEditWnd& GetEditWnd( void )
 /*!
  * コンストラクタ
  */
-CEditWnd::CEditWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CCustomWnd(std::make_shared<User32Dll>())
-	, ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CEditWnd::CEditWnd(const ShareDataAccessor& ShareDataAccessor_)
+	: CCustomWnd( ::GetUser32Dll() )
+	, ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	, m_cToolbar(GetShareDataAccessor())
 	, m_cTabWnd(GetShareDataAccessor())
 	, m_cFuncKeyWnd(GetShareDataAccessor())

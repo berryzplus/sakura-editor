@@ -32,8 +32,8 @@
 //                           生成                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CRecentFolder::CRecentFolder(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CRecentImp<CPathString, LPCWSTR>(std::move(ShareDataAccessor_))
+CRecentFolder::CRecentFolder(const ShareDataAccessor& ShareDataAccessor_)
+	: CRecentImp<CPathString, LPCWSTR>(ShareDataAccessor_)
 {
 	Create(
 		&GetShareData()->m_sHistory.m_szOPENFOLDERArr[0],

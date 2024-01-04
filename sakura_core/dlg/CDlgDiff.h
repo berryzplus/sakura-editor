@@ -50,7 +50,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgDiff(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgDiff(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgDiff() override = default;
 
 	/*

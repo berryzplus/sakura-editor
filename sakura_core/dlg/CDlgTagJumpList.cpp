@@ -138,8 +138,8 @@ inline void CDlgTagJumpList::ClearPrevFindInfo(){
 	m_psFind0Match->m_nMatchAll = 0;
 }
 
-CDlgTagJumpList::CDlgTagJumpList(bool bDirectTagJump, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CSizeRestorableDialog(IDD_TAGJUMPLIST, std::move(ShareDataAccessor_)),
+CDlgTagJumpList::CDlgTagJumpList(bool bDirectTagJump, const ShareDataAccessor& ShareDataAccessor_)
+	: CSizeRestorableDialog(IDD_TAGJUMPLIST, ShareDataAccessor_),
 	  m_bDirectTagJump(bDirectTagJump),
 	  m_nIndex( -1 ),
 	  m_pszFileName( NULL ),

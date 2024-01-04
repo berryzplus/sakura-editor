@@ -46,7 +46,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgTagsMake(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgTagsMake(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgTagsMake() override = default;
 
 	/*

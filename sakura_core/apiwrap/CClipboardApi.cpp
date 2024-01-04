@@ -28,7 +28,7 @@
 namespace apiwrap {
 
 //static
-UINT CClipboardApi::GetClipboardFormatW(std::wstring_view name, std::shared_ptr<User32Dll> _User32Dll)
+UINT CClipboardApi::GetClipboardFormatW(std::wstring_view name, const User32Dll& _User32Dll)
 {
 	if (name.empty())
 	{
@@ -56,29 +56,26 @@ UINT CClipboardApi::GetClipboardFormatW(std::wstring_view name, std::shared_ptr<
 	HandlePreDefinedClipFormat(CF_DIBV5);
 #pragma pop_macro("HandlePreDefinedClipFormat")
 
-	return _User32Dll->RegisterClipboardFormatW(name.data());
+	return _User32Dll.RegisterClipboardFormatW(name.data());
 }
 
-CClipboardApi::CClipboardApi(std::shared_ptr<User32Dll> User32Dll_, std::shared_ptr<Kernel32Dll> Kernel32Dll_, std::shared_ptr<Shell32Dll> Shell32Dll_) noexcept
-	: User32DllClient(std::move(User32Dll_))
-	, Kernel32DllClient(std::move(Kernel32Dll_))
-	, Shell32DllClient(std::move(Shell32Dll_))
+CClipboardApi::CClipboardApi(const User32Dll& User32Dll_, const Kernel32Dll& Kernel32Dll_, const Shell32Dll& Shell32Dll_) noexcept
+	: User32DllClient(User32Dll_)
+	, Kernel32DllClient(Kernel32Dll_)
+	, Shell32DllClient(Shell32Dll_)
 {
 }
 
 bool CClipboardApi::OpenClipboard(_In_opt_ HWND hWnd, int retryCount) const
 {
-	const auto pUser32Dll = GetUser32Dll();
-	const auto pKernel32Dll = GetKernel32Dll();
-
 	for (int i = 0; i <= retryCount; ++i)
 	{
-		if (pUser32Dll->OpenClipboard(hWnd))
+		if (GetUser32Dll().OpenClipboard(hWnd))
 		{
 			return true;
 		}
 
-		pKernel32Dll->Sleep(0);
+		GetKernel32Dll().Sleep(0);
 	}
 
 	return false;

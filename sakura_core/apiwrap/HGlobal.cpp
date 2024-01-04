@@ -30,17 +30,17 @@ namespace apiwrap {
 /*!
  * コンストラクタ
  */
-HGlobal::HGlobal(HGLOBAL hGlobal_, std::shared_ptr<Kernel32Dll> Kernel32Dll_) noexcept
-	: Kernel32DllClient(std::move(Kernel32Dll_))
-	, _Holder(hGlobal_, HGlobalFreeFunc(GetKernel32Dll()))
+HGlobal::HGlobal(HGLOBAL hGlobal_, const Kernel32Dll& Kernel32Dll_) noexcept
+	: Kernel32DllClient(Kernel32Dll_)
+	, _Holder(hGlobal_, HGlobalFreeFunc( Kernel32Dll_ ))
 {
 }
 
 /*!
  * コンストラクタ
  */
-HGlobal::HGlobal(UINT flags, SIZE_T bytes, std::shared_ptr<Kernel32Dll> Kernel32Dll_) noexcept
-	: HGlobal(Kernel32Dll_->GlobalAlloc(flags, bytes), Kernel32Dll_)
+HGlobal::HGlobal(UINT flags, SIZE_T bytes, const Kernel32Dll& Kernel32Dll_) noexcept
+	: HGlobal(Kernel32Dll_.GlobalAlloc(flags, bytes), Kernel32Dll_)
 {
 }
 

@@ -47,9 +47,9 @@ public:
 	static constexpr CLIPFORMAT CF_INVALID = -1;
 	static constexpr CLIPFORMAT CF_NONE    =  0;
 
-	static UINT GetClipboardFormatW(std::wstring_view name, std::shared_ptr<User32Dll> _User32Dll = std::make_shared<User32Dll>());
+	static UINT GetClipboardFormatW(std::wstring_view name, const User32Dll& _User32Dll = ::GetUser32Dll());
 
-	explicit CClipboardApi(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>(), std::shared_ptr<Kernel32Dll> Kernel32Dll_ = std::make_shared<Kernel32Dll>(), std::shared_ptr<Shell32Dll> Shell32Dll_ = std::make_shared<Shell32Dll>()) noexcept;
+	explicit CClipboardApi(const User32Dll& User32Dll_, const Kernel32Dll& Kernel32Dll_, const Shell32Dll& Shell32Dll_) noexcept;
 
 	bool   OpenClipboard(_In_opt_ HWND hWnd, int retryCount) const;
 
@@ -106,32 +106,32 @@ public:
 protected:
 	BOOL EmptyClipboard() const
 	{
-		return GetUser32Dll()->EmptyClipboard();
+		return GetUser32Dll().EmptyClipboard();
 	}
 
 	UINT EnumClipboardFormats(
 		_In_ UINT format) const
 	{
-		return GetUser32Dll()->EnumClipboardFormats(format);
+		return GetUser32Dll().EnumClipboardFormats(format);
 	}
 
 	HANDLE GetClipboardData(
 		_In_ UINT uFormat) const
 	{
-		return GetUser32Dll()->GetClipboardData(uFormat);
+		return GetUser32Dll().GetClipboardData(uFormat);
 	}
 
 	BOOL IsClipboardFormatAvailable(
 		_In_ UINT format) const
 	{
-		return GetUser32Dll()->IsClipboardFormatAvailable(format);
+		return GetUser32Dll().IsClipboardFormatAvailable(format);
 	}
 
 	HANDLE SetClipboardData(
 		_In_ UINT uFormat,
 		_In_opt_ HANDLE hMem) const
 	{
-		return GetUser32Dll()->SetClipboardData(uFormat, hMem);
+		return GetUser32Dll().SetClipboardData(uFormat, hMem);
 	}
 
 	UINT DragQueryFileW(
@@ -140,7 +140,7 @@ protected:
 		_Out_writes_opt_(cch) LPWSTR lpszFile,
 		_In_ UINT cch) const
 	{
-		return GetShell32Dll()->DragQueryFileW(hDrop, iFile, lpszFile, cch);
+		return GetShell32Dll().DragQueryFileW(hDrop, iFile, lpszFile, cch);
 	}
 };
 

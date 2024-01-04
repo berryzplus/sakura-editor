@@ -83,8 +83,8 @@ INT_PTR CALLBACK CCustomDialog::DialogProc(
 /*!
  * コンストラクタ
  */
-CCustomDialog::CCustomDialog(WORD idDialog_, std::shared_ptr<User32Dll> User32Dll_)
-	: User32DllClient(std::move(User32Dll_))
+CCustomDialog::CCustomDialog(WORD idDialog_, const User32Dll& User32Dll_)
+	: User32DllClient(User32Dll_)
 	, _idDialog(idDialog_)
 {
 }
@@ -94,7 +94,7 @@ CCustomDialog::CCustomDialog(WORD idDialog_, std::shared_ptr<User32Dll> User32Dl
  */
 INT_PTR CCustomDialog::Box(HINSTANCE hLangRsrcInstance, HWND hWndParent)
 {
-	return GetUser32Dll()->DialogBoxParamW(
+	return GetUser32Dll().DialogBoxParamW(
 		hLangRsrcInstance,
 		MAKEINTRESOURCEW(_idDialog),
 		hWndParent,
@@ -107,7 +107,7 @@ INT_PTR CCustomDialog::Box(HINSTANCE hLangRsrcInstance, HWND hWndParent)
  */
 HWND CCustomDialog::Create(HINSTANCE hLangRsrcInstance, HWND hWndParent)
 {
-	const auto hWnd = GetUser32Dll()->CreateDialogParamW(
+	const auto hWnd = GetUser32Dll().CreateDialogParamW(
 		hLangRsrcInstance,
 		MAKEINTRESOURCEW(_idDialog),
 		hWndParent,
@@ -189,7 +189,7 @@ BOOL CCustomDialog::OnDlgCommand(HWND hDlg, int id, HWND hWndCtl, UINT codeNotif
 {
 	if (id == IDOK || id == IDCANCEL)
 	{
-		GetUser32Dll()->EndDialog(hDlg, id);
+		GetUser32Dll().EndDialog(hDlg, id);
 
 		return TRUE;
 	}

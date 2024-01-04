@@ -76,7 +76,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDialog(WORD idDialog_ = 0, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>());
+	explicit CDialog(WORD idDialog_ = 0, const User32Dll& User32Dll_ = ::GetUser32Dll());
 	CDialog(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CDialog(Me&&) noexcept = delete;
@@ -224,9 +224,9 @@ protected:
 class CSakuraDialog : public CDialog, public ShareDataAccessorClientWithCache
 {
 public:
-	explicit CSakuraDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>())
-		: CDialog(idDialog_, std::move(User32Dll_))
-		, ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CSakuraDialog(WORD idDialog_, const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_ = ::GetUser32Dll())
+		: CDialog(idDialog_, User32Dll_)
+		, ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 	}
 	~CSakuraDialog() override = default;

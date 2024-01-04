@@ -32,8 +32,8 @@
 //                           生成                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CRecentTagjumpKeyword::CRecentTagjumpKeyword(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CRecentImp<CTagjumpKeywordString, LPCWSTR>(std::move(ShareDataAccessor_))
+CRecentTagjumpKeyword::CRecentTagjumpKeyword(const ShareDataAccessor& ShareDataAccessor_)
+	: CRecentImp<CTagjumpKeywordString, LPCWSTR>(ShareDataAccessor_)
 {
 	Create(
 		GetShareData()->m_sTagJump.m_aTagJumpKeywords.dataPtr(),

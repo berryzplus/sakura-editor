@@ -43,7 +43,7 @@ class CWnd : public CCustomWnd
 
 public:
 	/* Constructors */
-	explicit CWnd(const WCHAR* pszInheritanceAppend = L"", std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
+	explicit CWnd(const WCHAR* pszInheritanceAppend = L"", const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept;
 	CWnd(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CWnd(Me&&) noexcept = delete;

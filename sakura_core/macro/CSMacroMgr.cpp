@@ -488,8 +488,8 @@ MacroFuncInfo CSMacroMgr::m_MacroFuncInfoArr[] =
 /*!
  * コンストラクタ
  */
-CSMacroMgr::CSMacroMgr(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CSMacroMgr::CSMacroMgr(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CSMacroMgr::CSMacroMgr" );
 	

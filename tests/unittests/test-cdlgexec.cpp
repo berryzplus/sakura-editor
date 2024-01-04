@@ -32,7 +32,7 @@
 TEST(CDlgExec, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgExec dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgExec dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgExec, Construct)
 TEST(CDlgExec, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgExec dlg(std::move(pShareDataAccessor));
+	CDlgExec dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_EXEC, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

@@ -37,8 +37,8 @@
 
 #include "MockShareDataAccessor.hpp"
 
-extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
-extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
+extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 
 /*!
  * ファイルを開くダイアログ、構築するだけ。
@@ -46,14 +46,14 @@ extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(std::shar
 TEST(CDlgOpenFile, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgOpenFile dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgOpenFile dlg(*pShareDataAccessor); });
 }
 
 TEST(CDlgOpenFile_CommonFileDialog, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	pDllShareData->m_Common.m_sEdit.m_bVistaStyleFileDialog = false;
-	CDlgOpenFile dlg(std::move(pShareDataAccessor));
+	CDlgOpenFile dlg(*pShareDataAccessor);
 	EXPECT_FALSE(dlg.IsItemDialog());
 }
 
@@ -61,7 +61,7 @@ TEST(CDlgOpenFile_CommonItemDialog, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	pDllShareData->m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
-	CDlgOpenFile dlg(std::move(pShareDataAccessor));
+	CDlgOpenFile dlg(*pShareDataAccessor);
 	EXPECT_TRUE(dlg.IsItemDialog());
 }
 

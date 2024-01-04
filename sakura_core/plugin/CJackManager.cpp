@@ -32,8 +32,8 @@
 #include "typeprop/CPropTypes.h"
 
 //コンストラクタ
-CJackManager::CJackManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CJackManager::CJackManager(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	int i;
 

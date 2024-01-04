@@ -90,7 +90,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CPropCommon(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CPropCommon(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CPropCommon() = default;
 
 	//	Sep. 29, 2001 genta マクロクラスを渡すように;
@@ -504,8 +504,8 @@ protected:
 class CPropPlugin final : CPropCommon
 {
 public:
-	explicit CPropPlugin(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: CPropCommon(std::move(ShareDataAccessor_))
+	explicit CPropPlugin(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: CPropCommon(ShareDataAccessor_)
 	{
 	}
 	~CPropPlugin() = default;

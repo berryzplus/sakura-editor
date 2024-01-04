@@ -55,7 +55,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CTabWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CTabWnd(const ShareDataAccessor& ShareDataAccessor_);
 	~CTabWnd() override = default;
 
 	/*

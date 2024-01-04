@@ -166,7 +166,7 @@ TEST(CZipFIle, IsNG)
 
 	// IShellDispatchを使うためにOLEを初期化する必要がある
 	// このテストでは初期化を忘れた場合の挙動を確認する
-	CZipFile cZipFile(std::move(pOle32Dll));
+	CZipFile cZipFile(*pOle32Dll);
 	ASSERT_FALSE(cZipFile.IsOk());
 
 	// この場合、他のメソッドを呼び出すと落ちる。

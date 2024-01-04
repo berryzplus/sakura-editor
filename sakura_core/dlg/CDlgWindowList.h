@@ -38,7 +38,7 @@
 class CDlgWindowList final : public CSizeRestorableDialog
 {
 public:
-	explicit CDlgWindowList(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgWindowList(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgWindowList() override = default;
 
 	int DoModal(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);

@@ -36,7 +36,7 @@ typedef StaticString<WCHAR, _MAX_PATH> CTagjumpKeywordString;
 class CRecentTagjumpKeyword final : public CRecentImp<CTagjumpKeywordString, LPCWSTR>{
 public:
 	//生成
-	explicit CRecentTagjumpKeyword(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CRecentTagjumpKeyword(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CRecentTagjumpKeyword() override = default;
 
 	//オーバーライド

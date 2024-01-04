@@ -36,7 +36,7 @@ typedef StaticString<WCHAR, _MAX_PATH> CPathString;
 class CRecentFolder final : public CRecentImp<CPathString, LPCWSTR>{
 public:
 	//生成
-	explicit CRecentFolder(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CRecentFolder(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CRecentFolder() override = default;
 
 	//オーバーライド

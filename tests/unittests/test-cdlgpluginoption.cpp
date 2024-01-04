@@ -38,7 +38,7 @@
 TEST(CDlgPluginOption, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgPluginOption dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgPluginOption dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -47,12 +47,12 @@ TEST(CDlgPluginOption, Construct)
 TEST(CDlgPluginOption, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc         doc(pShareDataAccessor);
+	CEditDoc         doc(*pShareDataAccessor);
 
 	auto plugin = std::make_shared<CWSHPlugin>(L"");
-	auto propPlugin = std::make_shared<CPropPlugin>(pShareDataAccessor);
+	auto propPlugin = std::make_shared<CPropPlugin>(*pShareDataAccessor);
 
-	CDlgPluginOption dlg(std::move(pShareDataAccessor));
+	CDlgPluginOption dlg(*pShareDataAccessor);
 	dlg.SetPluginForTest(plugin, propPlugin);
 
 	const auto hWndParent = static_cast<HWND>(nullptr);

@@ -77,7 +77,7 @@ TEST(CShareData, InitShareData_CreateFileMapping_fail)
 
 	EXPECT_CALL(*pShareDataAccessor, SetShareData(_)).Times(0);
 
-	CShareData cShareData(pKernel32Dll, pShareDataAccessor);
+	CShareData cShareData(*pKernel32Dll, *pShareDataAccessor);
 
 	ASSERT_FALSE(cShareData.InitShareData(L"test"));
 }
@@ -97,7 +97,7 @@ TEST(CShareData, InitShareData_MapViewOfFile_fail)
 
 	EXPECT_CALL(*pShareDataAccessor, SetShareData(_)).Times(0);
 
-	CShareData cShareData(pKernel32Dll, pShareDataAccessor);
+	CShareData cShareData(*pKernel32Dll, *pShareDataAccessor);
 
 	ASSERT_FALSE(cShareData.InitShareData(L"test"));
 }
@@ -119,7 +119,7 @@ TEST(CShareData, InitShareData_MapViewOfFile_returns_invalid)
 
 	EXPECT_CALL(*pShareDataAccessor, SetShareData(_)).Times(0);
 
-	CShareData cShareData(pKernel32Dll, pShareDataAccessor);
+	CShareData cShareData(*pKernel32Dll, *pShareDataAccessor);
 
 	ASSERT_FALSE(cShareData.InitShareData(L"test"));
 }
@@ -143,7 +143,7 @@ TEST(CShareData, InitShareData_for_Editor)
 	EXPECT_CALL(*pShareDataAccessor, SetShareData(pDllShareData.get())).InSequence(sequence);
 	EXPECT_CALL(*pShareDataAccessor, SetShareData(nullptr)).InSequence(sequence);
 
-	CShareData cShareData(pKernel32Dll, pShareDataAccessor);
+	CShareData cShareData(*pKernel32Dll, *pShareDataAccessor);
 
 	ASSERT_TRUE(cShareData.InitShareData(L"test"));
 }
@@ -151,11 +151,11 @@ TEST(CShareData, InitShareData_for_Editor)
 TEST(CSearchKeywordManager, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CSearchKeywordManager mgr(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CSearchKeywordManager mgr(*pShareDataAccessor); });
 }
 
 TEST(CTagJumpManager, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CTagJumpManager mgr(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CTagJumpManager mgr(*pShareDataAccessor); });
 }

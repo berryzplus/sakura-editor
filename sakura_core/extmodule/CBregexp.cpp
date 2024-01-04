@@ -590,11 +590,11 @@ bool InitRegexp(
 	HWND		hWnd,			//!< [in] ダイアログボックスのウィンドウハンドル。バージョン番号の設定が不要であればNULL。
 	CBregexp&	rRegexp,		//!< [in] チェックに利用するCBregexpクラスへの参照
 	bool		bShowMessage,	//!< [in] 初期化失敗時にエラーメッセージを出すフラグ
-	std::shared_ptr<ShareDataAccessor> _ShareDataAccessor
+	const ShareDataAccessor& _ShareDataAccessor
 )
 {
 	//	From Here 2007.08.12 genta
-	const auto pShareData = _ShareDataAccessor->GetShareData();
+	const auto pShareData = _ShareDataAccessor.GetShareData();
 
 	LPCWSTR RegexpDll = pShareData->m_Common.m_sSearch.m_szRegexpLib;
 	//	To Here 2007.08.12 genta
@@ -631,7 +631,7 @@ bool CheckRegexpVersion(
 	HWND	hWnd,			//!< [in] ダイアログボックスのウィンドウハンドル。バージョン番号の設定が不要であればNULL。
 	int		nCmpId,			//!< [in] バージョン文字列を設定するコンポーネントID
 	bool	bShowMessage,	//!< [in] 初期化失敗時にエラーメッセージを出すフラグ
-	std::shared_ptr<ShareDataAccessor> _ShareDataAccessor
+	const ShareDataAccessor& _ShareDataAccessor
 )
 {
 	CBregexp cRegexp;

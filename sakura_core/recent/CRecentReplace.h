@@ -36,7 +36,7 @@ typedef StaticString<WCHAR, _MAX_PATH> CReplaceString;
 class CRecentReplace final : public CRecentImp<CReplaceString, LPCWSTR>{
 public:
 	//生成
-	explicit CRecentReplace(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CRecentReplace(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CRecentReplace() override = default;
 
 	//オーバーライド

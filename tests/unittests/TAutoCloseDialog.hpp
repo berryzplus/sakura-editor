@@ -37,8 +37,8 @@ private:
 	static constexpr auto TIMERID_FIRST_IDLE = 1;
 
 public:
-	explicit TAutoCloseDialog(int DialogId_, std::shared_ptr<User32Dll> User32Dll_)
-		: TDialog(DialogId_, std::move(User32Dll_))
+	explicit TAutoCloseDialog(int DialogId_, const User32Dll& User32Dll_)
+		: TDialog(DialogId_, User32Dll_)
 	{
 	}
 

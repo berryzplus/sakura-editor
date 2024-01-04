@@ -61,8 +61,8 @@ struct SShare_TagJump{
 class CTagJumpManager : private ShareDataAccessorClientWithCache
 {
 public:
-	explicit CTagJumpManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CTagJumpManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 	}
 

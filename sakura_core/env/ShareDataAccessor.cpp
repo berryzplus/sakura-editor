@@ -46,3 +46,11 @@ void ShareDataAccessor::SetShareData(DLLSHAREDATA* pShareData) const
 	// 共有メモリのアドレスを更新します。
 	::SetDllShareData(pShareData);
 }
+
+const ShareDataAccessor& GetShareDataAccessor() {
+	static std::unique_ptr<ShareDataAccessor> ShareDataAccessor_;
+	if (!ShareDataAccessor_) {
+		ShareDataAccessor_ = std::make_unique<ShareDataAccessor>();
+	}
+	return *ShareDataAccessor_;
+}

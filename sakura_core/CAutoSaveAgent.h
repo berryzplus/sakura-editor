@@ -74,7 +74,7 @@ private:
 class CAutoSaveAgent : public ShareDataAccessorClient, public CDocListenerEx
 {
 public:
-	explicit CAutoSaveAgent(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CAutoSaveAgent(const ShareDataAccessor& ShareDataAccessor_);
 	~CAutoSaveAgent() override = default;
 
 	void CheckAutoSave();

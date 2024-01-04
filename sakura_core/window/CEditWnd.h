@@ -114,7 +114,7 @@ class CEditWnd
 	bool _Initialized = false;
 
 public:
-	explicit CEditWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CEditWnd(const ShareDataAccessor& ShareDataAccessor_);
 	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

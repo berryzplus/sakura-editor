@@ -33,10 +33,10 @@
 #include "basis/CMyString.h"
 
 // コンストラクタ
-CZipFile::CZipFile(std::shared_ptr<Ole32Dll> Ole32Dll_) noexcept
-	: Ole32DllClient(std::move(Ole32Dll_))
+CZipFile::CZipFile(const Ole32Dll& Ole32Dll_) noexcept
+	: Ole32DllClient(Ole32Dll_)
 {
-	GetOle32Dll()->CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&psd));
+	GetOle32Dll().CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&psd));
 }
 
 // Zip File名 設定

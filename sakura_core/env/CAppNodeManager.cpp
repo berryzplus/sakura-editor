@@ -556,7 +556,7 @@ int CAppNodeManager::GetNoNameNumber( HWND hWnd )
 	@date 2003.06.28 MIK CRecent利用で書き換え
 	@date 2007.06.20 ryoji bGroup引数追加、ソート処理を自前のものからqsortに変更
 */
-int CAppNodeManager::GetOpenedWindowArr( EditNode** ppEditNode, BOOL bSort, BOOL bGSort/* = FALSE */, std::shared_ptr<ShareDataAccessor> _ShareDataAccessor )
+int CAppNodeManager::GetOpenedWindowArr( EditNode** ppEditNode, BOOL bSort, BOOL bGSort/* = FALSE */, const ShareDataAccessor& _ShareDataAccessor )
 {
 	int nRet;
 
@@ -567,9 +567,9 @@ int CAppNodeManager::GetOpenedWindowArr( EditNode** ppEditNode, BOOL bSort, BOOL
 }
 
 // GetOpenedWindowArr関数コア処理部
-int CAppNodeManager::_GetOpenedWindowArrCore( EditNode** ppEditNode, BOOL bSort, BOOL bGSort/* = FALSE */, std::shared_ptr<ShareDataAccessor> _ShareDataAccessor )
+int CAppNodeManager::_GetOpenedWindowArrCore( EditNode** ppEditNode, BOOL bSort, BOOL bGSort/* = FALSE */, const ShareDataAccessor& _ShareDataAccessor )
 {
-	DLLSHAREDATA* pShare = _ShareDataAccessor->GetShareData();
+	DLLSHAREDATA* pShare = _ShareDataAccessor.GetShareData();
 
 	//編集ウインドウ数を取得する。
 	EditNodeEx*	pNode;	// ソート処理用の拡張リスト

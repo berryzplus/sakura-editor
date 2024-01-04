@@ -38,8 +38,8 @@
 #include "CSelectLang.h"
 #include "String_define.h"
 
-CMainToolBar::CMainToolBar(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CMainToolBar::CMainToolBar(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
 	, m_pOwner(CEditWnd::getInstance())
 , m_hwndToolBar(NULL)
 , m_hwndReBar(NULL)

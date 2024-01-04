@@ -42,7 +42,7 @@ class CDlgProperty;
 class CDlgProperty final : public CSakuraDialog
 {
 public:
-	explicit CDlgProperty(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgProperty(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgProperty() override = default;
 
 	int DoModal(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);	/* モーダルダイアログの表示 */

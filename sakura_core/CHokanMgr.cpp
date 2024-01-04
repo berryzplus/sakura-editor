@@ -58,8 +58,8 @@ LRESULT APIENTRY HokanList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	return CallWindowProc( gm_wpHokanListProc, hwnd, uMsg, wParam, lParam);
 }
 
-CHokanMgr::CHokanMgr(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CSakuraDialog(IDD_HOKAN, std::move(ShareDataAccessor_))
+CHokanMgr::CHokanMgr(const ShareDataAccessor& ShareDataAccessor_)
+	: CSakuraDialog(IDD_HOKAN, ShareDataAccessor_)
 {
 	m_cmemCurWord.SetString(L"");
 

@@ -32,7 +32,7 @@
 TEST(CDlgTagJumpList, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgTagJumpList dlg(true, std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgTagJumpList dlg(true, *pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgTagJumpList, Construct)
 TEST(CDlgTagJumpList, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgTagJumpList dlg(true, std::move(pShareDataAccessor));
+	CDlgTagJumpList dlg(true, *pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_TAGJUMPLIST, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
@@ -56,7 +56,7 @@ TEST(CDlgTagJumpList, ShowDialogWithSizeRestore)
 	rect.top    = 2;
 	rect.right  = rect.left + 3;
 	rect.bottom = rect.top  + 4;
-	CDlgTagJumpList dlg(true, std::move(pShareDataAccessor));
+	CDlgTagJumpList dlg(true, *pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_TAGJUMPLIST, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

@@ -51,8 +51,8 @@ static const SAnchorList anchorList[] = {
 	{IDC_BUTTON_HELP,           ANCHOR_BOTTOM},
 };
 
-CDlgWindowList::CDlgWindowList(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CSizeRestorableDialog(IDD_WINLIST, std::move(ShareDataAccessor_))
+CDlgWindowList::CDlgWindowList(const ShareDataAccessor& ShareDataAccessor_)
+	: CSizeRestorableDialog(IDD_WINLIST, ShareDataAccessor_)
 {
 	/* サイズ変更時に位置を制御するコントロール数 */
 	assert(_countof(anchorList) == _countof(m_rcItems));

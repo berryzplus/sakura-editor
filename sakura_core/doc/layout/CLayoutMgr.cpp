@@ -43,8 +43,8 @@
 /*!
  * コンストラクタ
  */
-CLayoutMgr::CLayoutMgr(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CLayoutMgr::CLayoutMgr(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
   , m_layoutMemRes(new CPoolResource<CLayout>())
   //, m_layoutMemRes(new std::pmr::unsynchronized_pool_resource()) // メモリ使用量が大きい為に使用しない
 	, m_getIndentOffset(&CLayoutMgr::getIndentOffset_Normal)

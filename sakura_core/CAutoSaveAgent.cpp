@@ -34,8 +34,8 @@
 #include "doc/CEditDoc.h"
 #include "env/DLLSHAREDATA.h"
 
-CAutoSaveAgent::CAutoSaveAgent(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CAutoSaveAgent::CAutoSaveAgent(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
 {
 }
 

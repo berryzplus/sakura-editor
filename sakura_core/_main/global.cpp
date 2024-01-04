@@ -18,6 +18,13 @@
 #include "StdAfx.h"
 #include "_main/global.h"
 
+#include "apimodule/User32Dll.hpp"
+#include "apimodule/Kernel32Dll.hpp"
+#include "apimodule/Shell32Dll.hpp"
+#include "apimodule/Ole32Dll.hpp"
+
+#include <mutex>
+
 #include "_main/CNormalProcess.h"
 #include "basis/CErrorInfo.h"
 #include "config/app_constants.h"
@@ -110,4 +117,36 @@ bool SSearchOption::operator == (const SSearchOption& rhs) const noexcept
 bool SSearchOption::operator != (const SSearchOption& rhs) const noexcept
 {
 	return !(*this == rhs);
+}
+
+const User32Dll& GetUser32Dll() {
+	static std::unique_ptr<User32Dll> User32Dll_;
+	if (!User32Dll_) {
+		User32Dll_ = std::make_unique<User32Dll>();
+	}
+	return *User32Dll_;
+}
+
+const Kernel32Dll& GetKernel32Dll() {
+	static std::unique_ptr<Kernel32Dll> Kernel32Dll_;
+	if (!Kernel32Dll_) {
+		Kernel32Dll_ = std::make_unique<Kernel32Dll>();
+	}
+	return *Kernel32Dll_;
+}
+
+const Shell32Dll& GetShell32Dll() {
+	static std::unique_ptr<Shell32Dll> Shell32Dll_;
+	if (!Shell32Dll_) {
+		Shell32Dll_ = std::make_unique<Shell32Dll>();
+	}
+	return *Shell32Dll_;
+}
+
+const Ole32Dll& GetOle32Dll() {
+	static std::unique_ptr<Ole32Dll> Ole32Dll_;
+	if (!Ole32Dll_) {
+		Ole32Dll_ = std::make_unique<Ole32Dll>();
+	}
+	return *Ole32Dll_;
 }

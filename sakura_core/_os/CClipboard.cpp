@@ -37,14 +37,11 @@
 //               コンストラクタ・デストラクタ                  //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CClipboard::CClipboard(HWND hWnd, std::shared_ptr<User32Dll> User32Dll_, std::shared_ptr<Kernel32Dll> Kernel32Dll_, std::shared_ptr<Shell32Dll> Shell32Dll_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CClipboardApi(std::move(User32Dll_), std::move(Kernel32Dll_), std::move(Shell32Dll_))
-	, ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CClipboard::CClipboard(HWND hWnd, const User32Dll& User32Dll_, const Kernel32Dll& Kernel32Dll_, const Shell32Dll& Shell32Dll_, const ShareDataAccessor& ShareDataAccessor_)
+	: CClipboardApi( User32Dll_, Kernel32Dll_, Shell32Dll_ )
+	, ShareDataAccessorClient(ShareDataAccessor_)
+	, m_bOpenResult(OpenClipboard(hWnd, MAX_RETRY_FOR_OPEN) ? hWnd : nullptr, ClipboardCloser(GetUser32Dll()))
 {
-	if (OpenClipboard(hWnd, MAX_RETRY_FOR_OPEN))
-	{
-		m_bOpenResult = ClipboardHolder(hWnd, ClipboardCloser(GetUser32Dll()));
-	}
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -511,23 +508,23 @@ bool CClipboard::GetClipboardByFormat(CNativeW& mem, std::wstring_view name, int
 }
 
 //! クリップボード内に、サクラエディタで扱えるデータがあればtrue
-bool CClipboard::HasValidData(std::shared_ptr<User32Dll> _User32Dll)
+bool CClipboard::HasValidData(const User32Dll& _User32Dll)
 {
 	//扱える形式が１つでもあればtrue
 	if (const auto uFormat = GetSakuraFormat(_User32Dll);
-		_User32Dll->IsClipboardFormatAvailable(uFormat))
+		_User32Dll.IsClipboardFormatAvailable(uFormat))
 	{
 		return true;
 	}
-	if (_User32Dll->IsClipboardFormatAvailable(CF_UNICODETEXT))return true;
-	if (_User32Dll->IsClipboardFormatAvailable(CF_OEMTEXT))return true;
+	if (_User32Dll.IsClipboardFormatAvailable(CF_UNICODETEXT))return true;
+	if (_User32Dll.IsClipboardFormatAvailable(CF_OEMTEXT))return true;
 	/* 2008.09.10 bosagami パス貼り付け対応 */
-	if(_User32Dll->IsClipboardFormatAvailable(CF_HDROP))return true;
+	if(_User32Dll.IsClipboardFormatAvailable(CF_HDROP))return true;
 	return false;
 }
 
 //!< サクラエディタ独自のクリップボードデータ形式
-CLIPFORMAT CClipboard::GetSakuraFormat(std::shared_ptr<User32Dll> _User32Dll)
+CLIPFORMAT CClipboard::GetSakuraFormat(const User32Dll& _User32Dll)
 {
 	/*
 		2007.09.30 kobake

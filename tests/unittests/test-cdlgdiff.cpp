@@ -34,7 +34,7 @@
 TEST(CDlgDiff, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgDiff dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgDiff dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -43,9 +43,9 @@ TEST(CDlgDiff, Construct)
 TEST(CDlgDiff, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(pShareDataAccessor);
-	CDlgDiff dlg(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
+	CDlgDiff dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_DIFF, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
@@ -60,9 +60,9 @@ TEST(CDlgDiff, ShowDialogWithSizeRestore)
 	rect.top    = 2;
 	rect.right  = rect.left + 3;
 	rect.bottom = rect.top  + 4;
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(pShareDataAccessor);
-	CDlgDiff dlg(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
+	CDlgDiff dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_DIFF, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

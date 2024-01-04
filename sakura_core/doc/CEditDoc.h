@@ -83,7 +83,7 @@ class CEditDoc
 
 public:
 	//コンストラクタ・デストラクタ
-	explicit CEditDoc(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CEditDoc(const ShareDataAccessor& ShareDataAccessor_);
 	~CEditDoc() override;
 
 	//初期化

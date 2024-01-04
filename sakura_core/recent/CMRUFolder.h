@@ -46,7 +46,7 @@ class CMRUFolder : private ShareDataAccessorClientWithCache
 
 public:
 	//	コンストラクタ
-	explicit CMRUFolder(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CMRUFolder(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	CMRUFolder(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CMRUFolder(Me&&) noexcept = delete;

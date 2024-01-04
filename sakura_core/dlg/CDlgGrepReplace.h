@@ -29,7 +29,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgGrepReplace(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgGrepReplace(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgGrepReplace() override = default;
 
 	/*

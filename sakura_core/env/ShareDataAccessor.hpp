@@ -44,16 +44,16 @@ struct ShareDataAccessor
  */
 class ShareDataAccessorClient
 {
-	std::shared_ptr<ShareDataAccessor> _ShareDataAccessor;
+	const ShareDataAccessor& _ShareDataAccessor;
 
 public:
-	explicit ShareDataAccessorClient(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-		: _ShareDataAccessor(std::move(ShareDataAccessor_))
+	explicit ShareDataAccessorClient(const ShareDataAccessor& ShareDataAccessor_)
+		: _ShareDataAccessor(ShareDataAccessor_)
 	{
 	}
 
 protected:
-	std::shared_ptr<ShareDataAccessor> GetShareDataAccessor() const
+	const ShareDataAccessor& GetShareDataAccessor() const
 	{
 		return _ShareDataAccessor;
 	}
@@ -63,7 +63,7 @@ protected:
 	 */
 	DLLSHAREDATA* GetShareData() const
 	{
-		return _ShareDataAccessor->GetShareData();
+		return _ShareDataAccessor.GetShareData();
 	}
 };
 
@@ -80,10 +80,12 @@ class ShareDataAccessorClientWithCache : public ShareDataAccessorClient
 public:
 	DLLSHAREDATA* m_pShareData;
 
-	explicit ShareDataAccessorClientWithCache(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-		: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+	explicit ShareDataAccessorClientWithCache(const ShareDataAccessor& ShareDataAccessor_)
+		: ShareDataAccessorClient(ShareDataAccessor_)
 	{
 		/* 共有データ構造体のアドレスを返す */
 		m_pShareData = GetShareData();
 	}
 };
+
+const ShareDataAccessor& GetShareDataAccessor();

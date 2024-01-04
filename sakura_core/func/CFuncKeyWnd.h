@@ -30,7 +30,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CFuncKeyWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CFuncKeyWnd(const ShareDataAccessor& ShareDataAccessor_);
 	~CFuncKeyWnd() override;
 
 	/*

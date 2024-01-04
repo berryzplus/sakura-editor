@@ -43,8 +43,8 @@ struct EditInfo;
 class CFileNameManager : public TSingleton<CFileNameManager>, private ShareDataAccessorClientWithCache
 {
 	friend class TSingleton<CFileNameManager>;
-	explicit CFileNameManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CFileNameManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 		m_nTransformFileNameCount = -1;
 	}

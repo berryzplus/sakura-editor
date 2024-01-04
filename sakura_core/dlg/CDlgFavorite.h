@@ -53,7 +53,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgFavorite(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgFavorite(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgFavorite() override;
 
 	/*

@@ -57,8 +57,8 @@ TEST(CWnd, OnCreate)
 class CWndForCallDefWndProc : public CWnd
 {
 public:
-	explicit CWndForCallDefWndProc(std::shared_ptr<User32Dll> User32Dll_)
-		: CWnd(L"test", std::move(User32Dll_))
+	explicit CWndForCallDefWndProc(const User32Dll& User32Dll_)
+		: CWnd(L"test", User32Dll_ )
 	{
 	}
 
@@ -76,6 +76,6 @@ TEST(CWnd, CallDefWndProc)
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, DefWindowProcW(hWnd, uMsg, wParam, lParam)).WillOnce(Return(lResult));
 
-	CWndForCallDefWndProc wnd(std::move(pUser32Dll));
+	CWndForCallDefWndProc wnd(*pUser32Dll);
 	EXPECT_EQ(lResult, wnd.CallDefWndProc(hWnd, uMsg, wParam, lParam));
 }

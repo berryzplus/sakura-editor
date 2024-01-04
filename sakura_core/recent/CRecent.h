@@ -43,7 +43,7 @@
 class CRecent : public ShareDataAccessorClient
 {
 public:
-	explicit CRecent(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CRecent(const ShareDataAccessor& ShareDataAccessor_);
 	virtual ~CRecent() = default;
 
 	//インスタンス管理

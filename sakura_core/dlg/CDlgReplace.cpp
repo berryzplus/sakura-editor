@@ -59,8 +59,8 @@ const DWORD p_helpids[] = {	//11900
 	0, 0
 };	//@@@ 2002.01.07 add end MIK
 
-CDlgReplace::CDlgReplace(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CSakuraDialog(IDD_REPLACE, std::move(ShareDataAccessor_))
+CDlgReplace::CDlgReplace(const ShareDataAccessor& ShareDataAccessor_)
+	: CSakuraDialog(IDD_REPLACE, ShareDataAccessor_)
 	, m_cRecentSearch(GetShareDataAccessor())
 	, m_cRecentReplace(GetShareDataAccessor())
 {

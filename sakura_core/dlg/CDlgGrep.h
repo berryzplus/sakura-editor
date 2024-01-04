@@ -39,7 +39,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgGrep(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>(), WORD idDialog_ = IDD_GREP);
+	explicit CDlgGrep(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor(), WORD idDialog_ = IDD_GREP);
 	~CDlgGrep() override = default;
 
 	/*

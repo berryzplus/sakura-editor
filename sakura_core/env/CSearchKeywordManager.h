@@ -47,8 +47,8 @@ struct SShare_SearchKeywords{
 class CSearchKeywordManager : private ShareDataAccessorClientWithCache
 {
 public:
-	explicit CSearchKeywordManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CSearchKeywordManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 	}
 

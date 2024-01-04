@@ -37,7 +37,7 @@
 class CHelpManager : private ShareDataAccessorClientWithCache
 {
 public:
-	explicit CHelpManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CHelpManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 
 	//ヘルプ関連	//@@@ 2002.2.3 YAZAKI
 	bool			ExtWinHelpIsSet( const STypeConfig* pType = NULL );		//	タイプがnTypeのときに、外部ヘルプが設定されているか。

@@ -127,8 +127,8 @@ INT_PTR CPropCommon::DlgProc2(
 	}
 }
 
-CPropCommon::CPropCommon(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CPropCommon::CPropCommon(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	{
 		assert( sizeof(CPropGeneral)   - sizeof(CPropCommon) == 0 );

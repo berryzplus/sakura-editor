@@ -29,7 +29,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgExec(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgExec(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgExec() override = default;
 
 	/*

@@ -32,7 +32,7 @@
 TEST(CDlgTagsMake, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgTagsMake dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgTagsMake dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgTagsMake, Construct)
 TEST(CDlgTagsMake, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgTagsMake dlg(std::move(pShareDataAccessor));
+	CDlgTagsMake dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_TAG_MAKE, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

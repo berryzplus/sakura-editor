@@ -64,7 +64,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CControlTray(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>(), std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>());
+	explicit CControlTray(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor(), const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CControlTray() override;
 
 	/*

@@ -33,5 +33,5 @@
 TEST(CFormatManager, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CFormatManager mgr(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CFormatManager mgr(*pShareDataAccessor); });
 }

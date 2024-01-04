@@ -50,7 +50,7 @@ const int KEYWORD_SELECT_NUM = MAX_KEYWORDSET_PER_TYPE;
 class CDlgKeywordSelect final : public CSakuraDialog
 {
 public:
-	explicit CDlgKeywordSelect(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgKeywordSelect(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgKeywordSelect() override = default;
 
 	int DoModal( HINSTANCE hInstance, HWND hwndParent, int* pnSet );

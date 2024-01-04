@@ -52,7 +52,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CMenuDrawer(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CMenuDrawer(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	CMenuDrawer(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CMenuDrawer(Me&&) noexcept = delete;

@@ -32,7 +32,7 @@
 TEST(CDlgKeywordSelect, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgKeywordSelect dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgKeywordSelect dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgKeywordSelect, Construct)
 TEST(CDlgKeywordSelect, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgKeywordSelect dlg(std::move(pShareDataAccessor));
+	CDlgKeywordSelect dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_DIALOG_KEYWORD_SELECT, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

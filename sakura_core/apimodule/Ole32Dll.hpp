@@ -56,18 +56,20 @@ struct Ole32Dll
 
 class Ole32DllClient
 {
-	std::shared_ptr<Ole32Dll> _Ole32Dll;
+	const Ole32Dll& _Ole32Dll;
 
 public:
-	explicit Ole32DllClient(std::shared_ptr<Ole32Dll> Ole32Dll_)
-		: _Ole32Dll(std::move(Ole32Dll_))
+	explicit Ole32DllClient(const Ole32Dll& Ole32Dll_)
+		: _Ole32Dll(Ole32Dll_)
 	{
 	}
 	virtual ~Ole32DllClient() = default;
 
 protected:
-	std::shared_ptr<Ole32Dll> GetOle32Dll() const noexcept
+	const Ole32Dll& GetOle32Dll() const noexcept
 	{
 		return _Ole32Dll;
 	}
 };
+
+const Ole32Dll& GetOle32Dll();

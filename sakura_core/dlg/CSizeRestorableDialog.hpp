@@ -37,7 +37,7 @@ protected:
 	POINT   m_ptDefaultSize = { -1, -1 };
 
 public:
-	explicit CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
+	explicit CSizeRestorableDialog(WORD idDialog_, const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept;
 	~CSizeRestorableDialog() override = default;
 
 protected:

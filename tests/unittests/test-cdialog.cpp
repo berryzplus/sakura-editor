@@ -44,7 +44,7 @@ class CDialog1 : public TAutoCloseDialog<CDialog, IDC_EDIT_INPUT1>
 	DLGPROC _pfnDlgProc = nullptr;
 
 public:
-	explicit CDialog1(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>());
+	explicit CDialog1(const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CDialog1() override = default;
 
 	using CDialog::DispatchDlgEvent;
@@ -56,8 +56,8 @@ protected:
 /*!
  * コンストラクター
  */
-CDialog1::CDialog1(std::shared_ptr<User32Dll> User32Dll_)
-	: TAutoCloseDialog(IDD_INPUT1, std::move(User32Dll_))
+CDialog1::CDialog1(const User32Dll& User32Dll_)
+	: TAutoCloseDialog(IDD_INPUT1, User32Dll_)
 {
 }
 
@@ -87,8 +87,8 @@ BOOL CDialog1::OnDlgInitDialog(HWND hDlg, HWND hWndFocus, LPARAM lParam)
 class mock_dialog_1 : public CDialog1
 {
 public:
-	explicit mock_dialog_1(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>())
-		: CDialog1(std::move(User32Dll_))
+	explicit mock_dialog_1(const User32Dll& User32Dll_ = ::GetUser32Dll())
+		: CDialog1(User32Dll_)
 	{
 	}
 
@@ -116,7 +116,7 @@ class CDialog2 : public CSizeRestorableDialog
 public:
 	static constexpr auto DIALOG_ID = IDD_INPUT1;
 
-	explicit CDialog2(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>());
+	explicit CDialog2(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CDialog2() override = default;
 
 	using CDialog::DispatchDlgEvent;
@@ -125,16 +125,16 @@ public:
 /*!
  * コンストラクター
  */
-CDialog2::CDialog2(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_)
-	: CSizeRestorableDialog(DIALOG_ID, std::move(ShareDataAccessor_), std::move(User32Dll_))
+CDialog2::CDialog2(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_)
+	: CSizeRestorableDialog(DIALOG_ID, ShareDataAccessor_, User32Dll_)
 {
 }
 
 class mock_dialog_2 : public CDialog2
 {
 public:
-	explicit mock_dialog_2(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>())
-		: CDialog2(std::move(ShareDataAccessor_), std::move(User32Dll_))
+	explicit mock_dialog_2(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_ = ::GetUser32Dll())
+		: CDialog2(ShareDataAccessor_, User32Dll_)
 	{
 	}
 
@@ -175,7 +175,7 @@ TEST(CDialog, MockedDoModal)
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, DialogBoxParamW(hLangRsrcInstance, MAKEINTRESOURCEW(IDD_INPUT1), hWndParent, _, _)).WillOnce(Return(IDCANCEL));
 
-	mock_dialog_1 mock(std::move(pUser32Dll));
+	mock_dialog_1 mock(*pUser32Dll);
 	EXPECT_EQ(IDCANCEL, mock.DoModal(hInstance, hWndParent, IDD_INPUT1, lParam));
 }
 
@@ -188,7 +188,7 @@ TEST(CSizeRestorableDialog, SimpleDoModeless1)
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto lParam     = static_cast<LPARAM>(0);
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDialog2 dlg(std::move(pShareDataAccessor));
+	CDialog2 dlg(*pShareDataAccessor);
 	const auto hDlg = dlg.DoModeless(hInstance, hWndParent, IDD_COMPARE, lParam, SW_SHOW);
 	EXPECT_TRUE(hDlg);
 }
@@ -215,7 +215,7 @@ TEST(CSizeRestorableDialog, MockedDoModeless1)
 	EXPECT_CALL(*pUser32Dll, ShowWindow(hDlg, SW_SHOW)).WillOnce(Return(true));
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	mock_dialog_2 dlg(std::move(pShareDataAccessor), std::move(pUser32Dll));
+	mock_dialog_2 dlg(*pShareDataAccessor, *pUser32Dll);
 	EXPECT_EQ(hDlg, dlg.DoModeless(hInstance, hWndParent, IDD_COMPARE, lParam, SW_SHOW));
 }
 
@@ -228,7 +228,7 @@ TEST(CSizeRestorableDialog, SimpleDoModeless2)
 	const auto lParam     = static_cast<LPARAM>(0);
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDialog2 dlg(std::move(pShareDataAccessor));
+	CDialog2 dlg(*pShareDataAccessor);
 	const auto hDlg = dlg.DoModeless2(hWndParent, [](DLGTEMPLATE& dlgTemplate) { dlgTemplate.style = WS_OVERLAPPEDWINDOW | DS_SETFONT; }, lParam, SW_SHOWDEFAULT);
 	EXPECT_TRUE(hDlg);
 }
@@ -256,7 +256,7 @@ TEST(CSizeRestorableDialog, MockedDoModeless2_fail)
 	EXPECT_CALL(*pUser32Dll, ShowWindow(_, _)).Times(0);
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	mock_dialog_2 dlg(std::move(pShareDataAccessor), std::move(pUser32Dll));
+	mock_dialog_2 dlg(*pShareDataAccessor, *pUser32Dll);
 	EXPECT_EQ(nullptr, dlg.DoModeless2(hWndParent, [](DLGTEMPLATE& dlgTemplate) { dlgTemplate.style = WS_OVERLAPPEDWINDOW | DS_SETFONT; }, lParam, SW_SHOWDEFAULT));
 }
 
@@ -283,7 +283,7 @@ TEST(CSizeRestorableDialog, MockedDoModeless2)
 	EXPECT_CALL(*pUser32Dll, ShowWindow(hDlg, SW_SHOWDEFAULT)).WillOnce(Return(TRUE));
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	mock_dialog_2 dlg(std::move(pShareDataAccessor), std::move(pUser32Dll));
+	mock_dialog_2 dlg(*pShareDataAccessor, *pUser32Dll);
 	EXPECT_EQ(hDlg, dlg.DoModeless2(hWndParent, [](DLGTEMPLATE& dlgTemplate) { dlgTemplate.style = WS_OVERLAPPEDWINDOW | DS_SETFONT; }, lParam, SW_SHOWDEFAULT));
 }
 
@@ -439,7 +439,7 @@ TEST(CDialog, MockedDispachDlgEvent_OnSize)
 	auto lParam = (LPARAM)0x2222;
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	mock_dialog_2 mock(std::move(pShareDataAccessor));
+	mock_dialog_2 mock(*pShareDataAccessor);
 	EXPECT_CALL(mock, OnSize(wParam, lParam)).WillOnce(Return(false));
 
 	EXPECT_FALSE(mock.DispatchDlgEvent(hDlg, WM_SIZE, wParam, lParam));
@@ -454,12 +454,12 @@ TEST(CSizeRestorableDialog, MockedDispachDlgEvent_OnGetMinMaxInfo)
 	MINMAXINFO minMaxInfo = {};
 
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	mock_dialog_2 mock(pShareDataAccessor);
+	mock_dialog_2 mock(*pShareDataAccessor);
 	EXPECT_CALL(mock, OnGetMinMaxInfo(hDlg, &minMaxInfo)).Times(1);
-	EXPECT_FALSE(mock.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, LPARAM(&minMaxInfo)));
+	EXPECT_FALSE(mock.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, std::bit_cast<LPARAM>(&minMaxInfo)));
 
-	CDialog2 dlg(pShareDataAccessor);
-	EXPECT_FALSE(dlg.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, LPARAM(&minMaxInfo)));
+	CDialog2 dlg(*pShareDataAccessor);
+	EXPECT_FALSE(dlg.DispatchDlgEvent(hDlg, WM_GETMINMAXINFO, 0, std::bit_cast<LPARAM>(&minMaxInfo)));
 }
 
 TEST(CSizeRestorableDialog, MockedDispachDlgEvent_OnDrawItem)

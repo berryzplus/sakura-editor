@@ -38,8 +38,8 @@ struct DLLSHAREDATA;
 class CDocTypeManager : private ShareDataAccessorClientWithCache
 {
 public:
-	explicit CDocTypeManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CDocTypeManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 	}
 

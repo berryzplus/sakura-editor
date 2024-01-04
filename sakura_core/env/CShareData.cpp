@@ -57,9 +57,9 @@ const unsigned int uShareDataVersion = N_SHAREDATA_VERSION;
 
 //	CShareData_new2.cppと統合
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動
-CShareData::CShareData(std::shared_ptr<Kernel32Dll> Kernel32Dll_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: Kernel32DllClient(std::move(Kernel32Dll_))
-	, ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CShareData::CShareData(const Kernel32Dll& Kernel32Dll_, const ShareDataAccessor& ShareDataAccessor_)
+	: Kernel32DllClient(Kernel32Dll_)
+	, ShareDataAccessorClient(ShareDataAccessor_)
 {
 }
 

@@ -51,8 +51,8 @@ static const SAnchorList anchorList[] = {
 	{IDC_STATIC_COMPARESRC, ANCHOR_LEFT_RIGHT},
 };
 
-CDlgCompare::CDlgCompare(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CSizeRestorableDialog(IDD_COMPARE, std::move(ShareDataAccessor_))
+CDlgCompare::CDlgCompare(const ShareDataAccessor& ShareDataAccessor_)
+	: CSizeRestorableDialog(IDD_COMPARE, ShareDataAccessor_)
 {
 	/* サイズ変更時に位置を制御するコントロール数 */
 	assert( _countof(anchorList) == _countof(m_rcItems) );

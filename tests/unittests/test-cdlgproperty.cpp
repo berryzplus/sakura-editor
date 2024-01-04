@@ -34,7 +34,7 @@
 TEST(CDlgProperty, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgProperty dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgProperty dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -43,8 +43,8 @@ TEST(CDlgProperty, Construct)
 TEST(CDlgProperty, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc     doc(pShareDataAccessor);
-	CDlgProperty dlg(std::move(pShareDataAccessor));
+	CEditDoc     doc(*pShareDataAccessor);
+	CDlgProperty dlg(*pShareDataAccessor);
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto lParam     = LPARAM(&doc);

@@ -164,9 +164,9 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 /////////////////////////////////////////////////////////////////////////////
 // CControlTray
-CControlTray::CControlTray(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_)
-	: CCustomWnd(std::move(User32Dll_))
-	, ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CControlTray::CControlTray(const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_)
+	: CCustomWnd(User32Dll_)
+	, ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	, m_cMenuDrawer(GetShareDataAccessor())
 	, m_pcPropertyManager(NULL)
 , m_hInstance( NULL )

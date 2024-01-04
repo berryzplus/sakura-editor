@@ -37,7 +37,7 @@
 class CFormatManager : private ShareDataAccessorClientWithCache
 {
 public:
-	explicit CFormatManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CFormatManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 
 	//書式 //@@@ 2002.2.9 YAZAKI
 	// 共有DLLSHAREDATA依存

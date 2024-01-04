@@ -46,7 +46,7 @@ private:
     std::wstring _ClassName;
 
 public:
-    explicit CCustomWnd(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
+    explicit CCustomWnd(const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept;
     ~CCustomWnd() override = default;
 
     bool RegisterWnd(

@@ -35,5 +35,5 @@ TEST(CImpExpType, Construct)
 	int         nIdx = 1;
 	STypeConfig types = {};
 	const auto  hwndList= (HWND)nullptr;
-	EXPECT_NO_THROW({ CImpExpType dlg(nIdx, types, hwndList, std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CImpExpType dlg(nIdx, types, hwndList, *pShareDataAccessor); });
 }

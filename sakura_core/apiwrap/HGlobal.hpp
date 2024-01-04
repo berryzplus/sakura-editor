@@ -35,8 +35,8 @@ namespace apiwrap {
  */
 struct HGlobalFreeFunc : private Kernel32DllClient
 {
-	explicit HGlobalFreeFunc(std::shared_ptr<Kernel32Dll> Kernel32Dll_) noexcept
-		: Kernel32DllClient(std::move(Kernel32Dll_))
+	explicit HGlobalFreeFunc(const Kernel32Dll& Kernel32Dll_) noexcept
+		: Kernel32DllClient(Kernel32Dll_)
 	{
 	}
 
@@ -48,7 +48,7 @@ struct HGlobalFreeFunc : private Kernel32DllClient
 	HGLOBAL GlobalFree(
 		_Frees_ptr_opt_ HGLOBAL hMem) const
 	{
-		return GetKernel32Dll()->GlobalFree(hMem);
+		return GetKernel32Dll().GlobalFree(hMem);
 	}
 };
 
@@ -68,8 +68,8 @@ private:
 	HGlobalHolder _Holder;
 
 public:
-	explicit HGlobal(HGLOBAL hGlobal_, std::shared_ptr<Kernel32Dll> Kernel32Dll_ = std::make_shared<Kernel32Dll>()) noexcept;
-	explicit HGlobal(UINT flags, SIZE_T bytes, std::shared_ptr<Kernel32Dll> Kernel32Dll_ = std::make_shared<Kernel32Dll>()) noexcept;
+	explicit HGlobal(HGLOBAL hGlobal_, const Kernel32Dll& Kernel32Dll_ = ::GetKernel32Dll()) noexcept;
+	explicit HGlobal(UINT flags, SIZE_T bytes, const Kernel32Dll& Kernel32Dll_ = ::GetKernel32Dll()) noexcept;
 
 	HGlobal(const Me&)       = delete;
 	Me& operator=(const Me&) = delete;
@@ -121,26 +121,26 @@ protected:
 		_In_ UINT uFlags,
 		_In_ SIZE_T dwBytes) const
 	{
-		return GetKernel32Dll()->GlobalAlloc(uFlags, dwBytes);
+		return GetKernel32Dll().GlobalAlloc(uFlags, dwBytes);
 	}
 
 	template<typename TElemPtr>
 	TElemPtr GlobalLock(
 		_In_ HGLOBAL hMem) const
 	{
-		return static_cast<std::remove_pointer_t<TElemPtr>*>(GetKernel32Dll()->GlobalLock(hMem));
+		return static_cast<std::remove_pointer_t<TElemPtr>*>(GetKernel32Dll().GlobalLock(hMem));
 	}
 
 	SIZE_T GlobalSize(
 		_In_ HGLOBAL hMem) const
 	{
-		return GetKernel32Dll()->GlobalSize(hMem);
+		return GetKernel32Dll().GlobalSize(hMem);
 	}
 
 	BOOL GlobalUnlock(
 		_In_ HGLOBAL hMem) const
 	{
-		return GetKernel32Dll()->GlobalUnlock(hMem);
+		return GetKernel32Dll().GlobalUnlock(hMem);
 	}
 };
 

@@ -77,7 +77,7 @@ enum ERegisterPlugResult {
 class CJackManager final : public TSingleton<CJackManager>, private ShareDataAccessorClientWithCache
 {
 	friend class TSingleton<CJackManager>;
-	explicit CJackManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CJackManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 
 	typedef std::wstring wstring;
 

@@ -35,7 +35,7 @@
 TEST(CHokanMgr, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CHokanMgr dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CHokanMgr dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -44,9 +44,9 @@ TEST(CHokanMgr, Construct)
 TEST(CHokanMgr, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
+	CEditDoc doc(*pShareDataAccessor);
 	CEditView view;
-	CHokanMgr dlg(std::move(pShareDataAccessor));
+	CHokanMgr dlg(*pShareDataAccessor);
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto lParam     = LPARAM(&view);

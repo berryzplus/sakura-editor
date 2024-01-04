@@ -32,7 +32,7 @@
 TEST(CDlgWindowList, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgWindowList dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgWindowList dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgWindowList, Construct)
 TEST(CDlgWindowList, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgWindowList dlg(std::move(pShareDataAccessor));
+	CDlgWindowList dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_WINLIST, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
@@ -56,7 +56,7 @@ TEST(CDlgWindowList, ShowDialogWithSizeRestore)
 	rect.top    = 2;
 	rect.right  = rect.left + 3;
 	rect.bottom = rect.top  + 4;
-	CDlgWindowList dlg(std::move(pShareDataAccessor));
+	CDlgWindowList dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_WINLIST, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

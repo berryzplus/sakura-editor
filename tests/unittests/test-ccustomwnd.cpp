@@ -60,7 +60,7 @@ MATCHER_P7(WndClassEx,
 TEST(CCustomWnd, Construct)
 {
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
-	EXPECT_NO_THROW({ CCustomWnd wnd(std::move(pUser32Dll)); });
+	EXPECT_NO_THROW({ CCustomWnd wnd(*pUser32Dll); });
 }
 
 TEST(CCustomWnd, RegisterWnd_with_bad_classname)
@@ -72,7 +72,7 @@ TEST(CCustomWnd, RegisterWnd_with_bad_classname)
 	EXPECT_CALL(*pUser32Dll, RegisterClassExW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, CreateWindowExW(_, _, _, _, _, _, _, _, _, _, _, _)).Times(0);
 
-	CCustomWnd wnd(std::move(pUser32Dll));
+	CCustomWnd wnd(*pUser32Dll);
 
 	EXPECT_FALSE(wnd.RegisterWnd(L"", static_cast<HCURSOR>(nullptr), MakeHBrush(COLOR_WINDOW)));
 
@@ -97,7 +97,7 @@ TEST(CCustomWnd, RegisterClass_fail)
 	EXPECT_CALL(*pUser32Dll, RegisterClassExW(WndClassEx(className, hCursor, hbrBackground, uStyles, hIcon, hIconSm, cbWndExtra))).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, CreateWindowExW(_, _, _, _, _, _, _, _, _, _, _, _)).Times(0);
 
-	CCustomWnd wnd(std::move(pUser32Dll));
+	CCustomWnd wnd(*pUser32Dll);
 
 	EXPECT_FALSE(wnd.RegisterWnd(className, hCursor, hbrBackground, uStyles, hIcon, hIconSm, cbWndExtra));
 
@@ -130,7 +130,7 @@ TEST(CCustomWnd, RegisterWnd02)
 	EXPECT_CALL(*pUser32Dll, RegisterClassExW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, CreateWindowExW(dwExStyle, StrEq(className.data()), StrEq(windowTitle.data()), dwStyle, x, y, cx, cy, hWndParent, hMenu, hInstance, _)).WillOnce(Return(nullptr));
 
-	CCustomWnd wnd(std::move(pUser32Dll));
+	CCustomWnd wnd(*pUser32Dll);
 
 	ASSERT_TRUE(wnd.RegisterWnd(className, hCursor, hbrBackground, uStyles, hIcon, hIconSm, cbWndExtra));
 
@@ -166,7 +166,7 @@ TEST(CCustomWnd, RegisterWnd03)
 	EXPECT_CALL(*pUser32Dll, RegisterClassExW(WndClassEx(className, hCursor, hbrBackground, uStyles, hIcon, hIconSm, cbWndExtra))).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, CreateWindowExW(dwExStyle, StrEq(className.data()), StrEq(windowTitle.data()), dwStyle, x, y, cx, cy, hWndParent, hMenu, hInstance, _)).WillOnce(Return(hWnd));
 
-	CCustomWnd wnd(std::move(pUser32Dll));
+	CCustomWnd wnd(*pUser32Dll);
 
 	ASSERT_TRUE(wnd.RegisterWnd(className, hCursor, hbrBackground, uStyles, hIcon, hIconSm, cbWndExtra));
 

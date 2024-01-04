@@ -54,18 +54,20 @@ struct Shell32Dll
 
 class Shell32DllClient
 {
-	std::shared_ptr<Shell32Dll> _Shell32Dll;
+	const Shell32Dll& _Shell32Dll;
 
 public:
-	explicit Shell32DllClient(std::shared_ptr<Shell32Dll> Shell32Dll_)
-		: _Shell32Dll(std::move(Shell32Dll_))
+	explicit Shell32DllClient(const Shell32Dll& Shell32Dll_)
+		: _Shell32Dll(Shell32Dll_)
 	{
 	}
 	virtual ~Shell32DllClient() = default;
 
 protected:
-	std::shared_ptr<Shell32Dll> GetShell32Dll() const noexcept
+	const Shell32Dll& GetShell32Dll() const noexcept
 	{
 		return _Shell32Dll;
 	}
 };
+
+const Shell32Dll& GetShell32Dll();

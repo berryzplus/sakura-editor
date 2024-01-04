@@ -43,7 +43,7 @@ class CDocType : public ShareDataAccessorClient, private CDocRefClient
 {
 public:
 	//生成と破棄
-	explicit CDocType(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CDocType(const ShareDataAccessor& ShareDataAccessor_);
 	virtual ~CDocType() = default;
 
 	//ロック機能	//	Nov. 29, 2000 genta 設定の一時変更時に拡張子による強制的な設定変更を無効にする

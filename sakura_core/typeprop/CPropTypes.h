@@ -76,7 +76,7 @@ class CPropTypes : public ShareDataAccessorClientWithCache
 
 public:
 	//生成と破棄
-	explicit CPropTypes(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CPropTypes(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CPropTypes() = default;
 
 	void Create(HINSTANCE hInstApp, HWND hwndParent);	//!< 初期化

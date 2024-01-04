@@ -40,8 +40,8 @@ class CEol;
  */
 struct ClipboardCloser : private User32DllClient
 {
-	explicit ClipboardCloser(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept
-		: User32DllClient(std::move(User32Dll_))
+	explicit ClipboardCloser(const User32Dll& User32Dll_) noexcept
+		: User32DllClient(User32Dll_)
 	{
 	}
 
@@ -52,7 +52,7 @@ struct ClipboardCloser : private User32DllClient
 
 	BOOL CloseClipboard() const
 	{
-		return GetUser32Dll()->CloseClipboard();
+		return GetUser32Dll().CloseClipboard();
 	}
 };
 
@@ -100,12 +100,12 @@ public:
 	};
 
 	//コンストラクタ・デストラクタ
-	explicit CClipboard(HWND hWnd, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>(), std::shared_ptr<Kernel32Dll> Kernel32Dll_ = std::make_shared<Kernel32Dll>(), std::shared_ptr<Shell32Dll> Shell32Dll_ = std::make_shared<Shell32Dll>(), std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>()); //!< コンストラクタ内でクリップボードが開かれる
+	explicit CClipboard(HWND hWnd, const User32Dll& User32Dll_ = ::GetUser32Dll(), const Kernel32Dll& Kernel32Dll_ = ::GetKernel32Dll(), const Shell32Dll& Shell32Dll_ = ::GetShell32Dll(), const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor()); //!< コンストラクタ内でクリップボードが開かれる
 	CClipboard(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 
-	static bool HasValidData(std::shared_ptr<User32Dll> _User32Dll = std::make_shared<User32Dll>());    //!< クリップボード内に、サクラエディタで扱えるデータがあればtrue
-	static CLIPFORMAT GetSakuraFormat(std::shared_ptr<User32Dll> _User32Dll = std::make_shared<User32Dll>()); //!< サクラエディタ独自のクリップボードデータ形式
+	static bool HasValidData(const User32Dll& _User32Dll = ::GetUser32Dll());    //!< クリップボード内に、サクラエディタで扱えるデータがあればtrue
+	static CLIPFORMAT GetSakuraFormat(const User32Dll& _User32Dll = ::GetUser32Dll()); //!< サクラエディタ独自のクリップボードデータ形式
 
 	//インターフェース
 	void Empty() const; //!< クリップボードを空にする

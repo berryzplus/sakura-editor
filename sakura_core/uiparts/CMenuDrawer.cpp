@@ -38,8 +38,8 @@
 /*!
  * コンストラクタ
  */
-CMenuDrawer::CMenuDrawer(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CMenuDrawer::CMenuDrawer(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	m_hInstance = NULL;
 	m_hWndOwner = NULL;

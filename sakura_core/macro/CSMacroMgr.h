@@ -88,7 +88,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CSMacroMgr(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CSMacroMgr(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CSMacroMgr();
 
 	/*

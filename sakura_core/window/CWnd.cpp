@@ -20,8 +20,8 @@
 /*!
  * コンストラクタ
  */
-CWnd::CWnd(const WCHAR* pszInheritanceAppend, std::shared_ptr<User32Dll> User32Dll_) noexcept
-	: CCustomWnd(std::move(User32Dll_))
+CWnd::CWnd(const WCHAR* pszInheritanceAppend, const User32Dll& User32Dll_) noexcept
+	: CCustomWnd(User32Dll_)
 {
 #ifdef _DEBUG
 	wcscpy( m_szClassInheritances, L"CWnd" );

@@ -26,8 +26,8 @@
 /*!
  * コンストラクタ
  */
-CMRUFolder::CMRUFolder(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CMRUFolder::CMRUFolder(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	, m_cRecentFolder(GetShareDataAccessor())
 {
 }

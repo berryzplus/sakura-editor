@@ -43,8 +43,8 @@ using std::wstring;
 class CImpExpManager : public ShareDataAccessorClientWithCache
 {
 public:
-	explicit CImpExpManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	explicit CImpExpManager(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 	{
 	}
 
@@ -95,8 +95,8 @@ class CImpExpType : public CImpExpManager
 {
 public:
 	// Constructor
-	explicit CImpExpType( int nIdx, STypeConfig& types, HWND hwndList, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>() )
-		: CImpExpManager(std::move(ShareDataAccessor_))
+	explicit CImpExpType( int nIdx, STypeConfig& types, HWND hwndList, const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor() )
+		: CImpExpManager(ShareDataAccessor_)
 		, m_nIdx( nIdx )
 		, m_Types( types )
 		, m_hwndList( hwndList )

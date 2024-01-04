@@ -32,15 +32,15 @@
 TEST(CEditWnd, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	EXPECT_NO_THROW({ CEditWnd wnd(std::move(pShareDataAccessor)); });
+	CEditDoc doc(*pShareDataAccessor);
+	EXPECT_NO_THROW({ CEditWnd wnd(*pShareDataAccessor); });
 }
 
 TEST(CEditWnd, GetEditWnd)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
 	EXPECT_THAT(&GetEditWnd(), ::testing::Eq(&wnd));
 }
 
@@ -52,8 +52,8 @@ TEST(CEditWnd, GetEditWnd_fail)
 TEST(CEditWnd, GetLogfont)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
 
 	doc.m_blfCurTemp = true;
 	EXPECT_EQ(&doc.m_lfCur, &wnd.GetLogfont(true));
@@ -73,8 +73,8 @@ TEST(CEditWnd, GetLogfont)
 TEST(CEditWnd, GetFontPointSize)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
 
 	doc.m_blfCurTemp = true;
 	EXPECT_EQ(doc.m_nPointSizeCur, wnd.GetFontPointSize(true));
@@ -94,8 +94,8 @@ TEST(CEditWnd, GetFontPointSize)
 TEST(CEditWnd, GetLogfontCacheMode)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CEditWnd wnd(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CEditWnd wnd(*pShareDataAccessor);
 
 	doc.m_blfCurTemp = true;
 	EXPECT_EQ(CWM_CACHE_LOCAL, wnd.GetLogfontCacheMode());

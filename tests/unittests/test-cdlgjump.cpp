@@ -34,7 +34,7 @@
 TEST(CDlgJump, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgJump dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgJump dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -43,8 +43,8 @@ TEST(CDlgJump, Construct)
 TEST(CDlgJump, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor);
-	CDlgJump dlg(std::move(pShareDataAccessor));
+	CEditDoc doc(*pShareDataAccessor);
+	CDlgJump dlg(*pShareDataAccessor);
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = (HWND) nullptr;
 	const auto lParam     = LPARAM(&doc);

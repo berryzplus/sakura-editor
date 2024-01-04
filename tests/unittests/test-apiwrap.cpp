@@ -40,7 +40,7 @@ TEST(apiwrap, MockedSetWindowTextW)
 	EXPECT_CALL(*pMock, SetWindowTextW(hWnd, StrEq(L"test")))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, L"test", std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, L"test", *pMock));
 }
 
 TEST(apiwrap, MockedSetWindowTextW_with_trunc)
@@ -51,7 +51,7 @@ TEST(apiwrap, MockedSetWindowTextW_with_trunc)
 	EXPECT_CALL(*pMock, SetWindowTextW(hWnd, StrEq(L"test")))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, std::wstring_view(L"test1", 4), std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, std::wstring_view(L"test1", 4), *pMock));
 }
 
 TEST(apiwrap, MockedSetWindowTextW_with_null)
@@ -63,7 +63,7 @@ TEST(apiwrap, MockedSetWindowTextW_with_null)
 	EXPECT_CALL(*pMock, SetWindowTextW(hWnd, text))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, text, std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetWindowTextW(hWnd, text, *pMock));
 }
 
 TEST(apiwrap, MockedGetWindowTextW)
@@ -81,7 +81,7 @@ TEST(apiwrap, MockedGetWindowTextW)
 				return 4;
 			}));
 
-	auto buffer = apiwrap::GetWindowTextW(hWnd, std::move(pMock));
+	auto buffer = apiwrap::GetWindowTextW(hWnd, *pMock);
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW)
@@ -96,7 +96,7 @@ TEST(apiwrap, MockedSetDlgItemTextW)
 	EXPECT_CALL(*pMock, SetWindowTextW(hItem, StrEq(L"test")))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, L"test", std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, L"test", *pMock));
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW_fail)
@@ -108,7 +108,7 @@ TEST(apiwrap, MockedSetDlgItemTextW_fail)
 	EXPECT_CALL(*pMock, GetDlgItem(hWnd, nIDDlgItem))
 		.WillOnce(Return(nullptr));
 
-	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, L"test", std::move(pMock)));
+	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, L"test", *pMock));
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW_with_trunc)
@@ -123,7 +123,7 @@ TEST(apiwrap, MockedSetDlgItemTextW_with_trunc)
 	EXPECT_CALL(*pMock, SetWindowTextW(hItem, StrEq(L"test")))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, std::wstring_view(L"test1", 4), std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, std::wstring_view(L"test1", 4), *pMock));
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW_with_trunc_fail)
@@ -135,7 +135,7 @@ TEST(apiwrap, MockedSetDlgItemTextW_with_trunc_fail)
 	EXPECT_CALL(*pMock, GetDlgItem(hWnd, nIDDlgItem))
 		.WillOnce(Return(nullptr));
 
-	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, std::wstring_view(L"test1", 4), std::move(pMock)));
+	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, std::wstring_view(L"test1", 4), *pMock));
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW_with_null)
@@ -151,7 +151,7 @@ TEST(apiwrap, MockedSetDlgItemTextW_with_null)
 	EXPECT_CALL(*pMock, SetWindowTextW(hItem, text))
 		.WillOnce(Return(true));
 
-	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, text, std::move(pMock)));
+	EXPECT_TRUE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, text, *pMock));
 }
 
 TEST(apiwrap, MockedSetDlgItemTextW_with_null_fail)
@@ -164,7 +164,7 @@ TEST(apiwrap, MockedSetDlgItemTextW_with_null_fail)
 	EXPECT_CALL(*pMock, GetDlgItem(hWnd, nIDDlgItem))
 		.WillOnce(Return(nullptr));
 
-	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, text, std::move(pMock)));
+	EXPECT_FALSE(apiwrap::SetDlgItemTextW(hWnd, nIDDlgItem, text, *pMock));
 }
 
 TEST(apiwrap, MockedGetDlgItemTextW)
@@ -185,7 +185,7 @@ TEST(apiwrap, MockedGetDlgItemTextW)
 				return 4;
 			}));
 
-	auto buffer = apiwrap::GetDlgItemTextW(hWnd, nIDDlgItem, std::move(pMock));
+	auto buffer = apiwrap::GetDlgItemTextW(hWnd, nIDDlgItem, *pMock);
 }
 
 TEST(apiwrap, MockedGetDlgItemTextW_fail)
@@ -198,7 +198,7 @@ TEST(apiwrap, MockedGetDlgItemTextW_fail)
 		.WillOnce(Return(nullptr));
 
 	auto buffer = std::wstring(L"default string");
-	buffer = apiwrap::GetDlgItemTextW(hWnd, nIDDlgItem, std::move(buffer), std::move(pMock));
+	buffer = apiwrap::GetDlgItemTextW(hWnd, nIDDlgItem, std::move(buffer), *pMock);
 
 	EXPECT_EQ(0, buffer.length());
 }
@@ -212,7 +212,7 @@ TEST(apiwrap, MockedSendEmLimitTextW)
 	EXPECT_CALL(*pMock, SendMessageW(hWnd, EM_LIMITTEXT, cchLimit, 0L))
 		.WillOnce(Return(0L));
 
-	apiwrap::SendEmLimitTextW(hWnd, cchLimit, std::move(pMock));
+	apiwrap::SendEmLimitTextW(hWnd, cchLimit, *pMock);
 }
 
 TEST(apiwrap, MockedSendEmLimitTextW_dlgItem)
@@ -228,7 +228,7 @@ TEST(apiwrap, MockedSendEmLimitTextW_dlgItem)
 	EXPECT_CALL(*pMock, SendMessageW(hItem, EM_LIMITTEXT, cchLimit, 0L))
 		.WillOnce(Return(0L));
 
-	apiwrap::SendEmLimitTextW(hWnd, nIDDlgItem, cchLimit, std::move(pMock));
+	apiwrap::SendEmLimitTextW(hWnd, nIDDlgItem, cchLimit, *pMock);
 }
 
 TEST(apiwrap, MockedSendEmLimitTextW_fail)
@@ -244,7 +244,7 @@ TEST(apiwrap, MockedSendEmLimitTextW_fail)
 	EXPECT_CALL(*pMock, SendMessageW(hItem, EM_LIMITTEXT, cchLimit, 0L))
 		.Times(0);
 
-	apiwrap::SendEmLimitTextW(hWnd, nIDDlgItem, cchLimit, std::move(pMock));
+	apiwrap::SendEmLimitTextW(hWnd, nIDDlgItem, cchLimit, *pMock);
 }
 
 TEST(IsWndClassRegistered, bad_arg)
@@ -260,7 +260,7 @@ TEST(CopyResource, FindResource_fail)
 	EXPECT_CALL(*pUser32Dll, FindResourceW(hLangRsrcInstance, _, _)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, LoadResource(_, _)).Times(0);
 
-	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, std::move(pUser32Dll));
+	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, *pUser32Dll);
 	EXPECT_EQ(0, buffer.size());
 }
 
@@ -274,7 +274,7 @@ TEST(CopyResource, LoadResource_fail)
 	EXPECT_CALL(*pUser32Dll, LoadResource(hLangRsrcInstance, hResInfo)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, LockResource(_)).Times(0);
 
-	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, std::move(pUser32Dll));
+	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, *pUser32Dll);
 	EXPECT_EQ(0, buffer.size());
 }
 
@@ -290,6 +290,6 @@ TEST(CopyResource, LockResource_fail)
 	EXPECT_CALL(*pUser32Dll, LockResource(hResData)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, SizeofResource(_, _)).Times(0);
 
-	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, std::move(pUser32Dll));
+	auto buffer = apiwrap::CopyResource<LPDLGTEMPLATE>(hLangRsrcInstance, MAKEINTRESOURCE(1), RT_DIALOG, *pUser32Dll);
 	EXPECT_EQ(0, buffer.size());
 }

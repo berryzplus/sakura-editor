@@ -48,7 +48,7 @@ private:
 	using Me = CZipFile;
 
 public:
-	explicit CZipFile(std::shared_ptr<Ole32Dll> Ole32Dll_ = std::make_shared<Ole32Dll>()) noexcept;
+	explicit CZipFile(const Ole32Dll& Ole32Dll_ = ::GetOle32Dll()) noexcept;
 	CZipFile(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CZipFile(Me&&) noexcept = delete;

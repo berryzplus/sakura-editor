@@ -44,7 +44,7 @@ struct MockShareDataAccessor : public ShareDataAccessor
 inline auto MakeDummyShareData()
 {
 	// アクセサのモックを生成する
-	auto pShareDataAccessor = std::make_shared<MockShareDataAccessor>();
+	auto pShareDataAccessor = std::make_unique<MockShareDataAccessor>();
 
 	// ダミー共有メモリをnewする
 	auto pDllShareData = std::make_shared<DLLSHAREDATA>();

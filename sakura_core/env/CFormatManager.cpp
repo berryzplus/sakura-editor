@@ -35,8 +35,8 @@
 /*!
  * コンストラクタ
  */
-CFormatManager::CFormatManager(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CFormatManager::CFormatManager(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 }
 

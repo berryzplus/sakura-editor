@@ -121,18 +121,20 @@ struct Kernel32Dll
 
 class Kernel32DllClient
 {
-	std::shared_ptr<Kernel32Dll> _Kernel32Dll;
+	const Kernel32Dll& _Kernel32Dll;
 
 public:
-	explicit Kernel32DllClient(std::shared_ptr<Kernel32Dll> Kernel32Dll_)
-		: _Kernel32Dll(std::move(Kernel32Dll_))
+	explicit Kernel32DllClient(const Kernel32Dll& Kernel32Dll_)
+		: _Kernel32Dll(Kernel32Dll_)
 	{
 	}
 	virtual ~Kernel32DllClient() = default;
 
 protected:
-	std::shared_ptr<Kernel32Dll> GetKernel32Dll() const noexcept
+	const Kernel32Dll& GetKernel32Dll() const noexcept
 	{
 		return _Kernel32Dll;
 	}
 };
+
+const Kernel32Dll& GetKernel32Dll();

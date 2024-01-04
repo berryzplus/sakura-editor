@@ -42,7 +42,7 @@ struct CDlgOpenFile_CommonItemDialog final
 	private IFileDialogEvents,
 	private IFileDialogControlEvents
 {
-	explicit CDlgOpenFile_CommonItemDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CDlgOpenFile_CommonItemDialog(const ShareDataAccessor& ShareDataAccessor_);
 
 	void Create(
 		HINSTANCE					hInstance,
@@ -399,8 +399,8 @@ enum CtrlId {
 	COMBO_OPENFOLDER,
 };
 
-CDlgOpenFile_CommonItemDialog::CDlgOpenFile_CommonItemDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CDlgOpenFile_CommonItemDialog::CDlgOpenFile_CommonItemDialog(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	m_hInstance = NULL;		/* アプリケーションインスタンスのハンドル */
 	m_hwndParent = NULL;	/* オーナーウィンドウのハンドル */
@@ -935,7 +935,7 @@ int CDlgOpenFile_CommonItemDialog::AddComboCodePages( int nSelCode )
 	return nSel;
 }
 
-std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
+std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(const ShareDataAccessor& ShareDataAccessor_)
 {
-	return std::make_shared<CDlgOpenFile_CommonItemDialog>(std::move(ShareDataAccessor_));
+	return std::make_shared<CDlgOpenFile_CommonItemDialog>(ShareDataAccessor_);
 }

@@ -94,7 +94,7 @@ class CDlgOpenFile final : public IDlgOpenFile, private ShareDataAccessorClient
 {
 public:
 	//コンストラクタ・デストラクタ
-	explicit CDlgOpenFile(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgOpenFile(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgOpenFile() = default;
 
 	void Create(

@@ -32,13 +32,13 @@
 TEST(CHelpManager, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CHelpManager mgr(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CHelpManager mgr(*pShareDataAccessor); });
 }
 
 TEST(CHelpManager, ExtWinHelpIsSet)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CHelpManager mgr(std::move(pShareDataAccessor));
+	CHelpManager mgr(*pShareDataAccessor);
 
 	wcscpy_s(pDllShareData->m_Common.m_sHelper.m_szExtHelp, L"");
 	EXPECT_FALSE(mgr.ExtWinHelpIsSet(nullptr));
@@ -58,7 +58,7 @@ TEST(CHelpManager, ExtWinHelpIsSet)
 TEST(CHelpManager, GetExtWinHelp)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CHelpManager mgr(std::move(pShareDataAccessor));
+	CHelpManager mgr(*pShareDataAccessor);
 
 	wcscpy_s(pDllShareData->m_Common.m_sHelper.m_szExtHelp, L"何か1");
 	EXPECT_EQ(pDllShareData->m_Common.m_sHelper.m_szExtHelp, mgr.GetExtWinHelp(nullptr));
@@ -74,7 +74,7 @@ TEST(CHelpManager, GetExtWinHelp)
 TEST(CHelpManager, ExtHTMLHelpIsSet)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CHelpManager mgr(std::move(pShareDataAccessor));
+	CHelpManager mgr(*pShareDataAccessor);
 
 	wcscpy_s(pDllShareData->m_Common.m_sHelper.m_szExtHtmlHelp, L"");
 	EXPECT_FALSE(mgr.ExtHTMLHelpIsSet(nullptr));
@@ -95,7 +95,7 @@ TEST(CHelpManager, ExtHTMLHelpIsSet)
 TEST(CHelpManager, GetExtHTMLHelp)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CHelpManager mgr(std::move(pShareDataAccessor));
+	CHelpManager mgr(*pShareDataAccessor);
 
 	wcscpy_s(pDllShareData->m_Common.m_sHelper.m_szExtHtmlHelp, L"何か1");
 	EXPECT_EQ(pDllShareData->m_Common.m_sHelper.m_szExtHtmlHelp, mgr.GetExtHTMLHelp(nullptr));
@@ -111,7 +111,7 @@ TEST(CHelpManager, GetExtHTMLHelp)
 TEST(CHelpManager, HTMLHelpIsSingle)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CHelpManager mgr(std::move(pShareDataAccessor));
+	CHelpManager mgr(*pShareDataAccessor);
 
 	auto typeConfig = std::make_unique<STypeConfig>();
 	typeConfig->m_bHtmlHelpIsSingle = true;

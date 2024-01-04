@@ -22,14 +22,14 @@
 #include "dlg/CDlgOpenFile.h"
 #include "env/DLLSHAREDATA.h"
 
-extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
-extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(const ShareDataAccessor& ShareDataAccessor_);
+extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonItemDialog(const ShareDataAccessor& ShareDataAccessor_);
 
 /*!
  * コンストラクタ
  */
-CDlgOpenFile::CDlgOpenFile(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CDlgOpenFile::CDlgOpenFile(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
 {
 	if (GetShareData()->m_Common.m_sEdit.m_bVistaStyleFileDialog) {
 		m_pImpl = New_CDlgOpenFile_CommonItemDialog(GetShareDataAccessor());

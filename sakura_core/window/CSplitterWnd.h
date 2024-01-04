@@ -35,7 +35,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CSplitterWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CSplitterWnd(const ShareDataAccessor& ShareDataAccessor_);
 	~CSplitterWnd() override = default;
 
 private: // 2002/2/3 aroka

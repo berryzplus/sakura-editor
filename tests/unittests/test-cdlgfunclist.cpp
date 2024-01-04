@@ -36,7 +36,7 @@
 TEST(CDlgFuncList, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgFuncList dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgFuncList dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -47,10 +47,10 @@ TEST(CDlgFuncList, SimpleShowDialog)
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	auto& sOutline = pDllShareData->m_Common.m_sOutline;
 	sOutline.m_bRememberOutlineWindowPos = TRUE;
-	CEditDoc     doc(pShareDataAccessor);
-	CEditWnd     wnd(pShareDataAccessor);
+	CEditDoc     doc(*pShareDataAccessor);
+	CEditWnd     wnd(*pShareDataAccessor);
 	CEditView    view;
-	CDlgFuncList dlg(std::move(pShareDataAccessor));
+	CDlgFuncList dlg(*pShareDataAccessor);
 
 	auto pcFuncInfoArr = std::make_shared<CFuncInfoArr>();
 	dlg.SetFuncInfoForTest(pcFuncInfoArr);
@@ -73,10 +73,10 @@ TEST(CDlgFuncList, ShowDialogWithSizeRestor)
 	sOutline.m_yOutlineWindowPos         = 2;
 	sOutline.m_widthOutlineWindow        = 3;
 	sOutline.m_heightOutlineWindow       = 4;
-	CEditDoc     doc(pShareDataAccessor);
-	CEditWnd     wnd(pShareDataAccessor);
+	CEditDoc     doc(*pShareDataAccessor);
+	CEditWnd     wnd(*pShareDataAccessor);
 	CEditView    view;
-	CDlgFuncList dlg(std::move(pShareDataAccessor));
+	CDlgFuncList dlg(*pShareDataAccessor);
 
 	auto pcFuncInfoArr = std::make_shared<CFuncInfoArr>();
 	dlg.SetFuncInfoForTest(pcFuncInfoArr);

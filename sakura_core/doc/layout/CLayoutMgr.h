@@ -102,7 +102,7 @@ private:
 
 public:
 	//生成と破棄
-	explicit CLayoutMgr(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CLayoutMgr(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CLayoutMgr();
 	void Create( CEditDoc*, CDocLineMgr* );
 	void Init();

@@ -70,7 +70,7 @@ class CShareData : private Kernel32DllClient, private ShareDataAccessorClient, p
 	using TypeVectorPtr = std::vector<STypeConfig*>*;
 
 public:
-	explicit CShareData(std::shared_ptr<Kernel32Dll> Kernel32Dll_ = std::make_shared<Kernel32Dll>(), std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CShareData(const Kernel32Dll& Kernel32Dll_ = ::GetKernel32Dll(), const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CShareData() override;
 
 	/*
@@ -124,7 +124,7 @@ protected:
 		_In_ _Post_ptr_invalid_ HANDLE hObject
 	) const
 	{
-		return GetKernel32Dll()->CloseHandle(hObject);
+		return GetKernel32Dll().CloseHandle(hObject);
 	}
 
 	HANDLE CreateFileMappingW(
@@ -136,14 +136,14 @@ protected:
 		std::wstring_view fileMapName
 	) const
 	{
-		return GetKernel32Dll()->CreateFileMappingW(hFile, lpFileMappingAttributes, flProtect, dwMaximumSizeHigh, dwMaximumSizeLow, fileMapName.data());
+		return GetKernel32Dll().CreateFileMappingW(hFile, lpFileMappingAttributes, flProtect, dwMaximumSizeHigh, dwMaximumSizeLow, fileMapName.data());
 	}
 
 	DWORD GetLastError(
 		VOID
 	) const
 	{
-		return GetKernel32Dll()->GetLastError();
+		return GetKernel32Dll().GetLastError();
 	}
 
 	LPVOID MapViewOfFile(
@@ -154,19 +154,19 @@ protected:
 		_In_ SIZE_T dwNumberOfBytesToMap
 	) const
 	{
-		return GetKernel32Dll()->MapViewOfFile(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
+		return GetKernel32Dll().MapViewOfFile(hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh, dwFileOffsetLow, dwNumberOfBytesToMap);
 	}
 
 	BOOL UnmapViewOfFile(
 		_In_ LPCVOID lpBaseAddress
 	)const
 	{
-		return GetKernel32Dll()->UnmapViewOfFile(lpBaseAddress);
+		return GetKernel32Dll().UnmapViewOfFile(lpBaseAddress);
 	}
 
 	void SetDllShareData(DLLSHAREDATA* pShareData) const
 	{
-		return GetShareDataAccessor()->SetShareData(pShareData);
+		return GetShareDataAccessor().SetShareData(pShareData);
 	}
 
 private:

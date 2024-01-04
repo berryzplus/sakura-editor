@@ -75,7 +75,7 @@ TEST(CControlTray, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	MakeDummyKeyBind(pDllShareData->m_Common.m_sKeyBind);
-	EXPECT_NO_THROW({ CControlTray tray(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CControlTray tray(*pShareDataAccessor); });
 }
 
 TEST(CControlTray, Create_fail)
@@ -98,15 +98,15 @@ TEST(CControlTray, Create_fail)
 
 	const auto hInstance = static_cast<HINSTANCE>(nullptr);
 
-	CControlTray tray(std::move(pShareDataAccessor), std::move(pUser32Dll));
+	CControlTray tray(*pShareDataAccessor, *pUser32Dll);
 	EXPECT_FALSE(tray.Create(hInstance));
 }
 
 class CControlTrayForOnCreateTest : public CControlTray
 {
 public:
-	explicit CControlTrayForOnCreateTest(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: CControlTray(std::move(ShareDataAccessor_))
+	explicit CControlTrayForOnCreateTest(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: CControlTray(ShareDataAccessor_)
 	{
 	}
 
@@ -117,7 +117,7 @@ TEST(CControlTray, OnCreate)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	MakeDummyKeyBind(pDllShareData->m_Common.m_sKeyBind);
-	CControlTrayForOnCreateTest wnd(std::move(pShareDataAccessor));
+	CControlTrayForOnCreateTest wnd(*pShareDataAccessor);
 
 	EXPECT_FALSE(wnd.OnCreate(nullptr, nullptr));
 

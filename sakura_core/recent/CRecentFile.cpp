@@ -42,8 +42,8 @@ const WCHAR* CRecentFile::GetItemText( int nIndex ) const
 //                           生成                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CRecentFile::CRecentFile(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: CRecentImp<EditInfo>(std::move(ShareDataAccessor_))
+CRecentFile::CRecentFile(const ShareDataAccessor& ShareDataAccessor_)
+	: CRecentImp<EditInfo>(ShareDataAccessor_)
 {
 	Create(
 		GetShareData()->m_sHistory.m_fiMRUArr,

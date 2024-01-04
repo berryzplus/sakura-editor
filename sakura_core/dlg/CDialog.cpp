@@ -42,8 +42,8 @@
 
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
-CDialog::CDialog(WORD idDialog_, std::shared_ptr<User32Dll> User32Dll_)
-	: CCustomDialog(idDialog_, std::move(User32Dll_))
+CDialog::CDialog(WORD idDialog_, const User32Dll& User32Dll_)
+	: CCustomDialog(idDialog_, User32Dll_)
 {
 //	MYTRACE( L"CDialog::CDialog()\n" );
 	m_hInstance = NULL;		/* アプリケーションインスタンスのハンドル */
@@ -121,7 +121,7 @@ HWND CDialog::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete
 
 bool CDialog::ShowWindow(HWND hWnd, int nCmdShow)
 {
-	const auto ret = GetUser32Dll()->ShowWindow(hWnd, nCmdShow);
+	const auto ret = GetUser32Dll().ShowWindow(hWnd, nCmdShow);
 	if (ret)
 	{
 		m_nShowCmd = nCmdShow;

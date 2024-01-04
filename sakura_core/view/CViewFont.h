@@ -36,8 +36,8 @@ class CViewFont : private ShareDataAccessorClient
 	using Me = CViewFont;
 
 public:
-	explicit CViewFont(const LOGFONT* plf, bool bMiniMap = false, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>())
-		: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+	explicit CViewFont(const LOGFONT* plf, bool bMiniMap = false, const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor())
+		: ShareDataAccessorClient(ShareDataAccessor_)
 		, m_bMiniMap(bMiniMap)
 	{
 		CreateFonts(plf);

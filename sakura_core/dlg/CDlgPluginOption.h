@@ -60,7 +60,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgPluginOption(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgPluginOption(const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgPluginOption() override = default;
 
 	/*

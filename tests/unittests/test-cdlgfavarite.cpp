@@ -32,7 +32,7 @@
 TEST(CDlgFavorite, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgFavorite dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgFavorite dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -41,7 +41,7 @@ TEST(CDlgFavorite, Construct)
 TEST(CDlgFavorite, SimpleShowDialog)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CDlgFavorite dlg(std::move(pShareDataAccessor));
+	CDlgFavorite dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_FAVORITE, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
@@ -56,7 +56,7 @@ TEST(CDlgFavorite, ShowDialogWithSizeRestor)
 	rect.top    = 2;
 	rect.right  = rect.left + 3;
 	rect.bottom = rect.top  + 4;
-	CDlgFavorite dlg(std::move(pShareDataAccessor));
+	CDlgFavorite dlg(*pShareDataAccessor);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto hDlg       = dlg.DoModeless(nullptr, hWndParent, IDD_FAVORITE, static_cast<LPARAM>(0), SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);

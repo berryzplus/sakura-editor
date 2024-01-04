@@ -41,8 +41,8 @@
 class CDlgInput1ForTest : public TAutoCloseDialog<CDlgInput1, IDC_EDIT_INPUT1>
 {
 public:
-	explicit CDlgInput1ForTest(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept
-		: TAutoCloseDialog(IDD_INPUT1, std::move(User32Dll_))
+	explicit CDlgInput1ForTest(const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept
+		: TAutoCloseDialog(IDD_INPUT1, User32Dll_)
 	{
 	}
 	~CDlgInput1ForTest() override = default;

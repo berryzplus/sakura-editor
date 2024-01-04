@@ -57,7 +57,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	explicit CDlgTagJumpList(bool bDirectTagJump, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_ = std::make_shared<ShareDataAccessor>());
+	explicit CDlgTagJumpList(bool bDirectTagJump, const ShareDataAccessor& ShareDataAccessor_ = ::GetShareDataAccessor());
 	~CDlgTagJumpList() override;
 
 	/*

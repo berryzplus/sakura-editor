@@ -35,7 +35,7 @@
 TEST(CDlgReplace, Construct)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	EXPECT_NO_THROW({ CDlgReplace dlg(std::move(pShareDataAccessor)); });
+	EXPECT_NO_THROW({ CDlgReplace dlg(*pShareDataAccessor); });
 }
 
 /*!
@@ -47,9 +47,9 @@ TEST(CDlgReplace, SimpleShowDialog)
 
 	pDllShareData->m_Common.m_sSearch.m_sSearchOption.bRegularExp = true;
 
-	CEditDoc    doc(pShareDataAccessor);
+	CEditDoc    doc(*pShareDataAccessor);
 	CEditView   view;
-	CDlgReplace dlg(std::move(pShareDataAccessor));
+	CDlgReplace dlg(*pShareDataAccessor);
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
 	const auto lParam     = LPARAM(&view);

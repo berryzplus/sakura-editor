@@ -46,7 +46,7 @@ private:
 	DLGPROC _pfnDlgProc = nullptr;
 
 public:
-	explicit CDialog3(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
+	explicit CDialog3(const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept;
 	~CDialog3() override = default;
 
 	INT_PTR CallDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
@@ -79,8 +79,8 @@ protected:
 /*!
  * コンストラクター
  */
-CDialog3::CDialog3(std::shared_ptr<User32Dll> User32Dll_) noexcept
-	: CCustomDialog(IDD_INPUT1, std::move(User32Dll_))
+CDialog3::CDialog3(const User32Dll& User32Dll_) noexcept
+	: CCustomDialog(IDD_INPUT1, User32Dll_)
 {
 }
 
@@ -207,8 +207,8 @@ BOOL CDialog3::OnDlgTimer(HWND hDlg, UINT id)
 class mock_dialog_3 : public CDialog3
 {
 public:
-	explicit mock_dialog_3(std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>())
-		: CDialog3(std::move(User32Dll_))
+	explicit mock_dialog_3(const User32Dll& User32Dll_ = ::GetUser32Dll())
+		: CDialog3(User32Dll_)
 	{
 	}
 
@@ -245,7 +245,7 @@ TEST(CCustomDialog, MockedDoModal)
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, DialogBoxParamW(hLangRsrcInstance, MAKEINTRESOURCEW(IDD_INPUT1), hWndParent, _, _)).WillOnce(Return(IDCANCEL));
 
-	CDialog3 mock(std::move(pUser32Dll));
+	CDialog3 mock(*pUser32Dll);
 	EXPECT_EQ(IDCANCEL, mock.Box(GetLanguageResourceLibrary(), hWndParent));
 }
 
@@ -283,7 +283,7 @@ TEST(CCustomDialog, MockedShow1)
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, CreateDialogParamW(hLangRsrcInstance, MAKEINTRESOURCEW(IDD_INPUT1), hWndParent, _, _)).WillOnce(Return(hDlg));
 
-	CDialog3 dlg(std::move(pUser32Dll));
+	CDialog3 dlg(*pUser32Dll);
 	EXPECT_EQ(hDlg, dlg.Create(hLangRsrcInstance, hWndParent));
 }
 
@@ -325,7 +325,7 @@ TEST(CCustomDialog, MockedShow2)
 	EXPECT_CALL(*pUser32Dll, SizeofResource(_, _)).WillOnce(Invoke(::SizeofResource));
 	EXPECT_CALL(*pUser32Dll, CreateDialogIndirectParamW(_, _, hWndParent, _, _)).WillOnce(Return(hDlg));
 
-	CDialog3 dlg(std::move(pUser32Dll));
+	CDialog3 dlg(*pUser32Dll);
 	EXPECT_EQ(hDlg, dlg.CreateIndirect(hLangRsrcInstance, [](DLGTEMPLATE& dlgTemplate) { dlgTemplate.style = WS_OVERLAPPEDWINDOW | DS_SETFONT; }, hWndParent));
 }
 

@@ -155,7 +155,7 @@ TEST(CClipboard, Construct)
 {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard);
 }
 
@@ -164,7 +164,7 @@ TEST(CClipboard, Construct_fail)
 	const auto hWnd = (HWND)0x1234;
 	const DWORD dwMilliseconds = 0;
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard);
 }
 
@@ -175,7 +175,7 @@ TEST(CClipboard, Empty)
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, EmptyClipboard()).WillOnce(Return(TRUE));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	clipboard.Empty();
 }
 
@@ -185,7 +185,7 @@ TEST(CClipboard, Empty_without_ownership)
 	const DWORD dwMilliseconds = 0;
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	EXPECT_CALL(*pUser32Dll, EmptyClipboard()).Times(0);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard);
 	clipboard.Empty();
 }
@@ -211,7 +211,7 @@ TEST(CClipboard, SetHtmlText1)
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CClipboard::CFN_HTML_FORMAT_))).WillOnce(Return(uHtmlFormat));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(uHtmlFormat, AnsiStringInGlobalMemory(std::string_view(expected)))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetHtmlText(inputData));
 }
 
@@ -222,7 +222,7 @@ TEST(CClipboard, SetHtmlText2) {
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(_, _)).Times(0);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetHtmlText(L"test"));
 }
 
@@ -233,7 +233,7 @@ TEST(CClipboard, SetHtmlText3) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CClipboard::CFN_HTML_FORMAT_))).WillOnce(Return(uHtmlFormat));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(uHtmlFormat, _)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetHtmlText(L"test"));
 }
 
@@ -246,7 +246,7 @@ TEST(CClipboard, SetText1) {
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CClipboard::CFN_SAKURA_CLIP2))).WillRepeatedly(Return(sakuraFormat));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(CF_UNICODETEXT, WideStringInGlobalMemory(text))).WillOnce(Return((HANDLE)1));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(sakuraFormat, SakuraFormatInGlobalMemory(text))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetText(text.data(), text.length(), false, false));
 }
 
@@ -260,7 +260,7 @@ TEST(CClipboard, SetText2) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, ByteValueInGlobalMemory(0))).WillOnce(Return((HANDLE)1));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetText(text.data(), text.length(), true, false, CClipboard::CF_ANY));
 }
 
@@ -274,7 +274,7 @@ TEST(CClipboard, SetText3) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, ByteValueInGlobalMemory(1))).WillOnce(Return((HANDLE)1));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, ByteValueInGlobalMemory(1))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetText(text.data(), text.length(), false, true, CClipboard::CF_ANY));
 }
 
@@ -287,7 +287,7 @@ TEST(CClipboard, SetText4) {
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(_, _)).Times(0);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, false, -1));
 }
 
@@ -304,7 +304,7 @@ TEST(CClipboard, SetText_fail_GlobalLock1) {
 	EXPECT_CALL(*pKernel32Dll, GlobalAlloc(_, _)).WillRepeatedly(Invoke(::GlobalAlloc));
 	EXPECT_CALL(*pKernel32Dll, GlobalLock(_)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pKernel32Dll, GlobalFree(_)).WillRepeatedly(Invoke(GlobalFree));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, false, CClipboard::CF_ANY));
 }
 
@@ -325,7 +325,7 @@ TEST(CClipboard, SetText_fail_GlobalLock2) {
 			return 1 == count++ ? nullptr : ::GlobalLock(hMem); //2回目だけ失敗させる
 		}));
 	EXPECT_CALL(*pKernel32Dll, GlobalFree(_)).WillRepeatedly(Invoke(GlobalFree));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, false));
 }
 
@@ -339,7 +339,7 @@ TEST(CClipboard, SetText_fail_SetClipboardData1) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, false));
 }
 
@@ -353,7 +353,7 @@ TEST(CClipboard, SetText_fail_SetClipboardData2) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), true, false));
 }
 
@@ -367,7 +367,7 @@ TEST(CClipboard, SetText_fail_SetClipboardData3) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), true, false, CClipboard::CF_ANY));
 }
 
@@ -381,7 +381,7 @@ TEST(CClipboard, SetText_fail_SetClipboardData4) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).WillOnce(Return(nullptr));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, true, CClipboard::CF_ANY));
 }
 
@@ -395,7 +395,7 @@ TEST(CClipboard, SetText_fail_SetClipboardData5) {
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devColFormat, _)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn1Format, _)).WillOnce(Return((HANDLE)1));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(devLn2Format, _)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, true, CClipboard::CF_ANY));
 }
 
@@ -419,7 +419,7 @@ TEST(CClipboard, GetText1) {
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(sakuraFormat)).WillOnce(Return(0));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(sakuraFormat)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(sakuraFormat)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_FALSE(bColumnSelect);
@@ -448,7 +448,7 @@ TEST(CClipboard, GetText2) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(sakuraFormat)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_UNICODETEXT)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_TRUE(bColumnSelect);
@@ -474,7 +474,7 @@ TEST(CClipboard, GetText3) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_OEMTEXT)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_FALSE(bColumnSelect);
@@ -500,7 +500,7 @@ TEST(CClipboard, GetText4) {
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(0)).WillOnce(Return(devLn2Format));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(sakuraFormat)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(sakuraFormat)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_FALSE(bColumnSelect);
@@ -532,7 +532,7 @@ TEST(CClipboard, GetText5) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).Times(0);
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_UNICODETEXT)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_FALSE(bColumnSelect);
@@ -560,7 +560,7 @@ TEST(CClipboard, GetText6) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).Times(0);
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_OEMTEXT)).WillOnce(Return(static_cast<HGLOBAL>(mem)));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, &bColumnSelect, &bLineSelect, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 	EXPECT_FALSE(bColumnSelect);
@@ -580,7 +580,7 @@ TEST(CClipboard, GetText_fail_GetClipboardData1) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(sakuraFormat)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -598,7 +598,7 @@ TEST(CClipboard, GetText_fail_GetClipboardData2) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_UNICODETEXT)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -616,7 +616,7 @@ TEST(CClipboard, GetText_fail_GetClipboardData3) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_OEMTEXT)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -636,7 +636,7 @@ TEST(CClipboard, GetText_fail_GlobalLock1) {
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(sakuraFormat)).WillOnce(Return((HANDLE)0x5678));
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, GlobalLock(_)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -656,7 +656,7 @@ TEST(CClipboard, GetText_fail_GlobalLock2) {
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_UNICODETEXT)).WillOnce(Return((HANDLE)0x5678));
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, GlobalLock(_)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -676,7 +676,7 @@ TEST(CClipboard, GetText_fail_GlobalLock3) {
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_OEMTEXT)).WillOnce(Return((HANDLE)0x5678));
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, GlobalLock(_)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), L"");
 }
@@ -710,7 +710,8 @@ TEST(CClipboard, GetDropFiles1) {
 			wcscpy_s(lpszFile, cch, filename);
 			return (UINT)_countof(filename) - 1;
 		}));
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::make_shared<Kernel32Dll>(), std::move(pShell32Dll));
+	auto pKernel32Dll = std::make_shared<Kernel32Dll>();
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll, *pShell32Dll);
 	EXPECT_TRUE(clipboard.GetText(&cmemBuf, nullptr, nullptr, cEol, CClipboard::CF_ANY));
 	EXPECT_STREQ(cmemBuf.GetStringPtr(), text.data());
 }
@@ -722,7 +723,7 @@ TEST(CClipboard, GetTextWithoutOwnership) {
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	CNativeW buffer;
 	CEol eol;
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.GetText(&buffer, nullptr, nullptr, eol, CClipboard::CF_ANY));
 }
 
@@ -735,7 +736,7 @@ TEST(CClipboard, GetTextNoClipboard) {
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(_)).Times(0);
 	CNativeW buffer;
 	CEol eol;
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.GetText(&buffer, nullptr, nullptr, eol, CClipboard::CF_ANY));
 }
 
@@ -744,7 +745,7 @@ TEST(CClipboard, IsIncludeClipboardFormat1) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(_)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.IsIncludeClipboradFormat(L""));
 }
 
@@ -753,7 +754,7 @@ TEST(CClipboard, IsIncludeClipboardFormat2) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.IsIncludeClipboradFormat(L"12345"));
 }
 
@@ -764,7 +765,7 @@ TEST(CClipboard, IsIncludeClipboardFormat3) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CFN_UNITTEST))).WillOnce(Return(format));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(format)).WillOnce(Return(TRUE));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.IsIncludeClipboradFormat(CFN_UNITTEST));
 }
 
@@ -773,7 +774,7 @@ TEST(CClipboard, IsIncludeClipboardFormat4) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(FALSE));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.IsIncludeClipboradFormat(L"12345"));
 }
 
@@ -784,7 +785,7 @@ TEST(CClipboard, SetClipboardByFormat1) {
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(_, _)).Times(0);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetClipboradByFormat({L"テスト", 3}, L"12345", 99999, 1));
 }
 
@@ -795,7 +796,7 @@ TEST(CClipboard, SetClipboardByFormat2) {
 	auto [pUser32Dll, pKernel32Dll] = MakeApiDllsForClipboardFail(hWnd, dwMilliseconds);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(_, _)).Times(0);
-	CClipboard clipboard(hWnd, std::move(pUser32Dll), std::move(pKernel32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetClipboradByFormat({L"テスト", 3}, L"", 99999, 1));
 }
 
@@ -806,7 +807,7 @@ TEST(CClipboard, SetClipboardByFormat3) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(12345, BytesInGlobalMemory("\x00\x01\xfe\xff", 4))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetClipboradByFormat({L"\x00\x01\xfe\xff", 4}, L"12345", -1, 0));
 }
 
@@ -816,7 +817,7 @@ TEST(CClipboard, SetClipboardByFormat4) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(_, _)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_FALSE(clipboard.SetClipboradByFormat({L"\x100", 1}, L"12345", -1, 0));
 }
 
@@ -826,7 +827,7 @@ TEST(CClipboard, SetClipboardByFormat5) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(12345, WideStringInGlobalMemory(L"テスト"sv))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetClipboradByFormat({L"テスト", 3}, L"12345", 3, -1));
 }
 
@@ -837,7 +838,9 @@ TEST(CClipboard, SetClipboardByFormat6) {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(12345, AnsiStringInGlobalMemory("テスト"sv))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, pUser32Dll, std::make_shared<Kernel32Dll>(), std::make_shared<Shell32Dll>(), std::move(pShareDataAccessor));
+	auto pKernel32Dll = std::make_shared<Kernel32Dll>();
+	auto pShell32Dll = std::make_shared<Shell32Dll>();
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll, *pShell32Dll, *pShareDataAccessor);
 	EXPECT_TRUE(clipboard.SetClipboradByFormat({L"テスト", 3}, L"12345", static_cast<int>(CODE_SJIS), -1));
 }
 
@@ -850,7 +853,7 @@ TEST(CClipboard, SetClipboardByFormat7) {
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CClipboard::CFN_SAKURA_CLIP2))).WillRepeatedly(Return(sakuraFormat));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(CF_UNICODETEXT, WideStringInGlobalMemory(text))).WillOnce(Return((HANDLE)1));
 	EXPECT_CALL(*pUser32Dll, SetClipboardData(sakuraFormat, SakuraFormatInGlobalMemory(text))).WillOnce(Return((HANDLE)1));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.SetClipboradByFormat({ text.data(), text.size() }, L"", -2, 0));
 }
 
@@ -860,7 +863,7 @@ TEST(CClipboard, SetClipboardByFormat8) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, GlobalAlloc(_, _)).WillOnce(Return(nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll, pKernel32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll);
 	EXPECT_FALSE(clipboard.SetClipboradByFormat({L"テスト", 3}, L"12345", 3, -1));
 }
 
@@ -870,7 +873,7 @@ TEST(CClipboard, GetClipboardByFormat1) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(_)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer(L"dummy");
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_FALSE(clipboard.GetClipboradByFormat(buffer, L"", -1, 0, eol));
@@ -882,7 +885,7 @@ TEST(CClipboard, GetClipboardByFormat2) {
 	const auto hWnd = (HWND)0x1234;
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(FALSE));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer(L"dummy");
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_FALSE(clipboard.GetClipboradByFormat(buffer, L"12345", -1, 0, eol));
@@ -901,7 +904,7 @@ TEST(CClipboard, GetClipboardByFormat3) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(12345)).WillOnce(Return(static_cast<HGLOBAL>(memory)));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_TRUE(clipboard.GetClipboradByFormat(buffer, L"12345", -1, 0, eol));
@@ -922,7 +925,7 @@ TEST(CClipboard, GetClipboardByFormat4) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(sakuraFormat)).WillOnce(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(CF_UNICODETEXT)).WillOnce(Return(static_cast<HGLOBAL>(memory)));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_TRUE(clipboard.GetClipboradByFormat(buffer, L"CF_UNICODETEXT", -2, -1, eol));
@@ -941,7 +944,7 @@ TEST(CClipboard, GetClipboardByFormat5) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(12345)).WillOnce(Return(static_cast<HGLOBAL>(memory)));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_TRUE(clipboard.GetClipboradByFormat(buffer, L"12345", (int)CODE_UNICODE, 2, eol));
@@ -953,7 +956,7 @@ TEST(CClipboard, GetClipboardByFormat5) {
 TEST(CClipboard, GetClipboardByFormat6) {
 	const auto hWnd = (HWND)0x1234;
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor); ;
+	CEditDoc doc(*pShareDataAccessor); ;
 	const auto& bin = u8"テスト";
 	HGlobal memory(GMEM_MOVEABLE, sizeof(bin));
 	memory.LockToWrite<std::byte>([bin](std::byte* p) {
@@ -962,7 +965,9 @@ TEST(CClipboard, GetClipboardByFormat6) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(12345)).WillOnce(Return(static_cast<HGLOBAL>(memory)));
-	CClipboard clipboard(hWnd, pUser32Dll, std::make_shared<Kernel32Dll>(), std::make_shared<Shell32Dll>(), std::move(pShareDataAccessor));
+	auto pKernel32Dll = std::make_shared<Kernel32Dll>();
+	auto pShell32Dll = std::make_shared<Shell32Dll>();
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll, *pShell32Dll, *pShareDataAccessor);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_TRUE(clipboard.GetClipboradByFormat(buffer, L"12345", (int)CODE_UTF8, 1, eol));
@@ -973,7 +978,7 @@ TEST(CClipboard, GetClipboardByFormat6) {
 TEST(CClipboard, GetClipboardByFormat7) {
 	const auto hWnd = (HWND)0x1234;
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
-	CEditDoc doc(pShareDataAccessor); ;
+	CEditDoc doc(*pShareDataAccessor); ;
 	const auto& bin = u8"テスト";
 	HGlobal memory(GMEM_MOVEABLE, sizeof(bin));
 	memory.LockToWrite<std::byte>([bin](std::byte* p) {
@@ -982,7 +987,9 @@ TEST(CClipboard, GetClipboardByFormat7) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(12345)).WillOnce(Return(static_cast<HGLOBAL>(memory)));
-	CClipboard clipboard(hWnd, pUser32Dll, std::make_shared<Kernel32Dll>(), std::make_shared<Shell32Dll>(), std::move(pShareDataAccessor));
+	auto pKernel32Dll = std::make_shared<Kernel32Dll>();
+	auto pShell32Dll = std::make_shared<Shell32Dll>();
+	CClipboard clipboard(hWnd, *pUser32Dll, *pKernel32Dll, *pShell32Dll, *pShareDataAccessor);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_TRUE(clipboard.GetClipboradByFormat(buffer, L"12345", (int)CODE_AUTODETECT, -1, eol));
@@ -995,7 +1002,7 @@ TEST(CClipboard, GetClipboardByFormat_GetClipboardData_fail1) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(12345)).WillOnce(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, GetClipboardData(12345)).WillOnce(Return((HANDLE)nullptr));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	CNativeW buffer;
 	CEol eol(EEolType::cr_and_lf);
 	EXPECT_FALSE(clipboard.GetClipboradByFormat(buffer, L"12345", (int)CODE_UNICODE, 2, eol));
@@ -1006,7 +1013,7 @@ TEST(CClipboard, GetSakuraFormat) {
 	const auto sakuraFormat = RegisterClipboardFormatW(CClipboard::CFN_SAKURA_CLIP2);
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(StrEq(CClipboard::CFN_SAKURA_CLIP2))).WillRepeatedly(Return(sakuraFormat));
-	EXPECT_EQ(sakuraFormat, CClipboard::GetSakuraFormat(pUser32Dll));
+	EXPECT_EQ(sakuraFormat, CClipboard::GetSakuraFormat(*pUser32Dll));
 }
 
 // GetDataType（全部ある）
@@ -1019,8 +1026,8 @@ TEST(CClipboard, GetDataType1) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
-	EXPECT_TRUE(CClipboard::HasValidData(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
+	EXPECT_TRUE(CClipboard::HasValidData(*pUser32Dll));
 	EXPECT_EQ(sakuraFormat, clipboard.GetDataType());
 }
 
@@ -1033,8 +1040,8 @@ TEST(CClipboard, GetDataType2) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillRepeatedly(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
-	EXPECT_TRUE(CClipboard::HasValidData(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
+	EXPECT_TRUE(CClipboard::HasValidData(*pUser32Dll));
 	EXPECT_EQ(CF_UNICODETEXT, clipboard.GetDataType());
 }
 
@@ -1047,8 +1054,8 @@ TEST(CClipboard, GetDataType3) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillRepeatedly(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillRepeatedly(Return(TRUE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).Times(0);
-	CClipboard clipboard(hWnd, pUser32Dll);
-	EXPECT_TRUE(CClipboard::HasValidData(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
+	EXPECT_TRUE(CClipboard::HasValidData(*pUser32Dll));
 	EXPECT_EQ(CF_OEMTEXT, clipboard.GetDataType());
 }
 
@@ -1061,8 +1068,8 @@ TEST(CClipboard, GetDataType4) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillRepeatedly(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillRepeatedly(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).WillRepeatedly(Return(TRUE));
-	CClipboard clipboard(hWnd, pUser32Dll);
-	EXPECT_TRUE(CClipboard::HasValidData(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
+	EXPECT_TRUE(CClipboard::HasValidData(*pUser32Dll));
 	EXPECT_EQ(CF_HDROP, clipboard.GetDataType());
 }
 
@@ -1075,8 +1082,8 @@ TEST(CClipboard, GetDataType5) {
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_UNICODETEXT)).WillRepeatedly(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_OEMTEXT)).WillRepeatedly(Return(FALSE));
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(CF_HDROP)).WillRepeatedly(Return(FALSE));
-	CClipboard clipboard(hWnd, pUser32Dll);
-	EXPECT_FALSE(CClipboard::HasValidData(pUser32Dll));
+	CClipboard clipboard(hWnd, *pUser32Dll);
+	EXPECT_FALSE(CClipboard::HasValidData(*pUser32Dll));
 	EXPECT_EQ(-1, clipboard.GetDataType());
 }
 
@@ -1093,7 +1100,7 @@ TEST_P(ClipFormatTest, PreDefined) {
 	auto pUser32Dll = MakeUser32DllForClipboardSuccess(hWnd);
 	EXPECT_CALL(*pUser32Dll, RegisterClipboardFormatW(_)).Times(0);
 	EXPECT_CALL(*pUser32Dll, IsClipboardFormatAvailable(uFormat)).WillOnce(Return(TRUE));
-	CClipboard clipboard(hWnd, pUser32Dll);
+	CClipboard clipboard(hWnd, *pUser32Dll);
 	EXPECT_TRUE(clipboard.IsIncludeClipboradFormat(formatName.data()));
 }
 

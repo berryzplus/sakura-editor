@@ -166,8 +166,8 @@ static const EFunctionCode EIsModificationForbidden[] = {
 	@date 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 	@date 2004.06.21 novice タグジャンプ機能追加
 */
-CEditDoc::CEditDoc(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CEditDoc::CEditDoc(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
 	, m_cLayoutMgr(GetShareDataAccessor())
 	, m_cDocEditor(GetShareDataAccessor())
 	, m_cDocType(GetShareDataAccessor())

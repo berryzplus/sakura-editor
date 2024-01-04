@@ -246,18 +246,20 @@ struct User32Dll
 
 class User32DllClient
 {
-	std::shared_ptr<User32Dll> _User32Dll;
+	const User32Dll& _User32Dll;
 
 public:
-	explicit User32DllClient(std::shared_ptr<User32Dll> User32Dll_)
-		: _User32Dll(std::move(User32Dll_))
+	explicit User32DllClient(const User32Dll& User32Dll_)
+		: _User32Dll(User32Dll_)
 	{
 	}
 	virtual ~User32DllClient() = default;
 
 protected:
-	std::shared_ptr<User32Dll> GetUser32Dll() const noexcept
+	const User32Dll& GetUser32Dll() const noexcept
 	{
 		return _User32Dll;
 	}
 };
+
+const User32Dll& GetUser32Dll();

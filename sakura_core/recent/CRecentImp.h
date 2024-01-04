@@ -38,8 +38,8 @@ class CRecentImp : public CRecent{
 	typedef RECEIVE_TYPE						ReceiveType;
 
 public:
-	explicit CRecentImp(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-		: CRecent(std::move(ShareDataAccessor_))
+	explicit CRecentImp(const ShareDataAccessor& ShareDataAccessor_)
+		: CRecent(ShareDataAccessor_)
 	{
 		Terminate();
 	}

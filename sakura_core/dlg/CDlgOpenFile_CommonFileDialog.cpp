@@ -63,7 +63,7 @@ static int AddComboCodePages(HWND hdlg, HWND combo, int nSelCode, bool& bInit);
 
 struct CDlgOpenFile_CommonFileDialog final : public ShareDataAccessorClientWithCache, public IDlgOpenFile
 {
-	explicit CDlgOpenFile_CommonFileDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CDlgOpenFile_CommonFileDialog(const ShareDataAccessor& ShareDataAccessor_);
 
 	void Create(
 		HINSTANCE					hInstance,
@@ -647,8 +647,8 @@ int AddComboCodePages(HWND hdlg, HWND combo, int nSelCode, bool& bInit)
 /*! コンストラクタ
 	@date 2008.05.05 novice GetModuleHandle(NULL)→NULLに変更
 */
-CDlgOpenFile_CommonFileDialog::CDlgOpenFile_CommonFileDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+CDlgOpenFile_CommonFileDialog::CDlgOpenFile_CommonFileDialog(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	m_hInstance = NULL;		/* アプリケーションインスタンスのハンドル */
 	m_hwndParent = NULL;	/* オーナーウィンドウのハンドル */
@@ -1221,7 +1221,7 @@ bool CDlgOpenFile_CommonFileDialog::GetSaveFileNameRecover( OPENFILENAME* ofn )
 	return bRet!=FALSE;
 }
 
-std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
+std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog(const ShareDataAccessor& ShareDataAccessor_)
 {
-	return std::make_shared<CDlgOpenFile_CommonFileDialog>(std::move(ShareDataAccessor_));
+	return std::make_shared<CDlgOpenFile_CommonFileDialog>(ShareDataAccessor_);
 }

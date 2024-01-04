@@ -54,9 +54,9 @@ LRESULT CALLBACK CFuncKeyWndProc(
 /*!
  * コンストラクタ
  */
-CFuncKeyWnd::CFuncKeyWnd(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
+CFuncKeyWnd::CFuncKeyWnd(const ShareDataAccessor& ShareDataAccessor_)
 : CWnd(L"::CFuncKeyWnd")
-	, ShareDataAccessorClientWithCache(std::move(ShareDataAccessor_))
+	, ShareDataAccessorClientWithCache(ShareDataAccessor_)
 {
 	int		i;
 	LOGFONT	lf;

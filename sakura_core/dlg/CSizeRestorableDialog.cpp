@@ -28,8 +28,8 @@
 /*!
  * コンストラクタ
  */
-CSizeRestorableDialog::CSizeRestorableDialog(WORD idDialog_, std::shared_ptr<ShareDataAccessor> ShareDataAccessor_, std::shared_ptr<User32Dll> User32Dll_) noexcept
-	: CSakuraDialog(idDialog_, std::move(ShareDataAccessor_), std::move(User32Dll_))
+CSizeRestorableDialog::CSizeRestorableDialog(WORD idDialog_, const ShareDataAccessor& ShareDataAccessor_, const User32Dll& User32Dll_) noexcept
+	: CSakuraDialog(idDialog_, ShareDataAccessor_, User32Dll_)
 {
 }
 

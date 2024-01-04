@@ -36,7 +36,7 @@ private:
 	std::wstring _Text;					/* テキスト */
 
 public:
-	explicit CDlgInput1(WORD DialogId_ = IDD_INPUT1, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>()) noexcept;
+	explicit CDlgInput1(WORD DialogId_ = IDD_INPUT1, const User32Dll& User32Dll_ = ::GetUser32Dll()) noexcept;
 	~CDlgInput1() override = default;
 
 	INT_PTR DoModal(

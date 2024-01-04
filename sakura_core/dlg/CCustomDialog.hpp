@@ -43,7 +43,7 @@ public:
 	WORD            _idDialog = 0L;
 	HWND			m_hWnd    = nullptr;
 
-	explicit CCustomDialog(WORD idDialog_ = 0, std::shared_ptr<User32Dll> User32Dll_ = std::make_shared<User32Dll>());
+	explicit CCustomDialog(WORD idDialog_ = 0, const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CCustomDialog() override = default;
 
 	virtual INT_PTR Box(HINSTANCE hLangRsrcInstance, HWND hWndParent = NULL);
@@ -64,7 +64,7 @@ public:
 		auto lpDlgTemplate = LPDLGTEMPLATE(buffer.data());
 		func(*lpDlgTemplate);
 
-		const auto hWnd = GetUser32Dll()->CreateDialogIndirectParamW(
+		const auto hWnd = GetUser32Dll().CreateDialogIndirectParamW(
 			hLangRsrcInstance,
 			lpDlgTemplate,
 			hWndParent,

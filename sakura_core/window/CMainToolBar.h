@@ -38,7 +38,7 @@ class CImageListMgr;
 class CMainToolBar : public ShareDataAccessorClient
 {
 public:
-	explicit CMainToolBar(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_);
+	explicit CMainToolBar(const ShareDataAccessor& ShareDataAccessor_);
 
 	void Create( CImageListMgr* pcIcons );
 

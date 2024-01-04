@@ -39,8 +39,8 @@
 /*!
  * コンストラクタ
  */
-CDocEditor::CDocEditor(std::shared_ptr<ShareDataAccessor> ShareDataAccessor_)
-	: ShareDataAccessorClient(std::move(ShareDataAccessor_))
+CDocEditor::CDocEditor(const ShareDataAccessor& ShareDataAccessor_)
+	: ShareDataAccessorClient(ShareDataAccessor_)
 , m_cNewLineCode( EEolType::cr_and_lf )		//	New Line Type
 , m_pcOpeBlk( NULL )
 , m_bInsMode( true )	// Oct. 2, 2005 genta

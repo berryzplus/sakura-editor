@@ -34,8 +34,8 @@ using namespace apiwrap;
 /*!
  * コンストラクター
  */
-CDlgInput1::CDlgInput1(WORD DialogId_, std::shared_ptr<User32Dll> User32Dll_) noexcept
-	: CDialog(DialogId_, std::move(User32Dll_))
+CDlgInput1::CDlgInput1(WORD DialogId_, const User32Dll& User32Dll_) noexcept
+	: CDialog(DialogId_, User32Dll_)
 {
 }
 
