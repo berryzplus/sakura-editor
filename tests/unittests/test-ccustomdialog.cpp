@@ -143,7 +143,7 @@ BOOL CDialog3::OnDlgInitDialog(HWND hDlg, HWND hWndFocus, LPARAM lParam)
 	assert(!GetDlgData(hDlg));
 
 	// ダイアログプロシージャをメンバー変数に格納する
-	_pfnDlgProc = std::bit_cast<DLGPROC>(GetWindowLongPtrW(hDlg, DWLP_DLGPROC));
+	_pfnDlgProc = DLGPROC(GetWindowLongPtrW(hDlg, DWLP_DLGPROC));
 
 	// タイマーを起動する
 	SetTimer(hDlg, TIMERID_FIRST_IDLE, 0, nullptr);
@@ -336,7 +336,7 @@ TEST(CCustomDialog, MockedDispachDlgEvent_OnInitDialog)
 	const auto hDlg      = (HWND)0x4321;
 	const auto hWndFocus = (HWND)0x1234;
 	const auto wParam    = (WPARAM)hWndFocus;
-	const auto lParam    = std::bit_cast<LPARAM>(&mock);
+	const auto lParam    = LPARAM(&mock);
 
 	EXPECT_CALL(mock, OnDlgInitDialog(hDlg, hWndFocus, lParam)).WillOnce(Return(true));
 

@@ -254,7 +254,7 @@ TEST(IsWndClassRegistered, bad_arg)
 
 TEST(CopyResource, FindResource_fail)
 {
-	const auto hLangRsrcInstance = std::bit_cast<HINSTANCE>(static_cast<size_t>(0x1234));
+	const auto hLangRsrcInstance = HINSTANCE(0x1234);
 
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, FindResourceW(hLangRsrcInstance, _, _)).WillOnce(Return(nullptr));
@@ -266,8 +266,8 @@ TEST(CopyResource, FindResource_fail)
 
 TEST(CopyResource, LoadResource_fail)
 {
-	const auto hLangRsrcInstance = std::bit_cast<HINSTANCE>(static_cast<size_t>(0x1234));
-	const auto hResInfo          = std::bit_cast<HRSRC>(static_cast<size_t>(0x5678));
+	const auto hLangRsrcInstance = HINSTANCE(0x1234);
+	const auto hResInfo          = HRSRC(0x5678);
 
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, FindResourceW(hLangRsrcInstance, _, _)).WillOnce(Return(hResInfo));
@@ -280,9 +280,9 @@ TEST(CopyResource, LoadResource_fail)
 
 TEST(CopyResource, LockResource_fail)
 {
-	const auto hLangRsrcInstance = std::bit_cast<HINSTANCE>(static_cast<size_t>(0x1234));
-	const auto hResInfo          = std::bit_cast<HRSRC>(static_cast<size_t>(0x5678));
-	const auto hResData          = std::bit_cast<HGLOBAL>(static_cast<size_t>(0x8765));
+	const auto hLangRsrcInstance = HINSTANCE(0x1234);
+	const auto hResInfo          = HRSRC(0x5678);
+	const auto hResData          = HGLOBAL(0x8765);
 
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, FindResourceW(hLangRsrcInstance, _, _)).WillOnce(Return(hResInfo));

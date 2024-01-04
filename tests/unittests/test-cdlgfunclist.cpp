@@ -58,7 +58,7 @@ TEST(CDlgFuncList, SimpleShowDialog)
 
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
-	const auto lParam     = std::bit_cast<LPARAM>(&view);
+	const auto lParam     = LPARAM(&view);
 	const auto hDlg       = pDlg->DoModeless(hInstance, hWndParent, IDD_FUNCLIST, lParam, SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
 	dlg.CloseDialog(0);
@@ -84,7 +84,7 @@ TEST(CDlgFuncList, ShowDialogWithSizeRestor)
 
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
-	const auto lParam     = std::bit_cast<LPARAM>(&view);
+	const auto lParam     = LPARAM(&view);
 	const auto hDlg       = pDlg->DoModeless(hInstance, hWndParent, IDD_FUNCLIST, lParam, SW_SHOW);
 	EXPECT_NE(nullptr, hDlg);
 	dlg.CloseDialog(0);

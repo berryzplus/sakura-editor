@@ -45,18 +45,18 @@ LRESULT CALLBACK CCustomWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	}
 
 	// WM_NCCREATEが来たらウインドウハンドルにクラスインスタンスを紐付ける
-	if (const auto lpCreateStruct = std::bit_cast<LPCREATESTRUCT>(lParam);
+	if (const auto lpCreateStruct = LPCREATESTRUCT(lParam);
 		uMsg == WM_NCCREATE && lpCreateStruct && lpCreateStruct->lpCreateParams)
 	{
 		auto pcWnd = static_cast<Me*>(lpCreateStruct->lpCreateParams);
 
-		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(pcWnd));
+		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(pcWnd));
 
 		pcWnd->m_hWnd = hWnd;
 	}
 
 	// GetWindowLongPtrでインスタンスを取り出し、処理させる
-	if (auto pcWnd = std::bit_cast<Me*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA)))
+	if (auto pcWnd = (Me*)::GetWindowLongPtrW(hWnd, GWLP_USERDATA))
 	{
 		// WM_NCDESTROYが来たらウインドウハンドルとインスタンスの紐付けを解除する
 		if (uMsg == WM_NCDESTROY)
@@ -166,7 +166,7 @@ HWND CCustomWnd::CreateWnd(
 		rcWin.right,
 		rcWin.bottom,
 		hWndParent,
-		std::bit_cast<HMENU>(static_cast<size_t>(windowId)),
+		HMENU(static_cast<size_t>(windowId)),
 		static_cast<HINSTANCE>(NULL),
 		static_cast<LPVOID>(this));
 

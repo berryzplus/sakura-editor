@@ -410,9 +410,9 @@ TEST(CClipboard, GetText1) {
 	HGlobal mem(GMEM_MOVEABLE | GMEM_DDESHARE, sizeof(int) + (text.length() + 1) * sizeof(wchar_t));
 	mem.LockToWrite<std::byte>([text](std::byte* pLocked)
 		{
-			*std::bit_cast<int*>(pLocked) = static_cast<int>(text.length());
+			*((int*)pLocked) = static_cast<int>(text.length());
 			memcpy_s(pLocked + sizeof(int), (text.length() + 1) * sizeof(wchar_t), text.data(), text.length() * sizeof(wchar_t));
-			std::bit_cast<wchar_t*>(pLocked + sizeof(int))[text.length()] = 0;
+			LPWSTR(pLocked + sizeof(int))[text.length()] = 0;
 		});
 	auto [pUser32Dll, sakuraFormat, devColFormat, devLn1Format, devLn2Format] = MakeUser32DllForClipboardSuccess2(hWnd);
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(0)).WillOnce(Return(sakuraFormat));
@@ -466,7 +466,7 @@ TEST(CClipboard, GetText3) {
 	HGlobal mem(GMEM_MOVEABLE | GMEM_DDESHARE, 7);
 	mem.LockToWrite<std::byte>([](std::byte* pLocked)
 		{
-			strcpy_s(std::bit_cast<char*>(pLocked), 7, "てすと");
+			strcpy_s(LPSTR(pLocked), 7, "てすと");
 		});
 	auto [pUser32Dll, sakuraFormat, devColFormat, devLn1Format, devLn2Format] = MakeUser32DllForClipboardSuccess2(hWnd);
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(0)).WillOnce(Return(devLn1Format));
@@ -492,9 +492,9 @@ TEST(CClipboard, GetText4) {
 	HGlobal mem(GMEM_MOVEABLE | GMEM_DDESHARE, sizeof(int) + (text.length() + 1) * sizeof(wchar_t));
 	mem.LockToWrite<std::byte>([text](std::byte* pLocked)
 		{
-			*std::bit_cast<int*>(pLocked) = static_cast<int>(text.length());
+			*((int*)pLocked) = static_cast<int>(text.length());
 			memcpy_s(pLocked + sizeof(int), (text.length() + 1) * sizeof(wchar_t), text.data(), text.length() * sizeof(wchar_t));
-			std::bit_cast<wchar_t*>(pLocked + sizeof(int))[text.length()] = 0;
+			LPWSTR(pLocked + sizeof(int))[text.length()] = 0;
 		});
 	auto [pUser32Dll, sakuraFormat, devColFormat, devLn1Format, devLn2Format] = MakeUser32DllForClipboardSuccess2(hWnd);
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(0)).WillOnce(Return(devLn2Format));
@@ -550,7 +550,7 @@ TEST(CClipboard, GetText6) {
 	HGlobal mem(GMEM_MOVEABLE | GMEM_DDESHARE, 7);
 	mem.LockToWrite<std::byte>([](std::byte* pLocked)
 		{
-			strcpy_s(std::bit_cast<char*>(pLocked), 7, "てすと");
+			strcpy_s(LPSTR(pLocked), 7, "てすと");
 		});
 	auto [pUser32Dll, sakuraFormat, devColFormat, devLn1Format, devLn2Format] = MakeUser32DllForClipboardSuccess2(hWnd);
 	EXPECT_CALL(*pUser32Dll, EnumClipboardFormats(0)).WillOnce(Return(CF_OEMTEXT));

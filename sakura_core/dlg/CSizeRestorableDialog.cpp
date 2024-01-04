@@ -64,7 +64,7 @@ INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam
 	// WM_WINDOWPOSCHANGEDが来た場合、個別に処理する
 	if (uMsg == WM_WINDOWPOSCHANGED)
 	{
-		if (const auto lpwpos = std::bit_cast<LPWINDOWPOS>(lParam))
+		if (const auto lpwpos = LPWINDOWPOS(lParam))
 		{
 			m_xPos    = lpwpos->x;
 			m_yPos    = lpwpos->y;
@@ -76,7 +76,7 @@ INT_PTR CSizeRestorableDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam
 	// WM_GETMINMAXINFOが来た場合、個別に処理する
 	if (uMsg == WM_GETMINMAXINFO)
 	{
-		if (const auto lpMinMaxInfo = std::bit_cast<LPMINMAXINFO>(lParam))
+		if (const auto lpMinMaxInfo = LPMINMAXINFO(lParam))
 		{
 			// 戻り値は無視する
 			HANDLE_WM_GETMINMAXINFO(hDlg, wParam, lParam, OnGetMinMaxInfo);
