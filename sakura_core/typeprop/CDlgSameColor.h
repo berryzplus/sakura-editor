@@ -34,6 +34,7 @@
 #pragma once
 
 #include "dlg/CDialog.h"
+#include "window/CSubClassedWnd.hpp"
 
 struct STypeConfig;
 
@@ -45,7 +46,27 @@ struct STypeConfig;
 class CDlgSameColor final : public CDialog
 {
 public:
-	CDlgSameColor();
+	struct CColorStatic : public TSubClassedChildWnd<CDlgSameColor, 0>
+	{
+		using TSubClassedChildWnd::TSubClassedChildWnd;
+
+		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	};
+
+	using CColorList = TSubClassedWnd<CDlgSameColor, 1>;
+
+private:
+	using Me = CDlgSameColor;
+
+	CColorStatic _ColorStatic;
+	CColorList   _ColorList;
+
+	WORD         m_wID    = 0;			//!< タイプ別設定ダイアログ（親ダイアログ）で押されたボタンID
+	STypeConfig* m_pTypes = nullptr;	//!< タイプ別設定データ
+	COLORREF     m_cr     = 0;			//!< 指定色
+
+public:
+	explicit CDlgSameColor(const User32Dll& User32Dll_ = ::GetUser32Dll());
 	~CDlgSameColor() override = default;
 
 	int DoModal( HINSTANCE hInstance, HWND hwndParent, WORD wID, STypeConfig* pTypes, COLORREF cr );		//!< モーダルダイアログの表示
@@ -66,15 +87,6 @@ protected:
 	BOOL OnBnClicked( int wID ) override;							//!< BN_CLICKED 処理
 	BOOL OnDrawItem( WPARAM wParam, LPARAM lParam ) override;	//!< WM_DRAWITEM 処理
 	BOOL OnSelChangeListColors( HWND hwndCtl );					//!< 色選択リストの LBN_SELCHANGE 処理
-
-	static LRESULT CALLBACK ColorStatic_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );	//!< サブクラス化された指定色スタティックのウィンドウプロシージャ
-	static LRESULT CALLBACK ColorList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );	//!< サブクラス化された色選択リストのウィンドウプロシージャ
-
-	WNDPROC m_wpColorStaticProc;	//!< サブクラス化以前の指定色スタティックのウィンドウプロシージャ
-	WNDPROC m_wpColorListProc;		//!< サブクラス化以前の色選択リストのウィンドウプロシージャ
-
-	WORD m_wID;			//!< タイプ別設定ダイアログ（親ダイアログ）で押されたボタンID
-	STypeConfig* m_pTypes;	//!< タイプ別設定データ
-	COLORREF m_cr;		//!< 指定色
 };
+
 #endif /* SAKURA_CDLGSAMECOLOR_181C0F46_A420_4A62_A543_FE2B88C20FBE_H_ */
