@@ -35,10 +35,7 @@ namespace apiwrap {
  */
 struct HGlobalFreeFunc : private Kernel32DllClient
 {
-	explicit HGlobalFreeFunc(const Kernel32Dll& Kernel32Dll_) noexcept
-		: Kernel32DllClient(Kernel32Dll_)
-	{
-	}
+	using Kernel32DllClient::Kernel32DllClient;
 
 	void operator()( HGLOBAL hMem ) const
 	{
