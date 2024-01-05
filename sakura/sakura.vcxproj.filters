@@ -1162,6 +1162,9 @@
     <ClInclude Include="..\sakura_core\dlg\CSizeRestorableDialog.hpp">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\window\CSubClassedWnd.hpp">
+      <Filter>Cpp Source Files\window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2391,6 +2394,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CSizeRestorableDialog.cpp">
       <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\window\CSubClassedWnd.cpp">
+      <Filter>Cpp Source Files\window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

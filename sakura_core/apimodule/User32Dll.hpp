@@ -42,6 +42,16 @@ struct User32Dll
 {
 	virtual ~User32Dll() = default;
 
+	virtual LRESULT CallWindowProcW(
+		_In_ WNDPROC lpPrevWndFunc,
+		_In_ HWND hWnd,
+		_In_ UINT Msg,
+		_In_ WPARAM wParam,
+		_In_ LPARAM lParam )const
+	{
+		return ::CallWindowProcW(lpPrevWndFunc, hWnd, Msg, wParam, lParam);
+	}
+
 	virtual BOOL CloseClipboard() const
 	{
 		return ::CloseClipboard();
@@ -150,6 +160,13 @@ struct User32Dll
 		return ::GetDlgItem(hDlg, nIDDlgItem);
 	}
 
+	virtual HANDLE GetPropW(
+		_In_ HWND hWnd,
+		_In_ LPCWSTR lpString ) const
+	{
+		return ::GetPropW(hWnd, lpString);
+	}
+
 	virtual int GetWindowTextW(
 		_In_ HWND hWnd,
 		_Out_writes_(nMaxCount) LPWSTR lpString,
@@ -201,6 +218,13 @@ struct User32Dll
 		return ::RegisterClipboardFormatW(lpszFormat);
 	}
 
+	virtual HANDLE RemovePropW(
+		_In_ HWND hWnd,
+		_In_ LPCWSTR lpString) const
+	{
+		return ::RemovePropW(hWnd, lpString);
+	}
+
 	virtual LRESULT SendMessageW(
 		_In_ HWND hWnd,
 		_In_ UINT Msg,
@@ -215,6 +239,14 @@ struct User32Dll
 		_In_opt_ HANDLE hMem) const
 	{
 		return ::SetClipboardData(uFormat, hMem);
+	}
+
+	virtual BOOL SetPropW(
+		_In_ HWND hWnd,
+		_In_ LPCWSTR lpString,
+		_In_opt_ HANDLE hData) const
+	{
+		return ::SetPropW(hWnd, lpString, hData);
 	}
 
 	virtual LONG_PTR SetWindowLongPtrW(_In_ HWND hWnd, int nIndex, LONG_PTR dwNewLong) const

@@ -465,6 +465,7 @@
     <ClInclude Include="..\sakura_core\window\CMainToolBar.h" />
     <ClInclude Include="..\sakura_core\window\CSplitBoxWnd.h" />
     <ClInclude Include="..\sakura_core\window\CSplitterWnd.h" />
+    <ClInclude Include="..\sakura_core\window\CSubClassedWnd.hpp" />
     <ClInclude Include="..\sakura_core\window\CTabWnd.h" />
     <ClInclude Include="..\sakura_core\window\CTipWnd.h" />
     <ClInclude Include="..\sakura_core\window\CWnd.h" />
@@ -884,6 +885,7 @@
     <ClCompile Include="..\sakura_core\window\CMainToolBar.cpp" />
     <ClCompile Include="..\sakura_core\window\CSplitBoxWnd.cpp" />
     <ClCompile Include="..\sakura_core\window\CSplitterWnd.cpp" />
+    <ClCompile Include="..\sakura_core\window\CSubClassedWnd.cpp" />
     <ClCompile Include="..\sakura_core\window\CTabWnd.cpp" />
     <ClCompile Include="..\sakura_core\window\CTipWnd.cpp" />
     <ClCompile Include="..\sakura_core\window\CWnd.cpp" />
