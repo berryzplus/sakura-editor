@@ -138,4 +138,18 @@ bool IsWndClassRegistered(std::wstring_view className, const User32Dll& _User32D
 	return _User32Dll.GetClassInfoExW(NULL, className.data(), &wc);
 }
 
+bool ScreenToClient(_In_ HWND hWnd, _Inout_ LPPOINT lpPoint, const User32Dll& _User32Dll)
+{
+	return _User32Dll.ScreenToClient(hWnd, lpPoint);
+}
+
+bool ScreenToClient(_In_ HWND hWnd, _Inout_ LPRECT lpPoints, const User32Dll& _User32Dll)
+{
+	bool ret = true;
+	for (auto lpPoint = (LPPOINT)lpPoints; lpPoint < LPPOINT(lpPoints + 1); ++lpPoint) {
+		ret |= ScreenToClient(hWnd, lpPoint, _User32Dll);
+	}
+	return ret;
+}
+
 } //end of namespace apiwrap

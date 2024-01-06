@@ -225,6 +225,13 @@ struct User32Dll
 		return ::RemovePropW(hWnd, lpString);
 	}
 
+	virtual BOOL ScreenToClient(
+		_In_ HWND hWnd,
+		_Inout_ LPPOINT lpPoint) const
+	{
+		return ::ScreenToClient(hWnd, lpPoint);
+	}
+
 	virtual LRESULT SendMessageW(
 		_In_ HWND hWnd,
 		_In_ UINT Msg,

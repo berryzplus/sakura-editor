@@ -49,6 +49,9 @@ void         SendEmLimitTextW(_In_ HWND hDlg, int nIDDlgItem, size_t cchLimit, c
 
 bool         IsWndClassRegistered(std::wstring_view className, const User32Dll& _User32Dll = ::GetUser32Dll());
 
+bool         ScreenToClient(_In_ HWND hWnd, _Inout_ LPPOINT lpPoint, const User32Dll& _User32Dll = ::GetUser32Dll());
+bool         ScreenToClient(_In_ HWND hWnd, _Inout_ LPRECT lpPoints, const User32Dll& _User32Dll = ::GetUser32Dll());
+
 template<typename TResource>
 auto CopyResource(HINSTANCE hLangRsrcInstance, LPCWSTR lpName, LPCWSTR lpType, const User32Dll& _User32Dll)
 {
