@@ -86,7 +86,7 @@ TEST(CShareData, InitShareData_MapViewOfFile_fail)
 {
 	auto [pDllShareData, pShareDataAccessor] = MakeDummyShareData();
 
-	const auto hFileMap = std::bit_cast<HANDLE>(static_cast<size_t>(0x69));
+	const auto hFileMap = HANDLE(static_cast<size_t>(0x69));
 
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE | SEC_COMMIT, 0, sizeof(DLLSHAREDATA), _)).WillOnce(Return(hFileMap));
@@ -108,7 +108,7 @@ TEST(CShareData, InitShareData_MapViewOfFile_returns_invalid)
 	pDllShareData->m_nSize = sizeof(DLLSHAREDATA);
 	pDllShareData->m_vStructureVersion = N_SHAREDATA_VERSION + 1;
 
-	const auto hFileMap = std::bit_cast<HANDLE>(static_cast<size_t>(0x69));
+	const auto hFileMap = HANDLE(static_cast<size_t>(0x69));
 
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE | SEC_COMMIT, 0, sizeof(DLLSHAREDATA), _)).WillOnce(Return(hFileMap));
@@ -130,7 +130,7 @@ TEST(CShareData, InitShareData_for_Editor)
 	pDllShareData->m_nSize = sizeof(DLLSHAREDATA);
 	pDllShareData->m_vStructureVersion = N_SHAREDATA_VERSION;
 
-	const auto hFileMap = std::bit_cast<HANDLE>(static_cast<size_t>(0x69));
+	const auto hFileMap = HANDLE(static_cast<size_t>(0x69));
 
 	auto pKernel32Dll = std::make_shared<MockKernel32Dll>();
 	EXPECT_CALL(*pKernel32Dll, CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE | SEC_COMMIT, 0, sizeof(DLLSHAREDATA), _)).WillOnce(Return(hFileMap));

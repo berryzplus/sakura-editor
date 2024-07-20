@@ -85,7 +85,7 @@ HWND CWnd::Create(
 	const RECT rcWin = { x, y, nWidth, nHeight };
 
 	/* ウィンドウの作成 */
-	m_hWnd = CreateWnd(hwndParent, lpWindowName, dwStyle, dwExStyle, static_cast<UINT>(std::bit_cast<size_t>(hMenu)), &rcWin);
+	m_hWnd = CreateWnd(hwndParent, lpWindowName, dwStyle, dwExStyle, static_cast<UINT>(size_t(hMenu)), &rcWin);
 
 	if( NULL == m_hWnd ){
 		::MessageBox( m_hwndParent, L"CWnd::Create()\n\n::CreateWindowEx failed.", L"error", MB_OK );

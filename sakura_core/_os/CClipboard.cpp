@@ -92,8 +92,8 @@ bool CClipboard::SetText(
 		int cchClipSakura = cstr.GetLength();
 		size_t cbClipSakura = sizeof(int) + (cstr.GetLength() + 1) * sizeof(wchar_t);
 		BinarySequence bin(cbClipSakura, std::byte());
-		bin.assign(std::bit_cast<const std::byte*>(&cchClipSakura), sizeof(int));
-		bin.append(std::bit_cast<const std::byte*>(cstr.GetPtr()), cchClipSakura * sizeof(wchar_t));
+		bin.assign(((const std::byte*)&cchClipSakura), sizeof(int));
+		bin.append(((const std::byte*)cstr.GetPtr()), cchClipSakura * sizeof(wchar_t));
 		bin.resize(cbClipSakura);
 		if (!SetClipboardData(uClipFormat, bin.data(), bin.length(), bin.length()))
 		{
@@ -159,9 +159,9 @@ bool CClipboard::SetHtmlText(const CNativeW& cmemBUf) const
 	cmemFooter.AppendString("\r\n<!--EndFragment-->\r\n</body></html>\r\n");
 
 	BinarySequence text;
-	text.append(std::bit_cast<std::byte*>(cmemHeader.GetStringPtr()), cmemHeader.GetStringLength());
-	text.append(std::bit_cast<std::byte*>(cmemUtf8.GetStringPtr()), cmemUtf8.GetStringLength());
-	text.append(std::bit_cast<std::byte*>(cmemFooter.GetStringPtr()), cmemFooter.GetStringLength());
+	text.append(((std::byte*)cmemHeader.GetStringPtr()), cmemHeader.GetStringLength());
+	text.append(((std::byte*)cmemUtf8.GetStringPtr()), cmemUtf8.GetStringLength());
+	text.append(((std::byte*)cmemFooter.GetStringPtr()), cmemFooter.GetStringLength());
 
 	//クリップボードに設定
 	const auto uFormat = GetClipboardFormatW(CFN_HTML_FORMAT_, GetUser32Dll());
@@ -220,8 +220,8 @@ bool CClipboard::GetText(
 		if (BinarySequence buffer;
 			GetClipboardString(uClipFormat, buffer))
 		{
-			const auto nLength = *std::bit_cast<int*>(buffer.data());
-			cmemBuf.SetString(std::bit_cast<const wchar_t*>(&buffer[sizeof(int)]), nLength);
+			const auto nLength = *((int*)buffer.data());
+			cmemBuf.SetString(((const wchar_t*)&buffer[sizeof(int)]), nLength);
 			return true;
 		}
 	}
@@ -250,7 +250,7 @@ bool CClipboard::GetText(
 		if (BinarySequence buffer;
 			GetClipboardString(CF_OEMTEXT, buffer))
 		{
-			if (const auto length = ::strnlen_s(std::bit_cast<const char*>(buffer.data()), buffer.length());
+			if (const auto length = ::strnlen_s(((const char*)buffer.data()), buffer.length());
 				length < buffer.length())
 			{
 				buffer.resize(length);
@@ -291,7 +291,7 @@ bool CClipboard::GetDropFiles(
 		if (BinarySequence buffer;
 			GetClipboardString(CF_HDROP, buffer))
 		{
-			hDrop   = std::bit_cast<HDROP>(buffer.data());
+			hDrop   = HDROP(buffer.data());
 			nMaxCnt = DragQueryFileW(hDrop, 0xFFFFFFFF, NULL, 0);
 		}
 
@@ -373,7 +373,7 @@ bool CClipboard::SetClipboardByFormat(const CStringRef& cstr, std::wstring_view 
 	if( nMode == MODE_BINARY ){
 		cmemBuf.AllocBuffer(cstr.GetLength());
 		cmemBuf._SetRawLength(cstr.GetLength());
-		pBuf = std::bit_cast<char*>(cmemBuf.GetRawPtr());
+		pBuf = ((char*)cmemBuf.GetRawPtr());
 		const auto len = cstr.GetLength();
 		const auto mem = cstr.GetPtr();
 		for(size_t i = 0; i < len; i++){
@@ -389,7 +389,7 @@ bool CClipboard::SetClipboardByFormat(const CStringRef& cstr, std::wstring_view 
 			return false;
 		}
 		if (eMode == CODE_UNICODE) {
-			pBuf = std::bit_cast<char*>(cstr.GetPtr());
+			pBuf = ((char*)cstr.GetPtr());
 			nTextByteLen = cstr.GetLength() * sizeof(wchar_t);
 		}
 		else {
@@ -397,7 +397,7 @@ bool CClipboard::SetClipboardByFormat(const CStringRef& cstr, std::wstring_view 
 				RESULT_FAILURE == converter->UnicodeToCode(cstr, &cmemBuf)) {
 				return false;
 			}
-			pBuf = std::bit_cast<char*>(cmemBuf.GetRawPtr());
+			pBuf = ((char*)cmemBuf.GetRawPtr());
 			nTextByteLen = cmemBuf.GetRawLength();
 		}
 	}
@@ -411,7 +411,7 @@ bool CClipboard::SetClipboardByFormat(const CStringRef& cstr, std::wstring_view 
 	default: nulLen = 0; break;
 	}
 
-	return SetClipboardData(uFormat, std::bit_cast<const std::byte*>(pBuf), nTextByteLen, nTextByteLen + nulLen);
+	return SetClipboardData(uFormat, ((const std::byte*)pBuf), nTextByteLen, nTextByteLen + nulLen);
 }
 
 static size_t GetLengthByMode(BinarySequenceView data, int nMode, int nEndMode)
@@ -421,11 +421,11 @@ static size_t GetLengthByMode(BinarySequenceView data, int nMode, int nEndMode)
 	nEndMode = GetEndModeByMode(nMode, nEndMode);
 	size_t cbLength = cbData;
 	if( nEndMode == 1 ) {
-		cbLength = strnlen(std::bit_cast<const char*>(pData), cbData);
+		cbLength = strnlen(((const char*)pData), cbData);
 	}else if( nEndMode == 2 ){
-		cbLength = wcsnlen(std::bit_cast<const wchar_t*>(pData), cbData / 2) * 2;
+		cbLength = wcsnlen(((const wchar_t*)pData), cbData / 2) * 2;
 	}else if( nEndMode == 4 ){
-		const auto pData32   = std::bit_cast<const char32_t*>(pData);
+		const auto pData32   = ((const char32_t*)pData);
 		const auto cchData32 = cbData / 4;
 		for (cbLength = 0; cbLength < cchData32 && pData32[cbLength]; ++cbLength);
 		cbLength *= 4;
@@ -483,7 +483,7 @@ bool CClipboard::GetClipboardByFormat(CNativeW& mem, std::wstring_view name, int
 	if (!IsValidCodeType(eMode)) {
 		const auto& type = CEditDoc::getInstance()->m_cDocType.GetDocumentAttribute();
 		CCodeMediator mediator(type.m_encoding);
-		eMode = mediator.CheckKanjiCode(std::bit_cast<const char*>(data.data()), nLength);
+		eMode = mediator.CheckKanjiCode(((const char*)data.data()), nLength);
 
 		if (!IsValidCodeType(eMode)) {
 			eMode = CODE_DEFAULT;

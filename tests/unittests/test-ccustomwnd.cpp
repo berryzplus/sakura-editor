@@ -122,8 +122,8 @@ TEST(CCustomWnd, RegisterWnd02)
 	LONG              y           = CW_USEDEFAULT;
 	LONG              cx          = CW_USEDEFAULT;
 	LONG              cy          = CW_USEDEFAULT;
-	const auto        hWndParent  = std::bit_cast<HWND>(static_cast<size_t>(103));
-	const auto        hMenu       = std::bit_cast<HMENU>(static_cast<size_t>(104));
+	const auto        hWndParent  = HWND(static_cast<size_t>(103));
+	const auto        hMenu       = HMENU(static_cast<size_t>(104));
 
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
 	EXPECT_CALL(*pUser32Dll, GetClassInfoExW(hInstance, StrEq(className.data()), _)).WillOnce(Return(TRUE));
@@ -155,9 +155,9 @@ TEST(CCustomWnd, RegisterWnd03)
 	LONG              y           = CW_USEDEFAULT;
 	LONG              cx          = CW_USEDEFAULT;
 	LONG              cy          = CW_USEDEFAULT;
-	const auto        hWndParent  = std::bit_cast<HWND>(static_cast<size_t>(103));
-	const auto        hMenu       = std::bit_cast<HMENU>(static_cast<size_t>(104));
-	const auto        hWnd        = std::bit_cast<HWND>(static_cast<size_t>(105));
+	const auto        hWndParent  = HWND(static_cast<size_t>(103));
+	const auto        hMenu       = HMENU(static_cast<size_t>(104));
+	const auto        hWnd        = HWND(static_cast<size_t>(105));
 
 	RECT rcWin = { x, y, cx, cy };
 
@@ -228,7 +228,7 @@ public:
 
 TEST(CCustomWnd, OnCreate)
 {
-	const auto   hWnd         = std::bit_cast<HWND>(static_cast<size_t>(101));
+	const auto   hWnd         = HWND(static_cast<size_t>(101));
 	CREATESTRUCT createStruct = {};
 
 	CCustomWndForOnCreateTest wnd;

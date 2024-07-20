@@ -49,7 +49,7 @@ TEST(CHokanMgr, SimpleShowDialog)
 	CHokanMgr dlg(std::move(pShareDataAccessor));
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
 	const auto hWndParent = static_cast<HWND>(nullptr);
-	const auto lParam     = std::bit_cast<LPARAM>(&view);
+	const auto lParam     = LPARAM(&view);
 	const auto hDlg       = dlg.DoModeless(hInstance, hWndParent, lParam);
 	EXPECT_NE(nullptr, hDlg);
 	dlg.CloseDialog(0);

@@ -51,7 +51,7 @@ INT_PTR CALLBACK CCustomDialog::DialogProc(
 	// WM_INITDIALOGが来たらウインドウハンドルにクラスインスタンスを紐付ける
 	if (uMsg == WM_INITDIALOG && lParam)
 	{
-		auto pcDlg = std::bit_cast<CCustomDialog*>(lParam);
+		auto pcDlg = ((CCustomDialog*)lParam);
 
 		::SetWindowLongPtrW(hDlg, DWLP_USER, lParam);
 
@@ -61,7 +61,7 @@ INT_PTR CALLBACK CCustomDialog::DialogProc(
 	}
 
 	// GetWindowLongPtrでインスタンスを取り出し、処理させる
-	if (auto pcDlg = std::bit_cast<CCustomDialog*>(::GetWindowLongPtrW(hDlg, DWLP_USER));
+	if (auto pcDlg = ((CCustomDialog*)::GetWindowLongPtrW(hDlg, DWLP_USER));
 		pcDlg && pcDlg->m_hWnd == hDlg)
 	{
 		const auto ret = pcDlg->DispatchDlgEvent(hDlg, uMsg, wParam, lParam);
@@ -99,7 +99,7 @@ INT_PTR CCustomDialog::Box(HINSTANCE hLangRsrcInstance, HWND hWndParent)
 		MAKEINTRESOURCEW(_idDialog),
 		hWndParent,
 		DialogProc,
-		std::bit_cast<LPARAM>(this));
+		LPARAM(this));
 }
 
 /*!
@@ -112,7 +112,7 @@ HWND CCustomDialog::Create(HINSTANCE hLangRsrcInstance, HWND hWndParent)
 		MAKEINTRESOURCEW(_idDialog),
 		hWndParent,
 		DialogProc,
-		std::bit_cast<LPARAM>(this));
+		LPARAM(this));
 
 	return hWnd;
 }
@@ -130,7 +130,7 @@ HWND CCustomDialog::Create(HINSTANCE hLangRsrcInstance, HWND hWndParent)
 INT_PTR CCustomDialog::DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// ダイアログの標準プロシージャがWM_SIZEを送出してくれないので挙動を上書きする
-	if (const auto lpwpos = std::bit_cast<LPWINDOWPOS>(lParam);
+	if (const auto lpwpos = LPWINDOWPOS(lParam);
 		uMsg == WM_WINDOWPOSCHANGED && lpwpos)
 	{
 		// WM_MOVEはクライアント座標の原点の絶対座標を指定して送信。
@@ -148,7 +148,7 @@ INT_PTR CCustomDialog::DispatchDlgEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 
 	if (uMsg == WM_COMMAND)
 	{
-		return OnDlgCommand(hDlg, LOWORD(wParam), std::bit_cast<HWND>(lParam), HIWORD(wParam));
+		return OnDlgCommand(hDlg, LOWORD(wParam), HWND(lParam), HIWORD(wParam));
 	}
 
 	// WM_INITDIALOGの戻り値は他と意味が異なるので個別に処理する
