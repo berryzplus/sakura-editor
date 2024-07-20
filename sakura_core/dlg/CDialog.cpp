@@ -199,14 +199,14 @@ INT_PTR CDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 // clang-format off
 	case WM_DESTROY:	 return OnDlgDestroy(hDlg);
 	case WM_MOVE:        return OnDlgMove(hDlg, LOWORD(lParam), HIWORD(lParam));
-	case WM_ACTIVATE:	 return OnDlgActivate(hDlg, LOWORD(wParam), std::bit_cast<HWND>(lParam), HIWORD(wParam));
-	case WM_KILLFOCUS:	 return OnDlgKillFocus(hDlg, std::bit_cast<HWND>(wParam));
-	case WM_NOTIFY:		 return OnDlgNotify(hDlg, static_cast<int>(wParam), std::bit_cast<LPNMHDR>(lParam));
+	case WM_ACTIVATE:	 return OnDlgActivate(hDlg, LOWORD(wParam), HWND(lParam), HIWORD(wParam));
+	case WM_KILLFOCUS:	 return OnDlgKillFocus(hDlg, HWND(wParam));
+	case WM_NOTIFY:		 return OnDlgNotify(hDlg, static_cast<int>(wParam), LPNMHDR(lParam));
 	case WM_KEYDOWN:	 return OnDlgKey(hDlg, static_cast<UINT>(wParam), TRUE, LOWORD(lParam), HIWORD(lParam));
-	case WM_COMMAND:	 return OnDlgCommand(hDlg, LOWORD(wParam), std::bit_cast<HWND>(lParam), HIWORD(wParam));
+	case WM_COMMAND:	 return OnDlgCommand(hDlg, LOWORD(wParam), HWND(lParam), HIWORD(wParam));
 	case WM_TIMER:		 return OnDlgTimer(hDlg, static_cast<UINT>(wParam));
-	case WM_HELP:		 return OnDlgHelp(hDlg, std::bit_cast<LPHELPINFO>(lParam));
-	case WM_CONTEXTMENU: return OnDlgContextMenu(hDlg, std::bit_cast<HWND>(wParam), LOWORD(lParam), HIWORD(lParam));
+	case WM_HELP:		 return OnDlgHelp(hDlg, LPHELPINFO(lParam));
+	case WM_CONTEXTMENU: return OnDlgContextMenu(hDlg, HWND(wParam), LOWORD(lParam), HIWORD(lParam));
 // clang-format on
 
 	default:
@@ -252,7 +252,7 @@ INT_PTR CDialog::DispatchEvent(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 BOOL CDialog::OnDlgInitDialog(HWND hDlg, HWND hWndFocus, LPARAM lParam)
 {
 	// 既存コード互換のために旧関数を呼び出す。
-	return OnInitDialog(hDlg, std::bit_cast<WPARAM>(hWndFocus), lParam);
+	return OnInitDialog(hDlg, WPARAM(hWndFocus), lParam);
 }
 
 /*!
@@ -452,7 +452,7 @@ BOOL CDialog::OnDlgActivate(HWND hDlg, UINT state, HWND hWndActDeact, BOOL fMini
 BOOL CDialog::OnDlgKillFocus(HWND hDlg, HWND hWndNewFocus)
 {
 	// 既存コード互換のために旧関数を呼び出す。
-	return OnKillFocus(std::bit_cast<WPARAM>(hWndNewFocus), 0L);
+	return OnKillFocus(WPARAM(hWndNewFocus), 0L);
 }
 
 /*!
@@ -563,7 +563,7 @@ void CDialog::CreateSizeBox( void )
 BOOL CDialog::OnDlgCommand(HWND hDlg, int id, HWND hWndCtl, UINT codeNotify)
 {
 	// 既存コード互換のために旧関数を呼び出す。
-	return OnCommand(MAKEWPARAM(id, codeNotify), std::bit_cast<LPARAM>(hWndCtl));
+	return OnCommand(MAKEWPARAM(id, codeNotify), LPARAM(hWndCtl));
 }
 
 BOOL CDialog::OnCommand( WPARAM wParam, LPARAM lParam )
@@ -643,7 +643,7 @@ BOOL CDialog::OnDlgTimer(HWND hDlg, UINT id)
 BOOL CDialog::OnDlgHelp(HWND hDlg, LPHELPINFO pHelpInfo)
 {
 	// 既存コード互換のために旧関数を呼び出す。
-	return OnPopupHelp(0L, std::bit_cast<LPARAM>(pHelpInfo));
+	return OnPopupHelp(0L, LPARAM(pHelpInfo));
 }
 
 //@@@ 2002.01.18 add start
@@ -663,7 +663,7 @@ BOOL CDialog::OnPopupHelp( WPARAM wPara, LPARAM lParam )
 BOOL CDialog::OnDlgContextMenu(HWND hDlg, HWND hWndContext, UINT xPos, UINT yPos)
 {
 	// 既存コード互換のために旧関数を呼び出す。
-	return OnContextMenu(std::bit_cast<WPARAM>(hWndContext), MAKELPARAM(xPos, yPos));
+	return OnContextMenu(WPARAM(hWndContext), MAKELPARAM(xPos, yPos));
 }
 
 BOOL CDialog::OnContextMenu( WPARAM wPara, LPARAM lParam )

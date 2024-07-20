@@ -60,13 +60,13 @@ auto CopyResource(HINSTANCE hLangRsrcInstance, LPCWSTR lpName, LPCWSTR lpType, s
 	const auto hResData = _User32Dll->LoadResource(hLangRsrcInstance, hResInfo);
 	if (!hResData) return BinarySequence();
 
-	const auto pDlgTemplate = std::bit_cast<TResource>(_User32Dll->LockResource(hResData));
+	const auto pDlgTemplate = TResource(_User32Dll->LockResource(hResData));
 	if (!pDlgTemplate) return BinarySequence();
 
 	const auto dwDlgTemplateSize = _User32Dll->SizeofResource(hLangRsrcInstance, hResInfo);
 
 	auto buffer = std::basic_string<std::byte>(dwDlgTemplateSize, std::byte());
-	auto lpDlgTemplate = std::bit_cast<TResource>(buffer.data());
+	auto lpDlgTemplate = TResource(buffer.data());
 
 	::memcpy_s(lpDlgTemplate, dwDlgTemplateSize, pDlgTemplate, dwDlgTemplateSize);
 
@@ -77,7 +77,7 @@ auto CopyResource(HINSTANCE hLangRsrcInstance, LPCWSTR lpName, LPCWSTR lpType, s
 
 constexpr HBRUSH MakeHBrush(int sysColorIndex)
 {
-	return std::bit_cast<HBRUSH>(static_cast<size_t>(sysColorIndex + 1));
+	return HBRUSH(static_cast<size_t>(sysColorIndex + 1));
 }
 
 inline HCURSOR LoadSysCursor(_In_ LPCWSTR lpCursorName)

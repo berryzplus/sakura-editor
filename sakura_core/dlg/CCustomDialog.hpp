@@ -61,7 +61,7 @@ public:
 			return nullptr;
 		}
 
-		auto lpDlgTemplate = std::bit_cast<LPDLGTEMPLATE>(buffer.data());
+		auto lpDlgTemplate = LPDLGTEMPLATE(buffer.data());
 		func(*lpDlgTemplate);
 
 		const auto hWnd = GetUser32Dll()->CreateDialogIndirectParamW(
@@ -69,7 +69,7 @@ public:
 			lpDlgTemplate,
 			hWndParent,
 			DialogProc,
-			std::bit_cast<LPARAM>(this)
+			LPARAM(this)
 		);
 
 		return hWnd;

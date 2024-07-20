@@ -39,10 +39,10 @@ public:
 
 TEST(CWnd, OnCreate)
 {
-	const auto   hWnd         = std::bit_cast<HWND>(static_cast<size_t>(101));
-	const auto   hInstance    = std::bit_cast<HINSTANCE>(static_cast<size_t>(102));
-	const auto   hMenu        = std::bit_cast<HMENU>(static_cast<size_t>(103));
-	const auto   hWndParent   = std::bit_cast<HWND>(static_cast<size_t>(104));
+	const auto   hWnd         = HWND(static_cast<size_t>(101));
+	const auto   hInstance    = HINSTANCE(static_cast<size_t>(102));
+	const auto   hMenu        = HMENU(static_cast<size_t>(103));
+	const auto   hWndParent   = HWND(static_cast<size_t>(104));
 	CREATESTRUCT createStruct = { nullptr, hInstance, hMenu, hWndParent, };
 
 	CWndForOnCreateTest wnd;

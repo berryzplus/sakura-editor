@@ -169,7 +169,7 @@ TEST(CDialog, MockedDoModal)
 	const auto hLangRsrcInstance = GetLanguageResourceLibrary();
 
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
-	const auto hWndParent = std::bit_cast<HWND>(static_cast<size_t>(0x1234));
+	const auto hWndParent = HWND(static_cast<size_t>(0x1234));
 	const auto lParam     = static_cast<LPARAM>(0);
 
 	auto pUser32Dll = std::make_shared<MockUser32Dll>();
@@ -204,7 +204,7 @@ TEST(CSizeRestorableDialog, MockedDoModeless1)
 	const auto hLangRsrcInstance = GetLanguageResourceLibrary();
 
 	const auto hInstance  = static_cast<HINSTANCE>(nullptr);
-	const auto hWndParent = std::bit_cast<HWND>(static_cast<size_t>(0x1234));
+	const auto hWndParent = HWND(static_cast<size_t>(0x1234));
 	const auto lParam     = static_cast<LPARAM>(0);
 
 	// 作成されたウインドウのハンドル(ダミー)
@@ -297,7 +297,7 @@ TEST(CDialog, MockedDispachDlgEvent_OnInitDialog)
 	mock_dialog_1 mock;
 
 	auto wParam = (WPARAM)hWndFocus;
-	auto lParam = std::bit_cast<LPARAM>(&mock);
+	auto lParam = LPARAM(&mock);
 
 	EXPECT_CALL(mock, OnInitDialog(hDlg, wParam, lParam)).WillOnce(Return(true));
 
