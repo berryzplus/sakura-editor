@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\sakura_core\apiwrap\CommonControl.h" />
+    <ClInclude Include="..\sakura_core\apiwrap\gdi\object_deleter.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\file_mapping.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\format_message.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\handle_closer.hpp" />

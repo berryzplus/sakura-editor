@@ -128,6 +128,9 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{c84bdb0e-9fe1-475f-9c02-0c4afcf9aa59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\apiwrap\gdi">
+      <UniqueIdentifier>{52aa7c58-f3b7-4702-b211-6f9c2d0b67f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(IntDir)Funccode_define.h">
@@ -1167,6 +1170,9 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\_main\CMainWindow.hpp">
       <Filter>Cpp Source Files\_main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\apiwrap\gdi\object_deleter.hpp">
+      <Filter>Cpp Source Files\apiwrap\gdi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
