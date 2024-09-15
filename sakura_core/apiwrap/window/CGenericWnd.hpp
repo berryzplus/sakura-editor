@@ -63,6 +63,24 @@ public:
 
     HWND    GetHwnd() const noexcept { return m_hWnd; }
 
+    std::wstring GetText(std::wstring&& buffer = std::wstring()) const;
+
+#if 0
+    virtual LRESULT SendMessageW(
+        _In_ HWND                           hWnd,
+        _In_ UINT                           Msg,
+        _Pre_maybenull_ _Post_valid_ WPARAM wParam = 0L,
+        _Pre_maybenull_ _Post_valid_ LPARAM lParam = 0L) const
+    {
+        return ::SendMessageW(hWnd, Msg, wParam, lParam);
+    }
+
+    virtual bool SetText(std::wstring_view text) const
+    {
+        return ::SetWindowTextW(m_hWnd, text.data());
+    }
+#endif
+
 protected:
     void    _SetHwnd(_In_opt_ HWND hWnd) noexcept { m_hWnd = hWnd; }
 
@@ -75,7 +93,19 @@ protected:
      * @param [in, opt] lParam 第2パラメーター
      * @returns 処理結果 メッセージコードにより異なる
      */
-    virtual LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
+    virtual LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    virtual LRESULT DefWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
+
+    virtual int GetWindowTextLengthW(_In_ HWND hWnd) const
+    {
+        return ::GetWindowTextLengthW(hWnd);
+    }
+
+    virtual int GetWindowTextW(_In_ HWND hWnd, _Out_writes_(maxCount) LPWSTR buffer, _In_ size_t maxCount) const
+    {
+        return ::GetWindowTextW(hWnd, buffer, int(maxCount));
+    }
 };
 
 } // end of namespace apiwrap::window

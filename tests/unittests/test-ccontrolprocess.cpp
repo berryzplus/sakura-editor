@@ -37,6 +37,7 @@
 #include "_main/CNormalProcess.h"
 
 #include "apiwrap/window/COriginalWnd.hpp"
+#include "apiwrap/window/CCustomizedWnd.hpp"
 
 /*!
  * @brief コントロールプロセスの異常系テスト
@@ -295,6 +296,46 @@ TEST_F(COriginalWndTest, OnCreate003)
 TEST_F(COriginalWndTest, CreateWnd001)
 {
 	EXPECT_FALSE(pWnd->CreateWnd(HWND(nullptr)));
+}
+
+struct STestCtrl : public apiwrap::window::CCustomizedWnd
+{
+    using CCustomizedWnd::WndProc;
+    //using CCustomizedWnd::OnCreate;
+
+	STestCtrl() = default;
+};
+
+struct CCustomizedWndTest : public ::testing::Test
+{
+	std::unique_ptr<CCustomizedWnd> pWnd = nullptr;
+
+	void SetUp() override {
+		pWnd = std::make_unique<STestCtrl>();
+	}
+};
+
+// 不正パラメーター
+TEST_F(CCustomizedWndTest, WndProc001)
+{
+	EXPECT_FALSE(STestCtrl::WndProc(nullptr, WM_NULL, 0, 0));
+}
+
+// 通すだけのテスト
+TEST_F(CCustomizedWndTest, WndProc002)
+{
+	const auto hWnd = ::GetDesktopWindow();
+	EXPECT_FALSE(STestCtrl::WndProc(hWnd, WM_NULL, 0, 0));
+}
+
+TEST_F(CCustomizedWndTest, Attach001)
+{
+	EXPECT_FALSE(pWnd->Attach(nullptr));
+}
+
+TEST_F(CCustomizedWndTest, Detach001)
+{
+	pWnd->Detach(nullptr);
 }
 
 } // end of namespace apiwrap::window

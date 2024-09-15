@@ -161,6 +161,8 @@ TEST_P(WinMainTest, runEditorProcess)
 		L"SelectAll();"sv,
 		L"GoFileEnd();"sv,
 		L"GoFileTop();"sv,
+		L"PrintPreview();"sv,
+		L"PrintPreview();"sv,
 		L"ShowFunckey();"sv,			//ShowFunckey 消す
 		L"ShowMiniMap();"sv,			//ShowMiniMap 消す
 		L"ShowTab();"sv,				//ShowTab 消す

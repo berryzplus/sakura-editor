@@ -167,21 +167,7 @@ LRESULT COriginalWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         return HANDLE_WM_CREATE(hWnd, wParam, lParam, OnCreate);
     }
 
-    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
-}
-
-/*!
- * デフォルトのメッセージ配送
- *
- * @param [in] hWnd 宛先ウインドウのハンドル
- * @param [in] uMsg メッセージコード
- * @param [in, opt] wParam 第1パラメーター
- * @param [in, opt] lParam 第2パラメーター
- * @returns 処理結果 メッセージコードにより異なる
- */
-LRESULT COriginalWnd::DefWindowProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const
-{
-    return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    return __super::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!

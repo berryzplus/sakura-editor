@@ -1174,6 +1174,9 @@
     <ClInclude Include="..\sakura_core\apiwrap\gdi\object_deleter.hpp">
       <Filter>Cpp Source Files\apiwrap\gdi</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\apiwrap\window\CCustomizedWnd.hpp">
+      <Filter>Cpp Source Files\apiwrap\window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2400,6 +2403,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\_main\CMainWindow.cpp">
       <Filter>Cpp Source Files\_main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\apiwrap\window\CCustomizedWnd.cpp">
+      <Filter>Cpp Source Files\apiwrap\window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
