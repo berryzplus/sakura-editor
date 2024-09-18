@@ -195,23 +195,21 @@ CEditWnd& GetEditWnd( void )
 
 /*static*/ CEditWnd* CEditWnd::getInstance()
 {
-	const auto editApp = CEditApp::getInstance();
-	if (!editApp)
-	{
+	const auto process = getEditorProcess();
+	if (!process) {
 		return nullptr;
 	}
-	return editApp->GetEditWindow();
+	return dynamic_cast<CEditWnd*>(process->GetMainWnd());
 }
 
-//	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CEditWnd::CEditWnd(CEditDoc* pcEditDoc)
-	: COriginalWnd(GSTR_EDITWINDOWNAME, G_AppInstance(), sizeof(LONG_PTR) * 1)
-	, CDocListenerEx(pcEditDoc)
+CEditWnd::CEditWnd()
+	: CMainWindow(GSTR_EDITWINDOWNAME, G_AppInstance(), sizeof(LONG_PTR) * 1)
+	, CDocListenerEx(CEditDoc::getInstance())
 , m_cToolbar(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cStatusBar(this)		// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_pPrintPreview( NULL ) //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 , m_pcDragSourceView( NULL )
-	, m_pcEditDoc(pcEditDoc)
+	, m_pcEditDoc(GetListeningDoc())
 , m_nActivePaneIndex( 0 )
 , m_nEditViewCount( 1 )
 , m_nEditViewMaxCount( _countof(m_pcEditViewArr) )	// 今のところ最大値は固定
@@ -375,15 +373,13 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 	GetDefaultIcon(&hIcon, &hIconSm);
 
 	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
-	if (!RegisterWnd(
+	RegisterWnd(
 		HCURSOR(nullptr),
 		HBRUSH(nullptr),
 		CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW,
 		hIcon,
-		hIconSm))
-	{
-		return nullptr;
-	}
+		hIconSm
+	);
 
 	//矩形取得
 	CMyRect rc;
@@ -429,7 +425,7 @@ void CEditWnd::_GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup)
 	pTabGroupInfo->wpTop = wpTop;
 }
 
-void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
+void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo) const
 {
 	RECT	rcOrg;
 	RECT	rcDesktop;
@@ -567,10 +563,7 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 	@date 2007.06.26 ryoji nGroup追加
 	@date 2008.04.19 ryoji 初回アイドリング検出用ゼロ秒タイマーのセット処理を追加
 */
-HWND CEditWnd::Create(
-	const CImageListMgr*,	//!< [in] Image List
-	int				nGroup		//!< [in] グループID
-)
+HWND CEditWnd::CreateMainWnd(int nCmdShow)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
@@ -598,6 +591,12 @@ HWND CEditWnd::Create(
 	if( m_pShareData->m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//最大値修正	//@@@ 2003.05.31 MIK
 		OkMessage( NULL, LS(STR_MAXWINDOW), MAX_EDITWINDOWS );
 		return NULL;
+	}
+
+	// グループIDを取得
+	int nGroup = getEditorProcess()->GetCCommandLine().GetGroupId();
+	if (m_pShareData->m_Common.m_sTabBar.m_bNewWindow && nGroup == -1) {
+		nGroup = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
 
 	//タブグループ情報取得
@@ -662,7 +661,7 @@ HWND CEditWnd::Create(
 //! 起動時のファイルオープン処理
 void CEditWnd::OpenDocumentWhenStart(
 	const SLoadInfo& _sLoadInfo		//!< [in]
-)
+) const
 {
 	if( _sLoadInfo.cFilePath.Length() ){
 		::ShowWindow( GetHwnd(), SW_SHOW );
@@ -685,7 +684,7 @@ void CEditWnd::SetDocumentTypeWhenCreate(
 	ECodeType		nCharCode,		//!< [in] 漢字コード
 	bool			bViewMode,		//!< [in] ビューモードで開くかどうか
 	CTypeConfig		nDocumentType	//!< [in] 文書タイプ．-1のとき強制指定無し．
-)
+) const
 {
 	//	Mar. 7, 2002 genta 文書タイプの強制指定
 	//	Jun. 4 ,2004 genta ファイル名指定が無くてもタイプ強制指定を有効にする
@@ -2005,17 +2004,12 @@ LRESULT CEditWnd::DispatchEvent(
  */
 bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-#if 0 // テスト書けないのでコメントアウト
     if (!__super::OnCreate(hWnd, lpCreateStruct))
     {
         return false;
     }
-#endif
 
-	//イメージ、ヘルパなどの作成
-	auto pcIcons = &CEditApp::getInstance()->GetIcons();
-	m_cMenuDrawer.Create(m_hInstance, hWnd, pcIcons);
-	m_cToolbar.Create(pcIcons);
+	m_cToolbar.Create(&m_hIcons);
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
@@ -2074,7 +2068,7 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	@retval TRUE: 終了して良い / FALSE: 終了しない
 */
-int	CEditWnd::OnClose(HWND hWndActive, bool bGrepNoConfirm )
+int	CEditWnd::OnClose(HWND hWndActive, bool bGrepNoConfirm) const
 {
 	/* ファイルを閉じるときのMRU登録 & 保存確認 & 保存実行 */
 	int nRet = GetDocument()->OnFileClose( bGrepNoConfirm );
@@ -4821,7 +4815,7 @@ void CEditWnd::RegisterPluginCommand( CPlug* plug )
 	m_cMenuDrawer.AddToolButton( iBitmap, plug->GetFunctionCode() );
 }
 
-const LOGFONT& CEditWnd::GetLogfont(bool bTempSetting)
+const LOGFONT& CEditWnd::GetLogfont(bool bTempSetting) const
 {
 	if( bTempSetting && GetDocument()->m_blfCurTemp ){
 		return GetDocument()->m_lfCur;
@@ -4833,7 +4827,7 @@ const LOGFONT& CEditWnd::GetLogfont(bool bTempSetting)
 	return m_pShareData->m_Common.m_sView.m_lf;
 }
 
-int CEditWnd::GetFontPointSize(bool bTempSetting)
+int CEditWnd::GetFontPointSize(bool bTempSetting) const
 {
 	if( bTempSetting && GetDocument()->m_blfCurTemp ){
 		return GetDocument()->m_nPointSizeCur;
@@ -4844,7 +4838,8 @@ int CEditWnd::GetFontPointSize(bool bTempSetting)
 	}
 	return m_pShareData->m_Common.m_sView.m_nPointSize;
 }
-ECharWidthCacheMode CEditWnd::GetLogfontCacheMode()
+
+ECharWidthCacheMode CEditWnd::GetLogfontCacheMode() const
 {
 	if( GetDocument()->m_blfCurTemp ){
 		return CWM_CACHE_LOCAL;
@@ -4860,7 +4855,7 @@ ECharWidthCacheMode CEditWnd::GetLogfontCacheMode()
 	@brief 現在のズーム倍率を取得
 	@return 1.0を等倍とするズーム倍率
 */
-double CEditWnd::GetFontZoom()
+double CEditWnd::GetFontZoom() const
 {
 	if( GetDocument()->m_blfCurTemp ){
 		return GetDocument()->m_nCurrentZoom;

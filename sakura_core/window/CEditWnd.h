@@ -44,8 +44,7 @@
 #define SAKURA_CEDITWND_6C771A35_3CC8_4932_BF15_823C40487A9F_H_
 #pragma once
 
-#include "apiwrap/window/COriginalWnd.hpp"
-#include "env/SShareDataClientWithCache.hpp"
+#include "_main/CMainWindow.hpp"
 
 #include <shellapi.h>// HDROP
 #include "_main/global.h"
@@ -97,17 +96,14 @@ struct STabGroupInfo{
 // 2002.02.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 // 2007.10.30 kobake IsFuncEnable,IsFuncCheckedをFunccode.hに移動
 // 2007.10.30 kobake OnHelp_MenuItemをCEditAppに移動
-class CEditWnd
-	: public apiwrap::window::COriginalWnd
-	, public CDocListenerEx
-	, private SShareDataClientWithCache
+class CEditWnd : public CMainWindow, public CDocListenerEx
 {
 	using Me = CEditWnd;
 
 public:
 	static Me* getInstance();
 
-	explicit CEditWnd(CEditDoc* pcEditDoc);
+	CEditWnd();
 	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -116,24 +112,21 @@ public:
 	//	Mar. 7, 2002 genta 文書タイプ用引数追加
 	// 2007.06.26 ryoji グループ指定引数追加
 	//! 作成
-	HWND    Create(
-		const CImageListMgr*,
-		int				nGroup
-	);
+	HWND    CreateMainWnd(int nCmdShow) override;
 	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
 	void _GetWindowRectForInit(CMyRect* rcResult, int nGroup, const STabGroupInfo& sTabGroupInfo);	//!< ウィンドウ生成用の矩形を取得
 	HWND _CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo);
-	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
+	void    _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo) const;
 
 	void OpenDocumentWhenStart(
 		const SLoadInfo& sLoadInfo		//!< [in]
-	);
+	) const;
 
 	void SetDocumentTypeWhenCreate(
 		ECodeType		nCharCode,							//!< [in] 漢字コード
 		bool			bViewMode,							//!< [in] ビューモードで開くかどうか
 		CTypeConfig	nDocumentType = CTypeConfig(-1)	//!< [in] 文書タイプ．-1のとき強制指定無し．
-	);
+	) const;
 	void UpdateCaption();
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
@@ -142,7 +135,7 @@ public:
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 	//管理
-	void MessageLoop( void );								/* メッセージループ */
+	void    MessageLoop(void) override;
 
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
@@ -159,7 +152,7 @@ public:
 	BOOL DoMouseWheel( WPARAM wParam, LPARAM lParam );	// マウスホイール処理	// 2007.10.16 ryoji
 	LRESULT OnHScroll(WPARAM wParam, LPARAM lParam);
 	LRESULT OnVScroll(WPARAM wParam, LPARAM lParam);
-	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
+	int	OnClose(HWND hWndActive, bool bGrepNoConfirm) const;	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
 	BOOL OnPrintPageSetting( void );/* 印刷ページ設定 */
 	LRESULT OnTimer(WPARAM wParam, LPARAM lParam);	// WM_TIMER 処理	// 2007.04.03 ryoji
@@ -275,8 +268,7 @@ public:
 	//                       各種アクセサ                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	CMenuDrawer&	GetMenuDrawer()			{ return m_cMenuDrawer; }
-	CEditDoc*		GetDocument()           { return m_pcEditDoc; }
-	const CEditDoc*	GetDocument() const     { return m_pcEditDoc; }
+	CEditDoc*       GetDocument() const     { return CEditDoc::getInstance(); }
 
 	//ビュー
 	const CEditView&	GetActiveView() const { return *m_pcEditView; }
@@ -343,10 +335,10 @@ public:
 	int GetCurrentFocus() const{ return m_nCurrentFocus; }
 	void SetCurrentFocus(int n){ m_nCurrentFocus = n; }
 
-	const LOGFONT&	GetLogfont(bool bTempSetting = true);
-	int			GetFontPointSize(bool bTempSetting = true);
-	ECharWidthCacheMode GetLogfontCacheMode();
-	double GetFontZoom();
+	const LOGFONT&      GetLogfont(bool bTempSetting = true) const;
+	int                 GetFontPointSize(bool bTempSetting = true) const;
+	ECharWidthCacheMode GetLogfontCacheMode() const;
+	double              GetFontZoom() const;
 
 	void ClearViewCaretPosInfo();
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -384,9 +376,6 @@ private:
 	int				m_nActivePaneIndex;	//!< 有効なビューのindex
 	int				m_nEditViewCount;	//!< 有効なビューの数
 	const int		m_nEditViewMaxCount;//!< ビューの最大数=4
-
-	//ヘルパ
-	CMenuDrawer		m_cMenuDrawer;
 
 	//状態
 	bool			m_bIsActiveApp;		//!< 自アプリがアクティブかどうか	// 2007.03.08 ryoji
