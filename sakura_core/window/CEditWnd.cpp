@@ -1512,7 +1512,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case MYWM_UIPI_CHECK:
 		/* エディタ－トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
-		m_bUIPI = TRUE;	// トレイからの返事を受け取った
+		m_bUIPI = true;	// トレイからの返事を受け取った
 		return 0L;
 
 	case MYWM_CLOSE:
@@ -2009,17 +2009,16 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
         return false;
     }
 
-	m_cToolbar.Create(&m_hIcons);
-
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
-		m_bUIPI = FALSE;
 		SendMessageW(hWndTray, MYWM_UIPI_CHECK, WPARAM(0L), LPARAM(hWnd));
 		if (!m_bUIPI) {	// 返事が返らない
-			TopErrorMessage(hWnd, LS(STR_ERR_DLGEDITWND02));
+			TopErrorMessage(hWnd, LS(STR_ERR_DLGEDITWND02)); // L"エディタ間の対話に失敗しました。\n権限レベルの異なるエディタが既に起動している可能性があります。"
 			return false;
 		}
 	}
+
+	m_cToolbar.Create(&m_hIcons);
 
 	SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL ); // Init
 	InitCharWidthCache( m_pcViewFontMiniMap->GetLogfont(), CWM_FONT_MINIMAP );

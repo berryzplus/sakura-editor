@@ -403,7 +403,7 @@ private:
 	CDropTarget*	m_pcDropTarget;
 
 	//その他フラグ
-	BOOL				m_bUIPI;		// エディタ－トレイ間でのUI特権分離確認用フラグ	// 2007.06.07 ryoji
+	bool                m_bUIPI       = false;		// エディタ－トレイ間でのUI特権分離確認用フラグ	// 2007.06.07 ryoji
 	EIconClickStatus	m_IconClicked;
 
 public:
