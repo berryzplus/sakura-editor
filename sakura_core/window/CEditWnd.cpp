@@ -567,9 +567,6 @@ HWND CEditWnd::CreateMainWnd(int nCmdShow)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
-	//コモンコントロール初期化
-	MyInitCommonControls();
-
 	m_pcViewFont = new CViewFont(&GetLogfont());
 
 	m_pcViewFontMiniMap = new CViewFont(&GetLogfont(), true);
@@ -622,6 +619,10 @@ HWND CEditWnd::CreateMainWnd(int nCmdShow)
 		m_hWnd = hWnd = NULL;
 		return hWnd;
 	}
+
+	//コモンコントロール初期化
+	MyInitCommonControls();
+
 
 	// プラグインコマンドを登録する
 	RegisterPluginCommand();

@@ -796,24 +796,17 @@ bool CEditView::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	constexpr auto IDC_SIZEBOX2 = 104;
 
 	m_hwndSizeBox = CreateWindowExW(
-		GetHwnd(),
+		hWnd,
 		IDC_SIZEBOX,
 		CWndClass(WC_SCROLLBAR),
 		WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP
 	);
-	if (!m_hwndSizeBox) {
-        return false;
-	}
 
 	m_hwndSizeBoxPlaceholder = CreateWindowExW(
-		GetHwnd(),
+		hWnd,
 		IDC_SIZEBOX2,
 		CWndClass(WC_STATIC)
 	);
-
-	if (!m_hwndSizeBoxPlaceholder) {
-        return false;
-	}
 
 	return true;
 }
