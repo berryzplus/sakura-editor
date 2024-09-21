@@ -44,3 +44,11 @@ def root_driver(appium_service) -> Generator[WebDriver, None, None]:
 @pytest.fixture(scope='session')
 def desktop(root_driver: WebDriver) -> WebElement:
     return root_driver.find_element(By.CLASS_NAME, '#32769') # Desktop
+
+@pytest.fixture(scope="function")
+def tray_icon(desktop: WebElement) -> WebElement:
+    # Windowsキー + B を押してタスクトレイをフォーカス
+    desktop.send_keys(Keys.COMMAND, 'b')
+    # Enterキーを押してタスクトレイを開く
+    desktop.send_keys(Keys.ENTER)
+    return WebDriverWait(desktop, 120).until(EC.visibility_of_element_located((By.XPATH, '//Button[contains(@Name, "サクラエディタ")]')))
