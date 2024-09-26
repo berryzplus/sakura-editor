@@ -33,7 +33,7 @@ public:
 	explicit CSplitBoxWnd(bool isVertical) noexcept;
 	~CSplitBoxWnd() override = default;
 
-	HWND Create(HINSTANCE hInstance, HWND hwndParent, int bVertical);
+	HWND    Create(HWND hWndParent, int cx, int cy);
 
 	static void Draw3dRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight);
 	static void FillSolidRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clr);

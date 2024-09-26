@@ -210,15 +210,10 @@ CEditWnd::CEditWnd()
 	, CDocListenerEx(CEditDoc::getInstance())
 , m_cToolbar(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cStatusBar(this)		// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
-, m_pPrintPreview( NULL ) //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 , m_pcDragSourceView( NULL )
 	, m_pcEditDoc(GetListeningDoc())
-, m_nActivePaneIndex( 0 )
-, m_nEditViewCount( 1 )
-, m_nEditViewMaxCount( _countof(m_pcEditViewArr) )	// 今のところ最大値は固定
 , m_bIsActiveApp( false )
 , m_pszLastCaption( NULL )
-, m_pszMenubarMessage( new WCHAR[MENUBAR_MESSAGE_MAX_LEN] )
 , m_posSaveAry( NULL )
 , m_nCurrentFocus( 0 )
 , m_hAccelWine( NULL )
@@ -227,44 +222,11 @@ CEditWnd::CEditWnd()
 , m_IconClicked(icNone) //by 鬼(2)
 , m_nSelectCountMode( SELECT_COUNT_TOGGLE )	//文字カウント方法の初期値はSELECT_COUNT_TOGGLE→共通設定に従う
 {
-	auto& cLayoutMgr = GetDocument()->m_cLayoutMgr;
-	cLayoutMgr.SetLayoutInfo( true, false, m_pcEditDoc->m_cDocType.GetDocumentAttribute(),
-		cLayoutMgr.GetTabSpaceKetas(), cLayoutMgr.m_tsvInfo.m_nTsvMode,
-		cLayoutMgr.GetMaxLineKetas(), CLayoutXInt(-1), &GetLogfont() );
-
-	std::fill(std::begin(m_pcEditViewArr), std::end(m_pcEditViewArr), nullptr);
-
-	// [0] - [3] まで作成・初期化していたものを[0]だけ作る。ほかは分割されるまで何もしない
-	m_pcEditViewArr[0] = new CEditView();
-	m_pcEditView = m_pcEditViewArr[0];
 }
 
 CEditWnd::~CEditWnd()
 {
-	delete m_pPrintPreview;
-	m_pPrintPreview = NULL;
-
-	for( int i = 0; i < m_nEditViewMaxCount; i++ ){
-		delete m_pcEditViewArr[i];
-		m_pcEditViewArr[i] = NULL;
-	}
-	m_pcEditView = NULL;
-
-	delete m_pcViewFont;
-	m_pcViewFont = NULL;
-
-	delete m_pcViewFontMiniMap;
-	m_pcViewFontMiniMap = NULL;
-
-	delete[] m_pszMenubarMessage;
 	delete[] m_pszLastCaption;
-
-	//	Dec. 4, 2002 genta
-	/* キャレットの行桁位置表示用フォント */
-	::DeleteObject( m_hFontCaretPosInfo );
-
-	delete m_pcDropTarget;	// 2008.06.20 ryoji
-	m_pcDropTarget = NULL;
 
 	// ウィンドウ毎に作成したアクセラレータテーブルを破棄する(Wine用)
 	DeleteAccelTbl();
@@ -570,16 +532,18 @@ HWND CEditWnd::CreateMainWnd(int nCmdShow)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
-	m_pcViewFont = new CViewFont(&GetLogfont());
+	m_ViewFont = std::make_shared<CViewFont>(&GetLogfont());
+	m_pcViewFont = m_ViewFont.get();
 
-	m_pcViewFontMiniMap = new CViewFont(&GetLogfont(), true);
+	m_ViewFontMiniMap = std::make_shared<CViewFont>(&GetLogfont(), true);
+	m_pcViewFontMiniMap = m_ViewFontMiniMap.get();
 
 	wmemset( m_pszMenubarMessage, L' ', MENUBAR_MESSAGE_MAX_LEN );	// null終端は不要
 
 	//	Dec. 4, 2002 genta
 	InitMenubarMessageFont();
 
-	m_pcDropTarget = new CDropTarget( this );	// 右ボタンドロップ用	// 2008.06.20 ryoji
+	m_pcDropTarget = std::make_unique<CDropTarget>(this);	// 右ボタンドロップ用
 
 	// 2009.01.17 nasukoji	ホイールスクロール有無状態をクリア
 	ClearMouseState();
@@ -1002,7 +966,7 @@ void CEditWnd::MessageLoop( void )
 		if(ret==-1)break; //GetMessage失敗
 
 		//ダイアログメッセージ
-		     if( MyIsDialogMessage( CPrintPreview::GetPrintPreviewBarHANDLE_Safe(m_pPrintPreview),	&msg ) ){}	//!< 印刷プレビュー 操作バー
+		     if( MyIsDialogMessage( CPrintPreview::GetPrintPreviewBarHANDLE_Safe(m_pPrintPreview.get()),	&msg ) ){}	//!< 印刷プレビュー 操作バー
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){}	//!<「検索」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
@@ -2015,14 +1979,6 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	/* 分割フレーム作成 */
 	m_cSplitterWnd.Create(hWnd);
 
-	/* ビュー */
-	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false  );
-	GetView(0).OnSetFocus();
-
-	/* 子ウィンドウの設定 */
-	std::array<HWND, 2> hWndArr = { GetView(0).GetHwnd(), nullptr };
-	m_cSplitterWnd.SetChildWndArr( hWndArr.data() );
-
 	// -- -- -- -- 各種バー作成 -- -- -- -- //
 
 	// メインメニュー
@@ -2891,8 +2847,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 	if( m_pPrintPreview ){
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		/*	印刷プレビューモードを解除します。	*/
-		delete m_pPrintPreview;	//	削除。
-		m_pPrintPreview = NULL;	//	NULLか否かで、プリントプレビューモードか判断するため。
+		m_pPrintPreview.reset();
 
 		/*	通常モードに戻す	*/
 		::ShowWindow( this->m_cSplitterWnd.GetHwnd(), SW_SHOW );
@@ -2945,7 +2900,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 		::ShowWindow( m_cDlgGrep.GetHwnd(), SW_HIDE );
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-		m_pPrintPreview = new CPrintPreview( this );
+		m_pPrintPreview = std::make_unique<CPrintPreview>(this);
 		/* 現在の印刷設定 */
 		m_pPrintPreview->SetPrintSetting(
 			&m_pShareData->m_PrintSettingArr[
@@ -3879,6 +3834,7 @@ void CEditWnd::InitMenubarMessageFont(void)
 	lf.lfPitchAndFamily	= 0x31;
 	wcscpy( lf.lfFaceName, L"ＭＳ ゴシック" );
 	m_hFontCaretPosInfo = ::CreateFontIndirect( &lf );
+	m_FontCaretPosInfo.reset(m_hFontCaretPosInfo);
 
 	hdc = ::GetDC( ::GetDesktopWindow() );
 	hFontOld = (HFONT)::SelectObject( hdc, m_hFontCaretPosInfo );
@@ -4278,35 +4234,6 @@ LRESULT CEditWnd::Views_DispatchEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 }
 
 /*
-	分割指示。2つ目以降のビューを作る
-	@param nViewCount  既存のビューも含めたビューの合計要求数
-*/
-bool CEditWnd::CreateEditViewBySplit(int nViewCount )
-{
-	if( m_nEditViewMaxCount < nViewCount ){
-		return false;
-	}
-	if( GetAllViewCount() < nViewCount ){
-		for( int i = GetAllViewCount(); i < nViewCount; i++ ){
-			assert( NULL == m_pcEditViewArr[i] );
-			m_pcEditViewArr[i] = new CEditView();
-			m_pcEditViewArr[i]->Create( m_cSplitterWnd.GetHwnd(), GetDocument(), i, FALSE, false );
-		}
-		m_nEditViewCount = nViewCount;
-
-		std::vector<HWND> hWndArr;
-		hWndArr.reserve(nViewCount + 1);
-		for( int i = 0; i < nViewCount; i++ ){
-			hWndArr.push_back( GetView(i).GetHwnd() );
-		}
-		hWndArr.push_back( NULL );
-
-		m_cSplitterWnd.SetChildWndArr( &hWndArr[0] );
-	}
-	return true;
-}
-
-/*
 	ビューの再初期化
 	@date 2010.04.10 CEditDoc::InitAllViewから移動
 */
@@ -4362,7 +4289,6 @@ void  CEditWnd::SetActivePane( int nIndex )
 	/* アクティブなビューを切り替える */
 	int nOldIndex = m_nActivePaneIndex;
 	m_nActivePaneIndex = nIndex;
-	m_pcEditView = m_pcEditViewArr[m_nActivePaneIndex];
 
 	// フォーカスを移動する	// 2007.10.16 ryoji
 	GetView(nOldIndex).GetCaret().m_cUnderLine.CaretUnderLineOFF( true );	//	2002/05/11 YAZAKI

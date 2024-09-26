@@ -71,7 +71,10 @@
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CEditView::CEditView( void )
+CEditView::CEditView(
+	int			nMyIndex,
+	bool		bMiniMap
+)
 : CViewCalc(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 	, CMyWnd(GSTR_VIEWNAME)
 	, CDocListenerEx(CEditDoc::getInstance())
@@ -81,16 +84,20 @@ CEditView::CEditView( void )
 , m_cCommander(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_hwndVScrollBar(NULL)
 , m_hwndHScrollBar(NULL)
-, m_pcDropTarget(NULL)
 , m_bActivateByMouse( FALSE )	// 2007.10.02 nasukoji
 , m_nWheelDelta(0)
 , m_eWheelScroll(F_0)
 , m_nMousePause(0)
 , m_nAutoScrollMode(0)
-, m_cHistory(NULL)
-, m_cRegexKeyword(NULL)
+	, m_nMyIndex(nMyIndex)
+	, m_bMiniMap(bMiniMap)
 {
 	m_pcEditDoc = CEditDoc::getInstance();
+}
+
+CEditDoc* CEditView::GetDocument() const
+{
+	return CEditDoc::getInstance();
 }
 
 // 2007.10.23 kobake コンストラクタ内の処理をすべてCreateに移しました。(初期化処理が不必要に分散していたため)
@@ -109,8 +116,7 @@ BOOL CEditView::Create(
 		m_pcViewFont = GetEditWnd().m_pcViewFont;
 	}
 
-	m_cHistory = new CAutoMarkMgr;
-	m_cRegexKeyword = NULL;				// 2007.04.08 ryoji
+	m_cHistory = std::make_unique<CAutoMarkMgr>();
 
 	SetDrawSwitch(true);
 	_SetDragMode(FALSE);					/* 選択テキストのドラッグ中か */
@@ -127,8 +133,6 @@ BOOL CEditView::Create(
 	/* 共有データ構造体のアドレスを返す */
 	m_bCommandRunning = FALSE;	/* コマンドの実行中 */
 	m_bDoing_UndoRedo = false;	/* アンドゥ・リドゥの実行中か */
-	m_pcsbwVSplitBox = NULL;	/* 垂直分割ボックス */
-	m_pcsbwHSplitBox = NULL;	/* 水平分割ボックス */
 	m_hwndVScrollBar = NULL;
 	m_nVScrollRate = 1;			/* 垂直スクロールバーの縮尺 */
 	m_hwndHScrollBar = NULL;
@@ -198,7 +202,7 @@ BOOL CEditView::Create(
 	m_nMyIndex = nMyIndex;
 
 	//	2007.08.18 genta 初期化にShareDataの値が必要になった
-	m_cRegexKeyword = new CRegexKeyword( GetDllShareData().m_Common.m_sSearch.m_szRegexpLib );	//@@@ 2001.11.17 add MIK
+	m_cRegexKeyword = std::make_unique<CRegexKeyword>(GetDllShareData().m_Common.m_sSearch.m_szRegexpLib);
 	m_cRegexKeyword->RegexKeySetTypes(m_pTypeData);	//@@@ 2001.11.17 add MIK
 
 	GetTextArea().SetTopYohaku(DpiScaleY(GetDllShareData().m_Common.m_sWindow.m_nRulerBottomSpace)); 	/* ルーラーとテキストの隙間 */
@@ -238,7 +242,7 @@ BOOL CEditView::Create(
 	}
 
 	if( !m_bMiniMap ){
-		m_pcDropTarget = new CDropTarget( this );
+		m_pcDropTarget = std::make_unique<CDropTarget>(this);
 		m_pcDropTarget->Register_DropTarget( GetHwnd() );
 	}
 
@@ -250,12 +254,18 @@ BOOL CEditView::Create(
 	// 2007.09.30 genta 関数化
 	UseCompatibleDC( GetDllShareData().m_Common.m_sWindow.m_bUseCompatibleBMP );
 
+	RECT rcClient = {};
+	::GetClientRect(hWnd, &rcClient);
+
+	const auto cx = rcClient.right;
+	const auto cy = rcClient.bottom;
+
 	/* 垂直分割ボックス */
-	m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>().release();
-	m_pcsbwVSplitBox->Create( G_AppInstance(), GetHwnd(), TRUE );
+	m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>();
+	m_pcsbwVSplitBox->Create(hWnd, cx, cy);
 	/* 水平分割ボックス */
-	m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>().release();
-	m_pcsbwHSplitBox->Create( G_AppInstance(), GetHwnd(), FALSE );
+	m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>();
+	m_pcsbwHSplitBox->Create(hWnd, cx, cy);
 
 	/* スクロールバー作成 */
 	CreateScrollBar();		// 2006.12.19 ryoji
@@ -314,15 +324,6 @@ void CEditView::Close()
 	//	2007.09.30 genta 関数化
 	//	m_hbmpCompatBMPもここで削除される．
 	UseCompatibleDC(FALSE);
-
-	delete m_pcDropTarget;
-	m_pcDropTarget = NULL;
-
-	delete m_cHistory;
-	m_cHistory = NULL;
-
-	delete m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
-	m_cRegexKeyword = NULL;
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -364,7 +365,7 @@ LRESULT CEditView::DispatchEvent(
 	// To Here 2007.09.09 Moca
 
 	case WM_SIZE:
-		OnSize( LOWORD( lParam ), HIWORD( lParam ) );
+		HANDLE_WM_SIZE(hWnd, wParam, lParam, OnSize);
 		return 0L;
 
 	case WM_SETFOCUS:
@@ -623,7 +624,7 @@ LRESULT CEditView::DispatchEvent(
 		if (PAINTSTRUCT	ps = {};
 			BeginPaint(hWnd, &ps))
 		{
-			OnPaint(ps.hdc, &ps, FALSE);
+			OnPaint(hWnd, ps);
 			EndPaint(hWnd, &ps);
 		}
 		return 0L;
@@ -663,8 +664,8 @@ LRESULT CEditView::DispatchEvent(
 		m_hwndSizeBox = NULL;
 		::DestroyWindow( m_hwndSizeBoxPlaceholder );
 		m_hwndSizeBoxPlaceholder = NULL;
-		SAFE_DELETE(m_pcsbwVSplitBox);	/* 垂直分割ボックス */
-		SAFE_DELETE(m_pcsbwHSplitBox);	/* 水平分割ボックス */
+		if (m_pcsbwVSplitBox) DestroyWindow(m_pcsbwVSplitBox->GetHwnd());	/* 垂直分割ボックス */
+		if (m_pcsbwHSplitBox) DestroyWindow(m_pcsbwHSplitBox->GetHwnd());	/* 水平分割ボックス */
 
 		return 0L;
 
@@ -790,6 +791,9 @@ bool CEditView::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
         return false;
     }
 
+	m_cx = lpCreateStruct->cx;
+	m_cy = lpCreateStruct->cy;
+
 	using CWndClass = apiwrap::window::CWndClass;
 
 	constexpr auto IDC_SIZEBOX = 103;
@@ -827,8 +831,11 @@ void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 	return;
 }
 
-/* ウィンドウサイズの変更処理 */
-void CEditView::OnSize( int cx, int cy )
+/*!
+ * WM_SIZEハンドラ
+ * ウィンドウサイズの変更処理
+ */
+void CEditView::OnSize(HWND hWnd, UINT state, int cx, int cy)
 {
 	if( NULL == GetHwnd()
 		|| ( cx == 0 && cy == 0 ) ){
@@ -838,6 +845,9 @@ void CEditView::OnSize( int cx, int cy )
 		// To Here 2007.09.09 Moca
 		return;
 	}
+
+	m_cx = cx;
+	m_cy = cy;
 
 	int	nVSplitHeight = 0;	/* 垂直分割ボックスの高さ */
 	int	nHSplitWidth  = 0;	/* 水平分割ボックスの幅 */
@@ -1631,7 +1641,7 @@ void CEditView::OnChangeSetting()
 
 	/* ウィンドウサイズの変更処理 */
 	::GetClientRect( GetHwnd(), &rc );
-	OnSize( rc.right, rc.bottom );
+	OnSize(GetHwnd(), 0, rc.right, rc.bottom );
 
 	/* フォントが変わった */
 	m_cTipWnd.ChangeFont( &(GetDllShareData().m_Common.m_sHelper.m_lf) );
@@ -1678,23 +1688,34 @@ void CEditView::CopyViewStatus( CEditView* pView ) const
  */
 void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 {
+	const auto hWnd = GetHwnd();
+
+	const auto cx = m_cx;
+	const auto cy = m_cy;
+
+	if (!cx || !cy) {
+		return;
+	}
+
 	if( bVert ){
 		if( m_pcsbwVSplitBox == NULL ){	/* 垂直分割ボックス */
-			m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>().release();
-			m_pcsbwVSplitBox->Create( G_AppInstance(), GetHwnd(), TRUE );
+			m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>();
+			m_pcsbwVSplitBox->Create(hWnd, cx, cy);
 		}
 	}
 	else{
-		SAFE_DELETE(m_pcsbwVSplitBox);	/* 垂直分割ボックス */
+		if (m_pcsbwVSplitBox) DestroyWindow(m_pcsbwVSplitBox->GetHwnd());
+		m_pcsbwVSplitBox.release();	/* 垂直分割ボックス */
 	}
 	if( bHorz ){
 		if( m_pcsbwHSplitBox == NULL ){	/* 水平分割ボックス */
-			m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>().release();
-			m_pcsbwHSplitBox->Create( G_AppInstance(), GetHwnd(), FALSE );
+			m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>();
+			m_pcsbwHSplitBox->Create(hWnd, cx, cy);
 		}
 	}
 	else{
-		SAFE_DELETE(m_pcsbwHSplitBox);	/* 水平分割ボックス */
+		if (m_pcsbwHSplitBox) DestroyWindow(m_pcsbwHSplitBox->GetHwnd());
+		m_pcsbwHSplitBox.release();	/* 水平分割ボックス */
 	}
 
 	if( bSizeBox ){

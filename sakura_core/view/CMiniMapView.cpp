@@ -28,9 +28,24 @@
 #include "view/CMiniMapView.h"
 
 #include "doc/CEditDoc.h"
+#include "window/CEditWnd.h"
+
+CMiniMapView::CMiniMapView()
+	: CEditView(-1, true)
+{
+}
 
 BOOL CMiniMapView::Create( HWND hWndParent )
 {
 	auto pcEditDoc = CEditDoc::getInstance();
 	return CEditView::Create( hWndParent, pcEditDoc, -1, FALSE, true );
+}
+
+void CMiniMapView::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	SelectCharWidthCache(CWM_FONT_MINIMAP, CWM_CACHE_LOCAL);
+
+	OnPaint2(ps.hdc, &ps, FALSE);
+
+	SelectCharWidthCache(CWM_FONT_EDIT, GetEditWnd().GetLogfontCacheMode());
 }

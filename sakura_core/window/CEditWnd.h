@@ -46,6 +46,8 @@
 
 #include "_main/CMainWindow.hpp"
 
+#include "apiwrap/gdi/object_deleter.hpp"
+
 #include <shellapi.h>// HDROP
 #include "_main/global.h"
 #include "CMainToolBar.h"
@@ -104,8 +106,14 @@ struct STabGroupInfo{
 class CEditWnd : public TSingleInstance<CEditWnd>, public CMainWindow, public CDocListenerEx
 {
 	using Me = CEditWnd;
+	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
 	using CColorStrategyPoolHolder = std::unique_ptr<CColorStrategyPool>;
 	using CFigureManagerHolder = std::unique_ptr<CFigureManager>;
+	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
+
+	using gdiObjectHolder = apiwrap::gdi::gdiObjectHolder;
+
+	using MenubarMessageHolder = StaticString<WCHAR, MENUBAR_MESSAGE_MAX_LEN + 1>;
 
 public:
 	CEditWnd();
@@ -252,7 +260,6 @@ public:
 	//                        ビュー管理                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	LRESULT Views_DispatchEvent(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	bool CreateEditViewBySplit(int nViewCount);
 	void InitAllViews();
 	void Views_RedrawAll();
 	void Views_Redraw();
@@ -279,13 +286,11 @@ public:
 	CEditDoc*       GetDocument() const     { return CEditDoc::getInstance(); }
 
 	//ビュー
-	const CEditView&	GetActiveView() const { return *m_pcEditView; }
-	CEditView&			GetActiveView()       { return *m_pcEditView; }
-	const CEditView&    GetView(int n) const { return *m_pcEditViewArr[n]; }
-	CEditView&          GetView(int n)       { return *m_pcEditViewArr[n]; }
+	CEditView&			GetActiveView() const       { return m_cSplitterWnd.GetActiveView(); }
+	CEditView&          GetView(int n) const       { return m_cSplitterWnd.GetView(n); }
 	CMiniMapView&       GetMiniMap( void ) { return m_cMiniMapView; }
-	bool                IsEnablePane(int n) const { return 0 <= n && n < m_nEditViewCount; }
-	int                 GetAllViewCount() const { return m_nEditViewCount; }
+	bool                IsEnablePane(int n) const { return m_cSplitterWnd.IsPaneEnabled(n); }
+	int                 GetAllViewCount() const { return m_cSplitterWnd.CountPanes(); }
 
 	CEditView*			GetDragSourceView() const					{ return m_pcDragSourceView; }
 	void				SetDragSourceView( CEditView* pcDragSourceView )	{ m_pcDragSourceView = pcDragSourceView; }
@@ -358,12 +363,17 @@ public:
 	CTabWnd			m_cTabWnd;			//!< タブウインドウ	//@@@ 2003.05.31 MIK
 	CFuncKeyWnd		m_cFuncKeyWnd;		//!< ファンクションバー
 	CMainStatusBar	m_cStatusBar;		//!< ステータスバー
-	CPrintPreview*	m_pPrintPreview;	//!< 印刷プレビュー表示情報。必要になったときのみインスタンスを生成する。
+
+	CPrintPreviewHolder	m_pPrintPreview = nullptr;	//!< 印刷プレビュー表示情報。必要になったときのみインスタンスを生成する。
 
 	CSplitterWnd	m_cSplitterWnd;		//!< 分割フレーム
 	CEditView*		m_pcDragSourceView;	//!< ドラッグ元のビュー
 	CViewFont*		m_pcViewFont;		//!< フォント
 	CViewFont*		m_pcViewFontMiniMap;		//!< フォント
+
+	using CViewFontHolder = std::shared_ptr<CViewFont>;
+	CViewFontHolder m_ViewFont = nullptr;
+	CViewFontHolder m_ViewFontMiniMap = nullptr;
 
 	//ダイアログ達
 	CDlgFind		m_cDlgFind;			// 「検索」ダイアログ
@@ -378,17 +388,15 @@ public:
 private:
 	// 2010.04.10 Moca  public -> private. 起動直後は[0]のみ有効 4つとは限らないので注意
 	CEditDoc* 		m_pcEditDoc;
-	CEditView*		m_pcEditViewArr[4];	//!< ビュー
-	CEditView*		m_pcEditView;		//!< 有効なビュー
 	CMiniMapView	m_cMiniMapView;		//!< ミニマップ
-	int				m_nActivePaneIndex;	//!< 有効なビューのindex
-	int				m_nEditViewCount;	//!< 有効なビューの数
-	const int		m_nEditViewMaxCount;//!< ビューの最大数=4
+	int				m_nActivePaneIndex = 0;	//!< 有効なビューのindex
 
 	//状態
 	bool			m_bIsActiveApp;		//!< 自アプリがアクティブかどうか	// 2007.03.08 ryoji
 	LPWSTR			m_pszLastCaption;
-	LPWSTR			m_pszMenubarMessage; //!< メニューバー右端に表示するメッセージ
+
+	MenubarMessageHolder m_pszMenubarMessage; //!< メニューバー右端に表示するメッセージ
+
 public:
 	int				m_nTimerCount;		//!< OnTimer用 2003.08.29 wmlhq
 	CLogicPointEx*	m_posSaveAry;		//!< フォント変更前の座標
@@ -408,7 +416,7 @@ private:
 	//D&Dフラグ
 	bool			m_bDragMode;
 	CMyPoint		m_ptDragPosOrg;
-	CDropTarget*	m_pcDropTarget;
+	CDropTargetHolder m_pcDropTarget = nullptr;
 
 	//その他フラグ
 	bool                m_bUIPI       = false;		// エディタ－トレイ間でのUI特権分離確認用フラグ	// 2007.06.07 ryoji
@@ -416,6 +424,8 @@ private:
 
 	CColorStrategyPoolHolder    m_ColorStrategyPool = std::make_unique<CColorStrategyPool>();
 	CFigureManagerHolder        m_FigureManager = std::make_unique<CFigureManager>();
+
+	gdiObjectHolder m_FontCaretPosInfo = gdiObjectHolder( nullptr, apiwrap::gdi::object_deleter() );
 
 public:
 	ESelectCountMode	m_nSelectCountMode; // 選択文字カウント方法

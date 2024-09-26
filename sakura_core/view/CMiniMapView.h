@@ -35,5 +35,9 @@
 class CMiniMapView : public CEditView
 {
 public:
-	BOOL Create( HWND hWndParent );
+	CMiniMapView();
+
+	BOOL    Create( HWND hWndParent );
+
+	void    OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 };

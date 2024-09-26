@@ -352,6 +352,9 @@ TEST_F(CEditorProcessInitTest, OnCreate)
 {
 	EXPECT_FALSE(process->GetMainWnd()->OnCreate(nullptr, nullptr));
 
+	auto pcSplitter = &GetEditWnd().m_cSplitterWnd;
+	EXPECT_FALSE(pcSplitter->OnCreate(nullptr, nullptr));
+
 	auto pcView = &GetEditWnd().GetActiveView();
 	EXPECT_FALSE(pcView->OnCreate(nullptr, nullptr));
 

@@ -559,19 +559,18 @@ COLORREF CEditView::GetBackColorByColorInfo2(const ColorInfo& info, const ColorI
 //                           描画                              //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp )
+void CEditView::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	OnPaint(ps.hdc, &ps, FALSE );
+}
+
+void CEditView::OnPaint( HDC _hdc, PAINTSTRUCT* pPs, BOOL bDrawFromComptibleBmp )
 {
 	if (GetEditWnd().m_pPrintPreview) {
 		return;
 	}
-	bool bChangeFont = m_bMiniMap;
-	if( bChangeFont ){
-		SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL );
-	}
-	OnPaint2( _hdc, pPs, bDrawFromComptibleBmp );
-	if( bChangeFont ){
-		SelectCharWidthCache( CWM_FONT_EDIT, GetEditWnd().GetLogfontCacheMode() );
-	}
+
+	OnPaint2(_hdc, pPs, bDrawFromComptibleBmp );
 }
 
 /*! 通常の描画処理 new

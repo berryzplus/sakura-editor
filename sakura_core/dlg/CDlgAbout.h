@@ -18,7 +18,12 @@
 #define SAKURA_CDLGABOUT_7F887984_7DEB_42C7_AB87_7CE7D9801700_H_
 #pragma once
 
+#include "apiwrap/window/CCustomizedWnd.hpp"
+#include "apiwrap/gdi/object_deleter.hpp"
+#include "apiwrap/gdi/select_object.hpp"
+
 #include "dlg/CDialog.h"
+
 /*!
 	@brief About Box管理
 	
@@ -26,23 +31,32 @@
 	メッセージを捕捉する．
 */
 
-class CUrlWnd
-{
+class CUrlWnd : public apiwrap::window::CCustomizedWnd {
+private:
+	using gdiObjectHolder = apiwrap::gdi::gdiObjectHolder;
+
 public:
-	CUrlWnd() { m_hWnd = NULL; m_hFont = NULL; m_bHilighted = FALSE; m_pOldProc = NULL; }
+	CUrlWnd() = default;
+
+	bool    Attach(HWND hWnd) override;
+	void    Detach(HWND hWnd) override;
+
 	BOOL SetSubclassWindow( HWND hWnd );
-	HWND GetHwnd() const{ return m_hWnd; }
+
 protected:
-	HFONT GetFont() const { return m_hFont; }
-protected:
-	static LRESULT CALLBACK UrlWndProc( HWND hWnd, UINT msg, WPARAM wp, LPARAM lp );
-protected:
-	bool OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText = 0 ) const;
-protected:
-	HWND m_hWnd;
-	HFONT m_hFont;
-	BOOL m_bHilighted;
-	WNDPROC m_pOldProc;
+	HFONT   GetFont() const { return m_hFont; }
+
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	void    OnSetText(HWND hWnd, _In_opt_z_ LPCWSTR pchText);
+	void    OnSetFont(HWND hWnd, HFONT hFont, bool fRedraw);
+
+private:
+	HFONT   m_hFont         = nullptr;
+	bool    m_bHilighted    = false;
+
+	gdiObjectHolder m_Font = gdiObjectHolder(nullptr, apiwrap::gdi::object_deleter());
+	gdiObjectHolder m_BrushHilightedBackground = gdiObjectHolder(nullptr, apiwrap::gdi::object_deleter());
 };
 
 class CDlgAbout final : public CDialog

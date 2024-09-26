@@ -347,74 +347,91 @@ LPVOID CDlgAbout::GetHelpIdTable(void)
 	return (LPVOID)p_helpids;
 }
 
+bool CUrlWnd::Attach(HWND hWnd)
+{
+    if (__super::Attach(hWnd)) {
+		const auto hFont = HFONT(SendMessageW(hWnd, WM_GETFONT, 0, 0));
+
+		LOGFONT lf = {};
+		GetObjectW(hFont, sizeof(lf), &lf);
+
+		// 下線付きフォントに変更する
+		lf.lfUnderline = TRUE;
+		m_hFont = CreateFontIndirectW(&lf);
+		m_Font.reset(m_hFont);
+
+		if (m_hFont) {
+			DispatchEvent(hWnd, WM_SETFONT, WPARAM(m_hFont), FALSE);
+		}
+    }
+
+	return true;
+}
+
+void CUrlWnd::Detach(HWND hWnd)
+{
+	KillTimer(hWnd, 1);
+
+	__super::Detach(hWnd);
+
+	m_Font.reset();
+	m_hFont = nullptr;
+	m_bHilighted = FALSE;
+	m_BrushHilightedBackground.reset();
+}
+
 BOOL CUrlWnd::SetSubclassWindow( HWND hWnd )
 {
 	// STATICウィンドウをサブクラス化する
 	// 元のSTATICは WS_TABSTOP, SS_NOTIFY スタイルのものを使用すること
-	if( GetHwnd() != NULL )
-		return FALSE;
-	if( !IsWindow( hWnd ) )
-		return FALSE;
-
-	// サブクラス化を実行する
-	LONG_PTR lptr;
-	SetLastError( 0 );
-	lptr = SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)this );
-	if( lptr == 0 && GetLastError() != 0 )
-		return FALSE;
-	m_pOldProc = (WNDPROC)SetWindowLongPtr( hWnd, GWLP_WNDPROC, (LONG_PTR)UrlWndProc );
-	if( m_pOldProc == NULL )
-		return FALSE;
-	m_hWnd = hWnd;
-
-	// 下線付きフォントに変更する
-	HFONT hFont;
-	LOGFONT lf;
-	hFont = (HFONT)SendMessageAny( hWnd, WM_GETFONT, (WPARAM)0, (LPARAM)0 );
-	GetObject( hFont, sizeof(lf), &lf );
-	lf.lfUnderline = TRUE;
-	m_hFont = CreateFontIndirect( &lf );
-	if(m_hFont != NULL)
-		SendMessageAny( hWnd, WM_SETFONT, (WPARAM)m_hFont, (LPARAM)FALSE );
-
-	// 設定されているテキストを取得する
-	std::wstring strText;
-	if( ApiWrap::Wnd_GetText( hWnd, strText ) ){
-		// サイズを調整する
-		auto retSetText = OnSetText( strText.data(), strText.length() );
-		return retSetText ? TRUE : FALSE;
-	}
-
-	return FALSE;
+	return Attach(hWnd);
 }
 
-LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
+/*!
+ * CUrlWndのメッセージ配送
+ *
+ * @param [in] hWnd 宛先ウインドウのハンドル
+ * @param [in] uMsg メッセージコード
+ * @param [in, opt] wParam 第1パラメーター
+ * @param [in, opt] lParam 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CUrlWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	CUrlWnd* pUrlWnd = (CUrlWnd*)GetWindowLongPtr( hWnd, GWLP_USERDATA );
+	auto pUrlWnd = this;
 
 	HDC hdc;
 	POINT pt;
 	RECT rc;
 
-	switch ( msg ) {
+	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_SETTEXT,                        OnSetText);
+	HANDLE_MSG(hWnd, WM_SETFONT,                        OnSetFont);
+// clang-format on
+
 	case WM_SETCURSOR:
 		// カーソル形状変更
 		SetHandCursor();		// Hand Cursorを設定 2013/1/29 Uchi
 		return (LRESULT)0;
+
 	case WM_LBUTTONDOWN:
 		// キーボードフォーカスを自分に当てる
 		SendMessageAny( GetParent(hWnd), WM_NEXTDLGCTL, (WPARAM)hWnd, (LPARAM)1 );
 		break;
+
 	case WM_SETFOCUS:
 	case WM_KILLFOCUS:
 		// 再描画
 		InvalidateRect( hWnd, NULL, TRUE );
 		UpdateWindow( hWnd );
 		break;
+
 	case WM_GETDLGCODE:
 		// デフォルトプッシュボタンのように振舞う（Enterキーの有効化）
 		// 方向キーは無効化（IEのバージョン情報ダイアログと同様）
 		return DLGC_DEFPUSHBUTTON | DLGC_WANTARROWS;
+
 	case WM_MOUSEMOVE:
 		// カーソルがウィンドウ内に入ったらタイマー起動
 		// ウィンドウ外に出たらタイマー削除
@@ -433,6 +450,7 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 				KillTimer( hWnd, 1 );
 		}
 		break;
+
 	case WM_TIMER:
 		// カーソルがウィンドウ外にある場合にも WM_MOUSEMOVE を送る
 		GetCursorPos( &pt );
@@ -441,26 +459,24 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		if( !PtInRect( &rc, pt ) )
 			SendMessageAny( hWnd, WM_MOUSEMOVE, 0, MAKELONG( pt.x, pt.y ) );
 		break;
+
 	case WM_PAINT:
 		// ウィンドウの描画
 		PAINTSTRUCT ps;
-		HFONT hFont;
-		HFONT hFontOld;
-		WCHAR szText[512];
-
 		hdc = BeginPaint( hWnd, &ps );
 
 		// 現在のクライアント矩形、テキスト、フォントを取得する
 		GetClientRect( hWnd, &rc );
-		GetWindowText( hWnd, szText, _countof(szText) );
-		hFont = (HFONT)SendMessageAny( hWnd, WM_GETFONT, (WPARAM)0, (LPARAM)0 );
 
 		// テキスト描画
-		SetBkMode( hdc, TRANSPARENT );
-		SetTextColor( hdc, pUrlWnd->m_bHilighted? RGB( 0x84, 0, 0 ): RGB( 0, 0, 0xff ) );
-		hFontOld = (HFONT)SelectObject( hdc, (HGDIOBJ)hFont );
-		TextOut( hdc, ::DpiScaleX( 2 ), 0, szText, wcslen( szText ) );
-		SelectObject( hdc, (HGDIOBJ)hFontOld );
+		if (const auto text = GetText();
+			text.size())
+		{
+			SetBkMode(hdc, TRANSPARENT);
+			SetTextColor(hdc, m_bHilighted? RGB(0x84, 0, 0) : RGB(0, 0, 0xff));
+			auto hFontOld = apiwrap::gdi::select_object(hdc, m_Font.get());
+			TextOutW(hdc, DpiScaleX(2), 0, text.data(), int(text.length()));
+		}
 
 		// フォーカス枠描画
 		if( GetFocus() == hWnd )
@@ -482,73 +498,77 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			::DeleteObject( brush );
 		}else{
 			// 親にWM_CTLCOLORSTATICを送って背景ブラシを取得し、背景描画する
-			HBRUSH hbr;
-			HBRUSH hbrOld;
-			hbr = (HBRUSH)SendMessageAny( GetParent( hWnd ), WM_CTLCOLORSTATIC, wParam, (LPARAM)hWnd );
-			hbrOld = (HBRUSH)SelectObject( hdc, hbr );
-			::PatBlt( hdc, rc.left, rc.top, rc.right, rc.bottom, PATCOPY );
-			SelectObject( hdc, hbrOld );
+			const auto hBrush = HBRUSH(SendMessageW(GetParent(hWnd), WM_CTLCOLORSTATIC, wParam, LPARAM(hWnd)));
+			auto hBrushOld = apiwrap::gdi::select_object(hdc, hBrush);
+			PatBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, PATCOPY);
 		}
 		return (LRESULT)1;
-	case WM_DESTROY:
-		// 後始末
-		KillTimer( hWnd, 1 );
-		SetWindowLongPtr( hWnd, GWLP_WNDPROC, (LONG_PTR)pUrlWnd->m_pOldProc );
-		if( pUrlWnd->m_hFont != NULL )
-			DeleteObject( pUrlWnd->m_hFont );
-		pUrlWnd->m_hWnd = NULL;
-		pUrlWnd->m_hFont = NULL;
-		pUrlWnd->m_bHilighted = FALSE;
-		pUrlWnd->m_pOldProc = NULL;
-		return (LRESULT)0;
-	case WM_SETTEXT:
-		return pUrlWnd->OnSetText( (LPCWSTR)lParam ) ? TRUE : FALSE;
+
+	default:
+		break;
 	}
 
-	return CallWindowProc( pUrlWnd->m_pOldProc, hWnd, msg, wParam, lParam );
+	return __super::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 //@@@ 2002.01.18 add end
 
-//WM_SETTEXTハンドラ
-//https://docs.microsoft.com/en-us/windows/desktop/winmsg/wm-settext
-bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) const
+/*!
+ * WM_SETTEXTハンドラ
+ *
+ * @sa https://docs.microsoft.com/en-us/windows/desktop/winmsg/wm-settext
+ */
+void CUrlWnd::OnSetText(HWND hWnd, _In_opt_z_ LPCWSTR pchText)
 {
+	WCHAR chDummy = 0;
+	pchText = pchText ? pchText : &chDummy;
+
 	// 標準のメッセージハンドラに処理させる
-	auto retSetText = ::CallWindowProc( m_pOldProc, GetHwnd(), WM_SETTEXT, 0, (LPARAM)pchText );
-	if ( retSetText == FALSE ) {
-		return false;
-	}
+	DefWindowProcW(hWnd, WM_SETTEXT, 0, LPARAM(pchText));
+
+	const auto cchText = int(auto_strlen(pchText));
 
 	// サイズを調整のためにDCを取得
-	HDC hDC = ::GetDC( GetHwnd() );
-	auto hObj = ::SelectObject( hDC, GetFont() );
+	const auto hDC = GetDC(hWnd);
+
+	//終了時にReleaseDCを呼び出すよう設定
+	const auto releaseDC = [hWnd](const HDC h) { ::ReleaseDC(hWnd, h); };
+	using windowDcReleaser = std::unique_ptr<std::remove_pointer_t<HDC>, decltype(releaseDC)>;
+	windowDcReleaser dcReleaser(hDC, releaseDC);
+
+	auto hFontOld = apiwrap::gdi::select_object(hDC, m_Font.get());
 
 	// DrawText関数を使ってサイズを計測する
 	// ※この処理は実際には描かない
-	CMyRect rcText;
-	int retDrawText = ::DrawText( hDC, pchText, static_cast<int>(cchText), &rcText, DT_CALCRECT );
+	if (CMyRect rcText;
+		DrawTextW(hDC, pchText, cchText, &rcText, DT_CALCRECT))
+	{
+		// マージン用にシステム設定値を取得する。
+		// ※ユーザーが変えられる値なので毎回取りに行く（EDGE = 2px on 96dpi）
+		const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+		const auto cyEdge = GetSystemMetrics(SM_CYEDGE);
 
-	// DCの後始末
-	::SelectObject( hDC, hObj );
-	::ReleaseDC( GetHwnd(), hDC );
+		// 計測結果のRECT構造体をSIZE構造体に読み替え、マージンを付加する
+		SIZE size;
+		size.cx = cxEdge + rcText.Width()  + cxEdge;
+		size.cy = cyEdge + rcText.Height() + cyEdge;
 
-	// サイズを取得できなければ処理失敗とする
-	if ( retDrawText == 0 ) {
-		return false;
+		// マージン込みのサイズをウインドウに反映する
+		SetWindowPos(hWnd, nullptr, 0, 0, size.cx, size.cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	}
+}
 
-	// マージン用にシステム設定値を取得する。
-	// ※ユーザーが変えられる値なので毎回取りに行く（EDGE = 2px on 96dpi）
-	const int cxEdge = ::GetSystemMetrics( SM_CXEDGE );
-	const int cyEdge = ::GetSystemMetrics( SM_CYEDGE );
+/*!
+ * WM_SETFONTハンドラ
+ */
+void CUrlWnd::OnSetFont(HWND hWnd, HFONT hFont, bool fRedraw)
+{
+	// fRedrawを無視して、常に再描画する
+	UNREFERENCED_PARAMETER(fRedraw);
 
-	// 計測結果のRECT構造体をSIZE構造体に読み替え、マージンを付加する
-	SIZE size;
-	size.cx = cxEdge + rcText.Width() + cxEdge;
-	size.cy = cyEdge + rcText.Height() + cyEdge;
+	// 標準のメッセージハンドラに処理させる
+	DefWindowProcW(hWnd, WM_SETFONT, WPARAM(hFont), LPARAM(false));
 
-	// マージン込みのサイズをウインドウに反映する
-	auto retSetPos = ::SetWindowPos( GetHwnd(), NULL, 0, 0, size.cx, size.cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER );
-
-	return retSetPos != FALSE;
+	// 設定されているテキストを取得する
+	const auto text = GetText();
+	DispatchEvent(hWnd, WM_SETTEXT, 0, LPARAM(text.data()));
 }

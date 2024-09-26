@@ -36,6 +36,9 @@
  */
 class CMyWnd : public apiwrap::window::COriginalWnd {
 public:
+	int m_cx = 0;
+	int m_cy = 0;
+
 	explicit CMyWnd(std::wstring_view className) noexcept;
 
 	void SetHwnd(HWND hwnd){ _SetHwnd(hwnd); }
@@ -79,6 +82,8 @@ public:
 	{
 		return ::GetClientRect(m_hWnd, lpRect);
 	}
+
+	virtual void    OnPaint(HWND hWnd, PAINTSTRUCT& ps) = 0;
 };
 
 #endif /* SAKURA_CMYWND_AA99D3B1_9B1C_4DB5_A62C_AEE66BEFBD52_H_ */

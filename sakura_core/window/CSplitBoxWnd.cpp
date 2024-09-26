@@ -16,6 +16,9 @@
 #include "StdAfx.h"
 #include "window/CSplitBoxWnd.h"
 
+#include "_main/CNormalProcess.h"
+#include "view/CEditView.h"
+
 #include "uiparts/CGraphics.h"
 #include "apiwrap/StdApi.h"
 #include "config/system_constants.h"
@@ -38,18 +41,17 @@ CSplitBoxWnd::CSplitBoxWnd(bool isVertical) noexcept
 {
 }
 
-HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
+HWND CSplitBoxWnd::Create(HWND hwndParent, int cx, int cy)
 {
 	const auto& pszClassName = CSplitBoxWnd_GetClassName(m_bVertical);
 	const auto hCursor = LoadCursorW(nullptr, CSplitBoxWnd_GetCursorName(m_bVertical));
 
 	int			nCyHScroll;
 	int			nCxVScroll;
-	RECT		rc;
 
 	/* ウィンドウクラス作成 */
 	RegisterWC(
-		hInstance,
+		getEditorProcess()->GetProcessInstance(),
 		NULL,	// Handle to the class icon.
 		NULL,	// Handle to a small icon
 		hCursor,// Handle to the class cursor.
@@ -62,9 +64,6 @@ HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 	nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );	/* 水平スクロールバーの高さ */
 	nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );	/* 垂直スクロールバーの幅 */
 
-	/* 親ウィンドウのクライアント領域のサイズを取得 */
-	::GetClientRect( GetParentHwnd(), &rc );
-
 	/* 基底クラスメンバ呼び出し */
 	return CWnd::Create(
 		hwndParent,
@@ -72,10 +71,10 @@ HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 		pszClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_CHILD | WS_VISIBLE, // window style
-		bVertical ? ( rc.right - nCxVScroll ):( 0 ), // horizontal position of window
-		bVertical ? ( 0 ):( rc.bottom - nCyHScroll ), // vertical position of window
-		bVertical ? ( nCxVScroll ):( 7 ), // window width
-		bVertical ? ( 7 ):( nCyHScroll ), // window height
+		m_bVertical ? ( cx - nCxVScroll ):( 0 ), // horizontal position of window
+		m_bVertical ? ( 0 ):( cy - nCyHScroll ), // vertical position of window
+		m_bVertical ? ( nCxVScroll ):( 7 ), // window width
+		m_bVertical ? ( 7 ):( nCyHScroll ), // window height
 		NULL // handle to menu, or child-window identifier
 	);
 }

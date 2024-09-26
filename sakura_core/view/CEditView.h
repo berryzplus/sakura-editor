@@ -77,7 +77,8 @@ class CViewFont;
 class CRuler;
 class CDropTarget; /// 2002/2/3 aroka ヘッダー軽量化
 class COpeBlk;///
-class CSplitBoxWnd;///
+class CVSplitBoxWnd;
+class CHSplitBoxWnd;
 class CRegexKeyword;///
 class CAutoMarkMgr; /// 2002/2/3 aroka ヘッダー軽量化 to here
 class CEditDoc;	//	2002/5/13 YAZAKI ヘッダー軽量化
@@ -127,20 +128,20 @@ class CEditView
 	using CCaretHolder = std::unique_ptr<CCaret>;
 	using CRulerHolder = std::unique_ptr<CRuler>;
 
+	using CVSplitBoxWndHolder = std::unique_ptr<CVSplitBoxWnd>;
+	using CHSplitBoxWndHolder = std::unique_ptr<CHSplitBoxWnd>;
+
+	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
+	using CAutoMarkMgrHolder = std::unique_ptr<CAutoMarkMgr>;
+	using CRegexKeywordHolder = std::unique_ptr<CRegexKeyword>;
+
 	static constexpr auto IDT_ROLLMOUSE = 1;
 
 	std::thread m_threadUrlOpen;
 
 public:
-	const CEditDoc* GetDocument() const
-	{
-		return m_pcEditDoc;
-	}
-	CEditDoc* GetDocument()
-	{
-		return m_pcEditDoc;
-	}
-public:
+	CEditDoc* GetDocument() const;
+
 	//! 背景にビットマップを使用するかどうか
 	//! 2010.10.03 背景実装
 	bool IsBkBitmap() const{
@@ -148,8 +149,7 @@ public:
 			&& 0 != GetDocument()->m_cDocType.GetDocumentAttribute().m_backImgOpacity;
 	}
 
-public:
-	CEditView* GetEditView()
+	CEditView* GetEditView() override
 	{
 		return this;
 	}
@@ -161,9 +161,8 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        生成と破棄                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	/* Constructors */
-	CEditView( void );
+	CEditView(int nMyIndex, bool bMiniMap = false);
 	~CEditView() override;
 
 	void Close();
@@ -202,6 +201,7 @@ public:
 	LRESULT DispatchEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+	void    OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 
 	void OnChangeSetting();										/* 設定変更を反映させる */
 	void OnPaint(HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp);			/* 通常の描画処理 */
@@ -209,7 +209,7 @@ public:
 	void DrawBackImage(HDC hdc, RECT& rcPaint, HDC hdcBgImg);
 	void OnTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	//ウィンドウ
-	void OnSize(int cx, int cy);							/* ウィンドウサイズの変更処理 */
+	void    OnSize(HWND hWnd, UINT state, int cx, int cy);							/* ウィンドウサイズの変更処理 */
 	void OnMove(int x, int y, int nWidth, int nHeight);
 	//フォーカス
 	void OnSetFocus( void );
@@ -630,8 +630,8 @@ public:
 	HWND			m_hwndHScrollBar;	/* 水平スクロールバーウィンドウハンドル */
 	HWND			m_hwndSizeBox;		/* サイズボックスウィンドウハンドル */
 	HWND			m_hwndSizeBoxPlaceholder;	/* サイズボックス代替スタティックウィンドウハンドル */
-	CSplitBoxWnd*	m_pcsbwVSplitBox;	/* 垂直分割ボックス */
-	CSplitBoxWnd*	m_pcsbwHSplitBox;	/* 水平分割ボックス */
+	CVSplitBoxWndHolder m_pcsbwVSplitBox = nullptr;	/* 垂直分割ボックス */
+	CHSplitBoxWndHolder m_pcsbwHSplitBox = nullptr;	/* 水平分割ボックス */
 	CAutoScrollWnd	m_cAutoScrollWnd;	//!< オートスクロール
 
 public:
@@ -657,7 +657,7 @@ public:
 
 public:
 	//D&D
-	CDropTarget*	m_pcDropTarget;
+	CDropTargetHolder m_pcDropTarget = nullptr;
 	BOOL			m_bDragMode;	/* 選択テキストのドラッグ中か */
 	CLIPFORMAT		m_cfDragData;	/* ドラッグデータのクリップ形式 */	// 2008.06.20 ryoji
 	BOOL			m_bDragBoxData;	/* ドラッグデータは矩形か */
@@ -729,8 +729,8 @@ private:
 
 public:
 	// その他
-	CAutoMarkMgr*	m_cHistory;	//	Jump履歴
-	CRegexKeyword*	m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
+	CAutoMarkMgrHolder	m_cHistory = nullptr;	//	Jump履歴
+	CRegexKeywordHolder	m_cRegexKeyword = nullptr;
 	int				m_nMyIndex      = 0;
 	CMigemo*		m_pcmigemo      = CMigemo::getInstance();
 	bool			m_bMiniMap;

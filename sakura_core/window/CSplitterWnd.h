@@ -19,13 +19,11 @@
 #include "CWnd.h"
 #include "env/SShareDataClientWithCache.hpp"
 
-struct DLLSHAREDATA;
+#include "view/CEditView.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
-
-#define MAXCOUNTOFVIEW	4
 
 /*!
 	@brief 分割線ウィンドウクラス
@@ -34,30 +32,41 @@ struct DLLSHAREDATA;
 */
 class CSplitterWnd final : private SShareDataClientWithCache, public CWnd
 {
+	static constexpr auto MAXCOUNTOFVIEW = 4;
+	using CEditViewHolder = std::unique_ptr<CEditView>;
+	using CEditViewsHolder = std::array<CEditViewHolder, MAXCOUNTOFVIEW>;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CSplitterWnd();
-	~CSplitterWnd();
+
 private: // 2002/2/3 aroka
 	/*
 	||  Attributes & Operations
 	*/
+	CEditViewsHolder    m_ChildWndArr = { std::make_unique<CEditView>(0) };
+	int                 m_nChildWndCount = 1;		/*!< 有効な子ウィンドウ配列の数 */
+
 	int				m_nAllSplitRows;		/* 分割行数 */
 	int				m_nAllSplitCols;		/* 分割桁数 */
 	int				m_nVSplitPos;			/* 垂直分割位置 */
 	int				m_nHSplitPos;			/* 水平分割位置 */
-	HWND			m_ChildWndArr[MAXCOUNTOFVIEW];		/* 子ウィンドウ配列 */
-	int				m_nChildWndCount;		/*!< 有効な子ウィンドウ配列の数 */
 	HCURSOR			m_hcurOld;				/* もとのマウスカーソル */
 	int				m_bDragging;			/* 分割バーをドラッグ中か */
 	int				m_nDragPosX;			/* ドラッグ位置Ｘ */
 	int				m_nDragPosY;			/* ドラッグ位置Ｙ */
 	int				m_nActivePane;			/* アクティブなペイン */
+
 public: // 2002/2/3 aroka
 	HWND Create( HWND hwndParent );	/* 初期化 */
-	void SetChildWndArr(HWND* hwndEditViewArr);	/* 子ウィンドウの設定 */
+
+	CEditView&			GetActiveView() const { return *m_ChildWndArr[m_nActivePane]; }
+	CEditView&          GetView(int n) const { return *m_ChildWndArr[n]; }
+	bool                IsPaneEnabled(int n) const { return 0 <= n && n < m_nChildWndCount; }
+	int                 CountPanes() const { return m_nChildWndCount; }
+
 	void DoSplit(int nHorizontal, int nVertical);	/* ウィンドウの分割 */
 	void SetActivePane(int nIndex);	/* アクティブペインの設定 */
 	int GetPrevPane( void );	/* 前のペインを返す */
@@ -71,6 +80,9 @@ public: // 2002/2/3 aroka
 //	LRESULT DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 */
 	int GetAllSplitRows(){ return m_nAllSplitRows;} // 2002/2/3 aroka
 	int GetAllSplitCols(){ return m_nAllSplitCols;} // 2002/2/3 aroka
+
+	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+
 protected:
 	/* 仮想関数 */
 	LRESULT DispatchEvent_WM_APP(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
@@ -88,6 +100,10 @@ protected:
 	void DrawFrame(HDC hdc, RECT* prc);	/* 分割フレーム描画 */
 	int HitTestSplitter(int xPos, int yPos);	/* 分割バーへのヒットテスト */
 	void DrawSplitter(int xPos, int yPos, int bEraseOld);	/* 分割トラッカーの表示 */
+
+	bool CreateEditViewBySplit(int nViewCount);
+
+	CEditDoc* GetDocument() const;
 };
 
 #endif /* SAKURA_CSPLITTERWND_8F27B39C_B96B_4964_ACD8_E157A146F892_H_ */
