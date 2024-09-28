@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="..\sakura_core\apiwrap\CommonControl.h" />
     <ClInclude Include="..\sakura_core\apiwrap\gdi\object_deleter.hpp" />
+    <ClInclude Include="..\sakura_core\apiwrap\gdi\select_object.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\file_mapping.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\format_message.hpp" />
     <ClInclude Include="..\sakura_core\apiwrap\kernel\handle_closer.hpp" />
@@ -532,6 +533,7 @@
     <ResourceCompile Include="..\sakura_core\sakura_rc.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sakura_core\apiwrap\gdi\select_object.cpp" />
     <ClCompile Include="..\sakura_core\apiwrap\kernel\system_path.cpp" />
     <ClCompile Include="..\sakura_core\apiwrap\kernel\to_multibyte.cpp" />
     <ClCompile Include="..\sakura_core\apiwrap\StdApi.cpp" />
