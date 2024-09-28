@@ -33,20 +33,11 @@
 /*! 共通設定 プロパティシート */
 bool CEditApp::OpenPropertySheet( int nPageNum )
 {
-	/* プロパティシートの作成 */
-	bool bRet = m_pcPropertyManager->OpenPropertySheet( m_pcEditWnd->GetHwnd(), nPageNum, false );
-	if( bRet ){
-		// 2007.10.19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
-		m_pcSMacroMgr->UnloadAll();
-	}
-
-	return bRet;
+	return GetEditWnd().OpenPropertySheet(nPageNum);
 }
 
 /*! タイプ別設定 プロパティシート */
 bool CEditApp::OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType )
 {
-	bool bRet = m_pcPropertyManager->OpenPropertySheetTypes( m_pcEditWnd->GetHwnd(), nPageNum, nSettingType );
-
-	return bRet;
+	return GetEditWnd().OpenPropertySheetTypes(nSettingType, nPageNum);
 }

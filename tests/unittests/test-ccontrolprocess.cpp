@@ -215,6 +215,10 @@ TEST(CProcess, CJackManager)
 TEST_F(CControlProcessInitTest, OnCreate)
 {
 	EXPECT_FALSE(process->GetMainWnd()->OnCreate(nullptr, nullptr));
+
+	// 呼ぶだけ
+	process->GetMainWnd()->OnDrawItem(nullptr, nullptr);
+	process->GetMainWnd()->OnMeasureItem(nullptr, nullptr);
 }
 
 namespace apiwrap::window

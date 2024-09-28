@@ -465,9 +465,6 @@ void CNormalProcess::InitProcess()
 
 	SetMainWindow(std::make_unique<CEditWnd>());
 
-	m_pcEditApp->m_pcEditWnd = GetEditWnd();
-	m_pcEditApp->m_pcPropertyManager = GetEditWnd()->m_pcPropertyManager.get();
-
 	// プラグイン読み込み
 	GetPluginManager()->LoadAllPlugin();
 }

@@ -952,7 +952,7 @@ int CMenuDrawer::MeasureItem( int nFuncID, int* pnItemHeight )
 	@date 2010.07.24 Moca アイコン部分をボタン色にしてフラット表示にするなどの変更
 		大きいフォント、黒背景対応
 */
-void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
+void CMenuDrawer::DrawItem(const DRAWITEMSTRUCT* lpdis)
 {
 	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);

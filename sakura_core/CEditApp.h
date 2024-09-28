@@ -41,7 +41,7 @@ public:
 	HINSTANCE       GetAppInstance() const{ return getEditorProcess()->GetProcessInstance(); }
 
 	//ウィンドウ情報
-	CEditWnd*       GetEditWindow() const { return m_pcEditWnd; }
+	CEditWnd*       GetEditWindow() const { return &GetEditWnd(); }
 
 	CEditDoc*		GetDocument() const { return getEditorProcess()->GetEditDoc(); }
 	CAppMode*       GetAppMode() const { return getEditorProcess()->GetAppMode(); }
@@ -50,12 +50,7 @@ public:
 	bool OpenPropertySheet( int nPageNum );
 	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );
 
-	//ウィンドウ
-	CEditWnd*			m_pcEditWnd = nullptr;
-
 	CVisualProgress*    m_pcVisualProgress = getEditorProcess()->GetProgress();
-
-	CPropertyManager*	m_pcPropertyManager = nullptr;	//プロパティ管理
 
 	CSoundSet			m_cSoundSet;			//サウンド管理
 

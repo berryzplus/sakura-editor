@@ -56,6 +56,8 @@ public:
 	HWND    CreateMainWnd(int nCmdShow) override;	/* 作成 */
 	bool CreateTrayIcon(HWND hWnd);	// 20010412 by aroka
 
+	bool    OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum) override;
+
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
 	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;

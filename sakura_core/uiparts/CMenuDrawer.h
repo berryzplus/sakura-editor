@@ -72,7 +72,7 @@ public:
 		MyAppendMenu(hMenu,nFlag,nFuncId,pszLabel,L"",bAddKeyStr,nForceIconId);
 	}
 	int MeasureItem( int nFuncID, int* pnItemHeight );	/* メニューアイテムの描画サイズを計算 */
-	void DrawItem( DRAWITEMSTRUCT* );	/* メニューアイテム描画 */
+	void DrawItem(const DRAWITEMSTRUCT* lpDrawItem);	/* メニューアイテム描画 */
 	void EndDrawMenu();
 	LRESULT OnMenuChar( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 	int FindToolbarNoFromCommandId( int idCommand, bool bOnlyFunc = true )const; // ツールバーNoの取得

@@ -28,8 +28,10 @@ def test_show_type_prop(driver, wnd):
     # 「タイプ別設定」ダイアログが表示されるまで待つ
     type_prop = wait_for_dialog(wnd, 'タイプ別設定')
 
-    # キャンセルで閉じる
-    cancel_element(wnd, type_prop)
+    # OKで閉じる
+    type_prop.send_keys(Keys.ENTER)
+    WebDriverWait(wnd, 120).until_not(EC.visibility_of_element_located((By.ID, type_prop.id)))
+    time.sleep(1)
 
 def test_show_common_prop(driver, wnd):
     # wndをフォアグラウンドウインドウに設定

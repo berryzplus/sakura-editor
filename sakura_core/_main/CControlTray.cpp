@@ -30,7 +30,6 @@
 
 #include "_main/CControlProcess.h"
 
-#include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
 #include "dlg/CDlgAbout.h"		//Nov. 21, 2000 JEPROtest
@@ -311,6 +310,15 @@ BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIco
 	return res;
 }
 
+/*! タイプ別設定 プロパティシート */
+bool CControlTray::OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum)
+{
+	CPluginManager::getInstance()->LoadAllPlugin();
+	const auto ret = __super::OpenPropertySheetTypes(nSettingType, nPageNum);
+	CPluginManager::getInstance()->UnloadAllPlugin();
+	return ret;
+}
+
 /* メッセージ処理 */
 //@@@ 2001.12.26 YAZAKI MRUリストは、CMRUに依頼する
 LRESULT CControlTray::DispatchEvent(
@@ -329,41 +337,7 @@ LRESULT CControlTray::DispatchEvent(
 	int			nRowNum;
 	EditNode*	pEditNodeArr;
 
-	LPMEASUREITEMSTRUCT	lpmis;	/* 項目サイズ情報 */
-	LPDRAWITEMSTRUCT	lpdis;	/* 項目描画情報 */
-	int					nItemWidth;
-	int					nItemHeight;
-
 	switch ( uMsg ){
-	case WM_MENUCHAR:
-		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
-		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
-	case WM_DRAWITEM:
-		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
-		switch( lpdis->CtlType ){
-		case ODT_MENU:	/* オーナー描画メニュー */
-			/* メニューアイテム描画 */
-			m_cMenuDrawer.DrawItem( lpdis );
-			return TRUE;
-		}
-		return FALSE;
-	case WM_MEASUREITEM:
-		lpmis = (MEASUREITEMSTRUCT*) lParam;	// item-size information
-		switch( lpmis->CtlType ){
-		case ODT_MENU:	/* オーナー描画メニュー */
-			/* メニューアイテムの描画サイズを計算 */
-			nItemWidth = m_cMenuDrawer.MeasureItem( lpmis->itemID, &nItemHeight );
-			if( 0 < nItemWidth ){
-				lpmis->itemWidth = nItemWidth;
-				lpmis->itemHeight = nItemHeight;
-			}
-			return TRUE;
-		}
-		return FALSE;
-	case WM_EXITMENULOOP:
-		m_cMenuDrawer.EndDrawMenu();
-		break;
-
 	/* タスクトレイ左クリックメニューへのショートカットキー登録 */
 	case WM_HOTKEY:
 		{
@@ -693,32 +667,17 @@ LRESULT CControlTray::DispatchEvent(
 						CDlgTypeList::SResult	sResult;
 						sResult.cDocumentType = CTypeConfig(0);
 						sResult.bTempChange = false;
-						if( cDlgTypeList.DoModal( G_AppInstance(), GetTrayHwnd(), &sResult ) ){
+						if( cDlgTypeList.DoModal( m_hInstance, hWnd, &sResult ) ){
 							// タイプ別設定
 							CPluginManager::getInstance()->LoadAllPlugin();
-							m_pcPropertyManager->OpenPropertySheetTypes( NULL, -1, sResult.cDocumentType );
+							OpenPropertySheetTypes(sResult.cDocumentType, -1);
 							CPluginManager::getInstance()->UnloadAllPlugin();
 						}
 					}
 					break;
 				case F_OPTION:	// 共通設定
 					{
-						CPluginManager::getInstance()->LoadAllPlugin();
-						{
-							// アイコンの登録
-							const CPlug::Array& plugs = CJackManager::getInstance()->GetPlugs( PP_COMMAND );
-							m_cMenuDrawer.m_pcIcons->ResetExtend();
-							for( CPlug::ArrayIter it = plugs.cbegin(); it != plugs.cend(); it++ ) {
-								int iBitmap = CMenuDrawer::TOOLBAR_ICON_PLUGCOMMAND_DEFAULT - 1;
-								const CPlug* plug = *it;
-								if( !plug->m_sIcon.empty() ){
-									iBitmap = m_cMenuDrawer.m_pcIcons->Add( plug->m_cPlugin.GetFilePath( plug->m_sIcon ).c_str() );
-								}
-								m_cMenuDrawer.AddToolButton( iBitmap, plug->GetFunctionCode() );
-							}
-						}
-						m_pcPropertyManager->OpenPropertySheet( NULL, -1, true );
-						CPluginManager::getInstance()->UnloadAllPlugin();
+						OpenPropertySheet(-1);
 					}
 					break;
 				case F_ABOUT:

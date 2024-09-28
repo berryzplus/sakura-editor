@@ -31,6 +31,8 @@
 #include "uiparts/CImageListMgr.h" // 2002/2/10 aroka
 #include "CPropertyManager.h"
 
+#include "typeprop/CDlgTypeList.h"
+
 /*!
  * メインウインドウ
  */
@@ -47,7 +49,16 @@ public:
 	virtual HWND    CreateMainWnd(int nCmdShow) = 0;
 	virtual void    MessageLoop(void) = 0;
 
+	virtual bool    OpenPropertySheet(int nPageNum);
+	virtual bool    OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum);
+
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
 	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+
+	virtual bool    OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem);
+	virtual bool    OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem);
+	virtual void    OnExitMenuLoop(HWND hWnd, bool fShortcut);
 
 	CImageListMgr       m_hIcons;
 	CMenuDrawer         m_cMenuDrawer;

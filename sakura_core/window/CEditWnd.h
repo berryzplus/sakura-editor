@@ -133,6 +133,9 @@ public:
 		CTypeConfig	nDocumentType = CTypeConfig(-1)	//!< [in] 文書タイプ．-1のとき強制指定無し．
 	) const;
 	void UpdateCaption();
+
+	bool    OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum) override;
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

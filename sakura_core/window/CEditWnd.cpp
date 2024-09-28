@@ -966,6 +966,20 @@ void CEditWnd::EndLayoutBars( BOOL bAdjust/* = TRUE*/ )
 	}
 }
 
+/*!
+ * タイプ別設定 プロパティシート
+ *
+ * @date 2007/10/19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
+ */
+bool CEditWnd::OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum)
+{
+	const auto ret = __super::OpenPropertySheetTypes(nSettingType, nPageNum);
+	if (ret) {
+		getEditorProcess()->GetSMacroMgr()->UnloadAll();
+	}
+	return ret;
+}
+
 static inline BOOL MyIsDialogMessage(HWND hwnd, MSG* msg)
 {
 	if(hwnd==NULL)return FALSE;
@@ -1031,10 +1045,7 @@ LRESULT CEditWnd::DispatchEvent(
 	LPHELPINFO			lphi;
 
 	UINT				idCtl;	/* コントロールのID */
-	MEASUREITEMSTRUCT*	lpmis;
 	LPDRAWITEMSTRUCT	lpdis;	/* 項目描画情報 */
-	int					nItemWidth;
-	int					nItemHeight;
 	UINT				uItem;
 	LRESULT				lRes;
 	CTypeConfig			cTypeNew;
@@ -1056,10 +1067,6 @@ LRESULT CEditWnd::DispatchEvent(
 		return OnHScroll( wParam, lParam );
 	case WM_VSCROLL:
 		return OnVScroll( wParam, lParam );
-
-	case WM_MENUCHAR:
-		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
-		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
 
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
@@ -1132,30 +1139,7 @@ LRESULT CEditWnd::DispatchEvent(
 			}
 			return 0;
 		}else{
-			switch( lpdis->CtlType ){
-			case ODT_MENU:	/* オーナー描画メニュー */
-				/* メニューアイテム描画 */
-				m_cMenuDrawer.DrawItem( lpdis );
-				return TRUE;
-			}
-		}
-		return FALSE;
-	case WM_MEASUREITEM:
-		idCtl = (UINT) wParam;					// control identifier
-		lpmis = (MEASUREITEMSTRUCT*) lParam;	// item-size information
-		switch( lpmis->CtlType ){
-		case ODT_MENU:	/* オーナー描画メニュー */
-//			CMenuDrawer* pCMenuDrawer;
-//			pCMenuDrawer = (CMenuDrawer*)lpmis->itemData;
-
-//			MYTRACE( L"WM_MEASUREITEM  lpmis->itemID=%d\n", lpmis->itemID );
-			/* メニューアイテムの描画サイズを計算 */
-			nItemWidth = m_cMenuDrawer.MeasureItem( lpmis->itemID, &nItemHeight );
-			if( 0 < nItemWidth ){
-				lpmis->itemWidth = nItemWidth;
-				lpmis->itemHeight = nItemHeight;
-			}
-			return TRUE;
+			return __super::OnDrawItem(hWnd, lpdis);
 		}
 		return FALSE;
 
@@ -1298,7 +1282,7 @@ LRESULT CEditWnd::DispatchEvent(
 		if( NULL != m_cStatusBar.GetStatusHwnd() ){
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, L"");
 		}
-		m_cMenuDrawer.EndDrawMenu();
+		OnExitMenuLoop(hWnd, bool(wParam));
 		/* メッセージの配送 */
 		return Views_DispatchEvent( hwnd, uMsg, wParam, lParam );
 

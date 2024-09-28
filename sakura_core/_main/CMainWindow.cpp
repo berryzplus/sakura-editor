@@ -25,9 +25,53 @@
 #include "StdAfx.h"
 #include "_main/CMainWindow.hpp"
 
+#include "_main/CNormalProcess.h"
+
 #include "CSelectLang.h"
 
- /*!
+
+/*! 共通設定 プロパティシート */
+bool CMainWindow::OpenPropertySheet(int nPageNum)
+{
+	const bool bTrayProc = !getEditorProcess();
+	return m_pcPropertyManager->OpenPropertySheet(GetHwnd(), nPageNum, bTrayProc);
+}
+
+/*! タイプ別設定 プロパティシート */
+bool CMainWindow::OpenPropertySheetTypes(CTypeConfig nSettingType, int nPageNum)
+{
+	return m_pcPropertyManager->OpenPropertySheetTypes(GetHwnd(), nPageNum, nSettingType);
+}
+
+/*!
+ * メインウインドウのメッセージ配送
+ *
+ * @param [in] hWnd 宛先ウインドウのハンドル
+ * @param [in] uMsg メッセージコード
+ * @param [in, opt] wParam 第1パラメーター
+ * @param [in, opt] lParam 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CMainWindow::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+// clang-format off
+//	HANDLE_MSG(hWnd, WM_COMMAND,                        OnCommand);
+// clang-format on
+
+	case WM_MENUCHAR:       return m_cMenuDrawer.OnMenuChar(hWnd, uMsg, wParam, lParam);
+	case WM_DRAWITEM:       return OnDrawItem(hWnd, LPDRAWITEMSTRUCT(lParam));
+	case WM_MEASUREITEM:    return OnMeasureItem(hWnd, LPMEASUREITEMSTRUCT(lParam));
+	case WM_EXITMENULOOP:   return (OnExitMenuLoop(hWnd, bool(wParam)), 0L);
+
+	default:
+		break;
+	}
+	
+	return __super::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
  * WM_CREATEハンドラ
  *
  * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
@@ -48,4 +92,60 @@ bool CMainWindow::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer );
 
 	return true;
+}
+
+/*!
+ * WM_DRAWITEMハンドラ
+ *
+ * windowsx.hの実装では値を返せないので独自に定義
+ * 
+ * @retval true  このメッセージを処理した
+ * @retval false このメッセージを処理しなかった
+ */
+bool CMainWindow::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
+{
+	if (!lpDrawItem || ODT_MENU != lpDrawItem->CtlType) {
+		return false;
+	}
+
+	m_cMenuDrawer.DrawItem(lpDrawItem);
+
+	return true;
+}
+
+/*!
+ * WM_MEASUREITEMハンドラ
+ *
+ * windowsx.hの実装では値を返せないので独自に定義
+ *
+ * @retval true  このメッセージを処理した
+ * @retval false このメッセージを処理しなかった
+ */
+bool CMainWindow::OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem)
+{
+	if (!lpMeasureItem || ODT_MENU != lpMeasureItem->CtlType) {
+		return false;
+	}
+
+	int nItemHeight = 0;
+	if (const auto nItemWidth = m_cMenuDrawer.MeasureItem(lpMeasureItem->itemID, &nItemHeight);
+			0 < nItemWidth)
+	{
+		lpMeasureItem->itemWidth  = nItemWidth;
+		lpMeasureItem->itemHeight = nItemHeight;
+	}
+
+	return true;
+}
+
+/*!
+ * WM_EXITMENULOOPハンドラ
+ *
+ * windowsx.hに実装がないので独自に定義
+ *
+ * DefWindowProc 関数は 0 を返すので「戻り値なし」で定義している。。
+ */
+void CMainWindow::OnExitMenuLoop(HWND hWnd, bool fShortcut)
+{
+	m_cMenuDrawer.EndDrawMenu();
 }
