@@ -1433,13 +1433,14 @@ LRESULT CEditWnd::DispatchEvent(
 		if( m_pShareData->m_sHandles.m_hwndDebug == GetHwnd() ){
 			m_pShareData->m_sHandles.m_hwndDebug = NULL;
 		}
-		m_hWnd = NULL;
 
 		/* 編集ウィンドウオブジェクトからのオブジェクト削除要求 */
 		::PostMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_DELETE_ME, 0, 0 );
 
 		/* プラグイン解放 */
 		CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
+
+		DefWindowProcW(hWnd, WM_DESTROY, 0, 0);
 
 		/* Windows にスレッドの終了を要求します */
 		::PostQuitMessage( 0 );
