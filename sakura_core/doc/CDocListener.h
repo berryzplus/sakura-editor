@@ -133,21 +133,21 @@ class CProgressListener;
 //! 複数のCProgressSubjectからウォッチされる
 class CProgressSubject : public CSubjectT<CProgressListener>{
 public:
-	virtual ~CProgressSubject(){}
+	virtual ~CProgressSubject() = default;
 	void NotifyProgress(int nPer);
 };
 
 //! 1つのCProgressSubjectをウォッチする
 class CProgressListener : public CListenerT<CProgressSubject>{
 public:
-	virtual ~CProgressListener(){}
+	virtual ~CProgressListener() = default;
 	virtual void OnProgress(int nPer)=0;
 };
 
 //Subjectは複数のListenerから観察される
 class CDocSubject : public CSubjectT<CDocListener>{
 public:
-	virtual ~CDocSubject();
+	virtual ~CDocSubject() = default;
 
 	//ロード前後
 	ECallbackResult NotifyCheckLoad	(SLoadInfo* pLoadInfo);
@@ -170,14 +170,16 @@ public:
 	ECallbackResult NotifyBeforeClose();
 };
 
+class CEditDoc;
+
 //Listenerは1つのSubjectを観察する
 class CDocListener : public CListenerT<CDocSubject>{
 public:
-	explicit CDocListener(CDocSubject* pcDoc);
-	~CDocListener() override = default;
+	explicit CDocListener(CEditDoc* pcDoc);
+	virtual ~CDocListener() = default;
 
 	// -- -- 属性 -- -- //
-	CDocSubject* GetListeningDoc() const{ return GetListeningSubject(); }
+	CEditDoc* GetListeningDoc() const;
 
 	// -- -- 各種イベント -- -- //
 	//ロード前後
@@ -202,14 +204,8 @@ public:
 };
 
 //GetListeningDocの利便性をアップ
-class CEditDoc;
-class CDocListenerEx : public CDocListener{
-public:
-	explicit CDocListenerEx(CDocSubject* pcDoc) : CDocListener(pcDoc) { }
-	CEditDoc* GetListeningDoc() const;
-};
+using CDocListenerEx = CDocListener;
 
-#include <exception>
 class CFlowInterruption : public std::exception{
 public:
 	const char* what() const throw(){ return "CFlowInterruption"; }

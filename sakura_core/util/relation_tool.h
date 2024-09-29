@@ -30,73 +30,81 @@
 #define SAKURA_RELATION_TOOL_4B723E5C_5042_4F93_8899_EE2077DB8CFE_H_
 #pragma once
 
-#include <vector>
-class CSubject;
 class CListener;
 
 //! 複数のCListenerからウォッチされる
-class CSubject{
+class CSubject {
 	using Me = CSubject;
 
 public:
 	//コンストラクタ・デストラクタ
-	CSubject();
+	CSubject() = default;
 	CSubject(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
-	CSubject(Me&&) noexcept = delete;
-	Me& operator = (Me&&) noexcept = delete;
-	virtual ~CSubject();
+	~CSubject();
 
 	//公開インターフェース
-	int GetListenerCount() const{ return (int)m_vListenersRef.size(); }
-	CListener* GetListener(int nIndex) const{ return m_vListenersRef[nIndex]; }
+	int GetListenerCount() const { return (int)m_vListenersRef.size(); }
 
-public:
 	//管理用
 	void _AddListener(CListener* pcListener);
-	void _RemoveListener(CListener* pcListener);
+	void _RemoveListener(const CListener* pcListener);
+
+protected:
+	CListener* _GetListener(int nIndex) const { return m_vListenersRef[nIndex]; }
 
 private:
 	std::vector<CListener*> m_vListenersRef;
 };
 
+struct sublect_releaser {
+	CListener* pcListener;
+
+	explicit sublect_releaser(CListener& listener)
+		: pcListener(&listener)
+	{
+	}
+
+	void operator ()(CSubject* pcSubject) const {
+		pcSubject->_RemoveListener(pcListener);
+	}
+};
+
 //! 1つのCSubjectをウォッチする
-class CListener{
+class CListener {
 	using Me = CListener;
 
 public:
-	CListener();
+	CListener() = default;
 	CListener(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
-	CListener(Me&&) noexcept = delete;
-	Me& operator = (Me&&) noexcept = delete;
-	virtual ~CListener();
+	~CListener() = default;
 
-	//公開インターフェース
-	CSubject* Listen(CSubject* pcSubject); //!< 直前にウォッチしていたサブジェクトを返す
-	CSubject* GetListeningSubject() const{ return m_pcSubjectRef; }
+protected:
+	CSubject* _Listen(CSubject* pcSubject); //!< 直前にウォッチしていたサブジェクトを返す
+	CSubject* _GetListeningSubject() const { return m_pcSubjectRef.get(); }
 
 private:
-	CSubject* m_pcSubjectRef;
+	using CSubjectHolder = std::unique_ptr<CSubject, sublect_releaser>;
+	CSubjectHolder m_pcSubjectRef = CSubjectHolder(static_cast<CSubject*>(nullptr), sublect_releaser(*this));
 };
 
-template <class LISTENER> class CSubjectT : public CSubject{
+template <class LISTENER> class CSubjectT : public CSubject {
 public:
-	LISTENER* GetListener(int nIndex) const
-	{
-		return static_cast<LISTENER*>(CSubject::GetListener(nIndex));
+	LISTENER* GetListener(int nIndex) const {
+		return static_cast<LISTENER*>(CSubject::_GetListener(nIndex));
 	}
 };
 
-template <class SUBJECT> class CListenerT : public CListener{
+template <class SUBJECT, std::enable_if_t<std::is_base_of_v<CSubject, SUBJECT>, int> = 0>
+class CListenerT : public CListener {
 public:
-	SUBJECT* Listen(SUBJECT* pcSubject)
-	{
-		return static_cast<SUBJECT*>(CListener::Listen(static_cast<CSubject*>(pcSubject)));
+	SUBJECT* Listen(SUBJECT* pcSubject) {
+		return static_cast<SUBJECT*>(CListener::_Listen(static_cast<SUBJECT*>(pcSubject)));
 	}
-	SUBJECT* GetListeningSubject() const
-	{
-		return static_cast<SUBJECT*>(CListener::GetListeningSubject());
+	SUBJECT* GetListeningSubject() const {
+		return static_cast<SUBJECT*>(CListener::_GetListeningSubject());
 	}
 };
+
 #endif /* SAKURA_RELATION_TOOL_4B723E5C_5042_4F93_8899_EE2077DB8CFE_H_ */

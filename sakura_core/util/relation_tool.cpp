@@ -29,15 +29,11 @@
 //                         CSubject                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CSubject::CSubject()
-{
-}
-
 CSubject::~CSubject()
 {
 	//リスナを解除
-	for(int i=0;i<(int)m_vListenersRef.size();i++){
-		m_vListenersRef[i]->Listen(NULL);
+	for (auto listenerRef : m_vListenersRef) {
+		_RemoveListener(listenerRef);
 	}
 	m_vListenersRef.clear();
 }
@@ -45,23 +41,23 @@ CSubject::~CSubject()
 void CSubject::_AddListener(CListener* pcListener)
 {
 	//既に追加済みなら何もしない
-	for(int i=0;i<(int)m_vListenersRef.size();i++){
-		if(m_vListenersRef[i]==pcListener){
-			return;
-		}
+	const auto cend = m_vListenersRef.cend();
+	if (const auto found = std::find(m_vListenersRef.cbegin(), cend, pcListener);
+		found != cend)
+	{
+		return;
 	}
+
 	//追加
 	m_vListenersRef.push_back(pcListener);
 }
 
-void CSubject::_RemoveListener(CListener* pcListener)
+void CSubject::_RemoveListener(const CListener* pcListener)
 {
-	//配列から削除
-	for(int i=0;i<(int)m_vListenersRef.size();i++){
-		if(m_vListenersRef[i]==pcListener){
-			m_vListenersRef.erase(m_vListenersRef.begin()+i);
-			break;
-		}
+	const auto cend = m_vListenersRef.cend();
+	const auto found = std::find(m_vListenersRef.cbegin(), cend, pcListener);
+	if (found != cend) {
+		m_vListenersRef.erase(found);
 	}
 }
 
@@ -69,30 +65,17 @@ void CSubject::_RemoveListener(CListener* pcListener)
 //                         CListener                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CListener::CListener()
-: m_pcSubjectRef(NULL)
+CSubject* CListener::_Listen(CSubject* pcSubject)
 {
-}
-
-CListener::~CListener()
-{
-	Listen(NULL);
-}
-
-CSubject* CListener::Listen(CSubject* pcSubject)
-{
-	CSubject* pOld = GetListeningSubject();
+	auto pOld = _GetListeningSubject();
 
 	//古いサブジェクトを解除
-	if(m_pcSubjectRef){
-		m_pcSubjectRef->_RemoveListener(this);
-		m_pcSubjectRef = NULL;
-	}
+	m_pcSubjectRef.reset();
 
 	//新しく設定
-	m_pcSubjectRef = pcSubject;
-	if(m_pcSubjectRef){
-		m_pcSubjectRef->_AddListener(this);
+	if (pcSubject) {
+		pcSubject->_AddListener(this);
+		m_pcSubjectRef.reset(pcSubject);
 	}
 
 	return pOld;
