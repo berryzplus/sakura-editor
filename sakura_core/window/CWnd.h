@@ -19,7 +19,7 @@
 #define SAKURA_CWND_86C8E4DA_7921_4D79_A481_E3AB0557D767_H_
 #pragma once
 
-#include "apiwrap/window/CGenericWnd.hpp"
+#include "apiwrap/window/COriginalWnd.hpp"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -34,17 +34,16 @@
 	@li RegisterWC()	ウィンドウクラス登録
 	@li Create()		ウィンドウ作成
 */
-class CWnd : public apiwrap::window::CGenericWnd {
+class CWnd : public apiwrap::window::COriginalWnd {
+private:
 	using Me = CWnd;
 
-protected:
-	friend LRESULT CALLBACK CWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 public:
 	/* Constructors */
-	CWnd(const WCHAR* pszInheritanceAppend = L"");
+	explicit CWnd(std::wstring_view className = L""sv, bool isSakuraStyle = true) noexcept;
 	CWnd(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
-	~CWnd() override;
+	~CWnd() override = default;
 
 	using CGenericWnd::_SetHwnd;
 
@@ -112,13 +111,6 @@ public:
 
 	//ウィンドウ標準操作
 	void DestroyWindow();
-
-private: // 2002/2/10 aroka アクセス権変更
-	HINSTANCE	m_hInstance;	// アプリケーションインスタンスのハンドル
-	HWND		m_hwndParent;	// オーナーウィンドウのハンドル
-
-#ifdef _DEBUG
-	WCHAR		m_szClassInheritances[1024];
-#endif
 };
+
 #endif /* SAKURA_CWND_86C8E4DA_7921_4D79_A481_E3AB0557D767_H_ */

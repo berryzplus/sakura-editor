@@ -33,7 +33,7 @@ constexpr auto CSplitBoxWnd_GetCursorName(bool isVertical) {
 }
 
 CSplitBoxWnd::CSplitBoxWnd(bool isVertical) noexcept
-	: CWnd(CSplitBoxWnd_GetClassName(isVertical))
+	: CWnd(CSplitBoxWnd_GetClassName(isVertical), false)
 	, m_bVertical(isVertical)
 {
 }
