@@ -35,7 +35,7 @@
 //外部依存
 inline CEditDoc* CViewCommander::GetDocument()
 {
-	return m_pCommanderView->m_pcEditDoc;
+	return CEditDoc::getInstance();
 }
 inline CEditWnd* CViewCommander::GetEditWindow()
 {
@@ -43,7 +43,7 @@ inline CEditWnd* CViewCommander::GetEditWindow()
 }
 inline HWND CViewCommander::GetMainWindow()
 {
-	return ::GetParent( m_pCommanderView->m_hwndParent );
+	return GetEditWindow()->GetHwnd();
 }
 inline COpeBlk* CViewCommander::GetOpeBlk()
 {
@@ -62,4 +62,5 @@ inline CCaret& CViewCommander::GetCaret()
 {
 	return m_pCommanderView->GetCaret();
 }
+
 #endif /* SAKURA_CVIEWCOMMANDER_INLINE_EF3571A1_FED4_439C_957F_E77B28E2384F_H_ */
