@@ -72,13 +72,11 @@ public:
 	virtual void    InitProcess() = 0;
 	virtual CMainWindow*    GetMainWnd() const { return m_MainWindow.get(); }
 
-	CPluginManager*   GetPluginManager() const { return m_PluginManager.get(); }
+	void            SetMainWindow(std::unique_ptr<CMainWindow>&& mainWindow) { m_MainWindow = std::move(mainWindow); }
+	CPluginManager* GetPluginManager() const { return m_PluginManager.get(); }
 
 protected:
 	virtual bool InitializeProcess() = 0;
-
-	void			SetMainWindow(std::unique_ptr<CMainWindow>&& mainWindow) { m_MainWindow = std::move(mainWindow); }
-
 	virtual bool InitShareData();
 
 	virtual HANDLE CreateEventW(
