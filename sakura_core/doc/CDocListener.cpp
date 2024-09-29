@@ -51,6 +51,10 @@ bool SSaveInfo::IsSamePath(LPCWSTR pszPath) const
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //(1)
 
+CDocSubject::~CDocSubject()
+{
+}
+
 #define DEF_NOTIFY(NAME) ECallbackResult CDocSubject::Notify##NAME() \
 { \
 	int n = GetListenerCount(); \
@@ -123,15 +127,19 @@ DEF_NOTIFY(BeforeClose)
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //(多)
 
-CDocListener::CDocListener(CEditDoc* pcDoc)
+CDocListener::CDocListener(CDocSubject* pcDoc)
 {
 	assert( pcDoc );
 	Listen(pcDoc);
 }
 
-CEditDoc* CDocListener::GetListeningDoc() const
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//                      CDocListenerEx                         //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+CEditDoc* CDocListenerEx::GetListeningDoc() const
 {
-	return static_cast<CEditDoc*>(GetListeningSubject());
+	return static_cast<CEditDoc*>(CDocListener::GetListeningDoc());
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
