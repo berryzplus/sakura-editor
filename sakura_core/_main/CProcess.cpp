@@ -190,6 +190,11 @@ DWORD CProcess::StartProcess(
  */
 void CProcess::TerminateControlProcess(std::optional<LPCWSTR> profileName) const
 {
+	// コントロールプロセスが起動していない場合は抜ける
+	if (!IsExistControlProcess(profileName)) {
+		return;
+	}
+
 	// トレイウインドウを検索する
 	std::wstring strCEditAppName(GSTR_CEDITAPP);
 	if (profileName.has_value() && profileName.value()) {
@@ -198,23 +203,20 @@ void CProcess::TerminateControlProcess(std::optional<LPCWSTR> profileName) const
 	std::wstring_view className = strCEditAppName;
 	std::wstring_view windowName = className;
 	const auto hWndTray = FindWindowW(className.data(), windowName.data() );
-	if (!hWndTray)
-	{
-		throw message_error( L"hWndTray can't be retrived.");
+	if (!hWndTray) {
+		return;
 	}
 
 	// トレイウインドウからプロセスIDを取得する
 	DWORD dwControlProcessId = 0;
 	GetWindowThreadProcessId(hWndTray, &dwControlProcessId);
-	if (!dwControlProcessId)
-	{
+	if (!dwControlProcessId) {
 		throw message_error( L"dwControlProcessId can't be retrived.");
 	}
 
 	// プロセス情報の問い合せを行うためのハンドルを開く
 	const auto hControlProcess = OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, dwControlProcessId);
-	if (!hControlProcess)
-	{
+	if (!hControlProcess) {
 		throw message_error( L"hControlProcess can't be opened.");
 	}
 

@@ -193,18 +193,33 @@ TEST_F(CEditorProcessTest, StartControlProcess001)
 	EXPECT_TRUE(process->StartControlProcess(L""));
 }
 
-// コントロールプロセスのプロセスIDを取得できなかった
+// コントロールプロセスが起動していない
 TEST_F(CEditorProcessTest, TerminateControlProcess001)
 {
-    EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).Times(0);
+    EXPECT_CALL(*process, FindWindowW(_, _)).Times(0);
 
-	ASSERT_THROW_MESSAGE(process->TerminateControlProcess(), message_error, L"hWndTray can't be retrived.");
+	process->TerminateControlProcess();
 }
+
 
 // コントロールプロセスのプロセスIDを取得できなかった
 TEST_F(CEditorProcessTest, TerminateControlProcess002)
 {
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
+    EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(nullptr));
+
+	process->TerminateControlProcess();
+}
+
+// コントロールプロセスのプロセスIDを取得できなかった
+TEST_F(CEditorProcessTest, TerminateControlProcess003)
+{
 	const auto  hWndTray = HWND(1234);
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
     EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(hWndTray));
     EXPECT_CALL(*process, GetWindowThreadProcessId(hWndTray, _)).WillOnce(Invoke([](const HWND, DWORD* p) { *p = 0UL; return 0UL; }));
 
@@ -212,9 +227,11 @@ TEST_F(CEditorProcessTest, TerminateControlProcess002)
 }
 
 // コントロールプロセスを開けなかった
-TEST_F(CEditorProcessTest, TerminateControlProcess003)
+TEST_F(CEditorProcessTest, TerminateControlProcess004)
 {
 	const auto  hWndTray = HWND(1234);
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
     EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(hWndTray));
     EXPECT_CALL(*process, GetWindowThreadProcessId(hWndTray, _)).WillOnce(Invoke([](const HWND, DWORD* p) { *p = 1UL; return 0UL; }));
     EXPECT_CALL(*process, OpenProcess(_, _, _)).WillOnce(Return(nullptr));
@@ -223,9 +240,11 @@ TEST_F(CEditorProcessTest, TerminateControlProcess003)
 }
 
 // コントロールプロセスの待機に失敗
-TEST_F(CEditorProcessTest, TerminateControlProcess004)
+TEST_F(CEditorProcessTest, TerminateControlProcess005)
 {
 	const auto  hWndTray = HWND(1234);
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
     EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(hWndTray));
     EXPECT_CALL(*process, GetWindowThreadProcessId(hWndTray, _)).WillOnce(Invoke([](const HWND, DWORD* p) { *p = 1UL; return 0UL; }));
     EXPECT_CALL(*process, OpenProcess(_, _, _)).WillOnce(Invoke(DefaultOpenProcess));
@@ -236,9 +255,11 @@ TEST_F(CEditorProcessTest, TerminateControlProcess004)
 }
 
 // コントロールプロセス終了コードの取得に失敗
-TEST_F(CEditorProcessTest, TerminateControlProcess005)
+TEST_F(CEditorProcessTest, TerminateControlProcess006)
 {
 	const auto  hWndTray = HWND(1234);
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
     EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(hWndTray));
     EXPECT_CALL(*process, GetWindowThreadProcessId(hWndTray, _)).WillOnce(Invoke([](const HWND, DWORD* p) { *p = 1UL; return 0UL; }));
     EXPECT_CALL(*process, OpenProcess(_, _, _)).WillOnce(Invoke(DefaultOpenProcess));
@@ -253,9 +274,11 @@ TEST_F(CEditorProcessTest, TerminateControlProcess005)
 }
 
 // コントロールプロセス終了コードの取得に成功
-TEST_F(CEditorProcessTest, TerminateControlProcess006)
+TEST_F(CEditorProcessTest, TerminateControlProcess007)
 {
 	const auto  hWndTray = HWND(1234);
+    EXPECT_CALL(*process, OpenEventW(_, _, StrEq(GSTR_EVENT_SAKURA_CP_INITIALIZED))).WillOnce(Invoke(DefaultOpenEventW));
+    EXPECT_CALL(*process, WaitForSingleObject(_, _)).WillOnce(Return(WAIT_OBJECT_0));
     EXPECT_CALL(*process, FindWindowW(_, _)).WillOnce(Return(hWndTray));
     EXPECT_CALL(*process, GetWindowThreadProcessId(hWndTray, _)).WillOnce(Invoke([](const HWND, DWORD* p) { *p = 1UL; return 0UL; }));
     EXPECT_CALL(*process, OpenProcess(_, _, _)).WillOnce(Invoke(DefaultOpenProcess));
