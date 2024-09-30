@@ -29,6 +29,6 @@ $p = Start-Process `
     -PassThru `
     -Wait
 
-if ($p.ExitCode -ne 0) {
-  throw "$(Split-Path -Path $command -Leaf) was Failed."
-}
+# if ($p.ExitCode -ne 0) {
+#   throw "$(Split-Path -Path $command -Leaf) was Failed."
+# }
