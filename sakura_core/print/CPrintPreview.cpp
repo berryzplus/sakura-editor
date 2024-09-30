@@ -126,6 +126,43 @@ CPrintPreview::~CPrintPreview()
 	}
 }
 
+/*!
+ * 独自ウインドウのメッセージ配送
+ *
+ * @param [in] hWnd 宛先ウインドウのハンドル
+ * @param [in] uMsg メッセージコード
+ * @param [in, opt] wParam 第1パラメーター
+ * @param [in, opt] lParam 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CPrintPreview::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+	case WM_SIZE:
+		return OnSize( wParam, lParam );
+
+	case WM_PAINT:
+		return OnPaint( hWnd, uMsg, wParam, lParam );
+
+	case WM_HSCROLL:
+		return OnHScroll( wParam, lParam );
+
+	case WM_VSCROLL:
+		return OnVScroll( wParam, lParam );
+
+	case WM_MOUSEMOVE:
+		return OnMouseMove( wParam, lParam );
+
+	case WM_MOUSEWHEEL:
+		return OnMouseWheel( wParam, lParam );
+
+	default:
+		break;
+	}
+
+	return __super::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
 /*!	印刷プレビュー時の、WM_PAINTを処理
 
 	@date 2007.02.11 Moca プレビューを滑らかにする機能．

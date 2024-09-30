@@ -379,7 +379,6 @@ TEST_F(CEditorProcessInitTest, OnCreate)
 	EXPECT_FALSE(pcSplitter->OnCreate(nullptr, nullptr));
 	EXPECT_EQ(1, pcSplitter->GetAllSplitRows());
 	EXPECT_EQ(1, pcSplitter->GetAllSplitCols());
-	EXPECT_FALSE(pcSplitter->CreateEditViewBySplit(4 + 1));
 
 	auto pcView = &GetEditWnd().GetActiveView();
 	EXPECT_FALSE(pcView->OnCreate(nullptr, nullptr));

@@ -35,6 +35,9 @@
 #pragma once
 
 #include <Windows.h> // 2002/2/10 aroka
+
+#include "apiwrap/window/CCustomizedWnd.hpp"
+
 #include "basis/SakuraBasis.h"
 #include "util/design_template.h"
 #include "CPrint.h" // 2002/2/10 aroka
@@ -48,14 +51,15 @@ class CLayout;
 class CLayoutMgr;
 class CStringRef;
 
-class CPrintPreview {
-/* メンバ関数宣言 */
+class CPrintPreview : public apiwrap::window::CCustomizedWnd {
 public:
 	/*
 	||  コンストラクタ
 	*/
-	CPrintPreview( class CEditWnd* pParentWnd );
-	~CPrintPreview();
+	explicit CPrintPreview( class CEditWnd* pParentWnd );
+	~CPrintPreview() override;
+
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	/*
 	||	イベント
@@ -199,9 +203,6 @@ protected:
 
 /* メンバ変数宣言 */
 public:
-	/* none */
-
-protected:
 	CEditWnd*		m_pParentWnd;	//	親のCEditDoc*。
 
 	// 2006.08.17 Moca YAZAKIさんのメモの通りDC/BMPをCEditDocからCPrintPreviewへ移動
@@ -276,4 +277,5 @@ protected:
 
 	DISALLOW_COPY_AND_ASSIGN(CPrintPreview);
 };
+
 #endif /* SAKURA_CPRINTPREVIEW_71FC07B8_7648_4179_81A7_0FE3299DBA0A_H_ */
