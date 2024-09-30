@@ -220,32 +220,29 @@ int CSplitterWnd::HitTestSplitter( int xPos, int yPos )
 */
 void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 {
+	const auto hWnd = GetHwnd();
+
 	if( -1 == nHorizontal && -1 == nVertical ){
 		nVertical   = m_nVSplitPos;		/* 垂直分割位置 */
 		nHorizontal = m_nHSplitPos;		/* 水平分割位置 */
+	}
+
+	RECT rc;
+	::GetClientRect(GetHwnd(), &rc);
+
+	if (const auto nLimit = DpiScaleX(32);
+		nHorizontal < nLimit || rc.right - nLimit * 2 < nHorizontal){
+		nHorizontal = 0;
+	}
+	if (const auto nLimit = DpiScaleY(32);
+		nVertical < nLimit || rc.bottom - nLimit * 2 < nVertical){
+		nVertical = 0;
 	}
 
 	if (nVertical || nHorizontal) {
 		// 分割指示。まだ未作成なら2つ目以降のビューを作成します
 		// 今のところは分割数に関係なく4つまで一度に作ります。
 		CreateEditViewBySplit(2 * 2);
-	}
-
-	const auto nLimit = DpiScaleX(32);
-
-	RECT rc;
-	::GetClientRect(GetHwnd(), &rc);
-	if( nHorizontal < nLimit ){
-		nHorizontal = 0;
-	}
-	if( nHorizontal > rc.right - nLimit * 2 ){
-		nHorizontal = 0;
-	}
-	if( nVertical < nLimit ){
-		nVertical = 0;
-	}
-	if( nVertical > rc.bottom - nLimit * 2 ){
-		nVertical = 0;
 	}
 
 	m_nVSplitPos = nVertical;		/* 垂直分割位置 */
@@ -262,10 +259,9 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 1;	/* 分割行数 */
 		m_nAllSplitCols = 1;	/* 分割桁数 */
 
-		if (m_ChildWndArr[0]) ::ShowWindow( m_ChildWndArr[0]->GetHwnd(), SW_SHOW );
-		if (m_ChildWndArr[1]) ::ShowWindow( m_ChildWndArr[1]->GetHwnd(), SW_HIDE );
-		if (m_ChildWndArr[2]) ::ShowWindow( m_ChildWndArr[2]->GetHwnd(), SW_HIDE );
-		if (m_ChildWndArr[3]) ::ShowWindow( m_ChildWndArr[3]->GetHwnd(), SW_HIDE );
+		if (m_ChildWndArr[1]) m_ChildWndArr[1] = nullptr;
+		if (m_ChildWndArr[2]) m_ChildWndArr[2] = nullptr;
+		if (m_ChildWndArr[3]) m_ChildWndArr[3] = nullptr;
 
 		nActivePane = 0;
 
@@ -276,13 +272,11 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 2;	/* 分割行数 */
 		m_nAllSplitCols = 1;	/* 分割桁数 */
 
-		if (m_ChildWndArr[0]) ::ShowWindow( m_ChildWndArr[0]->GetHwnd(), SW_SHOW );
-		if (m_ChildWndArr[1]) ::ShowWindow( m_ChildWndArr[1]->GetHwnd(), SW_HIDE );
+		if (m_ChildWndArr[1]) m_ChildWndArr[1] = nullptr;
 		if (m_ChildWndArr[2]) ::ShowWindow( m_ChildWndArr[2]->GetHwnd(), SW_SHOW );
-		if (m_ChildWndArr[3]) ::ShowWindow( m_ChildWndArr[3]->GetHwnd(), SW_HIDE );
+		if (m_ChildWndArr[3]) m_ChildWndArr[3] = nullptr;
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
-			/* 上下に分割したとき */
 			/* ペインの表示状態を他のビューにコピー */
 			m_ChildWndArr[0]->CopyViewStatus( m_ChildWndArr[2].get() );
 
@@ -301,10 +295,9 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 1;	/* 分割行数 */
 		m_nAllSplitCols = 2;	/* 分割桁数 */
 
-		if (m_ChildWndArr[0]) ::ShowWindow( m_ChildWndArr[0]->GetHwnd(), SW_SHOW );
 		if (m_ChildWndArr[1]) ::ShowWindow( m_ChildWndArr[1]->GetHwnd(), SW_SHOW );
-		if (m_ChildWndArr[2]) ::ShowWindow( m_ChildWndArr[2]->GetHwnd(), SW_HIDE );
-		if (m_ChildWndArr[3]) ::ShowWindow( m_ChildWndArr[3]->GetHwnd(), SW_HIDE );
+		if (m_ChildWndArr[2]) m_ChildWndArr[2] = nullptr;
+		if (m_ChildWndArr[3]) m_ChildWndArr[3] = nullptr;
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -323,7 +316,6 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 2;	/* 分割行数 */
 		m_nAllSplitCols = 2;	/* 分割桁数 */
 
-		if (m_ChildWndArr[0]) ::ShowWindow( m_ChildWndArr[0]->GetHwnd(), SW_SHOW );
 		if (m_ChildWndArr[1]) ::ShowWindow( m_ChildWndArr[1]->GetHwnd(), SW_SHOW );
 		if (m_ChildWndArr[2]) ::ShowWindow( m_ChildWndArr[2]->GetHwnd(), SW_SHOW );
 		if (m_ChildWndArr[3]) ::ShowWindow( m_ChildWndArr[3]->GetHwnd(), SW_SHOW );
