@@ -833,10 +833,14 @@ void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 
 /*!
  * WM_SIZEハンドラ
+ *
  * ウィンドウサイズの変更処理
  */
 void CEditView::OnSize(HWND hWnd, UINT state, int cx, int cy)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(state);
+
 	if( NULL == GetHwnd()
 		|| ( cx == 0 && cy == 0 ) ){
 		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ

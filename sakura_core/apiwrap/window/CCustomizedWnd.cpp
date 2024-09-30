@@ -52,8 +52,8 @@ LRESULT CALLBACK CCustomizedWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
     }
 
     // ウインドウプロパティに設定されたインスタンスを取り出す
-	auto pcWnd = CGenericWnd::FromHwnd<CCustomizedWnd>(hWnd);
-	if (pcWnd && pcWnd->m_WndProc)
+	if (auto pcWnd = CGenericWnd::FromHwnd<CCustomizedWnd>(hWnd);
+		pcWnd && pcWnd->m_WndProc)
     {
 		// インスタンスのメッセージ配送を呼び出す
 		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);

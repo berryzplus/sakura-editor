@@ -34,6 +34,9 @@
  */
 class CMiniMapView : public CEditView
 {
+	using Me = CMiniMapView;
+	using CEditView::OnPaint;
+
 public:
 	CMiniMapView();
 

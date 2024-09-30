@@ -49,15 +49,15 @@ private: // 2002/2/3 aroka
 	CEditViewsHolder    m_ChildWndArr = { std::make_unique<CEditView>(0) };
 	int                 m_nChildWndCount = 1;		/*!< 有効な子ウィンドウ配列の数 */
 
-	int				m_nAllSplitRows;		/* 分割行数 */
-	int				m_nAllSplitCols;		/* 分割桁数 */
-	int				m_nVSplitPos;			/* 垂直分割位置 */
-	int				m_nHSplitPos;			/* 水平分割位置 */
-	HCURSOR			m_hcurOld;				/* もとのマウスカーソル */
-	int				m_bDragging;			/* 分割バーをドラッグ中か */
-	int				m_nDragPosX;			/* ドラッグ位置Ｘ */
-	int				m_nDragPosY;			/* ドラッグ位置Ｙ */
-	int				m_nActivePane;			/* アクティブなペイン */
+	int				    m_nAllSplitRows = 1;		/* 分割行数 */
+	int				    m_nAllSplitCols = 1;		/* 分割桁数 */
+	int				    m_nVSplitPos    = 0;		/* 垂直分割位置 */
+	int				    m_nHSplitPos    = 0;		/* 水平分割位置 */
+	HCURSOR			    m_hcurOld       = nullptr;	/* もとのマウスカーソル */
+	int				    m_bDragging     = false;	/* 分割バーをドラッグ中か */
+	int				    m_nDragPosX     = 0;		/* ドラッグ位置Ｘ */
+	int				    m_nDragPosY     = 0;		/* ドラッグ位置Ｙ */
+	int				    m_nActivePane   = 0;		/* アクティブなペイン */
 
 public: // 2002/2/3 aroka
 	HWND Create( HWND hwndParent );	/* 初期化 */
@@ -78,8 +78,8 @@ public: // 2002/2/3 aroka
 	void HSplitOnOff( void );	/* 横分割ＯＮ／ＯＦＦ */
 	void VHSplitOnOff( void );	/* 縦横分割ＯＮ／ＯＦＦ */
 //	LRESULT DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 */
-	int GetAllSplitRows(){ return m_nAllSplitRows;} // 2002/2/3 aroka
-	int GetAllSplitCols(){ return m_nAllSplitCols;} // 2002/2/3 aroka
+	int GetAllSplitRows() const { return m_nAllSplitRows;} // 2002/2/3 aroka
+	int GetAllSplitCols() const { return m_nAllSplitCols;} // 2002/2/3 aroka
 
 	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 

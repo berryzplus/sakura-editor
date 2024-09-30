@@ -35,6 +35,9 @@ ATOM CWnd::RegisterWC(
 	LPCWSTR		lpszClassName	// Pointer to a null-terminated string or is an atom.
 )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+	UNREFERENCED_PARAMETER(lpszClassName);
+
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
 	return RegisterWnd(
@@ -61,6 +64,8 @@ HWND CWnd::Create(
 	HMENU		hMenu			// handle to menu, or child-window identifier
 )
 {
+	UNREFERENCED_PARAMETER(lpszClassName);
+
 	const RECT rcDesired = { x, y, x + nWidth, y + nHeight };
 
 	m_hWnd = CreateWnd(

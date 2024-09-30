@@ -34,22 +34,11 @@ constexpr auto SPLITTER_MARGIN = 2;
 
 CSplitterWnd::CSplitterWnd()
 : CWnd(L"::CSplitterWnd")
-, m_nAllSplitRows(1)					/* 分割行数 */
-, m_nAllSplitCols(1)					/* 分割桁数 */
-, m_nVSplitPos(0)					/* 垂直分割位置 */
-, m_nHSplitPos(0)					/* 水平分割位置 */
-, m_nChildWndCount(0)
-, m_bDragging(0)						/* 分割バーをドラッグ中か */
-, m_nDragPosX(0)						/* ドラッグ位置Ｘ */
-, m_nDragPosY(0)						/* ドラッグ位置Ｙ */
-, m_nActivePane(0)					/* アクティブなペイン 0-3 */
 {
 	auto& cLayoutMgr = GetDocument()->m_cLayoutMgr;
 	cLayoutMgr.SetLayoutInfo( true, false, GetDocument()->m_cDocType.GetDocumentAttribute(),
 		cLayoutMgr.GetTabSpaceKetas(), cLayoutMgr.m_tsvInfo.m_nTsvMode,
 		cLayoutMgr.GetMaxLineKetas(), CLayoutXInt( -1 ), &GetEditWnd().GetLogfont() );
-
-	m_hcurOld = NULL;						/* もとのマウスカーソル */
 }
 
 CEditDoc* CSplitterWnd::GetDocument() const
