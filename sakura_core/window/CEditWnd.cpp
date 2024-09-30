@@ -991,8 +991,6 @@ void CEditWnd::MessageLoop( void )
 			}
 		}
 	}
-
-	getEditorProcess()->SetMainWindow(nullptr);
 }
 
 LRESULT CEditWnd::DispatchEvent(

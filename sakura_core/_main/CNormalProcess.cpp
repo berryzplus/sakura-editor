@@ -60,6 +60,11 @@ CNormalProcess::CNormalProcess(HINSTANCE hInstance, CCommandLineHolder&& pComman
 {
 }
 
+CNormalProcess::~CNormalProcess()
+{
+	SetMainWindow(nullptr);
+}
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     プロセスハンドラ                        //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

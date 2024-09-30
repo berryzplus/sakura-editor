@@ -72,7 +72,6 @@ public:
 	virtual void    InitProcess() = 0;
 	virtual CMainWindow*    GetMainWnd() const { return m_MainWindow.get(); }
 
-	void            SetMainWindow(std::unique_ptr<CMainWindow>&& mainWindow) { m_MainWindow = std::move(mainWindow); }
 	CPluginManager* GetPluginManager() const { return m_PluginManager.get(); }
 
 protected:
@@ -193,6 +192,8 @@ protected:
 	{
 		return ::WaitForSingleObject(hHandle, dwMilliseconds);
 	}
+
+	void            SetMainWindow(std::unique_ptr<CMainWindow>&& mainWindow) { m_MainWindow = std::move(mainWindow); }
 
 public:
 	HINSTANCE		GetProcessInstance() const{ return m_hInstance; }

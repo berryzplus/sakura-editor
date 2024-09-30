@@ -64,7 +64,7 @@ class CNormalProcess : public CProcess {
 public:
 	//コンストラクタ・デストラクタ
 	explicit CNormalProcess(HINSTANCE hInstance, CCommandLineHolder&& pCommandLine, int nCmdShow = SW_SHOWDEFAULT) noexcept;
-	~CNormalProcess() override = default;
+	~CNormalProcess() override;
 
 	CEditApp*       GetEditApp() const { return m_pcEditApp.get(); }
 	CEditDoc*		GetEditDoc() const { return m_pcEditDoc.get(); }
