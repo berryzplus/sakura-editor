@@ -67,14 +67,12 @@ public: // 2002/2/3 aroka
 	bool                IsPaneEnabled(int n) const { return 0 <= n && n < m_nChildWndCount; }
 	int                 CountPanes() const { return m_nChildWndCount; }
 
-	bool CreateEditViewBySplit(int nViewCount);
-
 	void DoSplit(int nHorizontal, int nVertical);	/* ウィンドウの分割 */
 	void SetActivePane(int nIndex);	/* アクティブペインの設定 */
 	int GetPrevPane( void );	/* 前のペインを返す */
 	int GetNextPane( void );	/* 次のペインを返す */
-	int GetFirstPane( void );	/* 最初のペインを返す */
-	int GetLastPane( void );	/* 最後のペインを返す */
+	int GetFirstPane( void ) const;	/* 最初のペインを返す */
+	int GetLastPane( void ) const;	/* 最後のペインを返す */
 
 	void VSplitOnOff( void );	/* 縦分割ＯＮ／ＯＦＦ */
 	void HSplitOnOff( void );	/* 横分割ＯＮ／ＯＦＦ */
@@ -104,6 +102,11 @@ protected:
 	void DrawSplitter(int xPos, int yPos, int bEraseOld);	/* 分割トラッカーの表示 */
 
 	CEditDoc* GetDocument() const;
+
+	std::vector<std::tuple<int, RECT>> CalcChildren(int cx, int cy) const;
+	void CreatePane(int index, const std::vector<std::tuple<int, RECT>>& rcChildren);
+
+	int _DoSplitMax(int nAllSplitColsOld, int nAllSplitRowsOld);
 };
 
 #endif /* SAKURA_CSPLITTERWND_8F27B39C_B96B_4964_ACD8_E157A146F892_H_ */

@@ -139,9 +139,11 @@ LRESULT CWnd::OnSize(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 void CWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 {
 	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(state);
-	UNREFERENCED_PARAMETER(cx);
-	UNREFERENCED_PARAMETER(cy);
+
+	if (SIZE_MINIMIZED != state) {
+		m_cx = cx;
+		m_cy = cy;
+	}
 }
 
 /* デフォルトメッセージ処理 */

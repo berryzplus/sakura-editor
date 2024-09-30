@@ -113,6 +113,9 @@ public:
 
 	//ウィンドウ標準操作
 	void DestroyWindow();
+
+	int     m_cx = 0;
+	int     m_cy = 0;
 };
 
 #endif /* SAKURA_CWND_86C8E4DA_7921_4D79_A481_E3AB0557D767_H_ */
