@@ -157,6 +157,7 @@ public:
 
 	//各種イベント
 	bool    OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+	bool    OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem) override;
 
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);

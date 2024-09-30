@@ -27,11 +27,14 @@
 #define SAKURA_CMAINSTATUSBAR_E2FC11D7_4513_4F96_BDCC_E9B278ED0718_H_
 #pragma once
 
+#include "apiwrap/window/CCustomizedWnd.hpp"
+
 #include "doc/CDocListener.h"
+#include "env/SShareDataClientWithCache.hpp"
 
 class CEditWnd;
 
-class CMainStatusBar : public CDocListenerEx{
+class CMainStatusBar : public CDocListenerEx, public apiwrap::window::CCustomizedWnd, private SShareDataClientWithCache {
 public:
 	//作成・破棄
 	CMainStatusBar(CEditWnd* pOwner);
@@ -57,9 +60,13 @@ public:
 	//設定
 	bool SetStatusText(int nIndex, int nOption, const WCHAR* pszText, size_t textLen = SIZE_MAX);
 	void ShowProgressBar(bool bShow) const;
+
+	bool    OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem);
+
 private:
 	CEditWnd*	m_pOwner;
 	HWND		m_hwndStatusBar;
 	HWND		m_hwndProgressBar;
 };
+
 #endif /* SAKURA_CMAINSTATUSBAR_E2FC11D7_4513_4F96_BDCC_E9B278ED0718_H_ */

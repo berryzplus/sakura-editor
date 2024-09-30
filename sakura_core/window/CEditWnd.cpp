@@ -1006,10 +1006,8 @@ LRESULT CEditWnd::DispatchEvent(
 	LPNMHDR				pnmh;
 	int					nPane;
 	EditInfo*			pfi;
-	LPHELPINFO			lphi;
+	const HELPINFO*     lphi = nullptr;
 
-	UINT				idCtl;	/* コントロールのID */
-	LPDRAWITEMSTRUCT	lpdis;	/* 項目描画情報 */
 	UINT				uItem;
 	LRESULT				lRes;
 	CTypeConfig			cTypeNew;
@@ -1071,37 +1069,6 @@ LRESULT CEditWnd::DispatchEvent(
 			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, pszItemStr);
 		}
 		return 0;
-
-	case WM_DRAWITEM:
-		idCtl = (UINT) wParam;				/* コントロールのID */
-		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
-		if( IDW_STATUSBAR == idCtl ){
-			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
-				int	nColor;
-				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
-				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
-				){
-					nColor = COLOR_BTNTEXT;
-				}else{
-					nColor = COLOR_3DSHADOW;
-				}
-				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
-				::SetBkMode( lpdis->hDC, TRANSPARENT );
-
-				// 2003.08.26 Moca 上下中央位置に作画
-				TEXTMETRIC tm;
-				::GetTextMetrics( lpdis->hDC, &tm );
-				int y = ( lpdis->rcItem.bottom - lpdis->rcItem.top - tm.tmHeight + 1 ) / 2 + lpdis->rcItem.top;
-				::TextOut( lpdis->hDC, lpdis->rcItem.left, y, L"REC", wcslen( L"REC" ) );
-				if( COLOR_BTNTEXT == nColor ){
-					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, L"REC", wcslen( L"REC" ) );
-				}
-			}
-			return 0;
-		}else{
-			return __super::OnDrawItem(hWnd, lpdis);
-		}
-		return FALSE;
 
 	case WM_PASTE:
 		return GetActiveView().GetCommander().HandleCommand( F_PASTE, true, 0, 0, 0, 0 );
@@ -2072,6 +2039,27 @@ int	CEditWnd::OnClose(HWND hWndActive, bool bGrepNoConfirm) const
 #endif	// 0
 
 	return nRet;
+}
+
+/*!
+ * WM_DRAWITEMハンドラ
+ *
+ * windowsx.hの実装では値を返せないので独自に定義
+ * 
+ * @retval true  このメッセージを処理した
+ * @retval false このメッセージを処理しなかった
+ */
+bool CEditWnd::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
+{
+	if (!lpDrawItem || ODT_MENU != lpDrawItem->CtlType) {
+		return false;
+	}
+
+	if (IDW_STATUSBAR == lpDrawItem->CtlID) {
+		return m_cStatusBar.OnDrawItem(hWnd, lpDrawItem);
+	}
+
+	return __super::OnDrawItem(hWnd, lpDrawItem);
 }
 
 /*! WM_COMMAND処理

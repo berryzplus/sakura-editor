@@ -25,6 +25,9 @@
 #include "StdAfx.h"
 #include "window/CMainStatusBar.h"
 
+#include "apiwrap/gdi/object_deleter.hpp"
+#include "apiwrap/gdi/select_object.hpp"
+
 #include "window/CEditWnd.h"
 #include "CEditApp.h"
 #include "apiwrap/CommonControl.h"
@@ -52,7 +55,7 @@ void CMainStatusBar::CreateStatusBar()
 		0, 0, 0, 0, // X, Y, nWidth, nHeight
 		m_pOwner->GetHwnd(),
 		(HMENU)IDW_STATUSBAR,
-		CEditApp::getInstance()->GetAppInstance(),
+		getEditorProcess()->GetProcessInstance(),
 		nullptr
 	);
 
@@ -187,4 +190,55 @@ void CMainStatusBar::ShowProgressBar(bool bShow) const {
 		::InvalidateRect(m_hwndStatusBar, &rcProgressArea, TRUE);
 		::UpdateWindow(m_hwndStatusBar);
 	}
+}
+
+/*!
+ * WM_DRAWITEMハンドラ
+ *
+ * windowsx.hの実装では値を返せないので独自に定義
+ * 
+ * @retval true  このメッセージを処理した
+ * @retval false このメッセージを処理しなかった
+ */
+bool CMainStatusBar::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
+{
+	if (lpDrawItem && ODT_MENU == lpDrawItem->CtlType && 5 == lpDrawItem->itemID)
+	{
+		constexpr auto text = L"REC"sv;
+
+		const auto& sFlags = m_pShareData->m_sFlags;
+		const auto isRecording = sFlags.m_bRecordingKeyMacro && sFlags.m_hwndRecordingKeyMacro == GetEditWnd().GetHwnd();
+		int	nColor = isRecording ? COLOR_BTNTEXT : COLOR_3DSHADOW;
+
+		const auto hDC = lpDrawItem->hDC;
+
+		auto hFont = HFONT(SendMessageW(lpDrawItem->hwndItem, WM_GETFONT, 0, 0));
+		using gdiObjectHolder = apiwrap::gdi::gdiObjectHolder;
+		auto fontHolder = gdiObjectHolder(nullptr, apiwrap::gdi::object_deleter());
+
+		if (COLOR_BTNTEXT == nColor) {
+			LOGFONT lf = {};
+			GetObjectW(hFont, sizeof(lf), &lf);
+
+			lf.lfWeight = FW_BOLD;
+
+			hFont = CreateFontIndirectW(&lf);
+			fontHolder.reset(hFont);
+		}
+
+		SetTextColor(hDC, GetSysColor(nColor));
+		SetBkMode(hDC, TRANSPARENT);
+		const auto hFontOld = apiwrap::gdi::select_object(hDC, hFont);
+
+		// 2003.08.26 Moca 上下中央位置に作画
+		TEXTMETRIC tm;
+		GetTextMetricsW(hDC, &tm);
+		int y = (lpDrawItem->rcItem.bottom - lpDrawItem->rcItem.top - tm.tmHeight + GetSystemMetrics(SM_CYBORDER)) / 2 + lpDrawItem->rcItem.top;
+
+		TextOutW(hDC, lpDrawItem->rcItem.left, y, text.data(), int(text.length()));
+
+		return true;
+	}
+
+	return false;
 }
