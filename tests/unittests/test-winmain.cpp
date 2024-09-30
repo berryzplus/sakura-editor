@@ -162,13 +162,23 @@ TEST_P(WinMainTest, runEditorProcess)
 		L"GoFileEnd();"sv,
 		L"GoFileTop();"sv,
 		L"PrintPreview();"sv,
+		L"WheelDown();"sv,
+		L"WheelUp();"sv,
+		L"WheelRight();"sv,
+		L"WheelLeft();"sv,
 		L"PrintPreview();"sv,
 		L"SplitWinH();SplitWinV();"sv,
 		L"SplitWinH();SplitWinV();"sv,
 		L"SplitWinV();SplitWinH();"sv,
 		L"SplitWinV();SplitWinH();"sv,
 		L"SplitWinVH();"sv,
+		L"NextWindow();NextWindow();NextWindow();"sv,
+		L"PrevWindow();PrevWindow();PrevWindow();"sv,
 		L"SplitWinVH();"sv,
+		L"WheelDown();"sv,
+		L"WheelUp();"sv,
+		L"WheelRight();"sv,
+		L"WheelLeft();"sv,
 		L"ShowFunckey();"sv,			//ShowFunckey 消す
 		L"ShowMiniMap();"sv,			//ShowMiniMap 消す
 		L"ShowTab();"sv,				//ShowTab 消す

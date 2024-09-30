@@ -67,6 +67,8 @@ public: // 2002/2/3 aroka
 	bool                IsPaneEnabled(int n) const { return 0 <= n && n < m_nChildWndCount; }
 	int                 CountPanes() const { return m_nChildWndCount; }
 
+	bool CreateEditViewBySplit(int nViewCount);
+
 	void DoSplit(int nHorizontal, int nVertical);	/* ウィンドウの分割 */
 	void SetActivePane(int nIndex);	/* アクティブペインの設定 */
 	int GetPrevPane( void );	/* 前のペインを返す */
@@ -88,7 +90,7 @@ protected:
 	LRESULT DispatchEvent_WM_APP(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
-	LRESULT OnSize(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* ウィンドウサイズの変更処理 */
+	void    OnSize(HWND hWnd, UINT state, int cx, int cy) override;	/* ウィンドウサイズの変更処理 */
 	LRESULT OnPaint(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* 描画処理 */
 	LRESULT OnMouseMove(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override; /* マウス移動時の処理 */
 	LRESULT OnLButtonDown(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタン押下時の処理 */
@@ -100,8 +102,6 @@ protected:
 	void DrawFrame(HDC hdc, RECT* prc);	/* 分割フレーム描画 */
 	int HitTestSplitter(int xPos, int yPos);	/* 分割バーへのヒットテスト */
 	void DrawSplitter(int xPos, int yPos, int bEraseOld);	/* 分割トラッカーの表示 */
-
-	bool CreateEditViewBySplit(int nViewCount);
 
 	CEditDoc* GetDocument() const;
 };

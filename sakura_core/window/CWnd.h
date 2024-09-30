@@ -93,13 +93,15 @@ protected:
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
 	virtual DECLH( OnTimer			);	// WM_TIMER
-	virtual DECLH( OnSize			);	// WM_SIZE
 	virtual DECLH( OnDestroy		);	// WM_DSESTROY
 
 	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
 	virtual DECLH( OnNotify			);	// WM_NOTIFY	//@@@ 2003.05.31 MIK
 	virtual DECLH( OnDrawItem		);	// WM_DRAWITEM	// 2006.02.01 ryoji
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
+
+	virtual LRESULT OnSize(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	// WM_SIZE
+	virtual void    OnSize(HWND hWnd, UINT state, int cx, int cy);
 
 	/* デフォルトメッセージ処理 */
 	virtual LRESULT CallDefWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );

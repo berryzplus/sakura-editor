@@ -129,6 +129,21 @@ LRESULT CWnd::DispatchEvent_WM_APP( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	return CallDefWndProc( hwnd, msg, wp, lp );
 }
 
+LRESULT CWnd::OnSize(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+	UNREFERENCED_PARAMETER(uMsg);
+
+	return HANDLE_WM_SIZE(hWnd, wParam, lParam, OnSize);
+}
+
+void CWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(state);
+	UNREFERENCED_PARAMETER(cx);
+	UNREFERENCED_PARAMETER(cy);
+}
+
 /* デフォルトメッセージ処理 */
 LRESULT CWnd::CallDefWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 {
