@@ -2831,6 +2831,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 	if( m_pPrintPreview ){
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		/*	印刷プレビューモードを解除します。	*/
+		m_pPrintPreview->Detach(hWnd);
 		m_pPrintPreview.reset();
 
 		/*	通常モードに戻す	*/
@@ -4464,7 +4465,7 @@ CLogicPointEx* CEditWnd::SavePhysPosOfAllView()
 	CLogicPointEx* pptPosArray = new CLogicPointEx[NUM_OF_VIEW * NUM_OF_POS];
 
 	for( int i = 0; i < NUM_OF_VIEW; ++i ){
-		CLayoutPoint tmp = CLayoutPoint(CLayoutInt(0), GetView(i).m_pcTextArea->GetViewTopLine());
+		CLayoutPoint tmp = CLayoutPoint(CLayoutInt(0), GetView(i).GetTextArea().GetViewTopLine());
 		const CLayout* layoutLine = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY(tmp.GetY2());
 		if( layoutLine ){
 			CLogicInt nLineCenter = layoutLine->GetLogicOffset() + layoutLine->GetLengthWithoutEOL() / 2;
@@ -4526,7 +4527,7 @@ void CEditWnd::RestorePhysPosOfAllView( CLogicPointEx* pptPosArray )
 			pptPosArray[i * NUM_OF_POS + 0],
 			&tmp
 		);
-		GetView(i).m_pcTextArea->SetViewTopLine(tmp.GetY2());
+		GetView(i).GetTextArea().SetViewTopLine(tmp.GetY2());
 
 		if( GetView(i).GetSelectionInfo().m_sSelectBgn.GetFrom().y >= 0 ){
 			GetDocument()->m_cLayoutMgr.LogicToLayoutEx(
