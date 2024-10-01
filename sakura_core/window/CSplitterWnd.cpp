@@ -268,6 +268,16 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 	const auto nAllSplitRowsOld = m_nAllSplitRows;	/* 分割行数 */
 	const auto nAllSplitColsOld = m_nAllSplitCols;	/* 分割桁数 */
 
+	for (auto it = m_ChildWndArr.begin() + m_nChildWndCount; it != m_ChildWndArr.end(); ++it, ++m_nChildWndCount) {
+		const auto index = int(it - m_ChildWndArr.begin());
+		*it = std::make_unique<CEditView>(index);
+	}
+
+	const auto rcChildren = CalcChildren(m_cx, m_cy);
+	for (const auto& [index, rcChild] : rcChildren) {
+		CreatePane(index, rcChildren);
+	}
+
 	int nActivePane;
 
 	// 分割なし
@@ -276,9 +286,10 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 1;	/* 分割行数 */
 		m_nAllSplitCols = 1;	/* 分割桁数 */
 
-		m_ChildWndArr[1] = nullptr;
-		m_ChildWndArr[2] = nullptr;
-		m_ChildWndArr[3] = nullptr;
+		m_ChildWndArr[0]->SplitBoxOnOff(TRUE, TRUE, FALSE); m_ChildWndArr[0]->Show(SW_SHOW);
+		m_ChildWndArr[1]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[1]->Show(SW_HIDE);
+		m_ChildWndArr[2]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[2]->Show(SW_HIDE);
+		m_ChildWndArr[3]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[3]->Show(SW_HIDE);
 
 		nActivePane = 0;
 	}
@@ -288,11 +299,10 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 2;	/* 分割行数 */
 		m_nAllSplitCols = 1;	/* 分割桁数 */
 
-		const auto rcChildren = CalcChildren(m_cx, m_cy);
-
-		m_ChildWndArr[1] = nullptr;
-		CreatePane(2, rcChildren);
-		m_ChildWndArr[3] = nullptr;
+		m_ChildWndArr[0]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[0]->Show(SW_SHOW);
+		m_ChildWndArr[1]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[1]->Show(SW_HIDE);
+		m_ChildWndArr[2]->SplitBoxOnOff(FALSE, TRUE, FALSE); m_ChildWndArr[2]->Show(SW_SHOW);
+		m_ChildWndArr[3]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[3]->Show(SW_HIDE);
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -314,11 +324,10 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		m_nAllSplitRows = 1;	/* 分割行数 */
 		m_nAllSplitCols = 2;	/* 分割桁数 */
 
-		const auto rcChildren = CalcChildren(m_cx, m_cy);
-
-		CreatePane(1, rcChildren);
-		m_ChildWndArr[2] = nullptr;
-		m_ChildWndArr[3] = nullptr;
+		m_ChildWndArr[0]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[0]->Show(SW_SHOW);
+		m_ChildWndArr[1]->SplitBoxOnOff(TRUE, FALSE, FALSE); m_ChildWndArr[1]->Show(SW_SHOW);
+		m_ChildWndArr[2]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[2]->Show(SW_HIDE);
+		m_ChildWndArr[3]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[3]->Show(SW_HIDE);
 
 		if (nAllSplitRowsOld == 1 && nAllSplitColsOld == 1) {
 			/* ペインの表示状態を他のビューにコピー */
@@ -334,6 +343,14 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 	// 縦横分割
 	else
 	{
+		m_nAllSplitRows = 2;	/* 分割行数 */
+		m_nAllSplitCols = 2;	/* 分割桁数 */
+
+		m_ChildWndArr[0]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[0]->Show(SW_SHOW);
+		m_ChildWndArr[1]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[1]->Show(SW_SHOW);
+		m_ChildWndArr[2]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[2]->Show(SW_SHOW);
+		m_ChildWndArr[3]->SplitBoxOnOff(FALSE, FALSE, FALSE); m_ChildWndArr[3]->Show(SW_SHOW);
+
 		nActivePane = _DoSplitMax(nAllSplitColsOld, nAllSplitRowsOld);
 	}
 
@@ -347,15 +364,6 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 
 int CSplitterWnd::_DoSplitMax(int nAllSplitColsOld, int nAllSplitRowsOld)
 {
-	m_nAllSplitRows = 2;	/* 分割行数 */
-	m_nAllSplitCols = 2;	/* 分割桁数 */
-
-	const auto rcChildren = CalcChildren(m_cx, m_cy);
-
-	CreatePane(1, rcChildren);
-	CreatePane(2, rcChildren);
-	CreatePane(3, rcChildren);
-
 	if (nAllSplitRowsOld == 1 && nAllSplitColsOld == 1) {
 		/* ペインの表示状態を他のビューにコピー */
 		m_ChildWndArr[0]->CopyViewStatus( m_ChildWndArr[1].get() );
@@ -778,6 +786,7 @@ bool CSplitterWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	// 最初のビューを作成
 	GetActiveView().Create(hWnd, GetDocument(), 0, TRUE, false);
+	GetActiveView().SplitBoxOnOff(TRUE, TRUE, FALSE);
 	GetActiveView().OnSetFocus();
 
 	return true;
@@ -796,12 +805,17 @@ void CSplitterWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 
 	if (auto hdwp = BeginDeferWindowPos(int(rcChildren.size())))
 	{
-		for (const auto& child : rcChildren) {
-			const auto hWndChild = m_ChildWndArr[std::get<int>(child)]->GetHwnd();
-			const auto& rcChild = std::get<RECT>(child);
-			hdwp = DeferWindowPos( hdwp, hWndChild, nullptr,
-				rcChild.left, rcChild.top, rcChild.right - rcChild.left, rcChild.bottom - rcChild.top,
-				SWP_NOZORDER | SWP_NOACTIVATE );
+		for (const auto& [index, rcChild] : rcChildren) {
+			hdwp = DeferWindowPos(
+				hdwp,
+				m_ChildWndArr[index]->GetHwnd(),
+				nullptr,
+				rcChild.left,
+				rcChild.top,
+				rcChild.right - rcChild.left,
+				rcChild.bottom - rcChild.top,
+				SWP_NOZORDER | SWP_NOACTIVATE
+			);
 			if (!hdwp) {
 				break;
 			}

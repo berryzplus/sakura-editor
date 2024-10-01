@@ -4465,7 +4465,8 @@ CLogicPointEx* CEditWnd::SavePhysPosOfAllView()
 	CLogicPointEx* pptPosArray = new CLogicPointEx[NUM_OF_VIEW * NUM_OF_POS];
 
 	for( int i = 0; i < NUM_OF_VIEW; ++i ){
-		CLayoutPoint tmp = CLayoutPoint(CLayoutInt(0), GetView(i).GetTextArea().GetViewTopLine());
+		if (!GetView(i).GetHwnd()) continue;
+		auto tmp = CLayoutPoint(CLayoutInt(0), GetView(i).GetTextArea().GetViewTopLine());
 		const CLayout* layoutLine = GetDocument()->m_cLayoutMgr.SearchLineByLayoutY(tmp.GetY2());
 		if( layoutLine ){
 			CLogicInt nLineCenter = layoutLine->GetLogicOffset() + layoutLine->GetLengthWithoutEOL() / 2;
@@ -4522,6 +4523,8 @@ void CEditWnd::RestorePhysPosOfAllView( CLogicPointEx* pptPosArray )
 	const int NUM_OF_POS = 6;
 
 	for( int i = 0; i < NUM_OF_VIEW; ++i ){
+		if (!GetView(i).GetHwnd()) continue;
+
 		CLayoutPoint tmp;
 		GetDocument()->m_cLayoutMgr.LogicToLayoutEx(
 			pptPosArray[i * NUM_OF_POS + 0],

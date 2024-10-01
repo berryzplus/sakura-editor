@@ -81,6 +81,11 @@ public:
     }
 #endif
 
+    virtual bool Show(_In_ int nCmdShow = SW_SHOW) const
+    {
+        return ShowWindow(m_hWnd, nCmdShow);
+    }
+
 protected:
     void    _SetHwnd(_In_opt_ HWND hWnd) noexcept { m_hWnd = hWnd; }
 
@@ -105,6 +110,11 @@ protected:
     virtual int GetWindowTextW(_In_ HWND hWnd, _Out_writes_(maxCount) LPWSTR buffer, _In_ size_t maxCount) const
     {
         return ::GetWindowTextW(hWnd, buffer, int(maxCount));
+    }
+
+    virtual bool ShowWindow(_In_ HWND hWnd, _In_ int nCmdShow) const
+    {
+        return ::ShowWindow(hWnd, nCmdShow);
     }
 };
 
