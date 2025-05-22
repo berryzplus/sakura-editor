@@ -47,6 +47,8 @@ class CPropertyManager;
 class CControlTray
 {
 public:
+	static HWND Find(_In_opt_z_ LPCWSTR pszProfileName);
+
 	/*
 	||  Constructors
 	*/
@@ -129,4 +131,5 @@ private:
 
 	WCHAR			m_szLanguageDll[MAX_PATH];
 };
+
 #endif /* SAKURA_CCONTROLTRAY_E9E24D69_3511_4EC1_A29A_1D119F68004A_H_ */

@@ -144,20 +144,10 @@ bool CProcessFactory::IsStartingControlProcess()
 	@author aroka
 	@date 2002/01/03
 	@date 2006/04/10 ryoji
-*/
-bool CProcessFactory::IsExistControlProcess()
+ */
+bool CProcessFactory::IsExistControlProcess() const
 {
-	const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
-	std::wstring strMutexSakuraCp = GSTR_MUTEX_SAKURA_CP;
-	strMutexSakuraCp += pszProfileName;
- 	HANDLE hMutexCP;
-	hMutexCP = ::OpenMutex( MUTEX_ALL_ACCESS, FALSE, strMutexSakuraCp.c_str() );	// 2006.04.10 ryoji ::CreateMutex() を ::OpenMutex()に変更
-	if( NULL != hMutexCP ){
-		::CloseHandle( hMutexCP );
-		return true;	// コントロールプロセスが見つかった
-	}
-
-	return false;	// コントロールプロセスは存在していないか、まだ CreateMutex() してない
+	return CControlTray::Find(CCommandLine::getInstance()->GetProfileName());
 }
 
 //	From Here Aug. 28, 2001 genta

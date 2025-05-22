@@ -30,6 +30,7 @@
 
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
+#include "_main/CControlTray.h"
 #include "config/system_constants.h"
 #include "version.h"
 
@@ -268,7 +269,11 @@ public:
 
 	static void StartControlProcess();
 	static void WaitForControlProcess();
-	static HWND FindTrayWindow();
+
+	static HWND FindTrayWindow() {
+		return CControlTray::Find(gm_ProfileName.data());
+	}
+
 	static void TerminateControlProcess();
 
 	/*!
@@ -435,19 +440,6 @@ template<typename BaseTestSuiteType>
 
 	// コントロールプロセスの初期化完了を待つ
 	WaitForControlProcess();
-}
-
-/*!
- * @brief トレイウインドウを検索する
- */
-template<typename BaseTestSuiteType>
-/* static */ HWND TSakuraGuiAware<BaseTestSuiteType>::FindTrayWindow()
-{
-	SFilePath szEditAppName = GSTR_CEDITAPP;
-	if (gm_ProfileName.length()) {
-		szEditAppName += gm_ProfileName;
-	}
-	return FindWindowW(szEditAppName, szEditAppName);
 }
 
 /*!

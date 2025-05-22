@@ -65,6 +65,18 @@
 /////////////////////////////////////////////////////////////////////////
 static LRESULT CALLBACK CControlTrayWndProc( HWND, UINT, WPARAM, LPARAM );
 
+/*!
+ * @brief トレイウインドウを検索する
+ */
+/* static */ HWND CControlTray::Find(_In_opt_z_ LPCWSTR pszProfileName)
+{
+	SFilePath szEditAppName = GSTR_CEDITAPP;
+	if (pszProfileName && *pszProfileName) {
+		szEditAppName += pszProfileName;
+	}
+	return FindWindowW(szEditAppName, szEditAppName);
+}
+
 //Stonee, 2001/03/21
 //Stonee, 2001/07/01  多重起動された場合は前回のダイアログを前面に出すようにした。
 void CControlTray::DoGrep()

@@ -41,8 +41,9 @@ private:
 	bool IsValidVersion();
 	bool ProfileSelect(HINSTANCE hInstance, LPCWSTR lpCmdLine);
 	bool IsStartingControlProcess();
-	bool IsExistControlProcess();
+	bool IsExistControlProcess() const;
 	bool StartControlProcess();
 	bool WaitForInitializedControlProcess();	// 2006.04.10 ryoji コントロールプロセスの初期化完了イベントを待つ
 };
+
 #endif /* SAKURA_CPROCESSFACTORY_5006562F_7795_40FF_AA4C_FFB94842F7C5_H_ */
