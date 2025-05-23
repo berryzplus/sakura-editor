@@ -853,7 +853,7 @@ LRESULT CControlTray::DispatchEvent(
 				OnNewEditor( false );
 				break;
 			case F_FILEOPEN:	/* 開く */
-				{
+				if (const auto hWndTray = GetTrayHwnd()) {
 					// ファイルオープンダイアログの初期化
 					SLoadInfo sLoadInfo;
 					sLoadInfo.cFilePath = L"";
@@ -863,7 +863,7 @@ LRESULT CControlTray::DispatchEvent(
 					CDlgOpenFile	cDlgOpenFile;
 					cDlgOpenFile.Create(
 						m_hInstance,
-						NULL,
+						hWndTray,
 						L"*.*",
 						CSakuraEnvironment::GetDlgInitialDir(true).c_str(),
 						CMRUFile().GetPathList(),
@@ -873,17 +873,22 @@ LRESULT CControlTray::DispatchEvent(
 					if( !cDlgOpenFile.DoModalOpenDlg( &sLoadInfo, &files ) ){
 						break;
 					}
-					if( NULL == GetTrayHwnd() ){
-						break;
+
+					sLoadInfo.cFilePath = files.front().c_str();
+
+					files.erase(files.cbegin());
+
+					std::wstring cmdLineOptions;
+					for (const auto& file : files) {
+						cmdLineOptions += strprintf(LR"("%s" )", file.c_str());
+					}
+
+					if (const auto len = cmdLineOptions.length(); len && ' ' == cmdLineOptions.back()) {
+						cmdLineOptions.erase(cmdLineOptions.cbegin() + len - 1);
 					}
 
 					// 新たな編集ウィンドウを起動
-					size_t nSize = files.size();
-					for( size_t f = 0; f < nSize; f++ ){
-						sLoadInfo.cFilePath = files[f].c_str();
-						CControlTray::OpenNewEditor( m_hInstance, GetTrayHwnd(), sLoadInfo,
-							NULL, true, NULL, m_pShareData->m_Common.m_sTabBar.m_bNewWindow? true : false );
-					}
+					CControlTray::OpenNewEditor(m_hInstance, hWndTray, sLoadInfo, cmdLineOptions.c_str(), false, LPCWSTR(nullptr), m_pShareData->m_Common.m_sTabBar.m_bNewWindow);
 				}
 				break;
 			case F_GREP_DIALOG:
