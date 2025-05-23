@@ -20,6 +20,7 @@
 
 #include "StdAfx.h"
 #include "dlg/CDlgOpenFile.h"
+
 #include "env/DLLSHAREDATA.h"
 
 extern std::shared_ptr<IDlgOpenFile> New_CDlgOpenFile_CommonFileDialog();
@@ -71,44 +72,47 @@ inline bool CDlgOpenFile::DoModalSaveDlg(
 	return m_pImpl->DoModalSaveDlg(pSaveInfo, bSimpleMode);
 }
 
-/* static */
+
 /*! ファイル選択
 	@note 実行ファイルのパスor設定ファイルのパスが含まれる場合は相対パスに変換
-*/
-BOOL CDlgOpenFile::SelectFile(
+ */
+/* static */ BOOL CDlgOpenFile::SelectFile(
 	HWND parent,
 	HWND hwndCtl,
 	const WCHAR* filter,
 	bool resolvePath,
 	EFilter eAddFilter)
 {
-	CDlgOpenFile cDlgOpenFile;
-	WCHAR			szFilePath[_MAX_PATH + 1];
-	WCHAR			szPath[_MAX_PATH + 1];
-	::GetWindowText( hwndCtl, szFilePath, _countof(szFilePath) );
+	SFilePath szFilePath;
+	GetWindowTextW(hwndCtl, szFilePath, int(std::size(szFilePath)) - 1);
+
+	SFilePath szPath;
 	// 2003.06.23 Moca 相対パスは実行ファイルからのパスとして開く
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	if( resolvePath && _IS_REL_PATH( szFilePath ) ){
 		GetInidirOrExedir(szPath, szFilePath);
 	}else{
-		wcscpy(szPath, szFilePath);
+		szPath = szFilePath;
 	}
+
 	/* ファイルオープンダイアログの初期化 */
+	CDlgOpenFile cDlgOpenFile;
 	cDlgOpenFile.Create(
-		::GetModuleHandle(NULL),
+		GetModuleHandleW(nullptr),
 		parent,
 		filter,
 		szPath
 	);
-	if( cDlgOpenFile.DoModal_GetOpenFileName(szPath, eAddFilter) ){
+
+	const auto ret = cDlgOpenFile.DoModal_GetOpenFileName(szPath, eAddFilter);
+	if (ret) {
 		const WCHAR* fileName;
 		if( resolvePath ){
 			fileName = GetRelPath( szPath );
 		}else{
 			fileName = szPath;
 		}
-		::SetWindowText( hwndCtl, fileName );
-		return TRUE;
+		SetWindowTextW(hwndCtl, fileName);
 	}
-	return FALSE;
+	return ret;
 }
