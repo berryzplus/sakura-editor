@@ -716,7 +716,6 @@ HWND CEditWnd::Create(
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	{
-		m_bUIPI = FALSE;
 		::SendMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_UIPI_CHECK,  (WPARAM)0, (LPARAM)GetHwnd() );
 		if( !m_bUIPI ){	// 返事が返らない
 			TopErrorMessage( GetHwnd(),
