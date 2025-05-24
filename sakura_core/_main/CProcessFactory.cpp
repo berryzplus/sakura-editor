@@ -77,8 +77,11 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	else{
 		if( !IsExistControlProcess() ){
 			StartControlProcess();
+			if (!WaitForInitializedControlProcess() ){	// 2006.04.10 ryoji コントロールプロセスの初期化完了待ち
+				return nullptr;
+			}
 		}
-		if( WaitForInitializedControlProcess() ){	// 2006.04.10 ryoji コントロールプロセスの初期化完了待ち
+		{
 			process = new CNormalProcess( hInstance, lpCmdLine );
 		}
 	}
