@@ -28,11 +28,58 @@
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
+
+namespace cxx_util {
+
+/*!
+ * Windows システムリソースに対するスマートポインタ
+ */
+template<typename T, auto Deleter>
+struct ResourceHolder
+{
+	using holder_type = std::unique_ptr<std::remove_pointer_t<T>, decltype(Deleter)>;
+	holder_type holder;
+
+	/* implicit */ ResourceHolder(T t) noexcept
+		: holder(t, Deleter)
+	{
+	}
+
+	/* implicit */ operator T() const noexcept { return holder.get(); }
+};
+
+} // end of namespace cxx_util
+
+namespace basis {
+
+/*!
+ * メッセージエラー
+ * 
+ * ワイド文字列でインスタンス化できるエラー。
+ */
+class message_error : public std::runtime_error {
+private:
+	std::wstring _Message;
+
+public:
+	explicit message_error(std::wstring_view message);
+
+	std::wstring_view message() const noexcept { return _Message; }
+};
+
+} // namespace basis
+
 /*!
 	@brief プロセス基底クラス
 */
 class CProcess : public TSingleInstance<CProcess> {
 public:
+	static DWORD StartSakuraProcess(
+		_In_opt_z_ LPCWSTR pszProfileName,
+		const std::vector<std::wstring>& args,
+		_In_opt_z_ LPCWSTR pszCurDir = nullptr
+	);
+
 	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
 	bool Run();
 	virtual ~CProcess(){}

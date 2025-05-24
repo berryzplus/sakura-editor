@@ -60,77 +60,11 @@ BinarySequence CopyBinaryFromResource(uint16_t nResourceId, LPCWSTR resource_typ
 bool WriteBinaryToFile(BinarySequenceView bin, std::filesystem::path path);
 std::filesystem::path GetTempFilePath(std::wstring_view prefix, std::wstring_view extension);
 
-namespace cxx_util {
-
-/*!
- * Windows システムリソースに対するスマートポインタ
- */
-template<typename T, auto Deleter>
-struct ResourceHolder
-{
-	using holder_type = std::unique_ptr<std::remove_pointer_t<T>, decltype(Deleter)>;
-	holder_type holder;
-
-	/* implicit */ ResourceHolder(T t) noexcept
-		: holder(t, Deleter)
-	{
-	}
-
-	/* implicit */ operator T() const noexcept { return holder.get(); }
-};
-
-/*!
- * ワイド文字列をマルチバイト文字列に変換する
- */
-std::string wcstombs_s(std::wstring_view wcs) {
-
-	using localeHolder = ResourceHolder<_locale_t, &_free_locale>;
-
-	// 現在のスレッドロケールを取得
-	const localeHolder locale = _get_current_locale();
-	if (!locale) {
-		throw basis::message_error(L"Failed to get current locale");
-	}
-
-	// 変換に必要なバッファサイズを求める
-	size_t required = 0;
-	if (const auto ret = _wcstombs_s_l(&required, nullptr, 0, std::data(wcs), 0, locale); EILSEQ == ret) {
-		throw std::invalid_argument("Invalid wide character sequence.");
-	}
-
-	// 変換に必要な出力バッファを確保する
-	std::string buffer(required, '\0');
-
-	size_t converted = 0;
-	_wcstombs_s_l(&converted, std::data(buffer), std::size(buffer), std::data(wcs), _TRUNCATE, locale);
-
-	buffer.resize(converted - 1); // wcstombs_sの戻り値は終端NULを含むので -1 する
-
-	return buffer;
-}
-
-} // end of namespace cxx_util
-
 //! HANDLE型のスマートポインタ
 using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
 
 //! コンテキストメニューのスマートポインタ
 using ContextMenuHolder = cxx_util::ResourceHolder<HWND, &DestroyWindow>;
-
-namespace basis {
-
-/*!
- * メッセージエラー
- * 
- * ワイド文字列でインスタンス化できるエラー。
- */
-message_error::message_error(std::wstring_view message)
-	: std::runtime_error(cxx_util::wcstombs_s(message))
-	, _Message(message)
-{
-}
-
-} // namespace basis
 
 namespace testing {
 
@@ -265,6 +199,10 @@ public:
 			HIWORD(versionLS),
 			LOWORD(versionLS)
 		);
+	}
+
+	static void StartSakuraProcess(const std::vector<std::wstring>& args) {
+		CProcess::StartSakuraProcess(gm_ProfileName.data(), args);
 	}
 
 	static void StartControlProcess();
@@ -402,41 +340,8 @@ template<typename BaseTestSuiteType>
 template<typename BaseTestSuiteType>
 /* static */ void TSakuraGuiAware<BaseTestSuiteType>::StartControlProcess()
 {
-	// プロセスのタイトル
-	SFilePath szTitle = L"sakura control process";
-
-	// スタートアップ情報
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.lpTitle = szTitle;
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_SHOWDEFAULT;
-
-	const auto exePath = GetExeFileName();
-
-	std::wstring command = strprintf(LR"("%s" -PROF="%s" -NOWIN)", exePath.c_str(), std::data(gm_ProfileName));
-	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
-	PROCESS_INFORMATION pi;
-
 	// コントロールプロセスを起動する
-	if (!CreateProcessW(
-		exePath.c_str(),	// 実行可能モジュールパス
-		command.data(),		// コマンドラインバッファ
-		nullptr,			// プロセスのセキュリティ記述子
-		nullptr,			// スレッドのセキュリティ記述子
-		FALSE,				// ハンドルの継承オプション(継承させない)
-		dwCreationFlag,		// 作成のフラグ
-		nullptr,			// 環境変数(変更しない)
-		nullptr,			// カレントディレクトリ(変更しない)
-		&si,				// スタートアップ情報
-		&pi					// プロセス情報(作成されたプロセス情報を格納する構造体)
-	))
-	{
-		throw basis::message_error(L"create process failed.");
-	}
-
-	// 開いたハンドルは使わないので閉じておく
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
+	StartSakuraProcess({ L"-NOWIN" });
 
 	// コントロールプロセスの初期化完了を待つ
 	WaitForControlProcess();
@@ -1297,7 +1202,10 @@ public:
 	 */
 	static void StartEditorProcess(
 		const std::filesystem::path& path
-	);
+	)
+	{
+		StartSakuraProcess({ path.c_str() });
+	}
 
 	/*
 	 * コンストラクタは流用
@@ -1376,71 +1284,6 @@ public:
 		return hWndDlg;
 	}
 };
-
-/*!
- * エディタプロセスを起動する
- */
-/* static */ void EditorFuncTest::StartEditorProcess(
-	const std::filesystem::path& path
-)
-{
-	// 実行可能モジュールのパスを取得する
-	const auto exePath = GetExeFileName();
-
-	// コマンドライン文字列を構築する
-	auto command = strprintf(LR"("%s" -PROF="" "%s")", exePath.c_str(), path.c_str());
-
-	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
-
-	// スタートアップ情報
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.dwFlags = STARTF_FORCEONFEEDBACK
-		| STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_SHOWDEFAULT;
-
-	// プロセス情報
-	PROCESS_INFORMATION pi{};
-
-	// プロセスを起動する
-	if (!CreateProcessW(
-		exePath.c_str(),	// 実行可能モジュールパス
-		command.data(),		// コマンドラインバッファ
-		nullptr,			// プロセスのセキュリティ記述子(カレントプロセスと同じ)
-		nullptr,			// スレッドのセキュリティ記述子(カレントスレッドと同じ)
-		FALSE,				// ハンドルの継承オプション(継承させない)
-		dwCreationFlag,		// 作成のフラグ
-		nullptr,			// 環境変数(変更しない)
-		nullptr,			// カレントディレクトリ
-		&si,				// スタートアップ情報
-		&pi					// プロセス情報(作成されたプロセス情報を格納する構造体)
-	))
-	{
-		// 失敗時、エラー理由をシステムから取得する
-		LPWSTR pMsg = nullptr;
-		FormatMessageW(
-			FORMAT_MESSAGE_FROM_SYSTEM
-			| FORMAT_MESSAGE_ALLOCATE_BUFFER
-			| FORMAT_MESSAGE_IGNORE_INSERTS
-			,
-			nullptr,
-			GetLastError(),
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			LPWSTR(&pMsg),
-			NULL,
-			nullptr
-		);
-
-		std::wstring msg(pMsg);
-		LocalFree(HLOCAL(pMsg));	//	エラーメッセージバッファを解放
-
-		// "'%s'\nプロセスの起動に失敗しました。\n%s"
-		throw basis::message_error(strprintf(LS(STR_TRAY_CREATEPROC1), exePath.c_str(), msg.c_str()));
-	}
-
-	// 開いたハンドルは使わないので閉じておく
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
-}
 
 /*!
  * @brief ファイル内容比較ダイアログの表示テスト

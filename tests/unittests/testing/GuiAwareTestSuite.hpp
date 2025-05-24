@@ -48,25 +48,6 @@ DEFINE_COM_SMARTPTR(IUIAutomationLegacyIAccessiblePattern);
 DEFINE_COM_SMARTPTR(IUIAutomationSelectionItemPattern);
 DEFINE_COM_SMARTPTR(IUIAutomationValuePattern);
 
-namespace basis {
-
-/*!
- * メッセージエラー
- * 
- * ワイド文字列でインスタンス化できるエラー。
- */
-class message_error : public std::runtime_error {
-private:
-	std::wstring _Message;
-
-public:
-	explicit message_error(std::wstring_view message);
-
-	std::wstring_view message() const noexcept { return _Message; }
-};
-
-} // namespace basis
-
 namespace testing {
 
 template<typename BaseTestSuiteType>
