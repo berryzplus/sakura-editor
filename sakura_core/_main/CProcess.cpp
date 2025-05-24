@@ -27,6 +27,9 @@
 #include "CSelectLang.h"
 #include "String_define.h"
 
+//! HANDLE型のスマートポインタ
+using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
+
 namespace cxx_util {
 
 /*!
@@ -197,6 +200,19 @@ static std::wstring CombineArg(const std::wstring& a, const std::wstring& b)
 	CloseHandle(pi.hProcess);
 
 	return pi.dwThreadId;
+}
+
+/*!
+ * @brief 同期オブジェクトをシグナル状態にする
+ */
+/* static */ bool CProcess::SetSyncEvent()
+{
+	const auto dwThreadId = GetCurrentThreadId();
+	SFilePath szEventName = strprintf(L"SakuraThread-0x%08x", dwThreadId);
+	if (HandleHolder hEvent = OpenEventW(EVENT_ALL_ACCESS, FALSE, szEventName)) {
+		return SetEvent(hEvent);
+	}
+	return false;
 }
 
 /*!

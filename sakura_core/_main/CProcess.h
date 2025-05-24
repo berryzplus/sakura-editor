@@ -79,6 +79,7 @@ public:
 		const std::vector<std::wstring>& args,
 		_In_opt_z_ LPCWSTR pszCurDir = nullptr
 	);
+	static bool SetSyncEvent();
 
 	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
 	bool Run();

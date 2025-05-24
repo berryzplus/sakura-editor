@@ -33,6 +33,8 @@ class CEditWnd;
 */
 class CNormalProcess final : public CProcess {
 public:
+	static bool StartControlProcess(_In_opt_z_ LPCWSTR pszProfileName);
+
 	//コンストラクタ・デストラクタ
 	CNormalProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
 	~CNormalProcess();

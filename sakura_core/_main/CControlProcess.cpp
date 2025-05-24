@@ -27,6 +27,9 @@
 #include "config/system_constants.h"
 #include "String_define.h"
 
+//! HANDLE型のスマートポインタ
+using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
+
 //-------------------------------------------------
 
 /*!
@@ -54,17 +57,6 @@ bool CControlProcess::InitializeProcess()
 	}
 
 	const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
-
-	// 初期化完了イベントを作成する
-	std::wstring strInitEvent = GSTR_EVENT_SAKURA_CP_INITIALIZED;
-	strInitEvent += pszProfileName;
-	m_hEventCPInitialized = ::CreateEvent( NULL, TRUE, FALSE, strInitEvent.c_str() );
-	if( NULL == m_hEventCPInitialized )
-	{
-		ErrorBeep();
-		TopErrorMessage( NULL, L"CreateEvent()失敗。\n終了します。" );
-		return false;
-	}
 
 	/* コントロールプロセスの目印 */
 	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
@@ -116,9 +108,10 @@ bool CControlProcess::InitializeProcess()
 	GetDllShareData().m_sHandles.m_hwndTray = hwnd;
 
 	// 初期化完了イベントをシグナル状態にする
-	if( !::SetEvent( m_hEventCPInitialized ) ){
+	if (!SetSyncEvent()) {
 		ErrorBeep();
-		TopErrorMessage( NULL, LS(STR_ERR_CTRLMTX4) );
+		// L"SetEvent()失敗。\n終了します。"
+		TopErrorMessage(nullptr, LS(STR_ERR_CTRLMTX4));
 		return false;
 	}
 
@@ -156,10 +149,6 @@ CControlProcess::~CControlProcess()
 {
 	delete m_pcTray;
 
-	if( m_hEventCPInitialized ){
-		::ResetEvent( m_hEventCPInitialized );
-	}
-	::CloseHandle( m_hEventCPInitialized );
 	if( m_hMutexCP ){
 		::ReleaseMutex( m_hMutexCP );
 	}

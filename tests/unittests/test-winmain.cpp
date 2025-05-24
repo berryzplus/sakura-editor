@@ -31,6 +31,7 @@
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
 #include "_main/CControlTray.h"
+#include "_main/CNormalProcess.h"
 #include "config/system_constants.h"
 #include "version.h"
 
@@ -205,8 +206,9 @@ public:
 		CProcess::StartSakuraProcess(gm_ProfileName.data(), args);
 	}
 
-	static void StartControlProcess();
-	static void WaitForControlProcess();
+	static bool StartControlProcess() {
+		return CNormalProcess::StartControlProcess(gm_ProfileName.data());
+	}
 
 	static HWND FindTrayWindow() {
 		return CControlTray::Find(gm_ProfileName.data());
@@ -304,48 +306,6 @@ protected:
 		});
 	}
 };
-
-/*!
- * @brief コントロールプロセスの初期化完了を待つ
- *
- * CEditorProcess::WaitForControlProcessとして実装したいコードです。本体を変えたくないので一時定義しました。
- * 既存CProcessFactory::WaitForInitializedControlProcess()と概ね等価です。
- */
-template<typename BaseTestSuiteType>
-/* static */ void TSakuraGuiAware<BaseTestSuiteType>::WaitForControlProcess()
-{
-	// 初期化完了イベントを作成する
-	SFilePath szEventName = GSTR_EVENT_SAKURA_CP_INITIALIZED;
-	if (gm_ProfileName.length()) {
-		szEventName += gm_ProfileName;
-	}
-
-	HandleHolder hEvent = CreateEventW(nullptr, TRUE, FALSE, szEventName);
-	if (!hEvent) {
-		throw basis::message_error(L"create event failed.");
-	}
-
-	// 初期化完了イベントを待つ
-	if (const auto dwRet = WaitForSingleObject(hEvent, 30000); WAIT_TIMEOUT == dwRet) {
-		throw basis::message_error(L"waitEvent is timeout.");
-	}
-}
-
-/*!
- * @brief コントロールプロセスを起動する
- *
- * CControlProcess::Startとして実装したいコードです。本体を変えたくないので一時定義しました。
- * 既存CProcessFactory::StartControlProcess()と概ね等価です。
- */
-template<typename BaseTestSuiteType>
-/* static */ void TSakuraGuiAware<BaseTestSuiteType>::StartControlProcess()
-{
-	// コントロールプロセスを起動する
-	StartSakuraProcess({ L"-NOWIN" });
-
-	// コントロールプロセスの初期化完了を待つ
-	WaitForControlProcess();
-}
 
 /*!
  * @brief コントロールプロセスに終了指示を出して終了を待つ

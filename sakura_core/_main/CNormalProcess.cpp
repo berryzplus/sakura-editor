@@ -40,6 +40,69 @@
 #include "env/CShareData.h"
 #include "config/system_constants.h"
 
+#include "String_define.h"
+
+//! HANDLE型のスマートポインタ
+using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
+
+/*!
+ * @brief コントロールプロセスを起動する
+ *
+ * 既存CProcessFactory::StartControlProcess()と概ね等価です。
+ */
+/* static */ bool CNormalProcess::StartControlProcess(_In_opt_z_ LPCWSTR pszProfileName)
+{
+	try {
+		// コントロールプロセスを起動する
+		const auto dwThreadId = StartSakuraProcess(pszProfileName, { L"-NOWIN" });
+
+		// 初期化完了イベントを作成する
+		SFilePath szEventName = strprintf(L"SakuraThread-0x%08x", dwThreadId);
+		HandleHolder hEvent = CreateEventW(nullptr, TRUE, FALSE, szEventName);
+		if (!hEvent) {
+			// L"CreateEvent()失敗。\n終了します。"
+			throw basis::message_error(LS(STR_ERR_CTRLMTX2));
+		}
+
+		// トレイウインドウが作成されるのを待つ
+		HWND hWndTray = nullptr;
+		const auto startTick = GetTickCount64();
+		while (!hWndTray && GetTickCount64() - startTick < 5 * 1000) {
+			
+			hWndTray = CControlTray::Find(pszProfileName);
+			if (!hWndTray) {
+				//do nothing
+			}
+			else if (IsWindowEnabled(hWndTray)) {
+				break;
+			}
+			else {
+				hWndTray = nullptr;
+			}
+	
+			Sleep(10);  // 10msスリープしてリトライ
+		}
+
+		if (!hWndTray) {
+			// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。"
+			throw basis::message_error(LS(STR_ERR_DLGNRMPROC2));
+		}
+
+		// 初期化完了イベントを待つ
+		if (const auto waitResult = WaitForSingleObject(hEvent, 30000); WAIT_TIMEOUT == waitResult) {
+			// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。"
+			throw basis::message_error(LS(STR_ERR_DLGNRMPROC2));
+		}
+
+		return true;
+	}
+	catch (const basis::message_error& e) {
+		TopErrorMessage(nullptr, e.message().data());
+
+		return false;
+	}
+}
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
