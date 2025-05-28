@@ -69,7 +69,7 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	// 起動されることもある。
 	// しかし、そのような場合でもミューテックスを最初に確保したコントロールプロセスが唯一生き残る。
 	//
-	if( IsStartingControlProcess() ){
+	if (CCommandLine::getInstance()->IsNoWindow()) {
 		if( !IsExistControlProcess() ){
 			process = new CControlProcess( hInstance, lpCmdLine );
 		}
@@ -106,17 +106,6 @@ bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 		}
 	}
 	return true;
-}
-
-/*!
-	@brief コマンドラインに -NOWIN があるかを判定する。
-	
-	@author aroka
-	@date 2002/01/03 作成 2002/01/18 変更
-*/
-bool CProcessFactory::IsStartingControlProcess()
-{
-	return CCommandLine::getInstance()->IsNoWindow();
 }
 
 /*!

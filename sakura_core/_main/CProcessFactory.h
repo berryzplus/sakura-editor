@@ -39,7 +39,6 @@ public:
 protected:
 private:
 	bool ProfileSelect(HINSTANCE hInstance, LPCWSTR lpCmdLine);
-	bool IsStartingControlProcess();
 	bool IsExistControlProcess() const;
 	bool StartControlProcess() const;
 };
