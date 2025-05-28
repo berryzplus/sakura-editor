@@ -192,6 +192,8 @@ bool CNormalProcess::InitializeProcess()
 			::ReleaseMutex( hMutex );
 			::CloseHandle( hMutex );
 
+			SetSyncEvent();
+
 			// 複数ファイル読み込み
 			OpenFiles( hwndOwner );
 

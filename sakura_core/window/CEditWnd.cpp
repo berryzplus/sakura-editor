@@ -62,6 +62,8 @@
 #include "recent/CRecentFile.h"
 #include "recent/CRecentFolder.h"
 
+#include "_main/CNormalProcess.h"
+
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
 //	定義を削除
 
@@ -2848,6 +2850,7 @@ LRESULT CEditWnd::OnTimer( WPARAM wParam, LPARAM lParam )
 		CAppNodeGroupHandle(0).PostMessageToAllEditors( MYWM_FIRST_IDLE, ::GetCurrentProcessId(), 0, NULL );	// プロセスの初回アイドリング通知	// 2008.04.19 ryoji
 		::PostMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), (LPARAM)0 );
 		::KillTimer( m_hWnd, wParam );
+		CNormalProcess::SetSyncEvent();
 		break;
 	default:
 		return 1L;

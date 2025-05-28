@@ -30,6 +30,85 @@
 //! HANDLE型のスマートポインタ
 using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
 
+/*!
+	@brief 新しいプロセスを起動する
+
+	@return 起動したプロセスのスレッドID
+ */
+/* static */ bool CControlProcess::StartEditorProcess(
+	_In_opt_z_ LPCWSTR pszProfileName,
+	_In_opt_z_ LPCWSTR pszCurDir,
+	bool sync,
+	const std::vector<std::wstring>& args
+)
+{
+
+	try {
+		// エディタープロセスを起動する
+		const auto dwThreadId = CProcess::StartSakuraProcess(pszProfileName, args, pszCurDir);
+
+		if (sync) {
+			//	起動したプロセスが完全に立ち上がるまでちょっと待つ．
+
+			// 初期化完了イベントを作成する
+			SFilePath szEventName = strprintf(L"SakuraThread-0x%08x", dwThreadId);
+			HandleHolder hEvent = CreateEventW(nullptr, TRUE, FALSE, szEventName);
+			if (!hEvent) {
+				// L"CreateEvent()失敗。\n終了します。"
+				throw basis::message_error(LS(STR_ERR_CTRLMTX2));
+			}
+
+			// 初期化完了イベントを待つ
+			if (const auto waitResult = WaitForSingleObject(hEvent, 30000); WAIT_TIMEOUT == waitResult) {
+				// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。"
+				throw basis::message_error(LS(STR_ERR_DLGNRMPROC2));
+			}
+		}
+
+		return true;
+	}
+	catch (const basis::message_error& e) {
+		TopErrorMessage(nullptr, e.message().data());
+
+		return false;
+	}
+
+	//if (!sync) {
+	//	// タブまとめ時は起動したプロセスが立ち上がるまでしばらくタイトルバーをアクティブに保つ	// 2007.02.03 ryoji
+	//	if( pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin ){
+	//		WaitForInputIdle( p.hProcess, 3000 );
+	//		sync = true;
+	//	}
+	//}
+
+	//// MYWM_FIRST_IDLE が届くまでちょっとだけ余分に待つ	// 2008.04.19 ryoji
+	//// Note. 起動先プロセスが初期化処理中に COM 関数（SHGetFileInfo API なども含む）を実行すると、
+	////       その時点で COM の同期機構が動いて WaitForInputIdle は終了してしまう可能性がある（らしい）。
+	//if( sync && bRet )
+	//{
+	//	int i;
+	//	for( i = 0; i < 200; i++ ){
+	//		MSG msg;
+	//		DWORD dwExitCode;
+	//		if( ::PeekMessage( &msg, 0, MYWM_FIRST_IDLE, MYWM_FIRST_IDLE, PM_REMOVE ) ){
+	//			if( msg.message == WM_QUIT ){	// 指定範囲外でも WM_QUIT は取り出される
+	//				::PostQuitMessage( msg.wParam );
+	//				break;
+	//			}
+	//			// 監視対象プロセスからのメッセージなら抜ける
+	//			// そうでなければ破棄して次を取り出す
+	//			if( msg.wParam == p.dwProcessId ){
+	//				break;
+	//			}
+	//		}
+	//		if( ::GetExitCodeProcess( p.hProcess, &dwExitCode ) && dwExitCode != STILL_ACTIVE ){
+	//			break;	// 監視対象プロセスが終了した
+	//		}
+	//		::Sleep(10);
+	//	}
+	//}
+}
+
 //-------------------------------------------------
 
 /*!

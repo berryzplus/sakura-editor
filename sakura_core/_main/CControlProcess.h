@@ -36,6 +36,13 @@ class CControlTray;
 */
 class CControlProcess final : public CProcess {
 public:
+	static bool StartEditorProcess(
+		_In_opt_z_ LPCWSTR pszProfileName,
+		_In_opt_z_ LPCWSTR pszCurDir,
+		bool sync,
+		const std::vector<std::wstring>& args
+	);
+
 	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
 		CProcess( hInstance, lpCmdLine ),
 		// 2006.04.10 ryoji 同期オブジェクトのハンドルを初期化
