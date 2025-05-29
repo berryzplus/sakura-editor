@@ -64,9 +64,22 @@ int WINAPI wWinMain(
 		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
 
 		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
-		::OleInitialize( NULL );	// 2009.01.07 ryoji 追加
 	}
-	
+
+	// OLEを初期化する
+	_com_util::CheckError(OleInitialize(nullptr));
+
+	// OLEの終了処理
+	const auto oleUninitalize = [](HINSTANCE) noexcept {
+		OleUninitialize();
+	};
+
+	// OLEの終了処理をスコープ終了時に実行するためのスマートポインタ（ms-gslを使え。）
+	using OleUninitializer = std::unique_ptr<std::remove_pointer_t<HINSTANCE>, decltype(oleUninitalize)>;
+
+	// OLEの終了処理をスコープ終了時に実行する
+	OleUninitializer oleUninitializer(hInstance, oleUninitalize);
+
 	//開発情報
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
 	DEBUG_TRACE(L"sizeof(DLLSHAREDATA) = %d\n",sizeof(DLLSHAREDATA));
@@ -74,20 +87,15 @@ int WINAPI wWinMain(
 	//コマンドラインクラスのインスタンスを確保する
 	CCommandLine cCommandLine;
 
-	//プロセスの生成とメッセージループ
-	CProcessFactory aFactory;
-	CProcess *process = nullptr;
-	try{
-		process = aFactory.Create( hInstance, lpCmdLine );
-		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
-	}
-	catch(...){
-	}
-	if( nullptr != process ){
-		process->Run();
-		delete process;
+	//プロセスの生成
+	const auto process = CProcessFactory(hInstance).CreateInstance(lpCmdLine);
+	if (!process) {
+		return 1;
 	}
 
-	::OleUninitialize();	// 2009.01.07 ryoji 追加
+	MY_TRACETIME(cRunningTimer, L"ProcessObject Created");
+
+	process->Run();
+
 	return 0;
 }

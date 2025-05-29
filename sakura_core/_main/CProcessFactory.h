@@ -17,9 +17,8 @@
 #define SAKURA_CPROCESSFACTORY_5006562F_7795_40FF_AA4C_FFB94842F7C5_H_
 #pragma once
 
-#include "global.h"
-
-class CProcess;
+#include "_main/CControlProcess.h"
+#include "_main/CNormalProcess.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -29,16 +28,20 @@ class CProcess;
 
 	与えられたコマンドライン引数から生成すべきプロセスの種別を判定し，
 	対応するオブジェクトを返すFactoryクラス．
-
-	通常のエディタプロセスの起動が指定された場合には，必要に応じてコントロールプロセス
-	起動の起動をエディタの起動に先立って行う．
-*/
+ */
 class CProcessFactory {
 public:
-	CProcess* Create( HINSTANCE hInstance, LPCWSTR lpCmdLine );
-protected:
+	HINSTANCE m_hInstance;
+
+	explicit CProcessFactory(_In_opt_ HINSTANCE hInstance = nullptr) noexcept
+		: m_hInstance(hInstance)
+	{
+	}
+
+	std::unique_ptr<CProcess> CreateInstance(_In_z_ LPCWSTR lpCmdLine) noexcept;
+
 private:
-	bool ProfileSelect(HINSTANCE hInstance, LPCWSTR lpCmdLine);
+	bool    ProfileSelect() noexcept;
 };
 
 #endif /* SAKURA_CPROCESSFACTORY_5006562F_7795_40FF_AA4C_FFB94842F7C5_H_ */
