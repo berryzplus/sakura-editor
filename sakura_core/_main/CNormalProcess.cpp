@@ -104,20 +104,6 @@ using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//               コンストラクタ・デストラクタ                  //
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-CNormalProcess::CNormalProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine )
-: CProcess( hInstance, lpCmdLine )
-, m_pcEditApp( NULL )
-{
-}
-
-CNormalProcess::~CNormalProcess()
-{
-}
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     プロセスハンドラ                        //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
