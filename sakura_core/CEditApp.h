@@ -11,12 +11,13 @@
 
 //2007.10.23 kobake 作成
 
+#include "doc/CEditDoc.h"
+
 #include "util/design_template.h"
 #include "uiparts/CSoundSet.h"
 #include "uiparts/CImageListMgr.h"
 #include "types/CType.h"
 
-class CEditDoc;
 class CEditWnd;
 class CLoadAgent;
 class CSaveAgent;
@@ -34,6 +35,8 @@ private:
 	CEditApp() = default;
 	~CEditApp();
 
+	using CEditDocHolder = std::unique_ptr<CEditDoc>;
+
 public:
 	void Create(HINSTANCE hInst, int nGroupId);
 
@@ -43,7 +46,7 @@ public:
 	//ウィンドウ情報
 	CEditWnd* GetEditWindow(){ return m_pcEditWnd; }		//!< ウィンドウ取得
 
-	CEditDoc*		GetDocument(){ return m_pcEditDoc; }
+	CEditDoc*		GetDocument(){ return m_pcEditDoc.get(); }
 	CImageListMgr&	GetIcons(){ return m_cIcons; }
 
 	bool OpenPropertySheet( int nPageNum );
@@ -53,7 +56,7 @@ public:
 	HINSTANCE			m_hInst;
 
 	//ドキュメント
-	CEditDoc*			m_pcEditDoc;
+	CEditDocHolder		m_pcEditDoc;
 
 	//ウィンドウ
 	CEditWnd*			m_pcEditWnd;

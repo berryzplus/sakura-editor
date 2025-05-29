@@ -42,6 +42,8 @@
 #include "macro/CCookieManager.h"
 #include "util/design_template.h"
 
+#include "_main/CProcess.h"
+
 class CSMacroMgr; // 2002/2/10 aroka
 class CEditWnd; // Sep. 10, 2002 genta
 struct EditInfo; // 20050705 aroka
@@ -56,14 +58,15 @@ class CEditApp;
 	@date 2007.12.13 kobake SetDocumentEncoding作成
 	@date 2007.12.13 kobake IsViewMode作成
 */
-class CEditDoc
-: public CDocSubject
-, public TInstanceHolder<CEditDoc>
+class CEditDoc : public CDocSubject, public TInstanceHolder<CEditDoc>
 {
+private:
+	using BitmapHolder = cxx_util::ResourceHolder<HBITMAP, &DeleteObject>;
+
 public:
 	//コンストラクタ・デストラクタ
-	CEditDoc(CEditApp* pcApp);
-	~CEditDoc();
+	CEditDoc();
+	~CEditDoc() override = default;
 
 	//初期化
 	BOOL Create( void );
@@ -103,15 +106,11 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       メンバ変数群                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
-	//参照
-
 	//データ構造
-	CDocLineMgr		m_cDocLineMgr;
-	CLayoutMgr		m_cLayoutMgr;
+	CDocLineMgr			m_cDocLineMgr;
+	CLayoutMgr			m_cLayoutMgr;
 
 	//各種機能
-public:
 	CDocFile			m_cDocFile;
 	CDocFileOperation	m_cDocFileOperation;
 	CDocEditor			m_cDocEditor;
@@ -119,7 +118,6 @@ public:
 	CCookieManager		m_cCookie;
 
 	//ヘルパ
-public:
 	CBackupAgent		m_cBackupAgent;
 	CAutoSaveAgent		m_cAutoSaveAgent;		//!< 自動保存管理
 	CAutoReloadAgent	m_cAutoReloadAgent;
@@ -127,26 +125,24 @@ public:
 	CDocLocker			m_cDocLocker;
 
 	//動的状態
-public:
-	int				m_nCommandExecNum;			//!< コマンド実行回数
+	int					m_nCommandExecNum = 0;		//!< コマンド実行回数
 
 	//環境情報
-public:
-	CFuncLookup		m_cFuncLookup;				//!< 機能名，機能番号などのresolve
+	CFuncLookup			m_cFuncLookup;				//!< 機能名，機能番号などのresolve
 
 	//未整理変数
-public:
-	int				m_nTextWrapMethodCur;		// 折り返し方法					// 2008.05.30 nasukoji
-	bool			m_bTextWrapMethodCurTemp;	// 折り返し方法一時設定適用中	// 2008.05.30 nasukoji
-	LOGFONT			m_lfCur;					// 一時設定フォント
-	int				m_nPointSizeCur;			// 一時設定フォントサイズ
-	bool			m_blfCurTemp;				// フォント設定適用中
-	int				m_nPointSizeOrg;			// 元のフォントサイズ
-	double			m_nCurrentZoom;				// 一時設定フォントのズーム倍率
-	bool			m_bTabSpaceCurTemp;			// タブ幅一時設定適用中			// 2013.05.30 Moca
+	int					m_nTextWrapMethodCur = 0;			//!< 折り返し方法					// 2008.05.30 nasukoji
+	bool				m_bTextWrapMethodCurTemp = false;	//!< 折り返し方法一時設定適用中	// 2008.05.30 nasukoji
+	LOGFONT				m_lfCur{};							//!< 一時設定フォント
+	int					m_nPointSizeCur = -1;				//!< 一時設定フォントサイズ
+	bool				m_blfCurTemp = false;				//!< フォント設定適用中
+	int					m_nPointSizeOrg = -1;				//!< 元のフォントサイズ
+	double				m_nCurrentZoom = 1.0f;				//!< 一時設定フォントのズーム倍率
+	bool				m_bTabSpaceCurTemp = false;			//!< タブ幅一時設定適用中			// 2013.05.30 Moca
 
-	HBITMAP			m_hBackImg;
-	int				m_nBackImgWidth;
-	int				m_nBackImgHeight;
+	BitmapHolder		m_hBackImg = nullptr;
+	int					m_nBackImgWidth = 0;
+	int					m_nBackImgHeight = 0;
 };
+
 #endif /* SAKURA_CEDITDOC_D845B5F3_FD71_4722_B115_63145B804253_H_ */

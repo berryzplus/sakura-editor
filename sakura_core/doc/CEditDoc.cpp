@@ -147,14 +147,12 @@ static const EFunctionCode EIsModificationForbidden[] = {
 	@date 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 	@date 2004.06.21 novice タグジャンプ機能追加
 */
-CEditDoc::CEditDoc(CEditApp* pcApp)
+CEditDoc::CEditDoc()
 : m_cDocFile(this)					// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocFileOperation(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocEditor(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocType(this)					// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocOutline(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
-, m_nCommandExecNum( 0 )			/* コマンド実行回数 */
-, m_hBackImg(NULL)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditDoc::CEditDoc" );
 
@@ -183,11 +181,6 @@ CEditDoc::CEditDoc(CEditApp* pcApp)
 
 	// 2008.06.07 nasukoji	テキストの折り返し方法を初期化
 	m_nTextWrapMethodCur = m_cDocType.GetDocumentAttribute().m_nTextWrapMethod;	// 折り返し方法
-	m_bTextWrapMethodCurTemp = false;									// 一時設定適用中を解除
-	m_blfCurTemp = false;
-	m_nPointSizeCur = -1;
-	m_nPointSizeOrg = -1;
-	m_bTabSpaceCurTemp = false;
 
 	// 文字コード種別を初期化
 	m_cDocFile.SetCodeSet( ref.m_encoding.m_eDefaultCodetype, ref.m_encoding.m_bDefaultBom );
@@ -205,13 +198,6 @@ CEditDoc::CEditDoc(CEditApp* pcApp)
 		}
 	}
 #endif
-}
-
-CEditDoc::~CEditDoc()
-{
-	if( m_hBackImg ){
-		::DeleteObject( m_hBackImg );
-	}
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -295,8 +281,7 @@ void CEditDoc::SetBackgroundImage()
 {
 	CFilePath path = m_cDocType.GetDocumentAttribute().m_szBackImgPath.c_str();
 	if( m_hBackImg ){
-		::DeleteObject( m_hBackImg );
-		m_hBackImg = NULL;
+		m_hBackImg = nullptr;
 	}
 	if( 0 == path[0] ){
 		return;
@@ -365,8 +350,7 @@ void CEditDoc::SetBackgroundImage()
 		lineStride * height, 
 		(BYTE*)pvImageBits);
 	if( FAILED(hr) ){
-		::DeleteObject(m_hBackImg);
-		m_hBackImg = NULL;
+		m_hBackImg = nullptr;
 	}
 	m_nBackImgWidth = (int)width;
 	m_nBackImgHeight = (int)height;
