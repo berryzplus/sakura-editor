@@ -17,12 +17,8 @@
 #define SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_
 #pragma once
 
-#include <filesystem>
-
-#include "global.h"
-#include "CProcess.h"
-
-class CControlTray;
+#include "_main/CProcess.h"
+#include "_main/CControlTray.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -44,13 +40,10 @@ public:
 	);
 
 	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
-		CProcess( hInstance, lpCmdLine ),
-		// 2006.04.10 ryoji 同期オブジェクトのハンドルを初期化
-		m_hMutexCP( NULL ),
-		m_pcTray( nullptr )
+		CProcess( hInstance, lpCmdLine )
 	{}
 
-	~CControlProcess() override;
+	~CControlProcess() override = default;
 
 protected:
 	bool InitializeProcess() override;
@@ -58,8 +51,7 @@ protected:
 	void OnExitProcess() override;
 
 private:
-	HANDLE			m_hMutexCP;				//!< コントロールプロセスミューテックス
-	CControlTray*	m_pcTray;
+	std::unique_ptr<CControlTray> m_pcTray = nullptr;
 };
 
 #endif /* SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_ */

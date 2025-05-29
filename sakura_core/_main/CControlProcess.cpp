@@ -134,13 +134,16 @@ bool CControlProcess::InitializeProcess()
 		return false;
 	}
 
-	/* コントロールプロセスの目印 */
-	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
-	strCtrlProcEvent += pszProfileName;
-	m_hMutexCP = ::CreateMutex( NULL, TRUE, strCtrlProcEvent.c_str() );
-	if( NULL == m_hMutexCP ){
+	SFilePath szMutexName = GSTR_MUTEX_SAKURA_CP;
+	if (pszProfileName && *pszProfileName) {
+		szMutexName += pszProfileName;
+	}
+	// プロセス初期化処理を排他制御する
+	HandleHolder hMutex = CreateMutexW(nullptr, TRUE, szMutexName);
+	if (!hMutex) {
 		ErrorBeep();
-		TopErrorMessage( NULL, L"CreateMutex()失敗。\n終了します。" );
+		// L"CreateMutex()失敗。\n終了します。"
+		TopErrorMessage(nullptr, LS(STR_ERR_CTRLMTX1));
 		return false;
 	}
 	if( ERROR_ALREADY_EXISTS == ::GetLastError() ){
@@ -153,9 +156,9 @@ bool CControlProcess::InitializeProcess()
 	}
 
 	// コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
-	WCHAR szDir[_MAX_PATH];
-	::GetSystemDirectory( szDir, _countof(szDir) );
-	::SetCurrentDirectory( szDir );
+	SFilePath szDir;
+	GetSystemDirectoryW(szDir, int(std::size(szDir)));
+	SetCurrentDirectoryW(szDir);
 
 	/* 共有データのロード */
 	if( !CShareData_IO::LoadShareData() ){
@@ -170,7 +173,7 @@ bool CControlProcess::InitializeProcess()
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	m_pcTray = new CControlTray;
+	m_pcTray = std::make_unique<CControlTray>();
 
 	MY_TRACETIME( cRunningTimer, L"After new CControlTray" );
 
@@ -190,6 +193,8 @@ bool CControlProcess::InitializeProcess()
 		TopErrorMessage(nullptr, LS(STR_ERR_CTRLMTX4));
 		return false;
 	}
+
+	hMutex = nullptr;
 
 	return true;
 }
@@ -220,13 +225,3 @@ void CControlProcess::OnExitProcess()
 {
 	GetDllShareData().m_sHandles.m_hwndTray = NULL;
 }
-
-CControlProcess::~CControlProcess()
-{
-	delete m_pcTray;
-
-	if( m_hMutexCP ){
-		::ReleaseMutex( m_hMutexCP );
-	}
-	::CloseHandle( m_hMutexCP );
-};
