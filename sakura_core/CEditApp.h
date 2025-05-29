@@ -28,13 +28,14 @@ class CGrepAgent;
 enum EFunctionCode;
 
 //!エディタ部分アプリケーションクラス。CNormalProcess1個につき、1個存在。
-class CEditApp : public TSingleton<CEditApp>{
+class CEditApp final : public TSingleton<CEditApp>{
+private:
 	friend class TSingleton<CEditApp>;
-	CEditApp(){}
-	virtual ~CEditApp();
+	CEditApp() = default;
+	~CEditApp();
 
 public:
-	void Create(HINSTANCE hInst, int);
+	void Create(HINSTANCE hInst, int nGroupId);
 
 	//モジュール情報
 	HINSTANCE GetAppInstance() const{ return m_hInst; }	//!< インスタンスハンドル取得
