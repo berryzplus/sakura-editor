@@ -172,11 +172,13 @@ bool CControlProcess::InitializeProcess()
 
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
-	/* タスクトレイにアイコン作成 */
 	m_pcTray = std::make_unique<CControlTray>();
 
 	MY_TRACETIME( cRunningTimer, L"After new CControlTray" );
 
+	hMutex = nullptr;
+
+	/* タスクトレイにアイコン作成 */
 	HWND hwnd = m_pcTray->Create( GetProcessInstance() );
 	if( !hwnd ){
 		ErrorBeep();
@@ -193,8 +195,6 @@ bool CControlProcess::InitializeProcess()
 		TopErrorMessage(nullptr, LS(STR_ERR_CTRLMTX4));
 		return false;
 	}
-
-	hMutex = nullptr;
 
 	return true;
 }
