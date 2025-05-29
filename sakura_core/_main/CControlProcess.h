@@ -39,9 +39,7 @@ public:
 		const std::vector<std::wstring>& args
 	);
 
-	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
-		CProcess( hInstance, lpCmdLine )
-	{}
+	using CProcess::CProcess;
 
 	~CControlProcess() override = default;
 
