@@ -65,10 +65,10 @@ std::unique_ptr<CProcess> CProcessFactory::CreateInstance(_In_z_ LPCWSTR lpCmdLi
 	// しかし、そのような場合でもミューテックスを最初に確保したコントロールプロセスが唯一生き残る。
 	//
 	if (CCommandLine::getInstance()->IsNoWindow()) {
-		return std::make_unique<CControlProcess>( m_hInstance, lpCmdLine );
+		return std::make_unique<CControlProcess>(m_hInstance, &cCommandLine);
 	}
 	else{
-		return std::make_unique<CNormalProcess>( m_hInstance, lpCmdLine );
+		return std::make_unique<CNormalProcess>(m_hInstance, &cCommandLine);
 	}
 }
 

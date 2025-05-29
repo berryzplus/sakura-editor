@@ -194,7 +194,7 @@ TEST(file, GetProfileMgrFileName_NoArg1)
 	pCommandLine->ParseCommandLine(LR"(-PROF="")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// iniファイルの拡張子を_prof.iniに変えたパスが返る
 	const auto profileMgrIniPath = GetIniFileName().replace_extension().concat(L"_prof.ini");
@@ -212,7 +212,7 @@ TEST(file, GetProfileMgrFileName_NoArg2)
 	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="profile1")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// iniファイルの拡張子を_prof.iniに変えたパスが返る
 	const auto profileMgrIniPath = GetIniFileName().parent_path().parent_path().append(GetIniFileName().replace_extension().concat(L"_prof.ini").filename().c_str());
@@ -230,7 +230,7 @@ TEST(file, GetProfileMgrFileName_DefaultProfile1)
 	pCommandLine->ParseCommandLine(LR"(-PROF="")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// 設定フォルダーのパスが返る
 	const auto iniDir = GetExeFileName().replace_filename(L"").append("a.txt").remove_filename();
@@ -248,7 +248,7 @@ TEST(file, GetProfileMgrFileName_DefaultProfile2)
 	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="profile1")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// 設定フォルダーのパスが返る
 	const auto iniDir = GetIniFileName().parent_path().parent_path().append("a.txt").remove_filename();
@@ -266,7 +266,7 @@ TEST(file, GetProfileMgrFileName_NamedProfile1)
 	pCommandLine->ParseCommandLine(LR"(-PROF="")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// テスト用プロファイル名
 	constexpr auto profile = L"profile1";
@@ -287,7 +287,7 @@ TEST(file, GetProfileMgrFileName_NamedProfile2)
 	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="profile1")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// テスト用プロファイル名
 	constexpr auto profile = L"profile1";

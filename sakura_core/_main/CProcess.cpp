@@ -220,14 +220,13 @@ static std::wstring CombineArg(const std::wstring& a, const std::wstring& b)
 	
 	@author aroka
 	@date 2002/01/07
-*/
+ */
 CProcess::CProcess(
-	HINSTANCE	hInstance,		//!< handle to process instance
-	LPCWSTR		lpCmdLine		//!< pointer to command line
-)
-: m_hInstance( hInstance )
-, m_hWnd( nullptr )
-	, m_cShareData(CCommandLine::getInstance() ? CCommandLine::getInstance()->GetProfileName() : nullptr)
+	_In_ HINSTANCE hInstance,
+	const CCommandLine* cCommandLine
+) noexcept
+	: m_hInstance(hInstance)
+	, m_cShareData(cCommandLine->GetProfileName())
 {
 }
 

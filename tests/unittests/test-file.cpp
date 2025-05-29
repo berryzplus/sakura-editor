@@ -183,7 +183,7 @@ TEST(file, GetIniFileName_InProcessDefaultProfileUnInitialized)
 	pCommandLine->ParseCommandLine(LR"(-PROF="")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// exeファイルの拡張子をiniに変えたパスが返る
 	auto path = GetExeFileName().replace_extension(L".ini");
@@ -201,7 +201,7 @@ TEST(file, GetIniFileName_InProcessNamedProfileUnInitialized)
 	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="profile1")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	// exeファイルの拡張子をiniに変えたパスが返る(初期化前はプロファイル指定の影響を受けない)
 	auto iniPath = GetExeFileName().replace_extension(L".ini");
@@ -251,7 +251,7 @@ TEST(file, GetInidirOrExedir)
 	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
 
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(nullptr, LR"(-PROF="profile1")");
+	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
 
 	std::wstring buf(_MAX_PATH, L'\0');
 

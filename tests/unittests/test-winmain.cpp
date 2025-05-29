@@ -110,18 +110,6 @@ public:
 	 * テストスイートの開始前に1回だけ呼ばれる関数
 	 */
 	static void SetUpFuncTest() {
-		SFilePath szCommand;
-		if (gm_ProfileName.length()) {
-			szCommand = strprintf(LR"(-PROF="%s")", gm_ProfileName.data());
-		}
-
-		// コマンドラインのインスタンスを用意する
-		CCommandLine commandLine;
-		commandLine.ParseCommandLine(szCommand, false);
-
-		// プロセスのインスタンスを用意する
-		CControlProcess dummy(nullptr, szCommand);
-
 		const auto isMultiUserSettings = false;
 		const auto userRootFolder = 0;
 		const auto& userSubFolder = L"sakura";

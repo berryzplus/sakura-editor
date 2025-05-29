@@ -17,11 +17,8 @@
 #define SAKURA_CPROCESS_FECC5450_9096_4EAD_A6DA_C8B12C3A31B5_H_
 #pragma once
 
-#include <filesystem>
-#include <string>
-#include <string_view>
-
 #include "global.h"
+#include "_main/CCommandLine.h"
 #include "util/design_template.h"
 #include "env/CShareData.h"
 
@@ -81,15 +78,18 @@ public:
 	);
 	static bool SetSyncEvent();
 
-	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
+	explicit CProcess(
+		_In_ HINSTANCE hInstance,
+		const CCommandLine* cCommandLine
+	) noexcept;
+	~CProcess() override = default;
+
 	bool Run();
-	virtual ~CProcess(){}
 	virtual void RefreshString();
 
 	virtual std::filesystem::path GetIniFileName() const;
 
 protected:
-	CProcess();
 	virtual bool InitializeProcess();
 	virtual bool MainLoop() = 0;
 	virtual void OnExitProcess() = 0;
@@ -105,8 +105,9 @@ public:
 	[[nodiscard]] const CShareData* GetShareDataPtr() const { return &m_cShareData; }
 
 private:
-	HINSTANCE	m_hInstance;
-	HWND		m_hWnd;
+	HINSTANCE		m_hInstance;
+	HWND			m_hWnd = nullptr;
 	CShareData		m_cShareData;
 };
+
 #endif /* SAKURA_CPROCESS_FECC5450_9096_4EAD_A6DA_C8B12C3A31B5_H_ */
