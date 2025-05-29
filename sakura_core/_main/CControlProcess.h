@@ -46,7 +46,6 @@ public:
 	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
 		CProcess( hInstance, lpCmdLine ),
 		// 2006.04.10 ryoji 同期オブジェクトのハンドルを初期化
-		m_hMutex( NULL ),
 		m_hMutexCP( NULL ),
 		m_pcTray( nullptr )
 	{}
@@ -59,7 +58,6 @@ protected:
 	void OnExitProcess() override;
 
 private:
-	HANDLE			m_hMutex;				//!< アプリケーション実行検出用ミューテックス
 	HANDLE			m_hMutexCP;				//!< コントロールプロセスミューテックス
 	CControlTray*	m_pcTray;
 };

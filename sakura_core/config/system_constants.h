@@ -557,9 +557,6 @@
 //                      ミューテックス                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//! アプリケーション実行検出用(インストーラで使用)
-#define	GSTR_MUTEX_SAKURA					L"MutexSakuraEditor"
-
 //! コントロールプロセス
 #define	GSTR_MUTEX_SAKURA_CP				(L"MutexSakuraEditorCP"				_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
