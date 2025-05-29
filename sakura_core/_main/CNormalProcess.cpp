@@ -138,9 +138,16 @@ bool CNormalProcess::InitializeProcess()
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
 
+	const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
+
 	/* プロセス初期化の目印 */
 	HANDLE	hMutex = _GetInitializeMutex();	// 2002/2/8 aroka 込み入っていたので分離
 	if( NULL == hMutex ){
+		return false;
+	}
+
+	// コントロールプロセスが起動していなければ起動する
+	if (!CControlTray::Find(pszProfileName) && !CNormalProcess::StartControlProcess(pszProfileName)) {
 		return false;
 	}
 

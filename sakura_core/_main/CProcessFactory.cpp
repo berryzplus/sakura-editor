@@ -70,17 +70,10 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	// しかし、そのような場合でもミューテックスを最初に確保したコントロールプロセスが唯一生き残る。
 	//
 	if (CCommandLine::getInstance()->IsNoWindow()) {
-		if( !IsExistControlProcess() ){
 			process = new CControlProcess( hInstance, lpCmdLine );
-		}
 	}
 	else{
-		if (!IsExistControlProcess() && !StartControlProcess()) {
-			return nullptr;
-		}
-		{
 			process = new CNormalProcess( hInstance, lpCmdLine );
-		}
 	}
 	return process;
 }
@@ -108,33 +101,4 @@ bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	return true;
 }
 
-/*!
-	コントロールプロセスの有無を調べる。
-	
-	@author aroka
-	@date 2002/01/03
-	@date 2006/04/10 ryoji
- */
-bool CProcessFactory::IsExistControlProcess() const
-{
-	return CControlTray::Find(CCommandLine::getInstance()->GetProfileName());
-}
 
-//	From Here Aug. 28, 2001 genta
-/*!
-	@brief コントロールプロセスを起動する
-	
-	自分自身に -NOWIN オプションを付けて起動する．
-	共有メモリをチェックしてはいけないので，残念ながらCControlTray::OpenNewEditorは使えない．
-	
-	@author genta
-	@date Aug. 28, 2001
-	@date 2008.05.05 novice GetModuleHandle(NULL)→NULLに変更
-*/
-bool CProcessFactory::StartControlProcess() const
-{
-	MY_RUNNINGTIMER(cRunningTimer,L"StartControlProcess" );
-
-	return CNormalProcess::StartControlProcess(CCommandLine::getInstance()->GetProfileName());
-}
-//	To Here Aug. 28, 2001 genta

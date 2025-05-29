@@ -39,8 +39,6 @@ public:
 protected:
 private:
 	bool ProfileSelect(HINSTANCE hInstance, LPCWSTR lpCmdLine);
-	bool IsExistControlProcess() const;
-	bool StartControlProcess() const;
 };
 
 #endif /* SAKURA_CPROCESSFACTORY_5006562F_7795_40FF_AA4C_FFB94842F7C5_H_ */

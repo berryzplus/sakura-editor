@@ -137,6 +137,11 @@ bool CControlProcess::InitializeProcess()
 
 	const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
 
+	// コントロールプロセスが起動していたら終了する
+	if (CControlTray::Find(pszProfileName)) {
+		return false;
+	}
+
 	/* コントロールプロセスの目印 */
 	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
 	strCtrlProcEvent += pszProfileName;
@@ -149,7 +154,7 @@ bool CControlProcess::InitializeProcess()
 	if( ERROR_ALREADY_EXISTS == ::GetLastError() ){
 		return false;
 	}
-	
+
 	/* 共有メモリを初期化 */
 	if( !CProcess::InitializeProcess() ){
 		return false;
