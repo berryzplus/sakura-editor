@@ -25,7 +25,6 @@
 
 #include "global.h"
 #include "charset/charcode.h"
-#include "mem/CNativeW.h"
 #include "EditInfo.h"
 #include "GrepInfo.h"
 #include "util/design_template.h"
@@ -40,6 +39,8 @@
 class CCommandLine : public TInstanceHolder<CCommandLine> {
 private:
 	using Me = CCommandLine;
+
+	using OptionStr = std::optional<std::wstring>;
 
 public:
 	CCommandLine() = default;
@@ -75,14 +76,11 @@ public:
 	bool GetGrepInfo(GrepInfo* gi) const noexcept { *gi = m_gi; return true; }
 	const GrepInfo& GetGrepInfoRef() const noexcept { return m_gi; }
 	int GetGroupId() const noexcept { return m_nGroup; }	// 2007.06.26 ryoji
-	LPCWSTR GetMacro() const noexcept { return m_cmMacro.GetStringPtr(); }
-	LPCWSTR GetMacroType() const noexcept { return m_cmMacroType.GetStringPtr(); }
-	LPCWSTR GetProfileName() const noexcept { return m_cmProfile.GetStringPtr(); }
-	bool IsSetProfile() const noexcept { return m_bSetProfile; }
-	void SetProfileName(LPCWSTR s){
-		m_bSetProfile = true;
-		m_cmProfile.SetString(s);
-	}
+	LPCWSTR GetMacro() const noexcept { return m_cmMacro.has_value() ? m_cmMacro.value().c_str() : nullptr; }
+	LPCWSTR GetMacroType() const noexcept { return m_cmMacroType.has_value() ? m_cmMacroType.value().c_str() : nullptr; }
+	LPCWSTR GetProfileName() const noexcept { return m_cmProfile.has_value() ? m_cmProfile.value().c_str() : nullptr; }
+	bool    IsSetProfile() const noexcept { return m_cmProfile.has_value(); }
+	void    SetProfileName(std::wstring_view s) { m_cmProfile = s; }
 	bool IsProfileMgr() const noexcept { return m_bProfileMgr; }
 
 	// 以下の取得メソッドは削除する
@@ -108,14 +106,13 @@ private:
 	bool		m_bDebugMode = false;
 	bool		m_bNoWindow = false;	//! [out] TRUE: 編集Windowを開かない
 	bool		m_bProfileMgr = false;
-	bool		m_bSetProfile = false;
 	EditInfo	m_fi{};					//!
 	GrepInfo	m_gi{};					//!
 	bool		m_bViewMode = false;	//! [out] TRUE: Read Only
 	int			m_nGroup = -1;			//! グループID	// 2007.06.26 ryoji
-	CNativeW	m_cmMacro;				//! [out] マクロファイル名／マクロ文
-	CNativeW	m_cmMacroType;			//! [out] マクロ種別
-	CNativeW	m_cmProfile = L"";		//! プロファイル名
+	OptionStr	m_cmMacro;				//! マクロファイル名／マクロ文
+	OptionStr	m_cmMacroType;			//! マクロ種別
+	OptionStr	m_cmProfile;			//! プロファイル名
 
 	std::vector<std::wstring> m_vFiles;	//!< ファイル名(複数)
 };

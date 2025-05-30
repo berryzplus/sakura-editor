@@ -77,13 +77,13 @@ TEST(CCommandLine, ConstructWithoutParam)
 	EXPECT_EQ(GrepInfo(), cCommandLine.GetGrepInfoRef());
 
 	EXPECT_EQ(-1, cCommandLine.GetGroupId());
-	EXPECT_EQ(NULL, cCommandLine.GetMacro());
-	EXPECT_EQ(NULL, cCommandLine.GetMacroType());
-	EXPECT_STREQ(L"", cCommandLine.GetProfileName());	//不自然
+	EXPECT_FALSE(cCommandLine.GetMacro());
+	EXPECT_FALSE(cCommandLine.GetMacroType());
+	EXPECT_FALSE(cCommandLine.GetProfileName());	//不自然
 	EXPECT_FALSE(cCommandLine.IsSetProfile());
 	EXPECT_FALSE(cCommandLine.IsProfileMgr());
 	EXPECT_EQ(0, cCommandLine.GetFileNum());
-	EXPECT_EQ(NULL, cCommandLine.GetFileName(0));
+	EXPECT_FALSE(cCommandLine.GetFileName(0));
 }
 
 /*!
@@ -221,7 +221,7 @@ TEST(CCommandLine, ParseProfileName)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	EXPECT_STREQ(L"", cCommandLine.GetProfileName());
+	EXPECT_FALSE(cCommandLine.GetProfileName());
 	EXPECT_FALSE(cCommandLine.IsSetProfile());
 #define TESTLOCAL_PROFILE_NAME L"執筆用"
 	cCommandLine.ParseCommandLine(L"-PROF=" TESTLOCAL_PROFILE_NAME, false);

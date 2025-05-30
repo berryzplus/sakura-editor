@@ -187,7 +187,6 @@ CCommandLine& CCommandLine::operator = (Me&& other) noexcept {
 		m_bDebugMode = other.m_bDebugMode;
 		m_bNoWindow = other.m_bNoWindow;
 		m_bProfileMgr = other.m_bProfileMgr;
-		m_bSetProfile = other.m_bSetProfile;
 		m_fi = std::move(other.m_fi);
 		m_gi = std::move(other.m_gi);
 		m_bViewMode = other.m_bViewMode;
@@ -507,15 +506,13 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				bParseOptDisabled = true;
 				break;
 			case CMDLINEOPT_M:			// 2009.06.14 syat 追加
-				m_cmMacro.SetString( arg, nArgLen );
-				m_cmMacro.Replace( L"\"\"", L"\"" );
+				m_cmMacro = std::regex_replace(std::wstring_view(arg, nArgLen).data(), std::wregex(LR"("")"), LR"(")");
 				break;
 			case CMDLINEOPT_MTYPE:		// 2009.06.14 syat 追加
-				m_cmMacroType.SetString( arg, nArgLen );
+				m_cmMacroType = std::wstring_view(arg, nArgLen);
 				break;
 			case CMDLINEOPT_PROF:		// 2013.12.20 Moca 追加
-				m_cmProfile.SetString( arg, nArgLen );
-				m_bSetProfile = true;
+				m_cmProfile = std::wstring_view(arg, nArgLen);
 				break;
 			case CMDLINEOPT_PROFMGR:
 				m_bProfileMgr = true;
