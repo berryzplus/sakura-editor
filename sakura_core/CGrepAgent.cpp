@@ -6,11 +6,17 @@
 */
 #include "StdAfx.h"
 #include "CGrepAgent.h"
+
+#include "_main/CControlTray.h"
+#include "dlg/CDlgCancel.h"
+#include "dlg/CDlgGrep.h"
+#include "dlg/CDlgGrepReplace.h"
+#include "plugin/CJackManager.h"
+
 #include "CGrepEnumKeys.h"
 #include "CGrepEnumFilterFiles.h"
 #include "CGrepEnumFilterFolders.h"
 #include "CSearchAgent.h"
-#include "dlg/CDlgCancel.h"
 #include "_main/CAppMode.h"
 #include "_main/CMutex.h"
 #include "env/CShareData.h"
@@ -41,6 +47,8 @@
 #define UICHECK_INTERVAL_MILLISEC 100	// UI確認の時間間隔
 #define ADDTAIL_INTERVAL_MILLISEC 50	// 結果出力の時間間隔
 #define UIFILENAME_INTERVAL_MILLISEC 15	// Cancelダイアログのファイル名表示更新間隔
+
+CEditDoc* GetDocument() { return CEditDoc::getInstance(); }
 
 /*!
  * 指定された文字列をタイプ別設定に従ってエスケープする
@@ -326,6 +334,84 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 	return 1;
 }
 
+DWORD CGrepAgent::DoGrep(
+	CEditView* pcViewDst,
+	CDlgGrep& cDlgGrep		//!< [in] Grepダイアログ
+)
+{
+	const auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep);
+
+	CNativeW cmWork1(cDlgGrep.m_strText);
+	CNativeW cmWork2(cDlgGrep.GetPackedGFileString());
+	CNativeW cmWork3(cDlgGrep.m_szFolder);
+
+	CNativeW cmWork4;
+	if (pDlgGrepReplace) {
+		cmWork4 = pDlgGrepReplace->m_strText2;
+	}
+
+	/*	今のEditViewにGrep結果を表示する。
+		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
+		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
+	*/
+	if( (  m_bGrepMode && !m_bGrepRunning ) ||
+		( !GetDocument()->m_cDocEditor.IsModified() &&
+		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* 現在編集中のファイルのパス */
+		  !CAppMode::getInstance()->IsDebugMode()
+		)
+	){
+		// 2011.01.23 Grepタイプ別適用
+		if (!pDlgGrepReplace
+			&& !GetDocument()->m_cDocEditor.IsModified()
+			&& 0 == GetDocument()->m_cDocLineMgr.GetLineCount())
+		{
+			CTypeConfig cTypeGrep = CDocTypeManager().GetDocumentTypeOfExt( L"grepout" );
+			const STypeConfigMini* pConfig = nullptr;
+			if( !CDocTypeManager().GetTypeConfigMini( cTypeGrep, &pConfig ) ){
+				return 0;
+			}
+			GetDocument()->m_cDocType.SetDocumentTypeIdx( pConfig->m_id );
+			GetDocument()->m_cDocType.LockDocumentType();
+			GetDocument()->OnChangeType();
+		}
+		
+		const auto ret = DoGrep(
+			pcViewDst,
+			pDlgGrepReplace,
+			&cmWork1,
+			&cmWork4,
+			&cmWork2,
+			&cmWork3,
+			false,
+			cDlgGrep.m_bSubFolder,
+			false, // Stdout
+			true, // Header
+			cDlgGrep.m_sSearchOption,
+			cDlgGrep.m_nGrepCharSet,
+			cDlgGrep.m_nGrepOutputLineType,
+			cDlgGrep.m_nGrepOutputStyle,
+			cDlgGrep.m_bGrepOutputFileOnly,
+			cDlgGrep.m_bGrepOutputBaseFolder,
+			cDlgGrep.m_bGrepSeparateFolder,
+			pDlgGrepReplace ? pDlgGrepReplace->m_bPaste : false,
+			pDlgGrepReplace ? pDlgGrepReplace->m_bBackup : false
+		);
+
+		if (!pDlgGrepReplace) {
+			//プラグイン：DocumentOpenイベント実行
+			CJackManager::getInstance()->InvokePlugins(PP_DOCUMENT_OPEN, pcViewDst);
+		}
+
+		return ret;
+	}
+	else {
+		/*======= Grepの実行 =============*/
+		/* Grep結果ウィンドウの表示 */
+		CControlTray::DoGrepCreateWindow(G_AppInstance(), pcViewDst->GetHwnd(), cDlgGrep);
+
+		return 0;
+	}
+}
 
 /*! Grep実行
 

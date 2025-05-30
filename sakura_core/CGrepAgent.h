@@ -10,7 +10,9 @@
 #pragma once
 
 #include "doc/CDocListener.h"
+
 class CDlgCancel;
+class CDlgGrep;
 class CEditView;
 class CSearchStringPattern;
 class CGrepEnumKeys;
@@ -60,6 +62,11 @@ public:
 	static void CreateFolders( const WCHAR* pszPath, std::vector<std::wstring>& vPaths );
 	static std::wstring ChopYen( const std::wstring& str );
 	void AddTail( CEditView* pcEditView, const CNativeW& cmem, bool bAddStdout );
+
+	DWORD DoGrep(
+		CEditView*				pcViewDst,
+		CDlgGrep&				cDlgGrep		//!< [in] Grepダイアログ
+	);
 
 	// Grep実行
 	DWORD DoGrep(
