@@ -28,13 +28,13 @@
 	コマンドライン、コントロールプロセスの有無を判定し、
 	適当なプロセスクラスを生成する。
 	
-	@param[in] lpCmdLine コマンドライン文字列
+	@param[in] cmdLine コマンドライン文字列
 	
 	@author aroka
 	@date 2002/01/08
 	@date 2006/04/10 ryoji
  */
-std::unique_ptr<CProcess> CProcessFactory::CreateInstance(_In_z_ LPCWSTR lpCmdLine) noexcept
+std::unique_ptr<CProcess> CProcessFactory::CreateInstance(std::wstring_view cmdLine) noexcept
 {
 	//コマンドラインクラスのインスタンスを確保する
 	CCommandLine cCommandLine;
@@ -49,7 +49,7 @@ std::unique_ptr<CProcess> CProcessFactory::CreateInstance(_In_z_ LPCWSTR lpCmdLi
 	cCommandLine.ParseKanjiCodeFromFileName(szExePath, int(std::size(szExePath)));
 
 	// コマンドラインを解析する
-	cCommandLine.ParseCommandLine(lpCmdLine);
+	cCommandLine.ParseCommandLine(cmdLine.data());
 
 	if (!ProfileSelect()) {
 		CSelectLang::UninitializeLanguageEnvironment();

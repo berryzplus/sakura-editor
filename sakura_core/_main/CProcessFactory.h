@@ -38,7 +38,7 @@ public:
 	{
 	}
 
-	std::unique_ptr<CProcess> CreateInstance(_In_z_ LPCWSTR lpCmdLine) noexcept;
+	std::unique_ptr<CProcess> CreateInstance(std::wstring_view cmdLine) noexcept;
 
 private:
 	bool    ProfileSelect() noexcept;
