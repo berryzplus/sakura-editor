@@ -28,27 +28,25 @@
 
 	@date 2005.01.10 genta CEditView_Commandより移動
 	@author Yazaki
-*/
+ */
 void CViewCommander::Command_GREP_DIALOG( void )
 {
-	CNativeW	cmemCurText;
+	auto& cDlgGrep = GetEditWindow()->m_cDlgGrep;
+
 	// 2014.07.01 複数Grepウィンドウを使い分けている場合などに影響しないように、未設定のときだけHistoryを見る
-	bool bGetHistory = GetEditWindow()->m_cDlgGrep.m_bSetText == false;
+	bool bGetHistory = !cDlgGrep.m_bSetText;
 
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-	bool bSet = m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );	// 2006.08.23 ryoji ダイアログ専用関数に変更
-
-	if( bSet ){
-		GetEditWindow()->m_cDlgGrep.m_strText = cmemCurText.GetStringPtr();
-		GetEditWindow()->m_cDlgGrep.m_bSetText = true;
+	if (CNativeW cmemCurText; m_pCommanderView->GetCurrentTextForSearchDlg(cmemCurText, bGetHistory)) {
+		cDlgGrep.m_strText = cmemCurText.GetStringPtr();
+		cDlgGrep.m_bSetText = true;
 	}
 
 	/* Grepダイアログの表示 */
-	int nRet = GetEditWindow()->m_cDlgGrep.DoModal( G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath() );
-//	MYTRACE( L"nRet=%d\n", nRet );
-	if( !nRet ){
+	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath()); !nRet) {
 		return;
 	}
+
 	HandleCommand(F_GREP, true, 0, 0, 0, 0);	//	GREPコマンドの発行
 }
 
@@ -129,31 +127,29 @@ void CViewCommander::Command_GREP( void )
 }
 
 /*! GREP置換ダイアログの表示
-*/
+ */
 void CViewCommander::Command_GREP_REPLACE_DLG( void )
 {
-	CNativeW	cmemCurText;
-	CDlgGrepReplace& cDlgGrepRep = GetEditWindow()->m_cDlgGrepReplace;
+	auto& cDlgGrep = GetEditWindow()->m_cDlgGrepReplace;
 
 	// 複数Grepウィンドウを使い分けている場合などに影響しないように、未設定のときだけHistoryを見る
-	bool bGetHistory = cDlgGrepRep.m_bSetText == false;
+	bool bGetHistory = !cDlgGrep.m_bSetText;
 
-	m_pCommanderView->GetCurrentTextForSearchDlg( cmemCurText, bGetHistory );
-
-	if( 0 < cmemCurText.GetStringLength() ){
-		cDlgGrepRep.m_strText = cmemCurText.GetStringPtr();
-		cDlgGrepRep.m_bSetText = true;
+	if (CNativeW cmemCurText; m_pCommanderView->GetCurrentTextForSearchDlg(cmemCurText, bGetHistory)) {
+		cDlgGrep.m_strText = cmemCurText.GetStringPtr();
+		cDlgGrep.m_bSetText = true;
 	}
+
 	if( 0 < GetDllShareData().m_sSearchKeywords.m_aReplaceKeys.size() ){
-		if( cDlgGrepRep.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){
-			cDlgGrepRep.m_strText2 = GetDllShareData().m_sSearchKeywords.m_aReplaceKeys[0];
+		if( cDlgGrep.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){
+			cDlgGrep.m_strText2 = GetDllShareData().m_sSearchKeywords.m_aReplaceKeys[0];
 		}
 	}
 
-	int nRet = cDlgGrepRep.DoModal( G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath(), (LPARAM)m_pCommanderView );
-	if( !nRet ){
+	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath(), (LPARAM)m_pCommanderView); !nRet) {
 		return;
 	}
+
 	HandleCommand(F_GREP_REPLACE, TRUE, 0, 0, 0, 0);	//	GREPコマンドの発行
 }
 
