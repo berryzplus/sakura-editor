@@ -86,9 +86,9 @@ int CDlgProfileMgr::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam
 std::filesystem::path GetProfileMgrFileName()
 {
 	auto privateIniPath = GetIniFileName();
-	if (const auto* pCommandLine = CCommandLine::getInstance(); pCommandLine->IsSetProfile() && *pCommandLine->GetProfileName()) {
+	if (const auto pszProfileName = CCommandLine::getInstance()->GetProfileName(); pszProfileName && *pszProfileName) {
 		auto filename = privateIniPath.filename();
-		privateIniPath = privateIniPath.parent_path().parent_path().append(filename.c_str());
+		privateIniPath = privateIniPath.parent_path().append(filename.c_str());
 	}
 	return privateIniPath.replace_extension().concat(L"_prof.ini");
 }
@@ -98,8 +98,8 @@ std::filesystem::path GetProfileMgrFileName()
  */
 std::filesystem::path GetProfileDirectory(const std::wstring& name)
 {
-	auto privateIniDir = GetIniFileName().parent_path();
-	if (const auto* pCommandLine = CCommandLine::getInstance(); pCommandLine->IsSetProfile() && *pCommandLine->GetProfileName()) {
+	auto privateIniDir = GetIniFileName().remove_filename();
+	if (const auto pszProfileName = CCommandLine::getInstance()->GetProfileName(); pszProfileName && *pszProfileName) {
 		privateIniDir = privateIniDir.parent_path();
 	}
 	return privateIniDir.append(name).append(L"a.txt").remove_filename();

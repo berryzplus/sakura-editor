@@ -36,7 +36,8 @@
  */
 std::unique_ptr<CProcess> CProcessFactory::CreateInstance(_In_z_ LPCWSTR lpCmdLine) noexcept
 {
-	auto& cCommandLine = *CCommandLine::getInstance();
+	//コマンドラインクラスのインスタンスを確保する
+	CCommandLine cCommandLine;
 
 	// 言語環境を初期化する
 	CSelectLang::InitializeLanguageEnvironment();
@@ -65,10 +66,10 @@ std::unique_ptr<CProcess> CProcessFactory::CreateInstance(_In_z_ LPCWSTR lpCmdLi
 	// しかし、そのような場合でもミューテックスを最初に確保したコントロールプロセスが唯一生き残る。
 	//
 	if (CCommandLine::getInstance()->IsNoWindow()) {
-		return std::make_unique<CControlProcess>(m_hInstance, &cCommandLine);
+		return std::make_unique<CControlProcess>(m_hInstance, std::move(cCommandLine));
 	}
 	else{
-		return std::make_unique<CNormalProcess>(m_hInstance, &cCommandLine);
+		return std::make_unique<CNormalProcess>(m_hInstance, std::move(cCommandLine));
 	}
 }
 

@@ -38,8 +38,15 @@
  * @brief コマンドラインパーサ クラス
  */
 class CCommandLine : public TInstanceHolder<CCommandLine> {
+private:
+	using Me = CCommandLine;
+
 public:
-	CCommandLine() noexcept;
+	CCommandLine() = default;
+	CCommandLine(const Me& rhs) = default;
+	Me& operator = (const Me& rhs) = default;
+	CCommandLine(Me&& other) noexcept { operator = (std::move(other)); }
+	Me& operator = (Me&& other) noexcept;
 
 private:
 	static int CheckCommandLine(
@@ -93,19 +100,21 @@ public:
 
 // member valiables
 private:
-	bool		m_bGrepMode;		//! [out] TRUE: Grep Mode
-	bool		m_bGrepDlg;			//  Grepダイアログ
-	bool		m_bDebugMode;		
-	bool		m_bNoWindow;		//! [out] TRUE: 編集Windowを開かない
-	bool		m_bProfileMgr;
-	bool		m_bSetProfile;
-	EditInfo	m_fi;				//!
-	GrepInfo	m_gi;				//!
-	bool		m_bViewMode;		//! [out] TRUE: Read Only
-	int			m_nGroup;			//! グループID	// 2007.06.26 ryoji
-	CNativeW	m_cmMacro;			//! [out] マクロファイル名／マクロ文
-	CNativeW	m_cmMacroType;		//! [out] マクロ種別
-	CNativeW	m_cmProfile;		//! プロファイル名
+	bool		m_bGrepMode = false;	//! [out] TRUE: Grep Mode
+	bool		m_bGrepDlg = false;		//  Grepダイアログ
+	bool		m_bDebugMode = false;
+	bool		m_bNoWindow = false;	//! [out] TRUE: 編集Windowを開かない
+	bool		m_bProfileMgr = false;
+	bool		m_bSetProfile = false;
+	EditInfo	m_fi{};					//!
+	GrepInfo	m_gi{};					//!
+	bool		m_bViewMode = false;	//! [out] TRUE: Read Only
+	int			m_nGroup = -1;			//! グループID	// 2007.06.26 ryoji
+	CNativeW	m_cmMacro;				//! [out] マクロファイル名／マクロ文
+	CNativeW	m_cmMacroType;			//! [out] マクロ種別
+	CNativeW	m_cmProfile = L"";		//! プロファイル名
+
 	std::vector<std::wstring> m_vFiles;	//!< ファイル名(複数)
 };
+
 #endif /* SAKURA_CCOMMANDLINE_DF7E2E03_76E1_458C_82AC_7C485EECF677_H_ */

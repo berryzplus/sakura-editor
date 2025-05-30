@@ -42,7 +42,7 @@
 #include "mem/CNativeW.h"
 #include "env/DLLSHAREDATA.h"
 #include "_main/CCommandLine.h"
-#include "_main/CControlProcess.h"
+#include "_main/CProcessFactory.h"
 #include "CDataProfile.h"
 #include "util/file.h"
 
@@ -177,13 +177,8 @@ TEST(file, GetIniFileName_OutOfProcess)
  */
 TEST(file, GetIniFileName_InProcessDefaultProfileUnInitialized)
 {
-	// コマンドラインのインスタンスを用意する
-	CCommandLine cCommandLine;
-	auto pCommandLine = &cCommandLine;
-	pCommandLine->ParseCommandLine(LR"(-PROF="")", false);
-
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
+	const auto dummy = CProcessFactory().CreateInstance(LR"(-PROF="")");
 
 	// exeファイルの拡張子をiniに変えたパスが返る
 	auto path = GetExeFileName().replace_extension(L".ini");
@@ -195,13 +190,8 @@ TEST(file, GetIniFileName_InProcessDefaultProfileUnInitialized)
  */
 TEST(file, GetIniFileName_InProcessNamedProfileUnInitialized)
 {
-	// コマンドラインのインスタンスを用意する
-	CCommandLine cCommandLine;
-	auto pCommandLine = &cCommandLine;
-	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
-
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
+	const auto dummy = CProcessFactory().CreateInstance(LR"(-PROF="profile1")");
 
 	// exeファイルの拡張子をiniに変えたパスが返る(初期化前はプロファイル指定の影響を受けない)
 	auto iniPath = GetExeFileName().replace_extension(L".ini");
@@ -245,13 +235,8 @@ void EnsureDirectoryExist(const std::wstring& strProfileName);
  */
 TEST(file, GetInidirOrExedir)
 {
-	// コマンドラインのインスタンスを用意する
-	CCommandLine cCommandLine;
-	auto pCommandLine = &cCommandLine;
-	pCommandLine->ParseCommandLine(LR"(-PROF="profile1")", false);
-
 	// プロセスのインスタンスを用意する
-	CControlProcess dummy(GetModuleHandleW(nullptr), &cCommandLine);
+	const auto dummy = CProcessFactory().CreateInstance(LR"(-PROF="profile1")");
 
 	std::wstring buf(_MAX_PATH, L'\0');
 

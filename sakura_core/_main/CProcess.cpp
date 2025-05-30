@@ -223,10 +223,11 @@ static std::wstring CombineArg(const std::wstring& a, const std::wstring& b)
  */
 CProcess::CProcess(
 	_In_ HINSTANCE hInstance,
-	const CCommandLine* cCommandLine
+	CCommandLine&& cCommandLine
 ) noexcept
 	: m_hInstance(hInstance)
-	, m_cShareData(cCommandLine->GetProfileName())
+	, m_cCommandLine(std::move(cCommandLine))
+	, m_cShareData(m_cCommandLine.GetProfileName())
 {
 }
 

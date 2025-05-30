@@ -175,28 +175,29 @@ int CCommandLine::CheckCommandLine(
 	return 0;	//	該当無し
 }
 
-/*! 
- * コンストラクタ
+/*!
+ * ムーブ代入演算子
  *
- * @date 2005/08/24 D.S.Koba ParseCommandLine()変更によりメンバ変数に初期値代入
- * @date 2007/06/26 ryoji m_nGroupの初期値に -1 を指定
+ * 
  */
-CCommandLine::CCommandLine() noexcept
-	: m_bGrepMode(false)
-	, m_bGrepDlg(false)
-	, m_bDebugMode(false)
-	, m_bNoWindow(false)
-	, m_bProfileMgr(false)
-	, m_bSetProfile(false)
-	, m_fi()
-	, m_gi()
-	, m_bViewMode(false)
-	, m_nGroup(-1)
-	, m_cmMacro()
-	, m_cmMacroType()
-	, m_cmProfile(L"")
-	, m_vFiles()
-{
+CCommandLine& CCommandLine::operator = (Me&& other) noexcept {
+	if (this != &other) {
+		m_bGrepMode = other.m_bGrepMode;
+		m_bGrepDlg = other.m_bGrepDlg;
+		m_bDebugMode = other.m_bDebugMode;
+		m_bNoWindow = other.m_bNoWindow;
+		m_bProfileMgr = other.m_bProfileMgr;
+		m_bSetProfile = other.m_bSetProfile;
+		m_fi = std::move(other.m_fi);
+		m_gi = std::move(other.m_gi);
+		m_bViewMode = other.m_bViewMode;
+		m_nGroup = other.m_nGroup;
+		m_cmMacro = std::move(other.m_cmMacro);
+		m_cmMacroType = std::move(other.m_cmMacroType);
+		m_cmProfile = std::move(other.m_cmProfile);
+		m_vFiles = std::move(other.m_vFiles);
+	}
+	return *this;
 }
 
 /*!

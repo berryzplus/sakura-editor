@@ -84,9 +84,6 @@ int WINAPI wWinMain(
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
 	DEBUG_TRACE(L"sizeof(DLLSHAREDATA) = %d\n",sizeof(DLLSHAREDATA));
 
-	//コマンドラインクラスのインスタンスを確保する
-	CCommandLine cCommandLine;
-
 	//プロセスの生成
 	const auto process = CProcessFactory(hInstance).CreateInstance(lpCmdLine);
 	if (!process) {

@@ -80,7 +80,7 @@ public:
 
 	explicit CProcess(
 		_In_ HINSTANCE hInstance,
-		const CCommandLine* cCommandLine
+		CCommandLine&& cCommandLine
 	) noexcept;
 	~CProcess() override = default;
 
@@ -106,6 +106,7 @@ public:
 
 private:
 	HINSTANCE		m_hInstance;
+	CCommandLine	m_cCommandLine;
 	HWND			m_hWnd = nullptr;
 	CShareData		m_cShareData;
 };
