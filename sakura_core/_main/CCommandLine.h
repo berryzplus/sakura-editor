@@ -43,10 +43,9 @@ private:
 
 public:
 	CCommandLine() = default;
-	CCommandLine(const Me& rhs) = default;
-	Me& operator = (const Me& rhs) = default;
 	CCommandLine(Me&& other) noexcept { operator = (std::move(other)); }
 	Me& operator = (Me&& other) noexcept;
+	~CCommandLine() override = default;
 
 private:
 	static int CheckCommandLine(
