@@ -34,6 +34,7 @@
 #include "dlg/CDlgOpenFile.h"
 #include "dlg/CDlgAbout.h"		//Nov. 21, 2000 JEPROtest
 #include "dlg/CDlgFavorite.h"
+#include "dlg/CDlgGrepReplace.h"
 #include "dlg/CDlgWindowList.h"
 #include "plugin/CPluginManager.h"
 #include "plugin/CJackManager.h"
@@ -136,37 +137,57 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	cmWork2.Replace( L"\"", L"\"\"" );
 	cmWork3.Replace( L"\"", L"\"\"" );
 
+	CNativeW cmWork4;
+	if (auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+		cmWork4.SetString( pDlgGrepReplace->m_strText2.c_str() );
+		cmWork4.Replace( L"\"", L"\"\"" );
+	}
+
 	// -GREPMODE -GKEY="1" -GFILE="*.*;*.c;*.h" -GFOLDER="c:\" -GCODE=0 -GOPT=S
 	CNativeW cCmdLine;
-	WCHAR szTemp[20];
 
 	cCmdLine.AppendString(L"-GREPMODE -GKEY=\"");
 	cCmdLine.AppendString(cmWork1.GetStringPtr());
+
+	if (auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+		cCmdLine.AppendString( L"\" -GREPR=\"" );
+		cCmdLine.AppendString( cmWork4.GetStringPtr() );
+	}
+
 	cCmdLine.AppendString(L"\" -GFILE=\"");
 	cCmdLine.AppendString(cmWork2.GetStringPtr());
 	cCmdLine.AppendString(L"\" -GFOLDER=\"");
 	cCmdLine.AppendString(cmWork3.GetStringPtr());
 	cCmdLine.AppendString(L"\" -GCODE=");
-	auto_sprintf( szTemp, L"%d", cDlgGrep.m_nGrepCharSet );
-	cCmdLine.AppendString(szTemp);
+	cCmdLine.AppendStringF(L"%d", cDlgGrep.m_nGrepCharSet);
 
 	//GOPTオプション
-	WCHAR pOpt[64] = L"";
-	if( cDlgGrep.m_bSubFolder					)wcscat( pOpt, L"S" );	// サブフォルダーからも検索する
-	if( cDlgGrep.m_sSearchOption.bLoHiCase		)wcscat( pOpt, L"L" );	// 英大文字と英小文字を区別する
-	if( cDlgGrep.m_sSearchOption.bRegularExp	)wcscat( pOpt, L"R" );	// 正規表現
-	if( cDlgGrep.m_nGrepOutputLineType == 1     )wcscat( pOpt, L"P" );	// 行を出力する
-	if( cDlgGrep.m_nGrepOutputLineType == 2     )wcscat( pOpt, L"N" );	// 否ヒット行を出力する 2014.09.23
-	if( cDlgGrep.m_sSearchOption.bWordOnly		)wcscat( pOpt, L"W" );	// 単語単位で探す
-	if( 1 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"1" );	// Grep: 出力形式
-	if( 2 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"2" );	// Grep: 出力形式
-	if( 3 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"3" );
-	if( cDlgGrep.m_bGrepOutputFileOnly		)wcscat( pOpt, L"F" );
-	if( cDlgGrep.m_bGrepOutputBaseFolder		)wcscat( pOpt, L"B" );
-	if( cDlgGrep.m_bGrepSeparateFolder		)wcscat( pOpt, L"D" );
-	if( pOpt[0] != L'\0' ){
+	SString<64> szOpt;
+	if (cDlgGrep.m_bSubFolder					) szOpt += 'S';	// サブフォルダーからも検索する
+	if (cDlgGrep.m_sSearchOption.bLoHiCase		) szOpt += 'L';	// 英大文字と英小文字を区別する
+	if (cDlgGrep.m_sSearchOption.bRegularExp	) szOpt += 'R';	// 正規表現
+	if (1 == cDlgGrep.m_nGrepOutputLineType     ) szOpt += 'P';	// 行を出力する
+
+	if (auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep); !pDlgGrepReplace) {
+		if (2 == cDlgGrep.m_nGrepOutputLineType ) szOpt += 'N';	// 否ヒット行を出力する 2014.09.23
+	}
+
+	if (cDlgGrep.m_sSearchOption.bWordOnly		) szOpt += 'W';	// 単語単位で探す
+	if (1 == cDlgGrep.m_nGrepOutputStyle		) szOpt += '1';	// Grep: 出力形式
+	if (2 == cDlgGrep.m_nGrepOutputStyle		) szOpt += '2';	// Grep: 出力形式
+	if (3 == cDlgGrep.m_nGrepOutputStyle		) szOpt += '3';
+	if (cDlgGrep.m_bGrepOutputFileOnly			) szOpt += 'F';
+	if (cDlgGrep.m_bGrepOutputBaseFolder		) szOpt += 'B';
+	if (cDlgGrep.m_bGrepSeparateFolder			) szOpt += 'D';
+
+	if (auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+		if (pDlgGrepReplace->m_bPaste           ) szOpt += 'C';	// クリップボードから貼り付け
+		if (pDlgGrepReplace->m_bBackup          ) szOpt += 'O';	// バックアップ作成
+	}
+
+	if (szOpt.length()) {
 		cCmdLine.AppendString( L" -GOPT=" );
-		cCmdLine.AppendString( pOpt );
+		cCmdLine.AppendString( szOpt );
 	}
 
 	/* 新規編集ウィンドウの追加 ver 0 */
