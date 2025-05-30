@@ -418,23 +418,19 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				break;
 			case CMDLINEOPT_GKEY:	//	GKEY
 				//	前後の""を取り除く
-				m_gi.cmGrepKey.SetString( arg, nArgLen );
-				m_gi.cmGrepKey.Replace( L"\"\"", L"\"" );
+				m_gi.cmGrepKey = std::regex_replace(std::wstring_view(arg, nArgLen).data(), std::wregex(LR"("")"), LR"(")");
 				break;
 			case CMDLINEOPT_GREPR:	//	GREPR
 				//	前後の""を取り除く
-				m_gi.cmGrepRep.SetString( arg, nArgLen );
-				m_gi.cmGrepRep.Replace( L"\"\"", L"\"" );
+				m_gi.cmGrepRep = std::regex_replace(std::wstring_view(arg, nArgLen).data(), std::wregex(LR"("")"), LR"(")");
 				m_gi.bGrepReplace = true;
 				break;
 			case CMDLINEOPT_GFILE:	//	GFILE
 				//	前後の""を取り除く
-				m_gi.cmGrepFile.SetString( arg, nArgLen );
-				m_gi.cmGrepFile.Replace( L"\"\"", L"\"" );
+				m_gi.cmGrepFile = std::regex_replace(std::wstring_view(arg, nArgLen).data(), std::wregex(LR"("")"), LR"(")");
 				break;
 			case CMDLINEOPT_GFOLDER:	//	GFOLDER
-				m_gi.cmGrepFolder.SetString( arg, nArgLen );
-				m_gi.cmGrepFolder.Replace( L"\"\"", L"\"" );
+				m_gi.cmGrepFolder = std::regex_replace(std::wstring_view(arg, nArgLen).data(), std::wregex(LR"("")"), LR"(")");
 				break;
 			case CMDLINEOPT_GOPT:	//	GOPT
 				for( ; *arg != '\0' ; ++arg ){

@@ -294,21 +294,21 @@ bool CNormalProcess::InitializeProcess()
 			pEditWnd->UpdateCaption();
 			
 			//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
-			if( gi.cmGrepKey.GetStringLength() < _MAX_PATH ){
-				CSearchKeywordManager().AddToSearchKeyArr( gi.cmGrepKey.GetStringPtr() );
+			if (const auto pszGrepKey = gi.GetGrepKey(); pszGrepKey && *pszGrepKey && wcslen(pszGrepKey) < _MAX_PATH) {
+				CSearchKeywordManager().AddToSearchKeyArr(pszGrepKey);
 			}
-			if( gi.cmGrepFile.GetStringLength() < MAX_GREP_PATH ){
-				CSearchKeywordManager().AddToGrepFileArr( gi.cmGrepFile.GetStringPtr() );
+			if (const auto pszGrepFile = gi.GetGrepFile(); pszGrepFile && *pszGrepFile && wcslen(pszGrepFile) < MAX_GREP_PATH ){
+				CSearchKeywordManager().AddToGrepFileArr(pszGrepFile);
 			}
-			CNativeW cmemGrepFolder = gi.cmGrepFolder;
-			if( gi.cmGrepFolder.GetStringLength() < MAX_GREP_PATH ){
-				CSearchKeywordManager().AddToGrepFolderArr( gi.cmGrepFolder.GetStringPtr() );
-				// 2013.05.21 指定なしの場合はカレントフォルダーにする
-				if( cmemGrepFolder.GetStringLength() == 0 ){
-					WCHAR szCurDir[_MAX_PATH];
-					::GetCurrentDirectory( _countof(szCurDir), szCurDir );
-					cmemGrepFolder.SetString( szCurDir );
-				}
+			CNativeW cmemGrepFolder(gi.GetGrepFolder());
+			if (cmemGrepFolder.length() && cmemGrepFolder.length() < MAX_GREP_PATH ){
+				CSearchKeywordManager().AddToGrepFolderArr(cmemGrepFolder.c_str());
+			}
+			// 2013.05.21 指定なしの場合はカレントフォルダーにする
+			else if (cmemGrepFolder.empty()){
+				SFilePath szCurDir;
+				GetCurrentDirectoryW(DWORD(std::size(szCurDir)), szCurDir);
+				cmemGrepFolder = szCurDir;
 			}
 			GetDllShareData().m_Common.m_sSearch.m_bGrepSubFolder = gi.bGrepSubFolder;
 			GetDllShareData().m_Common.m_sSearch.m_sSearchOption = gi.sGrepSearchOption;
@@ -324,14 +324,10 @@ bool CNormalProcess::InitializeProcess()
 			
 			//	Oct. 9, 2003 genta コマンドラインからGERPダイアログを表示させた場合に
 			//	引数の設定がBOXに反映されない
-			pEditWnd->m_cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();		/* 検索文字列 */
+			pEditWnd->m_cDlgGrep.m_strText = gi.GetGrepKey();		/* 検索文字列 */
 			pEditWnd->m_cDlgGrep.m_bSetText = true;
-			int nSize = _countof2(pEditWnd->m_cDlgGrep.m_szFile);
-			wcsncpy( pEditWnd->m_cDlgGrep.m_szFile, gi.cmGrepFile.GetStringPtr(), nSize );	/* 検索ファイル */
-			pEditWnd->m_cDlgGrep.m_szFile[nSize-1] = L'\0';
-			nSize = _countof2(pEditWnd->m_cDlgGrep.m_szFolder);
-			wcsncpy( pEditWnd->m_cDlgGrep.m_szFolder, cmemGrepFolder.GetStringPtr(), nSize );	/* 検索フォルダー */
-			pEditWnd->m_cDlgGrep.m_szFolder[nSize-1] = L'\0';
+			pEditWnd->m_cDlgGrep.m_szFile = gi.GetGrepFile();	/* 検索ファイル */
+			pEditWnd->m_cDlgGrep.m_szFolder = cmemGrepFolder.c_str();	/* 検索フォルダー */
 
 			// Feb. 23, 2003 Moca Owner windowが正しく指定されていなかった
 			int nRet = pEditWnd->m_cDlgGrep.DoModal( GetProcessInstance(), pEditWnd->GetHwnd(),  NULL);

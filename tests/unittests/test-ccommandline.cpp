@@ -426,10 +426,10 @@ TEST(CCommandLine, ParseGrepKey)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	EXPECT_EQ(NULL, cCommandLine.GetGrepInfoRef().cmGrepKey.GetStringPtr());
+	EXPECT_FALSE(cCommandLine.GetGrepInfoRef().GetGrepKey());
 #define TESTLOCAL_GREP_KEY L"\\w+"
 	cCommandLine.ParseCommandLine(L"-GKEY=" TESTLOCAL_GREP_KEY, false);
-	ASSERT_STREQ(TESTLOCAL_GREP_KEY, cCommandLine.GetGrepInfoRef().cmGrepKey.GetStringPtr());
+	ASSERT_STREQ(TESTLOCAL_GREP_KEY, cCommandLine.GetGrepInfoRef().GetGrepKey());
 #undef TESTLOCAL_GREP_KEY
 }
 
@@ -442,10 +442,10 @@ TEST(CCommandLine, ParseGrepReplaceKey)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	EXPECT_EQ(NULL, cCommandLine.GetGrepInfoRef().cmGrepRep.GetStringPtr());
+	EXPECT_FALSE(cCommandLine.GetGrepInfoRef().GetGrepRep());
 #define TESTLOCAL_GREP_REPR L"$1。"
 	cCommandLine.ParseCommandLine(L"-GREPR=" TESTLOCAL_GREP_REPR, false);
-	ASSERT_STREQ(TESTLOCAL_GREP_REPR, cCommandLine.GetGrepInfoRef().cmGrepRep.GetStringPtr());
+	ASSERT_STREQ(TESTLOCAL_GREP_REPR, cCommandLine.GetGrepInfoRef().GetGrepRep());
 #undef TESTLOCAL_GREP_REPR
 }
 
@@ -458,10 +458,10 @@ TEST(CCommandLine, ParseGrepFile)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	EXPECT_EQ(NULL, cCommandLine.GetGrepInfoRef().cmGrepFile.GetStringPtr());
+	EXPECT_FALSE(cCommandLine.GetGrepInfoRef().GetGrepFile());
 #define TESTLOCAL_GREP_FILE L"#.git"
 	cCommandLine.ParseCommandLine(L"-GFILE=" TESTLOCAL_GREP_FILE, false);
-	ASSERT_STREQ(TESTLOCAL_GREP_FILE, cCommandLine.GetGrepInfoRef().cmGrepFile.GetStringPtr());
+	ASSERT_STREQ(TESTLOCAL_GREP_FILE, cCommandLine.GetGrepInfoRef().GetGrepFile());
 #undef TESTLOCAL_GREP_FILE
 }
 
@@ -474,10 +474,10 @@ TEST(CCommandLine, ParseGrepFolder)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	EXPECT_EQ(NULL, cCommandLine.GetGrepInfoRef().cmGrepFolder.GetStringPtr());
+	EXPECT_FALSE(cCommandLine.GetGrepInfoRef().GetGrepFolder());
 #define TESTLOCAL_GREP_FOLDER L"C:\\work\\sakura"
 	cCommandLine.ParseCommandLine(L"-GFOLDER=" TESTLOCAL_GREP_FOLDER, false);
-	ASSERT_STREQ(TESTLOCAL_GREP_FOLDER, cCommandLine.GetGrepInfoRef().cmGrepFolder.GetStringPtr());
+	ASSERT_STREQ(TESTLOCAL_GREP_FOLDER, cCommandLine.GetGrepInfoRef().GetGrepFolder());
 #undef TESTLOCAL_GREP_FOLDER
 }
 
