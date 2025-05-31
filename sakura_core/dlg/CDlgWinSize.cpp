@@ -75,7 +75,7 @@ int CDlgWinSize::DoModal(
 
 /*! 初期化処理
 */
-BOOL CDlgWinSize::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgWinSize::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 
@@ -89,7 +89,7 @@ BOOL CDlgWinSize::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	UpDown_SetRange( GetItemHwnd( IDC_SPIN_WX ), 30000, -30000 );
 	UpDown_SetRange( GetItemHwnd( IDC_SPIN_WY ), 30000, -30000 );
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgWinSize::OnBnClicked( int wID )

@@ -127,7 +127,7 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP_REPLACE, lParam );
 }
 
-BOOL CDlgGrepReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgGrepReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 
@@ -136,7 +136,7 @@ BOOL CDlgGrepReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
 
-	BOOL bRet = CDlgGrep::OnInitDialog( hwndDlg, wParam, lParam );
+	BOOL bRet = CDlgGrep::OnInitDialog(hwndDlg, hWndFocus, lParam);
 	if( !bRet ) return bRet;
 
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT2 ), WM_GETFONT, 0, 0 );

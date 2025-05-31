@@ -330,7 +330,7 @@ int CDlgFileTree::GetDataItem( SFileTreeItem& item )
 	return TRUE;
 }
 
-BOOL CDlgFileTree::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFileTree::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd(hwndDlg);
 	SFileTreeItem item;
@@ -345,7 +345,7 @@ BOOL CDlgFileTree::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	SetDataInit();
 
 	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog(GetHwnd(), wParam, lParam);
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 void CDlgFileTree::SetDataInit()

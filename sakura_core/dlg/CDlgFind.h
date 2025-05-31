@@ -55,7 +55,7 @@ protected:
 	int GetData( void ) override;		/* ダイアログデータの取得 */
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	void SetData( void ) override;		/* ダイアログデータの設定 */
-	BOOL OnInitDialog(HWND hwnd, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwnd, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam ) override;	// 2009.11.29 ryoji

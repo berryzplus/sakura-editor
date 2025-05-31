@@ -47,7 +47,7 @@ protected:
 	*/
 	void SetData( void ) override;	/* ダイアログデータの設定 */
 	int GetData( void ) override;	/* ダイアログデータの取得 */
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
 	BOOL OnNotify(NMHDR* pNMHDR) override;
 	BOOL OnCbnSelChange(HWND hwndCtl, int wID) override;

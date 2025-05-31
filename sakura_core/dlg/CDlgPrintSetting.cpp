@@ -127,7 +127,7 @@ int CDlgPrintSetting::DoModal(
 	return nRet;
 }
 
-BOOL CDlgPrintSetting::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgPrintSetting::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 
@@ -142,7 +142,7 @@ BOOL CDlgPrintSetting::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam 
 	//	::SetTimer( GetHwnd(), IDT_PRINTSETTING, 500, NULL );
 	//UpdatePrintableLineAndColumn();
 
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgPrintSetting::OnDestroy( void )

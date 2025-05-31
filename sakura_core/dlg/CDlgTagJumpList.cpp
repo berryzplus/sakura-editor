@@ -406,7 +406,7 @@ int CDlgTagJumpList::GetData( void )
 	@date 2005.03.31 MIK
 		階層カラムの追加．キーワード指定欄の追加
 */
-BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgTagJumpList::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	HWND		hwndList;
 	LV_COLUMN	col;
@@ -514,7 +514,7 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	SetComboBoxDeleter(hwndKey, &m_cRecentKeyword);
 
 	/* 基底クラスメンバ */
-	CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 	
 	return bRet;
 }

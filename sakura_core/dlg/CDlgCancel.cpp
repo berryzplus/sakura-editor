@@ -68,7 +68,7 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 	return CDialog::DoModeless( hInstance, hwndParent, nDlgTemplete, (LPARAM)NULL, SW_SHOW );
 }
 
-BOOL CDlgCancel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgCancel::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 	HICON	hIcon;
@@ -81,7 +81,7 @@ BOOL CDlgCancel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 
 	/* 基底クラスメンバ */
 //	CreateSizeBox();
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgCancel::OnBnClicked( int wID )

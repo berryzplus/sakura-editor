@@ -320,7 +320,7 @@ int CDlgReplace::GetData( void )
 	}
 }
 
-BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 	//	Jun. 26, 2001 genta
@@ -351,7 +351,7 @@ BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
 
-	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	BOOL bRet = CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 	if( !bRet ) return bRet;
 
 	// フォント設定	2012/11/27 Uchi

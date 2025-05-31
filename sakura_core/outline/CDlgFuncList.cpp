@@ -1684,7 +1684,7 @@ void CDlgFuncList::SetTreeFileSub( HTREEITEM hParent, const WCHAR* pszFile )
 	}
 }
 
-BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFuncList::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	m_bStretching = false;
 	m_bHovering = false;
@@ -1879,7 +1879,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgFuncList::OnBnClicked( int wID )

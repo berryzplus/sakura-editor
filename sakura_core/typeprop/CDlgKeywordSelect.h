@@ -38,7 +38,7 @@ public:
 
 protected:
 
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	int  GetData( void ) override;
 	void SetData( void ) override;

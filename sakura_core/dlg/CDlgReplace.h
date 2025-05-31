@@ -69,7 +69,7 @@ protected:
 	||  実装ヘルパ関数
 	*/
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam ) override;	// 2009.11.29 ryoji

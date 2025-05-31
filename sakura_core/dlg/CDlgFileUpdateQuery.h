@@ -33,7 +33,7 @@ public:
 	, m_bModified( IsModified )
 	{
 	}
-	BOOL OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam ) override;
+	bool    OnInitDialog(HWND hWnd, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnBnClicked( int id ) override;
 
 private:

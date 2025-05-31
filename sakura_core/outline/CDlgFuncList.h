@@ -122,7 +122,7 @@ public:
 	int				m_nOutlineType;		/* アウトライン解析の種別 */
 	bool			m_bEditWndReady;	/* エディタ画面の準備完了 */
 protected:
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnNotify(NMHDR* pNMHDR) override;
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;

@@ -60,7 +60,7 @@ public:
 	void ChangeView(LPARAM pcEditView);/* モードレス時：対象となるビューの変更 */
 
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
-	BOOL OnInitDialog( HWND, WPARAM wParam, LPARAM lParam ) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
 	BOOL OnLbnSelChange( HWND hwndCtl, int wID ) override;

@@ -68,7 +68,7 @@ int CDlgExec::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_EXEC, lParam );
 }
 
-BOOL CDlgExec::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
+bool CDlgExec::OnInitDialog(HWND hwnd, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwnd );
 	
@@ -84,7 +84,7 @@ BOOL CDlgExec::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 		Combo_AddString( hwndCombo, CCodeTypeName(codes[i]).Normal() );
 	}
 
-	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
+	BOOL bRet = CDialog::OnInitDialog(hwnd, hWndFocus, lParam);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_m_szCommand), &m_cRecentCmd);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_CUR_DIR), &m_cRecentCur);
 	return bRet;

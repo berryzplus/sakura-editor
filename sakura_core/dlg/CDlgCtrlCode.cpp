@@ -181,7 +181,7 @@ int CDlgCtrlCode::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgCtrlCode::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgCtrlCode::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	HWND		hwndList;
 	LV_COLUMN	col;
@@ -221,7 +221,7 @@ BOOL CDlgCtrlCode::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	ListView_InsertColumn( hwndList, 3, &col );
 
 	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgCtrlCode::OnBnClicked( int wID )

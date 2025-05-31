@@ -349,7 +349,7 @@ int CDlgFavorite::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFavorite::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	HWND		hwndList;
 	HWND		hwndBaseList;
@@ -465,7 +465,7 @@ BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	TabCtrl_SetCurSel( hwndTab, m_nCurrentTab );
 	//ChangeSlider( m_nCurrentTab );
 
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgFavorite::OnDestroy( void )

@@ -141,7 +141,7 @@ int CDlgAbout::DoModal( HINSTANCE hInstance, HWND hwndParent )
 	@date 2011.04.10 nasukoji	各国語メッセージリソース対応
 	@date 2013.04.07 novice svn revision 情報追加
 */
-BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgAbout::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd( hwndDlg );
 
@@ -244,7 +244,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	//	To Here Dec. 2, 2002 genta
 
 	/* 基底クラスメンバ */
-	(void)CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	(void)CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 
 	// URLウィンドウをサブクラス化する
 	m_UrlUrWnd.SetSubclassWindow( GetItemHwnd( IDC_STATIC_URL_UR ) );

@@ -269,7 +269,7 @@ int CDlgPluginOption::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgPluginOption::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgPluginOption::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	HWND		hwndList;
 	LV_COLUMN	col;
@@ -315,7 +315,7 @@ BOOL CDlgPluginOption::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam 
 	EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_PLUGIN_OPTION_NUM ), 11 );
 
 	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgPluginOption::OnNotify(NMHDR* pNMHDR)

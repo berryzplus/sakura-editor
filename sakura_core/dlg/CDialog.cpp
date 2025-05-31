@@ -43,24 +43,29 @@ INT_PTR CALLBACK MyDialogProc(
 	LPARAM lParam 	// second message parameter
 )
 {
-	CDialog* pCDialog;
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		pCDialog = ( CDialog* )lParam;
-		if( NULL != pCDialog ){
-			return pCDialog->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
-	default:
-		// Modified by KEITA for WIN64 2003.9.6
-		pCDialog = ( CDialog* )::GetWindowLongPtr( hwndDlg, DWLP_USER );
-		if( NULL != pCDialog ){
-			return pCDialog->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
+	// WM_INITDIALOGだけ別処理
+	// lParam にはダイアログ作成関数で指定した this が入っている
+	if (auto pCDialog = (CDialog*)lParam; WM_INITDIALOG == uMsg && pCDialog) {
+		// HWNDをメンバーにセットする
+		pCDialog->_SetHwnd(hwndDlg);
+		// ダイアログにCDialogのインスタンスをセットする
+		SetWindowLongPtrW(hwndDlg, DWLP_USER, lParam);
+
+		// WM_INITDIALOGをディスパッチする
+		const auto ret = pCDialog->DispatchEvent(hwndDlg, uMsg, wParam, lParam);
+
+		// 初期化済みフラグを立てる
+		pCDialog->m_bInited = TRUE;
+
+		return ret;
 	}
+
+	// ダイアログにセットされたCDialogのインスタンスを取り出す
+	if (auto pCDialog = (CDialog*)GetWindowLongPtrW(hwndDlg, DWLP_USER)) {
+		return pCDialog->DispatchEvent(hwndDlg, uMsg, wParam, lParam);
+	}
+
+	return FALSE;
 }
 
 /*!	コンストラクタ
@@ -179,20 +184,11 @@ void CDialog::CloseDialog( INT_PTR nModalRetVal )
 	return;
 }
 
-BOOL CDialog::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDialog::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	m_hWnd = hwndDlg;
-	// Modified by KEITA for WIN64 2003.9.6
-	::SetWindowLongPtr( m_hWnd, DWLP_USER, lParam );
+	// ダイアログフォントを現代風に更新する
+	m_hFontDialog = UpdateDialogFont(hwndDlg);
 
-	m_hFontDialog = UpdateDialogFont( hwndDlg );
-
-	/* ダイアログデータの設定 */
-	SetData();
-
-	SetDialogPosSize();
-
-	m_bInited = TRUE;
 	return TRUE;
 }
 
@@ -417,8 +413,19 @@ void CDialog::CreateSizeBox( void )
 INT_PTR CDialog::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 //	DEBUG_TRACE( L"CDialog::DispatchEvent() uMsg == %xh\n", uMsg );
+
+	// WM_INITDIALOGは特別扱い（他メッセージと戻り値仕様が異なる。）
+	if (WM_INITDIALOG == uMsg) {
+		const auto ret = OnInitDialog(hwndDlg, HWND(wParam), lParam);
+
+		SetData();
+
+		SetDialogPosSize();
+
+		return ret;
+	}
+
 	switch( uMsg ){
-	case WM_INITDIALOG:	return OnInitDialog( hwndDlg, wParam, lParam );
 	case WM_DESTROY:	return OnDestroy();
 	case WM_COMMAND:	return OnCommand( wParam, lParam );
 	case WM_NOTIFY:		return OnNotify( (NMHDR*)lParam );

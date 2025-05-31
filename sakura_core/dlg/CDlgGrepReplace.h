@@ -50,7 +50,7 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
 	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;

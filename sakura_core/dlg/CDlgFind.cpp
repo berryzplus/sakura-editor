@@ -92,9 +92,9 @@ void CDlgFind::ChangeView( LPARAM pcEditView )
 	return;
 }
 
-BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
+bool CDlgFind::OnInitDialog(HWND hwnd, HWND hWndFocus, LPARAM lParam)
 {
-	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
+	BOOL bRet = CDialog::OnInitDialog(hwnd, hWndFocus, lParam);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 
 	// フォント設定	2012/11/27 Uchi

@@ -20,13 +20,13 @@
 #include "sakura_rc.h"
 #include "String_define.h"
 
-BOOL CDlgFileUpdateQuery::OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam )
+bool CDlgFileUpdateQuery::OnInitDialog(HWND hWnd, HWND hWndFocus, LPARAM lParam)
 {
 	::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
 	::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ?
 		LS(STR_ERR_DLGUPQRY1):LS(STR_ERR_DLGUPQRY2) );
 
-	return CDialog::OnInitDialog( hWnd, wParam, lParam );
+	return CDialog::OnInitDialog(hWnd, hWndFocus, lParam);
 }
 
 /*!

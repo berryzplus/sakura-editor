@@ -43,7 +43,7 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
-	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool    OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL	OnBnClicked(int wID) override;
 	BOOL	OnCbnSelChange(HWND hwndCtl, int wID) override;
 	LPVOID	GetHelpIdTable( void ) override;

@@ -190,7 +190,7 @@ INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARA
 	return result;
 }
 
-BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+bool CDlgWindowList::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	_SetHwnd(hwndDlg);
 
@@ -233,7 +233,7 @@ BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 
 	::SetForegroundWindow(hwndDlg);
 	::BringWindowToTop(hwndDlg);
-	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
+	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 
 BOOL CDlgWindowList::OnDestroy( void )
