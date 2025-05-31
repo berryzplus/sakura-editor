@@ -42,24 +42,23 @@ public:
 	CNativeW GetPackedGFileString() const;	//!< 除外ファイル、除外フォルダーの設定を "-GFILE=" の設定に pack する
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
 	int DoModal( HINSTANCE, HWND, const WCHAR* );	/* モーダルダイアログの表示 */
-//	HWND DoModeless( HINSTANCE, HWND, const char* );	/* モードレスダイアログの表示 */
 
-	bool		m_bEnableThisText;
-	bool		m_bSelectOnceThisText;
-	BOOL		m_bSubFolder;/*!< サブフォルダーからも検索する */
-	BOOL		m_bFromThisText;/*!< この編集中のテキストから検索する */
+	bool		m_bEnableThisText = true;
+	bool		m_bSelectOnceThisText = false;
+	bool		m_bSubFolder = false;/*!< サブフォルダーからも検索する */
+	bool		m_bFromThisText = false;/*!< この編集中のテキストから検索する */
 
 	SSearchOption	m_sSearchOption;	//!< 検索オプション
 
-	ECodeType	m_nGrepCharSet;			/*!< 文字コードセット */
-	int			m_nGrepOutputStyle;		/*!< Grep: 出力形式 */
-	int			m_nGrepOutputLineType;		//!< 結果出力：行を出力/該当部分/否マッチ行
-	bool		m_bGrepOutputFileOnly;		/*!< ファイル毎最初のみ検索 */
-	bool		m_bGrepOutputBaseFolder;	/*!< ベースフォルダー表示 */
-	bool		m_bGrepSeparateFolder;		/*!< フォルダー毎に表示 */
+	ECodeType	m_nGrepCharSet = CODE_SJIS;			/*!< 文字コードセット */
+	int			m_nGrepOutputStyle = 1;		/*!< Grep: 出力形式 */
+	int			m_nGrepOutputLineType = 1;		//!< 結果出力：行を出力/該当部分/否マッチ行
+	bool		m_bGrepOutputFileOnly = false;		/*!< ファイル毎最初のみ検索 */
+	bool		m_bGrepOutputBaseFolder = false;	/*!< ベースフォルダー表示 */
+	bool		m_bGrepSeparateFolder = false;		/*!< フォルダー毎に表示 */
 
 	std::wstring	m_strText;				/*!< 検索文字列 */
-	bool			m_bSetText;				//!< 検索文字列を設定したか
+	bool			m_bSetText = false;		//!< 検索文字列を設定したか
 	SFilePathLong	m_szFile;				//!< 検索ファイル
 	SFilePathLong	m_szFolder;				//!< 検索フォルダー
 	SFilePathLong	m_szExcludeFile;		//!< 除外ファイル
@@ -87,4 +86,5 @@ protected:
 	void SetDataFromThisText(bool bChecked);	/* 現在編集中ファイルから検索チェックでの設定 */
 	static LRESULT CALLBACK OnFolderProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 };
+
 #endif /* SAKURA_CDLGGREP_01A0D5CB_326B_4C56_A527_C811F84FD8D8_H_ */

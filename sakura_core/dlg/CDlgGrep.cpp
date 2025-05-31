@@ -73,28 +73,6 @@ const DWORD p_helpids[] = {	//12000
 
 static void SetGrepFolder( HWND hwndCtrl, LPCWSTR folder );
 
-CDlgGrep::CDlgGrep()
-{
-	m_bEnableThisText = true;
-	m_bSelectOnceThisText = false;
-	m_bSubFolder = FALSE;				// サブフォルダーからも検索する
-	m_bFromThisText = FALSE;			// この編集中のテキストから検索する
-	m_sSearchOption.Reset();			// 検索オプション
-	m_nGrepCharSet = CODE_SJIS;			// 文字コードセット
-	m_nGrepOutputLineType = 1;			// 行を出力/該当部分/否マッチ行 を出力
-	m_nGrepOutputStyle = 1;				// Grep: 出力形式
-	m_bGrepOutputFileOnly = false;
-	m_bGrepOutputBaseFolder = false;
-	m_bGrepSeparateFolder = false;
-
-	m_bSetText = false;
-	m_szFile[0] = 0;
-	m_szFolder[0] = 0;
-	m_szExcludeFile[0] = 0;
-	m_szExcludeFolder[0] = 0;
-	return;
-}
-
 /*
 	@brief ファイル/フォルダーの除外パターンをエスケープする必要があるか判断する
 	@param[in]     pattern チェックするパターン

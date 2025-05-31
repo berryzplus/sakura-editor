@@ -31,13 +31,14 @@ public:
 	||  Constructors
 	*/
 	CDlgGrepReplace();
+
 	/*
 	||  Attributes & Operations
 	*/
 	int DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath, LPARAM lParam );	/* モーダルダイアログの表示 */
 
-	bool		m_bPaste;
-	bool		m_bBackup;
+	bool		m_bPaste = false;
+	bool		m_bBackup = false;
 
 	std::wstring	m_strText2;				//!< 置換後
 	int				m_nReplaceKeySequence;	//!< 置換後シーケンス
