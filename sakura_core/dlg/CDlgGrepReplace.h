@@ -35,13 +35,12 @@ public:
 	/*
 	||  Attributes & Operations
 	*/
-	int DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath, LPARAM lParam );	/* モーダルダイアログの表示 */
+	int DoModal(HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath);
 
 	bool		m_bPaste = false;
 	bool		m_bBackup = false;
 
-	std::wstring	m_strText2;				//!< 置換後
-	int				m_nReplaceKeySequence;	//!< 置換後シーケンス
+	std::wstring	m_strText2;					//!< 置換後
 
 protected:
 	CRecentReplace			m_cRecentReplace;

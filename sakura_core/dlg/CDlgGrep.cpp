@@ -217,13 +217,13 @@ BOOL CDlgGrep::OnCbnDropDown( HWND hwndCtl, int wID )
 }
 
 /* モーダルダイアログの表示 */
-int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath )
+int CDlgGrep::DoModal(HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath)
 {
 	if (pszCurrentFilePath) {
 		m_szCurrentFilePath = pszCurrentFilePath;
 	}
 
-	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP, (LPARAM)NULL );
+	return (int)CDialog::DoModal(hInstance, hwndParent, IDD_GREP, NULL);
 }
 
 bool CDlgGrep::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)

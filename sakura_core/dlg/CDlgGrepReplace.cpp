@@ -67,13 +67,13 @@ const DWORD p_helpids[] = {
 };
 
 /* モーダルダイアログの表示 */
-int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath, LPARAM lParam )
+int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath)
 {
 	if (pszCurrentFilePath) {
 		m_szCurrentFilePath = pszCurrentFilePath;
 	}
 
-	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP_REPLACE, lParam );
+	return (int)CDialog::DoModal(hInstance, hwndParent, IDD_GREP_REPLACE, NULL);
 }
 
 bool CDlgGrepReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
@@ -186,7 +186,6 @@ int CDlgGrepReplace::GetData( void )
 	if( m_strText2.size() < _MAX_PATH ){
 		CSearchKeywordManager().AddToReplaceKeyArr( m_strText2.c_str() );
 	}
-	m_nReplaceKeySequence = GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence;
 
 	return TRUE;
 }

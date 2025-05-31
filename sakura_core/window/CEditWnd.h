@@ -140,6 +140,7 @@ public:
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );
+	void    OnFirstIdle(HWND hWnd, int id);	/* 最初のアイドル状態 */
 	void OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);

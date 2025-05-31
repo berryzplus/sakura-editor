@@ -41,7 +41,9 @@ void CViewCommander::Command_GREP_DIALOG( void )
 	}
 
 	/* Grepダイアログの表示 */
-	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath()); !nRet) {
+	const auto hWnd = m_pCommanderView->GetHwnd();
+	const auto& cDocFile = GetDocument()->m_cDocFile;
+	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), hWnd, cDocFile.GetFilePathClass().IsValidPath() ? cDocFile.GetFilePath() : nullptr); !nRet) {
 		return;
 	}
 
@@ -76,13 +78,9 @@ void CViewCommander::Command_GREP_REPLACE_DLG( void )
 		cDlgGrep.m_bSetText = true;
 	}
 
-	if( 0 < GetDllShareData().m_sSearchKeywords.m_aReplaceKeys.size() ){
-		if( cDlgGrep.m_nReplaceKeySequence < GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence ){
-			cDlgGrep.m_strText2 = GetDllShareData().m_sSearchKeywords.m_aReplaceKeys[0];
-		}
-	}
-
-	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), m_pCommanderView->GetHwnd(), GetDocument()->m_cDocFile.GetFilePath(), (LPARAM)m_pCommanderView); !nRet) {
+	const auto hWnd = m_pCommanderView->GetHwnd();
+	const auto& cDocFile = GetDocument()->m_cDocFile;
+	if (const auto nRet = cDlgGrep.DoModal(G_AppInstance(), hWnd, cDocFile.GetFilePathClass().IsValidPath() ? cDocFile.GetFilePath() : nullptr); !nRet) {
 		return;
 	}
 

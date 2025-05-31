@@ -565,6 +565,7 @@ DWORD CGrepAgent::DoGrep(
 	//	2011.12.10 Moca 表示の際に...に切り捨てられるので登録するように
 	wcsncpy_s( CAppMode::getInstance()->m_szGrepKey, _countof(CAppMode::getInstance()->m_szGrepKey), pcmGrepKey->GetStringPtr(), _TRUNCATE );
 	this->m_bGrepMode = true;
+	GetEditWnd().UpdateCaption();
 
 	//	2007.07.22 genta
 	//	バージョン番号取得のため，処理を前の方へ移動した

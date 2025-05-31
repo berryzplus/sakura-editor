@@ -2846,11 +2846,7 @@ LRESULT CEditWnd::OnTimer( WPARAM wParam, LPARAM lParam )
 		OnSysMenuTimer();
 		break;
 	case IDT_FIRST_IDLE:
-		m_cDlgFuncList.m_bEditWndReady = true;	// エディタ画面の準備完了
-		CAppNodeGroupHandle(0).PostMessageToAllEditors( MYWM_FIRST_IDLE, ::GetCurrentProcessId(), 0, NULL );	// プロセスの初回アイドリング通知	// 2008.04.19 ryoji
-		::PostMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), (LPARAM)0 );
-		::KillTimer( m_hWnd, wParam );
-		CNormalProcess::SetSyncEvent();
+		OnFirstIdle(GetHwnd(), int(wParam));
 		break;
 	default:
 		return 1L;
@@ -2901,6 +2897,140 @@ void CEditWnd::OnSysMenuTimer( void ) //by 鬼(2)
 		);
 	}
 	m_IconClicked = icNone;
+}
+
+void CEditWnd::OnFirstIdle(HWND hWnd, int id)
+{
+	m_cDlgFuncList.m_bEditWndReady = true;	// エディタ画面の準備完了
+	const auto processId = GetCurrentProcessId();
+	CAppNodeGroupHandle(0).PostMessageToAllEditors(MYWM_FIRST_IDLE, processId, 0, nullptr);	// プロセスの初回アイドリング通知
+	PostMessageW(m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, WPARAM(processId), NULL);
+	KillTimer(hWnd, id);
+	CNormalProcess::SetSyncEvent();
+
+	auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
+
+	auto fi = CCommandLine::getInstance()->GetEditInfoRef();
+	auto gi = CCommandLine::getInstance()->GetGrepInfoRef();
+
+	const auto bViewMode  = CCommandLine::getInstance()->IsViewMode();
+	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
+	const auto bGrepMode  = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
+	const auto nType      = fi.m_szDocType.empty() ? CTypeConfig(-1) : CDocTypeManager().GetDocumentTypeOfExt(fi.m_szDocType);
+
+	if (bGrepMode && !bGrepDlg) {
+		bGrepDlg = m_cDlgGrep.m_strText.empty() || m_cDlgGrep.m_szFile.empty() || m_cDlgGrep.m_szFolder.empty();
+	}
+
+	if (bDebugMode) {
+		GetDocument()->SetCurDirNotitle();
+
+		// デバッグモニタモードに設定
+		CAppMode::getInstance()->SetDebugModeON();
+		if (!CAppMode::getInstance()->IsDebugMode()) {
+			// デバッグではなくて(無題)
+			CAppNodeManager::getInstance()->GetNoNameNumber(hWnd);
+			UpdateCaption();
+		}
+		// 2004.09.20 naoh アウトプット用タイプ別設定
+		// 文字コードを有効とする Uchi 2008/6/8
+		// 2010.06.16 Moca アウトプットは CCommnadLineで -TYPE=output 扱いとする
+		SetDocumentTypeWhenCreate(fi.m_nCharCode, false, nType);
+		m_cDlgFuncList.Refresh();	// アウトラインを表示する
+	}
+	else if (bGrepDlg) {
+		SetDocumentTypeWhenCreate(fi.m_nCharCode, false, nType);
+		m_cDlgFuncList.Refresh();	// アウトラインを予め表示しておく
+
+		GetActiveView().GetCommander().HandleCommand(F_GREP_DIALOG, true, 0, 0, 0, 0);
+	}
+	else if (bGrepMode) {
+		SetDocumentTypeWhenCreate(fi.m_nCharCode, false, nType);
+		m_cDlgFuncList.Refresh();	// アウトラインを予め表示しておく
+
+		GetActiveView().GetCommander().HandleCommand(F_GREP, true, 0, 0, 0, 0);
+	}
+	else {
+		// 2004.05.13 Moca さらにif分の中から前に移動
+		// ファイル名が与えられなくてもReadOnly指定を有効にするため．
+		if( fi.m_szPath[0] != L'\0' ){
+			//	Mar. 9, 2002 genta 文書タイプ指定
+			OpenDocumentWhenStart(
+				SLoadInfo(
+					fi.m_szPath,
+					fi.m_nCharCode,
+					bViewMode,
+					nType
+				)
+			);
+			// 読み込み中断して「(無題)」になった時（他プロセスからのロックなど）もオプション指定を有効にする
+			// Note. fi.m_nCharCode で文字コードが明示指定されていても、読み込み中断しない場合は別の文字コードが選択されることがある。
+			//       以前は「(無題)」にならない場合でも無条件に SetDocumentTypeWhenCreate() を呼んでいたが、
+			//       「前回と異なる文字コード」の問い合わせで前回の文字コードが選択された場合におかしくなっていた。
+			if( !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
+				// 読み込み中断して「(無題)」になった
+				// ---> 無効になったオプション指定を有効にする
+				SetDocumentTypeWhenCreate(
+					fi.m_nCharCode,
+					bViewMode,
+					nType
+				);
+			}
+			//	Nov. 6, 2000 genta
+			//	キャレット位置の復元のため
+			//	オプション指定がないときは画面移動を行わないようにする
+			//	Oct. 19, 2001 genta
+			//	未設定＝-1になるようにしたので，安全のため両者が指定されたときだけ
+			//	移動するようにする． || → &&
+			if( ( CLayoutInt(0) <= fi.m_nViewTopLine && CLayoutInt(0) <= fi.m_nViewLeftCol )
+				&& fi.m_nViewTopLine < GetDocument()->m_cLayoutMgr.GetLineCount() ){
+				GetActiveView().GetTextArea().SetViewTopLine( fi.m_nViewTopLine );
+				GetActiveView().GetTextArea().SetViewLeftCol( fi.m_nViewLeftCol );
+			}
+
+			//	オプション指定がないときはカーソル位置設定を行わないようにする
+			//	Oct. 19, 2001 genta
+			//	0も位置としては有効な値なので判定に含めなくてはならない
+			if( 0 <= fi.m_ptCursor.x || 0 <= fi.m_ptCursor.y ){
+				/*
+				  カーソル位置変換
+				  物理位置(行頭からのバイト数、折り返し無し行位置)
+				  →
+				  レイアウト位置(行頭からの表示桁位置、折り返しあり行位置)
+				*/
+				CLayoutPoint ptPos;
+				GetDocument()->m_cLayoutMgr.LogicToLayout(
+					fi.m_ptCursor,
+					&ptPos
+				);
+
+				// From Here Mar. 28, 2003 MIK
+				// 改行の真ん中にカーソルが来ないように。
+				// 2008.08.20 ryoji 改行単位の行番号を渡すように修正
+				const CDocLine *pTmpDocLine = GetDocument()->m_cDocLineMgr.GetLine( fi.m_ptCursor.GetY2() );
+				if( pTmpDocLine ){
+					if( pTmpDocLine->GetLengthWithoutEOL() < fi.m_ptCursor.x ) ptPos.x--;
+				}
+				// To Here Mar. 28, 2003 MIK
+
+				GetActiveView().GetCaret().MoveCursor( ptPos, true );
+				GetActiveView().GetCaret().m_nCaretPosX_Prev =
+					GetActiveView().GetCaret().GetCaretLayoutPos().GetX2();
+			}
+			GetActiveView().RedrawAll();
+		}
+		else{
+			GetDocument()->SetCurDirNotitle();	// (無題)ウィンドウ
+			// 2004.05.13 Moca ファイル名が与えられなくてもReadOnlyとタイプ指定を有効にする
+			SetDocumentTypeWhenCreate(fi.m_nCharCode, bViewMode, nType);
+		}
+
+		if( !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
+			GetDocument()->SetCurDirNotitle();	// (無題)ウィンドウ
+			CAppNodeManager::getInstance()->GetNoNameNumber( GetHwnd() );
+			UpdateCaption();
+		}
+	}
 }
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
