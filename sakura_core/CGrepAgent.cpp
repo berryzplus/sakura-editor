@@ -336,7 +336,9 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 
 DWORD CGrepAgent::DoGrep(
 	CEditView* pcViewDst,
-	CDlgGrep& cDlgGrep		//!< [in] Grepダイアログ
+	CDlgGrep& cDlgGrep,		//!< [in] Grepダイアログ
+	bool bGrepStdout,
+	bool bGrepHeader
 )
 {
 	const auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep);
@@ -384,8 +386,8 @@ DWORD CGrepAgent::DoGrep(
 			&cmWork3,
 			false,
 			cDlgGrep.m_bSubFolder,
-			false, // Stdout
-			true, // Header
+			bGrepStdout,
+			bGrepHeader,
 			cDlgGrep.m_sSearchOption,
 			cDlgGrep.m_nGrepCharSet,
 			cDlgGrep.m_nGrepOutputLineType,
@@ -403,10 +405,8 @@ DWORD CGrepAgent::DoGrep(
 		}
 
 		// コマンドラインからのGrep起動で標準出力モードが指定されている場合、即時終了
-		if (const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg(); !bGrepDlg) {
-			if (const auto gi = CCommandLine::getInstance()->GetGrepInfoRef(); gi.bGrepStdout) {
-				SendMessageW(GetEditWnd().GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
-			}
+		if (bGrepStdout) {
+			SendMessageW(GetEditWnd().GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
 		}
 
 		return ret;

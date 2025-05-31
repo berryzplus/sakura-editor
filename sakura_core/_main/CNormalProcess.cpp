@@ -269,26 +269,13 @@ bool CNormalProcess::InitializeProcess()
 			SetMainWindow( pEditWnd->GetHwnd() );
 			::ReleaseMutex( hMutex );
 			::CloseHandle( hMutex );
-			this->m_pcEditApp->m_pcGrepAgent->DoGrep(
+
+			// Grep実行
+			CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
 				&pEditWnd->GetActiveView(),
-				gi.bGrepReplace,
-				&gi.cmGrepKey,
-				&gi.cmGrepRep,
-				&gi.cmGrepFile,
-				&gi.cmGrepFolder,
-				gi.bGrepCurFolder,
-				gi.bGrepSubFolder,
+				pEditWnd->m_cDlgGrep,
 				gi.bGrepStdout,
-				gi.bGrepHeader,
-				gi.sGrepSearchOption,
-				gi.nGrepCharSet,	//	2002/09/21 Moca
-				gi.nGrepOutputLineType,
-				gi.nGrepOutputStyle,
-				gi.bGrepOutputFileOnly,
-				gi.bGrepOutputBaseFolder,
-				gi.bGrepSeparateFolder,
-				gi.bGrepPaste,
-				gi.bGrepBackup
+				gi.bGrepHeader
 			);
 			pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
 		}
