@@ -344,9 +344,11 @@ bool CNormalProcess::InitializeProcess()
 			pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
 		}
 
+		// これたぶんおかしい。
 		//プラグイン：EditorStartイベント実行
 		CJackManager::getInstance()->InvokePlugins( PP_EDITOR_START, &pEditWnd->GetActiveView() );
 
+		// これもたぶんおかしい。
 		//プラグイン：DocumentOpenイベント実行
 		CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
 
