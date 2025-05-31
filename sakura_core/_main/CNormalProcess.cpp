@@ -476,14 +476,12 @@ bool CNormalProcess::InitializeProcess()
 		pEditWnd->GetDocument()->RunAutoMacro( GetDllShareData().m_Common.m_sMacro.m_nMacroOnOpened );
 
 	// 起動時マクロオプション
-	LPCWSTR pszMacro = CCommandLine::getInstance()->GetMacro();
-	if( pEditWnd->GetHwnd()  &&  pszMacro  &&  pszMacro[0] != L'\0' ){
-		LPCWSTR pszMacroType = CCommandLine::getInstance()->GetMacroType();
-		if( pszMacroType == NULL || pszMacroType[0] == L'\0' || _wcsicmp(pszMacroType, L"file") == 0 ){
-			pszMacroType = NULL;
+	if (const auto pszMacro = CCommandLine::getInstance()->GetMacro(); pszMacro && *pszMacro && pEditWnd->GetHwnd()) {
+		auto pszMacroType = CCommandLine::getInstance()->GetMacroType();
+		if (!pszMacroType || !*pszMacroType || 0 == _wcsicmp(pszMacroType, L"file")) {
+			pszMacroType = nullptr;
 		}
-		CEditView& view = pEditWnd->GetActiveView();
-		view.GetCommander().HandleCommand( F_EXECEXTMACRO, true, (LPARAM)pszMacro, (LPARAM)pszMacroType, 0, 0 );
+		pEditWnd->GetActiveView().GetCommander().HandleCommand(F_EXECEXTMACRO, true, LPARAM(pszMacro), LPARAM(pszMacroType), 0, 0);
 	}
 
 	//プラグイン：DocumentOpenイベント実行
