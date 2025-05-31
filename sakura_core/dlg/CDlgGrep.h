@@ -35,7 +35,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	CDlgGrep();
+	CDlgGrep() = default;
 	/*
 	||  Attributes & Operations
 	*/
