@@ -47,7 +47,7 @@ protected:
 protected:
 	//実装補助
 	HANDLE _GetInitializeMutex() const; // 2002/2/8 aroka
-	void OpenFiles(HWND hwnd);
+	bool    OpenFiles(EditInfo& fi, const std::vector<std::wstring>& files) const;
 
 private:
 	CEditApp*	m_pcEditApp = nullptr;

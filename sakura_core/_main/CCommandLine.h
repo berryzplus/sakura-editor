@@ -92,9 +92,7 @@ public:
 	LPCWSTR GetDocType() const noexcept { return m_fi.m_szDocType; }
 	ECodeType GetDocCode() const noexcept { return m_fi.m_nCharCode; }
 
-	int GetFileNum(void) const noexcept { return static_cast<int>(m_vFiles.size()); }
-	const WCHAR* GetFileName(int i) const noexcept { return i < GetFileNum() ? m_vFiles[i].c_str() : NULL; }
-	void ClearFile(void) noexcept { m_vFiles.clear(); }
+	const std::vector<std::wstring>& GetFiles() const noexcept { return m_vFiles; }
 
 	void ParseKanjiCodeFromFileName( LPWSTR pszExeFileName, int cchExeFileName );
 	void ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse = true );

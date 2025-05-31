@@ -151,11 +151,18 @@ bool CNormalProcess::InitializeProcess()
 	bool			bGrepMode;
 	bool			bGrepDlg;
 	GrepInfo		gi;
-	EditInfo		fi;
 	
+	auto fi = CCommandLine::getInstance()->GetEditInfoRef();
+
+	// 複数ファイルの読み込み
+	if (OpenFiles(fi, CCommandLine::getInstance()->GetFiles())) {
+		::ReleaseMutex( hMutex );
+		::CloseHandle( hMutex );
+		return false;
+	}
+
 	/* コマンドラインで受け取ったファイルが開かれている場合は */
 	/* その編集ウィンドウをアクティブにする */
-	CCommandLine::getInstance()->GetEditInfo(&fi); // 2002/2/8 aroka ここに移動
 	if( fi.m_szPath[0] != L'\0' ){
 		//	Oct. 27, 2000 genta
 		//	MRUからカーソル位置を復元する操作はCEditDoc::FileLoadで
@@ -186,9 +193,6 @@ bool CNormalProcess::InitializeProcess()
 			::CloseHandle( hMutex );
 
 			SetSyncEvent();
-
-			// 複数ファイル読み込み
-			OpenFiles( hwndOwner );
 
 			return false;
 		}
@@ -483,9 +487,6 @@ bool CNormalProcess::InitializeProcess()
 	//プラグイン：DocumentOpenイベント実行
 	CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
 
-	// 複数ファイル読み込み
-	OpenFiles( pEditWnd->GetHwnd() );
-
 	return pEditWnd->GetHwnd() ? true : false;
 }
 
@@ -555,35 +556,31 @@ HANDLE CNormalProcess::_GetInitializeMutex() const
 }
 
 /*!
-	@brief 複数ファイル読み込み
-
-	@date 2015.03.14 novice 新規作成
-*/
-void CNormalProcess::OpenFiles( HWND hwnd )
+ * @brief 複数ファイル読み込み
+ *
+ * @retval true 複数ファイルを開いた
+ * @retval false ファイルを開かなかった
+ * @date 2015.03.14 novice 新規作成
+ */
+bool CNormalProcess::OpenFiles(EditInfo& fi, const std::vector<std::wstring>& files) const
 {
-	EditInfo fi;
-	CCommandLine::getInstance()->GetEditInfo( &fi );
-	bool bViewMode = CCommandLine::getInstance()->IsViewMode();
-
-	int fileNum = CCommandLine::getInstance()->GetFileNum();
-	if( fileNum > 0 ){
-		int nDropFileNumMax = GetDllShareData().m_Common.m_sFile.m_nDropFileNumMax - 1;
-		// ファイルドロップ数の上限に合わせる
-		if( fileNum > nDropFileNumMax ){
-			fileNum = nDropFileNumMax;
-		}
-
-		int i;
-		for( i = 0; i < fileNum; i++ ){
-			// ファイル名差し替え
-			wcscpy( fi.m_szPath, CCommandLine::getInstance()->GetFileName(i) );
-			bool ret = CControlTray::OpenNewEditor2( GetProcessInstance(), hwnd, &fi, bViewMode );
-			if( ret == false ){
-				break;
-			}
-		}
-
-		// 用済みなので削除
-		CCommandLine::getInstance()->ClearFile();
+	// 2つ目以降のファイルが指定されていない
+	if (files.empty()) {
+		return false;
 	}
+
+	const auto bViewMode = CCommandLine::getInstance()->IsViewMode();
+	if (!CControlTray::OpenNewEditor2(GetProcessInstance(), nullptr, &fi, bViewMode)) {
+		return true;	//ファイルを開いた（一部のファイルオープンに失敗した）
+	}
+
+	for (const auto&file : files) {
+		// ファイル名差し替え
+		fi.m_szPath = file.c_str();
+		if (!CControlTray::OpenNewEditor2(GetProcessInstance(), nullptr, &fi, bViewMode)) {
+			return true;	//ファイルを開いた（一部のファイルオープンに失敗した）
+		}
+	}
+
+	return true;	//すべてのファイルを開いた
 }
