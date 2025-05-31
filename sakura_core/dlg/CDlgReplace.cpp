@@ -322,7 +322,6 @@ int CDlgReplace::GetData( void )
 
 bool CDlgReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
 	//	Jun. 26, 2001 genta
 	//	この位置で正規表現の初期化をする必要はない
 	//	他との一貫性を保つため削除

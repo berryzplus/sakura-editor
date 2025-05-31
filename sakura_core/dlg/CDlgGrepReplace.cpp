@@ -129,8 +129,6 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 
 bool CDlgGrepReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
-
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );
 

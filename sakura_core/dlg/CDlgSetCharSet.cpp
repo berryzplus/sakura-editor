@@ -49,8 +49,6 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 
 bool CDlgSetCharSet::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
-	
 	m_hwndCharSet = GetItemHwnd( IDC_COMBO_CHARSET );	// 文字コードセットコンボボックス
 	m_hwndCheckBOM = GetItemHwnd( IDC_CHECK_BOM );		// BOMチェックボックス
 

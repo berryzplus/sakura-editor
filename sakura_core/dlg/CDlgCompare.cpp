@@ -239,8 +239,6 @@ INT_PTR CDlgCompare::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM 
 
 bool CDlgCompare::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd(hwndDlg);
-
 	CreateSizeBox();
 	CDialog::OnSize();
 	

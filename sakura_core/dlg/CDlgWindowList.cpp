@@ -192,8 +192,6 @@ INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARA
 
 bool CDlgWindowList::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd(hwndDlg);
-
 	CreateSizeBox();
 
 	RECT rc;

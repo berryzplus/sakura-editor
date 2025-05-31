@@ -70,8 +70,6 @@ int CDlgExec::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 
 bool CDlgExec::OnInitDialog(HWND hwnd, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwnd );
-	
 	ECodeType codes[] = { CODE_SJIS, CODE_UNICODE, CODE_UTF8 };
 	HWND hwndCombo;
 	int i;

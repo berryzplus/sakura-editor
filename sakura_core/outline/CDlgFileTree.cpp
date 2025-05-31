@@ -332,7 +332,6 @@ int CDlgFileTree::GetDataItem( SFileTreeItem& item )
 
 bool CDlgFileTree::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd(hwndDlg);
 	SFileTreeItem item;
 
 	EditCtl_LimitText(GetItemHwnd(IDC_EDIT_DEFINI), m_fileTreeSetting.m_szDefaultProjectIni.GetBufferCount() -1);

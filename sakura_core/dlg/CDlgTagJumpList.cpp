@@ -414,9 +414,6 @@ bool CDlgTagJumpList::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 	long		lngStyle;
 	BOOL		bRet;
 
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
-
 	CreateSizeBox();
 	CDialog::OnSize();
 	

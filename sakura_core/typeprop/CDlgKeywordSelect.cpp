@@ -84,8 +84,6 @@ int CDlgKeywordSelect::DoModal( HINSTANCE hInstance, HWND hwndParent, int* pnSet
 */
 bool CDlgKeywordSelect::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
-
 	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 

@@ -70,17 +70,13 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 
 bool CDlgCancel::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
-	HICON	hIcon;
-	hIcon = ::LoadIcon( NULL, IDI_ASTERISK );
-//	hIcon = ::LoadIcon( m_hInstance, MAKEINTRESOURCE( IDI_ICON_GREP ) );
-	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_SMALL, (LPARAM)NULL );
-	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_SMALL, (LPARAM)hIcon );
-	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_BIG, (LPARAM)NULL );
-	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_BIG, (LPARAM)hIcon );
+	const auto hIcon = LoadIconW(nullptr, IDI_ASTERISK);
+	SendMessageW(hwndDlg, WM_SETICON, ICON_SMALL, NULL);
+	SendMessageW(hwndDlg, WM_SETICON, ICON_SMALL, LPARAM(hIcon));
+	SendMessageW(hwndDlg, WM_SETICON, ICON_BIG, NULL);
+	SendMessageW(hwndDlg, WM_SETICON, ICON_BIG, LPARAM(hIcon));
 
 	/* 基底クラスメンバ */
-//	CreateSizeBox();
 	return CDialog::OnInitDialog(hwndDlg, hWndFocus, lParam);
 }
 

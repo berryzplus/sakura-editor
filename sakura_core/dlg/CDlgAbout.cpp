@@ -143,8 +143,6 @@ int CDlgAbout::DoModal( HINSTANCE hInstance, HWND hwndParent )
 */
 bool CDlgAbout::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	_SetHwnd( hwndDlg );
-
 	WCHAR			szFile[_MAX_PATH];
 
 	/* この実行ファイルの情報 */

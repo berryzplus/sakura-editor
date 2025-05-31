@@ -360,9 +360,6 @@ bool CDlgFavorite::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 	int			nTab;
 	long		lngStyle;
 
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
-
 	::GetWindowRect( hwndDlg, &rc );
 	m_ptDefaultSize.x = rc.right - rc.left;
 	m_ptDefaultSize.y = rc.bottom - rc.top;
