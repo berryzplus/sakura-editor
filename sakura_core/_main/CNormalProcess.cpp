@@ -150,9 +150,9 @@ bool CNormalProcess::InitializeProcess()
 	bool			bDebugMode;
 	bool			bGrepMode;
 	bool			bGrepDlg;
-	GrepInfo		gi;
 	
 	auto fi = CCommandLine::getInstance()->GetEditInfoRef();
+	auto gi = CCommandLine::getInstance()->GetGrepInfoRef();
 
 	// 複数ファイルの読み込み
 	if (OpenFiles(fi, CCommandLine::getInstance()->GetFiles())) {
@@ -261,7 +261,6 @@ bool CNormalProcess::InitializeProcess()
 			::GetClientRect( hEditWnd, &rc );
 			::SendMessageAny( hEditWnd, WM_SIZE, ::IsZoomed( hEditWnd )? SIZE_MAXIMIZED: SIZE_RESTORED, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ) );
 		}
-		CCommandLine::getInstance()->GetGrepInfo(&gi); // 2002/2/8 aroka ここに移動
 		if( !bGrepDlg ){
 			// Grepでは対象パス解析に現在のカレントディレクトリを必要とする
 			// pEditWnd->GetDocument()->SetCurDirNotitle();
@@ -351,11 +350,6 @@ bool CNormalProcess::InitializeProcess()
 		// これもたぶんおかしい。
 		//プラグイン：DocumentOpenイベント実行
 		CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
-
-		if( !bGrepDlg && gi.bGrepStdout ){
-			// 即時終了
-			PostMessageCmd( pEditWnd->GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, (LPARAM)NULL );
-		}
 
 		return true; // 2003.06.23 Moca
 	}

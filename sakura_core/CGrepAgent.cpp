@@ -402,6 +402,13 @@ DWORD CGrepAgent::DoGrep(
 			CJackManager::getInstance()->InvokePlugins(PP_DOCUMENT_OPEN, pcViewDst);
 		}
 
+		// コマンドラインからのGrep起動で標準出力モードが指定されている場合、即時終了
+		if (const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg(); !bGrepDlg) {
+			if (const auto gi = CCommandLine::getInstance()->GetGrepInfoRef(); gi.bGrepStdout) {
+				SendMessageW(GetEditWnd().GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
+			}
+		}
+
 		return ret;
 	}
 	else {
