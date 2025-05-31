@@ -219,6 +219,23 @@ BOOL CDlgGrep::OnCbnDropDown( HWND hwndCtl, int wID )
 /* モーダルダイアログの表示 */
 int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath )
 {
+	if (pszCurrentFilePath) {
+		m_szCurrentFilePath = pszCurrentFilePath;
+	}
+
+	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP, (LPARAM)NULL );
+}
+
+bool CDlgGrep::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
+{
+	// m_strText は呼び出し元で設定済み
+	if (m_szFile.empty() && m_pShareData->m_sSearchKeywords.m_aGrepFiles.size()) {
+		m_szFile = m_pShareData->m_sSearchKeywords.m_aGrepFiles[0];
+	}
+	if (m_szFolder.empty() && m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
+		m_szFolder = m_pShareData->m_sSearchKeywords.m_aGrepFolders[0];
+	}
+	
 	m_bSubFolder = m_pShareData->m_Common.m_sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
 	m_sSearchOption = m_pShareData->m_Common.m_sSearch.m_sSearchOption;		// 検索オプション
 	m_nGrepCharSet = m_pShareData->m_Common.m_sSearch.m_nGrepCharSet;			// 文字コードセット
@@ -228,57 +245,31 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCur
 	m_bGrepOutputBaseFolder = m_pShareData->m_Common.m_sSearch.m_bGrepOutputBaseFolder;
 	m_bGrepSeparateFolder = m_pShareData->m_Common.m_sSearch.m_bGrepSeparateFolder;
 
-	// 2013.05.21 コンストラクタからDoModalに移動
-	// m_strText は呼び出し元で設定済み
-	if( m_szFile[0] == L'\0' && m_pShareData->m_sSearchKeywords.m_aGrepFiles.size() ){
-		wcscpy( m_szFile, m_pShareData->m_sSearchKeywords.m_aGrepFiles[0] );		/* 検索ファイル */
-	}
-	if( m_szFolder[0] == L'\0' && m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
-		wcscpy( m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダー */
-	}
-	
 	/* 除外ファイル */
-	if (m_szExcludeFile[0] == L'\0') {
+	if (m_szExcludeFile.empty()) {
 		if (m_pShareData->m_sSearchKeywords.m_aExcludeFiles.size()) {
-			wcscpy(m_szExcludeFile, m_pShareData->m_sSearchKeywords.m_aExcludeFiles[0]);
+			m_szExcludeFile = m_pShareData->m_sSearchKeywords.m_aExcludeFiles[0];
 		}
 		else {
 			/* ユーザーの利便性向上のために除外ファイルに対して初期値を設定する */
-			wcscpy(m_szExcludeFile, DEFAULT_EXCLUDE_FILE_PATTERN);	/* 除外ファイル */
-
-			/* 履歴に残して後で選択できるようにする */
-			m_pShareData->m_sSearchKeywords.m_aExcludeFiles.push_back(DEFAULT_EXCLUDE_FILE_PATTERN);
+			m_szExcludeFile = DEFAULT_EXCLUDE_FILE_PATTERN;
 		}
 	}
 
 	/* 除外フォルダー */
-	if (m_szExcludeFolder[0] == L'\0') {
+	if (m_szExcludeFolder.empty()) {
 		if (m_pShareData->m_sSearchKeywords.m_aExcludeFolders.size()) {
-			wcscpy(m_szExcludeFolder, m_pShareData->m_sSearchKeywords.m_aExcludeFolders[0]);
+			m_szExcludeFolder = m_pShareData->m_sSearchKeywords.m_aExcludeFolders[0];
 		}
 		else {
 			/* ユーザーの利便性向上のために除外フォルダーに対して初期値を設定する */
-			wcscpy(m_szExcludeFolder, DEFAULT_EXCLUDE_FOLDER_PATTERN);	/* 除外フォルダー */
-			
-			/* 履歴に残して後で選択できるようにする */
-			m_pShareData->m_sSearchKeywords.m_aExcludeFolders.push_back(DEFAULT_EXCLUDE_FOLDER_PATTERN);
+			m_szExcludeFolder = DEFAULT_EXCLUDE_FOLDER_PATTERN;
 		}
 	}
 
-	if( pszCurrentFilePath ){	// 2010.01.10 ryoji
-		wcscpy(m_szCurrentFilePath, pszCurrentFilePath);
-	}
-
-	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP, (LPARAM)NULL );
-}
-
-bool CDlgGrep::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
-{
 	/* カレントフォルダーが初期値 */
-	if((m_szFolder[0] == L'\0' || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder) &&
-		m_szCurrentFilePath[0] != L'\0'
-	){
-		SplitPath_FolderAndFile( m_szCurrentFilePath, m_szFolder, nullptr );
+	if(m_szCurrentFilePath.length() && (m_szFolder.empty() || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder)) {
+		m_szFolder = std::filesystem::path(m_szCurrentFilePath).remove_filename();
 	}
 
 	/* ユーザーがコンボボックスのエディット コントロールに入力できるテキストの長さを制限する */

@@ -30,7 +30,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	CDlgGrepReplace();
+	CDlgGrepReplace() = default;
 
 	/*
 	||  Attributes & Operations

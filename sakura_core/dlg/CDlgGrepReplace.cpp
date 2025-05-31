@@ -66,62 +66,11 @@ const DWORD p_helpids[] = {
 	0, 0
 };
 
-CDlgGrepReplace::CDlgGrepReplace()
-{
-	if( 0 < m_pShareData->m_sSearchKeywords.m_aReplaceKeys.size() ){
-		m_strText2 = m_pShareData->m_sSearchKeywords.m_aReplaceKeys[0];
-	}
-	return;
-}
-
 /* モーダルダイアログの表示 */
 int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCurrentFilePath, LPARAM lParam )
 {
-	m_bSubFolder = m_pShareData->m_Common.m_sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
-	m_sSearchOption = m_pShareData->m_Common.m_sSearch.m_sSearchOption;		// 検索オプション
-	m_nGrepCharSet = m_pShareData->m_Common.m_sSearch.m_nGrepCharSet;			// 文字コードセット
-	m_nGrepOutputLineType = m_pShareData->m_Common.m_sSearch.m_nGrepOutputLineType;	// 行を出力するか該当部分だけ出力するか
-	m_nGrepOutputStyle = m_pShareData->m_Common.m_sSearch.m_nGrepOutputStyle;	// Grep: 出力形式
-	m_bPaste = false;
-	m_bBackup = m_pShareData->m_Common.m_sSearch.m_bGrepBackup;
-
-	if( m_szFile[0] == L'\0' && m_pShareData->m_sSearchKeywords.m_aGrepFiles.size() ){
-		wcscpy( m_szFile, m_pShareData->m_sSearchKeywords.m_aGrepFiles[0] );		/* 検索ファイル */
-	}
-	if( m_szFolder[0] == L'\0' && m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
-		wcscpy( m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダー */
-	}
-	
-	/* 除外ファイル */
-	if (m_szExcludeFile[0] == L'\0') {
-		if (m_pShareData->m_sSearchKeywords.m_aExcludeFiles.size()) {
-			wcscpy(m_szExcludeFile, m_pShareData->m_sSearchKeywords.m_aExcludeFiles[0]);
-		}
-		else {
-			/* ユーザーの利便性向上のために除外ファイルに対して初期値を設定する */
-			wcscpy(m_szExcludeFile, DEFAULT_EXCLUDE_FILE_PATTERN);	/* 除外ファイル */
-
-			/* 履歴に残して後で選択できるようにする */
-			m_pShareData->m_sSearchKeywords.m_aExcludeFiles.push_back(DEFAULT_EXCLUDE_FILE_PATTERN);
-		}
-	}
-
-	/* 除外フォルダー */
-	if (m_szExcludeFolder[0] == L'\0') {
-		if (m_pShareData->m_sSearchKeywords.m_aExcludeFolders.size()) {
-			wcscpy(m_szExcludeFolder, m_pShareData->m_sSearchKeywords.m_aExcludeFolders[0]);
-		}
-		else {
-			/* ユーザーの利便性向上のために除外フォルダーに対して初期値を設定する */
-			wcscpy(m_szExcludeFolder, DEFAULT_EXCLUDE_FOLDER_PATTERN);	/* 除外フォルダー */
-			
-			/* 履歴に残して後で選択できるようにする */
-			m_pShareData->m_sSearchKeywords.m_aExcludeFolders.push_back(DEFAULT_EXCLUDE_FOLDER_PATTERN);
-		}
-	}
-
-	if( pszCurrentFilePath ){	// 2010.01.10 ryoji
-		wcscpy(m_szCurrentFilePath, pszCurrentFilePath);
+	if (pszCurrentFilePath) {
+		m_szCurrentFilePath = pszCurrentFilePath;
 	}
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP_REPLACE, lParam );
@@ -129,19 +78,25 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 
 bool CDlgGrepReplace::OnInitDialog(HWND hwndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto ret = CDlgGrep::OnInitDialog(hwndDlg, hWndFocus, lParam);
+
+	m_bPaste = false;
+	m_bBackup = m_pShareData->m_Common.m_sSearch.m_bGrepBackup;
+
+	if( 0 < m_pShareData->m_sSearchKeywords.m_aReplaceKeys.size() ){
+		m_strText2 = m_pShareData->m_sSearchKeywords.m_aReplaceKeys[0];
+	}
+
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
 
-	BOOL bRet = CDlgGrep::OnInitDialog(hwndDlg, hWndFocus, lParam);
-	if( !bRet ) return bRet;
-
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT2 ), WM_GETFONT, 0, 0 );
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT2 ) );
 	m_cFontText2.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT2 ) );
 
-	return bRet;
+	return ret;
 }
 
 BOOL CDlgGrepReplace::OnCbnDropDown( HWND hwndCtl, int wID )
