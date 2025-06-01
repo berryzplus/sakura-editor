@@ -56,6 +56,8 @@ class CDropTarget;
 class CPlug;
 class CEditDoc;
 struct DLLSHAREDATA;
+class CMruListener;
+class CPropertyManager;
 
 //メインウィンドウ内コントロールID
 #define IDT_EDIT		455  // 20060128 aroka
@@ -81,6 +83,10 @@ class CEditWnd
 : public TSingleton<CEditWnd>
 , public CDocListenerEx
 {
+
+	using CMruListenerHolder = std::unique_ptr<CMruListener>;
+	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
+
 	friend class TSingleton<CEditWnd>;
 	CEditWnd();
 	~CEditWnd();
@@ -401,6 +407,9 @@ private:
 
 public:
 	ESelectCountMode	m_nSelectCountMode; // 選択文字カウント方法
+
+	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
+	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
 };
 
 CEditWnd& GetEditWnd( void );

@@ -11,7 +11,6 @@
 #include "doc/CEditDoc.h"
 #include "window/CEditWnd.h"
 #include "uiparts/CVisualProgress.h"
-#include "recent/CMruListener.h"
 #include "macro/CSMacroMgr.h"
 #include "CPropertyManager.h"
 #include "CGrepAgent.h"
@@ -48,24 +47,11 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 	//ウィンドウの作成
 	m_pcEditWnd = CEditWnd::getInstance();
 	m_pcEditWnd->Create( &*m_pcEditDoc, &m_cIcons, nGroupId );
-
-	//MRU管理
-	m_pcMruListener = new CMruListener();
-
-	//プロパティ管理
-	m_pcPropertyManager = new CPropertyManager();
-	m_pcPropertyManager->Create(
-		m_pcEditWnd->GetHwnd(),
-		&GetIcons(),
-		&m_pcEditWnd->GetMenuDrawer()
-	);
 }
 
 CEditApp::~CEditApp()
 {
 	delete m_pcSMacroMgr;
-	delete m_pcPropertyManager;
-	delete m_pcMruListener;
 	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
 }
@@ -74,7 +60,7 @@ CEditApp::~CEditApp()
 bool CEditApp::OpenPropertySheet( int nPageNum )
 {
 	/* プロパティシートの作成 */
-	bool bRet = m_pcPropertyManager->OpenPropertySheet( m_pcEditWnd->GetHwnd(), nPageNum, false );
+	bool bRet = m_pcEditWnd->m_pcPropertyManager->OpenPropertySheet( m_pcEditWnd->GetHwnd(), nPageNum, false );
 	if( bRet ){
 		// 2007.10.19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
 		m_pcSMacroMgr->UnloadAll();
@@ -86,7 +72,7 @@ bool CEditApp::OpenPropertySheet( int nPageNum )
 /*! タイプ別設定 プロパティシート */
 bool CEditApp::OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType )
 {
-	bool bRet = m_pcPropertyManager->OpenPropertySheetTypes( m_pcEditWnd->GetHwnd(), nPageNum, nSettingType );
+	bool bRet = m_pcEditWnd->m_pcPropertyManager->OpenPropertySheetTypes( m_pcEditWnd->GetHwnd(), nPageNum, nSettingType );
 
 	return bRet;
 }

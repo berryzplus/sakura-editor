@@ -63,6 +63,8 @@
 #include "recent/CRecentFolder.h"
 
 #include "_main/CNormalProcess.h"
+#include "recent/CMruListener.h"
+#include "CPropertyManager.h"
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
 //	定義を削除
@@ -397,6 +399,15 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 		G_AppInstance(),		// handle to application instance
 		NULL				// pointer to window-creation data
 	);
+
+	if (hwndResult) {
+		m_pcPropertyManager->Create(
+			hwndResult,
+			&CEditApp::getInstance()->GetIcons(),
+			&m_cMenuDrawer
+		);
+	}
+
 	return hwndResult;
 }
 
