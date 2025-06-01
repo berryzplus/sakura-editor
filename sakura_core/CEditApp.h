@@ -46,6 +46,8 @@ public:
 	bool OpenPropertySheet( int nPageNum );
 	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );
 
+	bool    IsGrepRunning() const noexcept;
+
 public:
 	HINSTANCE			m_hInst;
 

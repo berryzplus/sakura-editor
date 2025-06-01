@@ -52,6 +52,11 @@ CEditApp::~CEditApp()
 	delete m_pcVisualProgress;
 }
 
+bool CEditApp::IsGrepRunning() const noexcept
+{
+	return m_pcGrepAgent && m_pcGrepAgent->m_bGrepRunning;
+}
+
 /*! 共通設定 プロパティシート */
 bool CEditApp::OpenPropertySheet( int nPageNum )
 {
