@@ -23,9 +23,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 {
 	m_hInst = hInst;
 
-	//ヘルパ作成
-	m_cIcons.Create( m_hInst );	//	CreateImage List
-
 	//ドキュメントの作成
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
@@ -46,7 +43,7 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 
 	//ウィンドウの作成
 	m_pcEditWnd = CEditWnd::getInstance();
-	m_pcEditWnd->Create( &*m_pcEditDoc, &m_cIcons, nGroupId );
+	m_pcEditWnd->Create(nGroupId);
 }
 
 CEditApp::~CEditApp()

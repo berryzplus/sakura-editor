@@ -45,6 +45,7 @@
 #include "util/design_template.h"
 #include "doc/CDocListener.h"
 #include "uiparts/CMenuDrawer.h"
+#include "uiparts/CImageListMgr.h"
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 
@@ -99,8 +100,6 @@ public:
 	// 2007.06.26 ryoji グループ指定引数追加
 	//! 作成
 	HWND Create(
-		CEditDoc*		pcEditDoc,
-		CImageListMgr*	pcIcons,
 		int				nGroup
 	);
 	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
@@ -376,6 +375,7 @@ private:
 
 	//ヘルパ
 	CMenuDrawer		m_cMenuDrawer;
+	CImageListMgr	m_hIcons;			//!< 独自イメージリスト
 
 	//状態
 	bool			m_bIsActiveApp;		//!< 自アプリがアクティブかどうか	// 2007.03.08 ryoji

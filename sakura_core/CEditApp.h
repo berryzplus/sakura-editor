@@ -15,7 +15,6 @@
 
 #include "util/design_template.h"
 #include "uiparts/CSoundSet.h"
-#include "uiparts/CImageListMgr.h"
 #include "types/CType.h"
 
 class CEditWnd;
@@ -43,7 +42,6 @@ public:
 	CEditWnd* GetEditWindow(){ return m_pcEditWnd; }		//!< ウィンドウ取得
 
 	CEditDoc*		GetDocument(){ return m_pcEditDoc.get(); }
-	CImageListMgr&	GetIcons(){ return m_cIcons; }
 
 	bool OpenPropertySheet( int nPageNum );
 	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );
@@ -65,9 +63,6 @@ public:
 
 	CGrepAgent*			m_pcGrepAgent;			//GREPモード
 	CSoundSet			m_cSoundSet;			//サウンド管理
-
-	//GUIオブジェクト
-	CImageListMgr		m_cIcons;					//!< Image List
 };
 
 //WM_QUIT検出例外

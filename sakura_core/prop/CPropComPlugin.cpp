@@ -16,6 +16,7 @@
 #include "CEditApp.h"
 #include "plugin/CJackManager.h"
 #include "uiparts/CMenuDrawer.h"
+#include "uiparts/CImageListMgr.h"
 #include "util/shell.h"
 #include "dlg/CDlgOpenFile.h"
 #include "dlg/CDlgPluginOption.h"	// 2010/3/22 Uchi

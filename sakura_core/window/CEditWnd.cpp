@@ -403,7 +403,7 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 	if (hwndResult) {
 		m_pcPropertyManager->Create(
 			hwndResult,
-			&CEditApp::getInstance()->GetIcons(),
+			&m_hIcons,
 			&m_cMenuDrawer
 		);
 	}
@@ -586,8 +586,6 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 	@date 2008.04.19 ryoji 初回アイドリング検出用ゼロ秒タイマーのセット処理を追加
 */
 HWND CEditWnd::Create(
-	CEditDoc*		pcEditDoc,
-	CImageListMgr*	pcIcons,	//!< [in] Image List
 	int				nGroup		//!< [in] グループID
 )
 {
@@ -596,7 +594,9 @@ HWND CEditWnd::Create(
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
 
-	m_pcEditDoc = pcEditDoc;
+	m_pcEditDoc = CEditDoc::getInstance();
+
+	m_hIcons.Create(G_AppInstance());
 
 	m_pcEditDoc->m_cLayoutMgr.SetLayoutInfo( true, false, m_pcEditDoc->m_cDocType.GetDocumentAttribute(),
 		m_pcEditDoc->m_cLayoutMgr.GetTabSpaceKetas(), m_pcEditDoc->m_cLayoutMgr.m_tsvInfo.m_nTsvMode,
@@ -661,8 +661,8 @@ HWND CEditWnd::Create(
 	MyInitCommonControls();
 
 	//イメージ、ヘルパなどの作成
-	m_cMenuDrawer.Create( G_AppInstance(), GetHwnd(), pcIcons );
-	m_cToolbar.Create( pcIcons );
+	m_cMenuDrawer.Create(G_AppInstance(), GetHwnd(), &m_hIcons);
+	m_cToolbar.Create(&m_hIcons);
 
 	// プラグインコマンドを登録する
 	RegisterPluginCommand();
