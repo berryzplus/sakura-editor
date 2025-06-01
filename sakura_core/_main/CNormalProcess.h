@@ -48,6 +48,7 @@ protected:
 	//実装補助
 	HANDLE _GetInitializeMutex() const; // 2002/2/8 aroka
 	bool    OpenFiles(EditInfo& fi, const std::vector<std::wstring>& files) const;
+	bool    ApplyGrepOptions(CDlgGrep& cDlgGrep) const noexcept;
 
 private:
 	CEditApp*	m_pcEditApp = nullptr;

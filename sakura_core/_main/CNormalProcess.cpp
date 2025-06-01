@@ -219,53 +219,7 @@ bool CNormalProcess::InitializeProcess()
 	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
 	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
 
-	if (bGrepMode) {
-		auto& sSearch = GetDllShareData().m_Common.m_sSearch;
-
-		sSearch.m_bGrepSubFolder        = gi.bGrepSubFolder;
-		sSearch.m_sSearchOption         = gi.sGrepSearchOption;
-		sSearch.m_nGrepCharSet          = gi.nGrepCharSet;
-		sSearch.m_nGrepOutputLineType   = gi.nGrepOutputLineType;
-		sSearch.m_nGrepOutputStyle      = gi.nGrepOutputStyle;
-		sSearch.m_bGrepOutputFileOnly   = gi.bGrepOutputFileOnly;
-		sSearch.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
-		sSearch.m_bGrepSeparateFolder   = gi.bGrepSeparateFolder;
-
-		auto& cDlgGrep = pEditWnd->m_cDlgGrep;
-		auto& sSearchKeywords = GetDllShareData().m_sSearchKeywords;
-
-		if (const auto pszGrepKey = gi.GetGrepKey(); pszGrepKey && *pszGrepKey && wcslen(pszGrepKey) < _MAX_PATH) {
-			cDlgGrep.m_strText = pszGrepKey;
-			cDlgGrep.m_bSetText = true;
-		}
-
-		if (const auto pszGrepFile = gi.GetGrepFile(); pszGrepFile && *pszGrepFile && wcslen(pszGrepFile) <= MAX_GREP_PATH) {
-			cDlgGrep.m_szFile = pszGrepFile;
-		}
-		else if (!bGrepDlg && !pszGrepFile && sSearchKeywords.m_aGrepFiles.size()) {
-			cDlgGrep.m_szFile = sSearchKeywords.m_aGrepFiles[0];
-		}
-
-		if (const auto pszGrepFolder = gi.GetGrepFolder(); pszGrepFolder && *pszGrepFolder && wcslen(pszGrepFolder) <= MAX_GREP_PATH) {
-			cDlgGrep.m_szFolder = pszGrepFolder;
-		}
-		else if (!bGrepDlg && !pszGrepFolder && sSearchKeywords.m_aGrepFolders.size()) {
-			cDlgGrep.m_szFolder = sSearchKeywords.m_aGrepFolders[0];
-		}
-
-		cDlgGrep.m_bSubFolder            = sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
-		cDlgGrep.m_sSearchOption         = sSearch.m_sSearchOption;				// 検索オプション
-		cDlgGrep.m_nGrepCharSet          = sSearch.m_nGrepCharSet;				// 文字コードセット
-		cDlgGrep.m_nGrepOutputLineType   = sSearch.m_nGrepOutputLineType;		// 行を出力/該当部分/否マッチ行 を出力
-		cDlgGrep.m_nGrepOutputStyle      = sSearch.m_nGrepOutputStyle;			// Grep: 出力形式
-		cDlgGrep.m_bGrepOutputFileOnly   = sSearch.m_bGrepOutputFileOnly;
-		cDlgGrep.m_bGrepOutputBaseFolder = sSearch.m_bGrepOutputBaseFolder;
-		cDlgGrep.m_bGrepSeparateFolder   = sSearch.m_bGrepSeparateFolder;
-
-		if (!bGrepDlg) {
-			bGrepDlg = cDlgGrep.m_strText.empty() || cDlgGrep.m_szFile.empty() || cDlgGrep.m_szFolder.empty();
-		}
-	}
+	bGrepDlg = ApplyGrepOptions(pEditWnd->m_cDlgGrep);
 
 	ReleaseMutex(hMutex);
 	CloseHandle(hMutex);
@@ -423,4 +377,68 @@ bool CNormalProcess::OpenFiles(EditInfo& fi, const std::vector<std::wstring>& fi
 	}
 
 	return true;	//すべてのファイルを開いた
+}
+
+/*!
+ * @brief Grepオプションをダイアログに適用する
+ *
+ * @param cDlgGrep Grepダイアログ
+ * @return true:  Grepダイアログを表示する必要がある
+ * @return false: Grepダイアログを表示する必要はない
+ */
+bool CNormalProcess::ApplyGrepOptions(CDlgGrep& cDlgGrep) const noexcept {
+	auto bGrepDlg         = CCommandLine::getInstance()->IsGrepDlg();
+
+	const auto bGrepMode  = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
+
+	if (bGrepMode) {
+		const auto& gi = CCommandLine::getInstance()->GetGrepInfoRef();
+
+		auto& sSearch = GetDllShareData().m_Common.m_sSearch;
+
+		sSearch.m_bGrepSubFolder        = gi.bGrepSubFolder;
+		sSearch.m_sSearchOption         = gi.sGrepSearchOption;
+		sSearch.m_nGrepCharSet          = gi.nGrepCharSet;
+		sSearch.m_nGrepOutputLineType   = gi.nGrepOutputLineType;
+		sSearch.m_nGrepOutputStyle      = gi.nGrepOutputStyle;
+		sSearch.m_bGrepOutputFileOnly   = gi.bGrepOutputFileOnly;
+		sSearch.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
+		sSearch.m_bGrepSeparateFolder   = gi.bGrepSeparateFolder;
+
+		auto& sSearchKeywords = GetDllShareData().m_sSearchKeywords;
+
+		if (const auto pszGrepKey = gi.GetGrepKey(); pszGrepKey && *pszGrepKey && wcslen(pszGrepKey) < _MAX_PATH) {
+			cDlgGrep.m_strText = pszGrepKey;
+			cDlgGrep.m_bSetText = true;
+		}
+
+		if (const auto pszGrepFile = gi.GetGrepFile(); pszGrepFile && *pszGrepFile && wcslen(pszGrepFile) <= MAX_GREP_PATH) {
+			cDlgGrep.m_szFile = pszGrepFile;
+		}
+		else if (!bGrepDlg && !pszGrepFile && sSearchKeywords.m_aGrepFiles.size()) {
+			cDlgGrep.m_szFile = sSearchKeywords.m_aGrepFiles[0];
+		}
+
+		if (const auto pszGrepFolder = gi.GetGrepFolder(); pszGrepFolder && *pszGrepFolder && wcslen(pszGrepFolder) <= MAX_GREP_PATH) {
+			cDlgGrep.m_szFolder = pszGrepFolder;
+		}
+		else if (!bGrepDlg && !pszGrepFolder && sSearchKeywords.m_aGrepFolders.size()) {
+			cDlgGrep.m_szFolder = sSearchKeywords.m_aGrepFolders[0];
+		}
+
+		cDlgGrep.m_bSubFolder            = sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
+		cDlgGrep.m_sSearchOption         = sSearch.m_sSearchOption;				// 検索オプション
+		cDlgGrep.m_nGrepCharSet          = sSearch.m_nGrepCharSet;				// 文字コードセット
+		cDlgGrep.m_nGrepOutputLineType   = sSearch.m_nGrepOutputLineType;		// 行を出力/該当部分/否マッチ行 を出力
+		cDlgGrep.m_nGrepOutputStyle      = sSearch.m_nGrepOutputStyle;			// Grep: 出力形式
+		cDlgGrep.m_bGrepOutputFileOnly   = sSearch.m_bGrepOutputFileOnly;
+		cDlgGrep.m_bGrepOutputBaseFolder = sSearch.m_bGrepOutputBaseFolder;
+		cDlgGrep.m_bGrepSeparateFolder   = sSearch.m_bGrepSeparateFolder;
+
+		if (!bGrepDlg) {
+			bGrepDlg = cDlgGrep.m_strText.empty() || cDlgGrep.m_szFile.empty() || cDlgGrep.m_szFolder.empty();
+		}
+	}
+
+	return bGrepDlg;
 }
