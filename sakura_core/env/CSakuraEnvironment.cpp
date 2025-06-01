@@ -210,7 +210,7 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 		//	To Here 2003/06/21 Moca
 		case L'n':
 			if( !pcDoc->m_cDocFile.GetFilePathClass().IsValidPath() ){
-				if( CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ){
+				if( CAppMode::getInstance()->IsGrepMode() ){
 				}else if( CAppMode::getInstance()->IsDebugMode() ){
 				}else{
 					WCHAR szText[10];
@@ -632,7 +632,7 @@ int CSakuraEnvironment::_ExParam_Evaluate( const wchar_t* pCond )
 			return 2; // 上記以外
 		}
 	case L'w': // $w Grepモード/Output Mode
-		if( CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ){
+		if( CAppMode::getInstance()->IsGrepMode() ){
 			return 0;
 		}else if( CAppMode::getInstance()->IsDebugMode() ){
 			return 1;

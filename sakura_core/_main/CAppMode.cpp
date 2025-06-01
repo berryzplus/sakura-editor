@@ -8,6 +8,21 @@
 #include "CAppMode.h"
 #include "window/CEditWnd.h"
 #include "env/CSakuraEnvironment.h"
+#include "CEditApp.h"
+#include "CGrepAgent.h"
+
+bool CAppMode::IsGrepMode() const noexcept
+{
+	return CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode;
+}
+
+void CAppMode::SetGrepMode(bool bGrepMode) noexcept
+{
+	CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode = bGrepMode;
+	if (!bGrepMode) {
+		wcscpy_s(m_szGrepKey, L"");
+	}
+}
 
 void CAppMode::OnAfterSave(const SSaveInfo& sSaveInfo)
 {

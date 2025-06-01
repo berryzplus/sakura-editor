@@ -14,12 +14,7 @@
 
 class CAppMode : public TSingleton<CAppMode>, public CDocListenerEx{ //###仮
 	friend class TSingleton<CAppMode>;
-	CAppMode()
-	: m_bViewMode( false )	// ビューモード
-	, m_bDebugMode( false )		// デバッグモニタモード
-	{
-		m_szGrepKey[0] = L'\0';
-	}
+	CAppMode() = default;
 
 public:
 	//インターフェース
@@ -28,6 +23,8 @@ public:
 	bool	IsDebugMode() const				{ return m_bDebugMode; }
 	void	SetDebugModeON();	//!< デバッグモニタモード設定
 	void	SetDebugModeOFF();	//!< デバッグモニタモード解除
+	bool	IsGrepMode() const noexcept;
+	void	SetGrepMode(bool bGrepMode) noexcept;	//<! Grepモードを設定
 
 	//イベント
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
@@ -36,9 +33,10 @@ protected:
 	void _SetDebugMode(bool bDebugMode){ m_bDebugMode = bDebugMode; }
 
 private:
-	bool			m_bViewMode;			//!< ビューモード
-	bool			m_bDebugMode;				//!< デバッグモニタモード
+	bool			m_bViewMode = false;		//!< ビューモード
+	bool			m_bDebugMode = false;		//!< デバッグモニタモード
 public:
-	wchar_t			m_szGrepKey[1024];			//!< Grepモードの場合、その検索キー
+	wchar_t			m_szGrepKey[1024]{};			//!< Grepモードの場合、その検索キー
 };
+
 #endif /* SAKURA_CAPPMODE_797AE845_5323_4D8A_A263_C534249DBB1C_H_ */

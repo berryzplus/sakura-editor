@@ -816,7 +816,7 @@ bool CViewCommander::Sub_PreProcTagJumpByTagsFile( WCHAR* szCurrentPath, int cou
 	if( ! GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
 		// 2010.04.02 (無題)でもタグジャンプできるように
 		// Grep、アウトプットは行番号タグジャンプがあるので無効にする(要検討)
-		if( CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ||
+		if( CAppMode::getInstance()->IsGrepMode() ||
 		    CAppMode::getInstance()->IsDebugMode() ){
 		    return false;
 		}
