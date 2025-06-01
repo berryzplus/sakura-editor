@@ -19,8 +19,6 @@
 #include "types/CType.h"
 
 class CEditWnd;
-class CLoadAgent;
-class CSaveAgent;
 class CVisualProgress;
 class CMruListener;
 class CSMacroMgr;
@@ -62,8 +60,6 @@ public:
 	CEditWnd*			m_pcEditWnd;
 
 	//IO管理
-	CLoadAgent*			m_pcLoadAgent;
-	CSaveAgent*			m_pcSaveAgent;
 	CVisualProgress*	m_pcVisualProgress;
 
 	//その他ヘルパ

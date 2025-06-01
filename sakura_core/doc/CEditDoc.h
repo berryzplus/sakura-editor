@@ -49,6 +49,8 @@ class CEditWnd; // Sep. 10, 2002 genta
 struct EditInfo; // 20050705 aroka
 class CFuncInfoArr;
 class CEditApp;
+class CLoadAgent;
+class CSaveAgent;
 
 /*!
 	文書関連情報の管理
@@ -62,6 +64,8 @@ class CEditDoc : public CDocSubject, public TInstanceHolder<CEditDoc>
 {
 private:
 	using BitmapHolder = cxx_util::ResourceHolder<HBITMAP, &DeleteObject>;
+	using CLoadAgentHolder = std::unique_ptr<CLoadAgent>;
+	using CSaveAgentHolder = std::unique_ptr<CSaveAgent>;
 
 public:
 	//コンストラクタ・デストラクタ
@@ -143,6 +147,9 @@ public:
 	BitmapHolder		m_hBackImg = nullptr;
 	int					m_nBackImgWidth = 0;
 	int					m_nBackImgHeight = 0;
+
+	CLoadAgentHolder	m_pcLoadAgent = std::make_unique<CLoadAgent>();
+	CSaveAgentHolder	m_pcSaveAgent = std::make_unique<CSaveAgent>();
 };
 
 #endif /* SAKURA_CEDITDOC_D845B5F3_FD71_4722_B115_63145B804253_H_ */

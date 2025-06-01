@@ -10,8 +10,6 @@
 #include "CEditApp.h"
 #include "doc/CEditDoc.h"
 #include "window/CEditWnd.h"
-#include "CLoadAgent.h"
-#include "CSaveAgent.h"
 #include "uiparts/CVisualProgress.h"
 #include "recent/CMruListener.h"
 #include "macro/CSMacroMgr.h"
@@ -33,8 +31,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
 	//IO管理
-	m_pcLoadAgent = new CLoadAgent();
-	m_pcSaveAgent = new CSaveAgent();
 	m_pcVisualProgress = new CVisualProgress();
 
 	//GREPモード管理
@@ -72,8 +68,6 @@ CEditApp::~CEditApp()
 	delete m_pcMruListener;
 	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
-	delete m_pcSaveAgent;
-	delete m_pcLoadAgent;
 }
 
 /*! 共通設定 プロパティシート */

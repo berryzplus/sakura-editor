@@ -32,6 +32,10 @@
 #pragma comment(lib, "windowscodecs.lib")
 #include <wrl.h>
 #include "doc/CEditDoc.h"
+
+#include "CLoadAgent.h"
+#include "CSaveAgent.h"
+
 #include "doc/logic/CDocLine.h" /// 2002/2/3 aroka
 #include "doc/layout/CLayout.h"	// 2007.08.22 ryoji 追加
 #include "docplus/CModifyManager.h"
