@@ -150,8 +150,8 @@ bool CNormalProcess::InitializeProcess()
 
 	// 複数ファイルの読み込み
 	if (OpenFiles(fi, CCommandLine::getInstance()->GetFiles())) {
-		::ReleaseMutex( hMutex );
-		::CloseHandle( hMutex );
+		ReleaseMutex(hMutex);
+		CloseHandle(hMutex);
 		return false;
 	}
 
@@ -267,10 +267,10 @@ bool CNormalProcess::InitializeProcess()
 		}
 	}
 
-	if (gi.bGrepStdout && !bGrepDlg) {
-		ReleaseMutex(hMutex);
-		CloseHandle(hMutex);
+	ReleaseMutex(hMutex);
+	CloseHandle(hMutex);
 
+	if (gi.bGrepStdout && !bGrepDlg) {
 		// Grep実行
 		CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
 			&pEditWnd->GetActiveView(),
@@ -284,14 +284,10 @@ bool CNormalProcess::InitializeProcess()
 	// 編集ウインドウを作成する
 	const auto hWndEditor = pEditWnd->Create(nGroupId);
 	if (!hWndEditor) {
-		::ReleaseMutex( hMutex );
-		::CloseHandle( hMutex );
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
 
 	SetMainWindow(hWndEditor);
-	ReleaseMutex(hMutex);
-	CloseHandle(hMutex);
 
 	//	YAZAKI 2002/05/30 IMEウィンドウの位置がおかしいのを修正。
 	pEditWnd->GetActiveView().SetIMECompFormPos();
