@@ -43,7 +43,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 
 	//ウィンドウの作成
 	m_pcEditWnd = CEditWnd::getInstance();
-	m_pcEditWnd->Create(nGroupId);
 }
 
 CEditApp::~CEditApp()

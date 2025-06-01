@@ -274,13 +274,15 @@ bool CNormalProcess::InitializeProcess()
 		return true;
 	}
 
-	if( NULL == pEditWnd->GetHwnd() ){
+	// 編集ウインドウを作成する
+	const auto hWndEditor = pEditWnd->Create(nGroupId);
+	if (!hWndEditor) {
 		::ReleaseMutex( hMutex );
 		::CloseHandle( hMutex );
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
 
-	SetMainWindow(pEditWnd->GetHwnd());
+	SetMainWindow(hWndEditor);
 	ReleaseMutex(hMutex);
 	CloseHandle(hMutex);
 
@@ -322,7 +324,7 @@ bool CNormalProcess::InitializeProcess()
 		CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
 	}
 
-	return pEditWnd->GetHwnd() ? true : false;
+	return hWndEditor;
 }
 
 /*!
