@@ -308,15 +308,15 @@ bool CNormalProcess::InitializeProcess()
 	if (!bDebugMode || !bGrepMode) {
 		// オープン後自動実行マクロを実行する
 		pEditWnd->GetDocument()->RunAutoMacro(GetDllShareData().m_Common.m_sMacro.m_nMacroOnOpened);
-	}
 
-	// 起動時マクロオプション
-	if (const auto pszMacro = CCommandLine::getInstance()->GetMacro(); pszMacro && *pszMacro && pEditWnd->GetHwnd()) {
-		auto pszMacroType = CCommandLine::getInstance()->GetMacroType();
-		if (!pszMacroType || !*pszMacroType || 0 == _wcsicmp(pszMacroType, L"file")) {
-			pszMacroType = nullptr;
+		// 起動時マクロオプション
+		if (const auto pszMacro = CCommandLine::getInstance()->GetMacro(); pszMacro && *pszMacro && pEditWnd->GetHwnd()) {
+			auto pszMacroType = CCommandLine::getInstance()->GetMacroType();
+			if (!pszMacroType || !*pszMacroType || 0 == _wcsicmp(pszMacroType, L"file")) {
+				pszMacroType = nullptr;
+			}
+			pEditWnd->GetActiveView().GetCommander().HandleCommand(F_EXECEXTMACRO, true, LPARAM(pszMacro), LPARAM(pszMacroType), 0, 0);
 		}
-		pEditWnd->GetActiveView().GetCommander().HandleCommand(F_EXECEXTMACRO, true, LPARAM(pszMacro), LPARAM(pszMacroType), 0, 0);
 	}
 
 	if (!bGrepMode) {
