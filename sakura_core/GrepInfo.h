@@ -10,7 +10,6 @@
 
 #include "_main/global.h"	//SSearchOption
 #include "charset/charcode.h"	//ECodeType
-#include "mem/CNativeW.h"	//CNativeW
 
 /*!
  * Grep 検索オプション
@@ -21,15 +20,17 @@
  *   memcmp による比較を行ってはならない。
  */
 struct GrepInfo {
-	LPCWSTR			GetGrepKey() const noexcept { return cmGrepKey.c_str(); }
-	LPCWSTR			GetGrepRep() const noexcept { return cmGrepRep.c_str(); }
-	LPCWSTR			GetGrepFile() const noexcept { return cmGrepFile.c_str(); }
-	LPCWSTR			GetGrepFolder() const noexcept { return cmGrepFolder.c_str(); }
+	using OptionStr = std::optional<std::wstring>;
 
-	CNativeW		cmGrepKey;						//!< 検索キー
-	CNativeW		cmGrepRep;						//!< 置換キー
-	CNativeW		cmGrepFile;						//!< 検索対象ファイル
-	CNativeW		cmGrepFolder;					//!< 検索対象フォルダー
+	LPCWSTR			GetGrepKey() const noexcept { return cmGrepKey.has_value() ? cmGrepKey.value().c_str() : nullptr; }
+	LPCWSTR			GetGrepRep() const noexcept { return cmGrepRep.has_value() ? cmGrepRep.value().c_str() : nullptr; }
+	LPCWSTR			GetGrepFile() const noexcept { return cmGrepFile.has_value() ? cmGrepFile.value().c_str() : nullptr; }
+	LPCWSTR			GetGrepFolder() const noexcept { return cmGrepFolder.has_value() ? cmGrepFolder.value().c_str() : nullptr; }
+
+	OptionStr		cmGrepKey;						//!< 検索キー
+	OptionStr		cmGrepRep;						//!< 置換キー
+	OptionStr		cmGrepFile;						//!< 検索対象ファイル
+	OptionStr		cmGrepFolder;					//!< 検索対象フォルダー
 	SSearchOption	sGrepSearchOption;				//!< 検索オプション
 	bool			bGrepCurFolder = false;			//!< カレントディレクトリを維持
 	bool			bGrepStdout = false;			//!< 標準出力モード
