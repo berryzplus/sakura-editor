@@ -232,6 +232,7 @@ bool CNormalProcess::InitializeProcess()
 		sSearch.m_bGrepSeparateFolder   = gi.bGrepSeparateFolder;
 
 		auto& cDlgGrep = pEditWnd->m_cDlgGrep;
+		auto& sSearchKeywords = GetDllShareData().m_sSearchKeywords;
 
 		if (const auto pszGrepKey = gi.GetGrepKey(); pszGrepKey && *pszGrepKey && wcslen(pszGrepKey) < _MAX_PATH) {
 			cDlgGrep.m_strText = pszGrepKey;
@@ -241,9 +242,15 @@ bool CNormalProcess::InitializeProcess()
 		if (const auto pszGrepFile = gi.GetGrepFile(); pszGrepFile && *pszGrepFile && wcslen(pszGrepFile) <= MAX_GREP_PATH) {
 			cDlgGrep.m_szFile = pszGrepFile;
 		}
+		else if (!bGrepDlg && !pszGrepFile && sSearchKeywords.m_aGrepFiles.size()) {
+			cDlgGrep.m_szFile = sSearchKeywords.m_aGrepFiles[0];
+		}
 
 		if (const auto pszGrepFolder = gi.GetGrepFolder(); pszGrepFolder && *pszGrepFolder && wcslen(pszGrepFolder) <= MAX_GREP_PATH) {
 			cDlgGrep.m_szFolder = pszGrepFolder;
+		}
+		else if (!bGrepDlg && !pszGrepFolder && sSearchKeywords.m_aGrepFolders.size()) {
+			cDlgGrep.m_szFolder = sSearchKeywords.m_aGrepFolders[0];
 		}
 
 		cDlgGrep.m_bSubFolder            = sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
