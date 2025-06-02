@@ -63,11 +63,6 @@ public:
 	static std::wstring ChopYen( const std::wstring& str );
 	void AddTail( CEditView* pcEditView, const CNativeW& cmem, bool bAddStdout );
 
-	DWORD DoGrep(
-		CEditView*				pcViewDst,
-		CDlgGrep&				cDlgGrep				//!< [in] Grepダイアログ
-	);
-
 	// Grep実行
 	DWORD DoGrep(
 		CEditView*				pcViewDst,

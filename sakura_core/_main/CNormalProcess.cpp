@@ -226,10 +226,7 @@ bool CNormalProcess::InitializeProcess()
 
 	if (gi.bGrepStdout && !bGrepDlg) {
 		// Grep実行
-		CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
-			&pEditWnd->GetActiveView(),
-			pEditWnd->m_cDlgGrep
-		);
+		pEditWnd->DoGrep(pEditWnd->m_cDlgGrep);
 		return true;
 	}
 

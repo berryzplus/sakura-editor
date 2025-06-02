@@ -117,6 +117,9 @@ public:
 		CTypeConfig	nDocumentType = CTypeConfig(-1)	//!< [in] 文書タイプ．-1のとき強制指定無し．
 	);
 	void UpdateCaption();
+
+	DWORD DoGrep(CDlgGrep& cDlgGrep);
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

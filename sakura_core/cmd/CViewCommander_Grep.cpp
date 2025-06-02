@@ -58,8 +58,7 @@ void CViewCommander::Command_GREP( void )
 {
 	auto& cDlgGrep = GetEditWindow()->m_cDlgGrep;
 
-	CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
-		m_pCommanderView,
+	GetEditWindow()->DoGrep(
 		cDlgGrep
 	);
 }
@@ -93,8 +92,7 @@ void CViewCommander::Command_GREP_REPLACE( void )
 {
 	auto& cDlgGrep = GetEditWindow()->m_cDlgGrepReplace;
 
-	CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
-		m_pCommanderView,
+	GetEditWindow()->DoGrep(
 		cDlgGrep
 	);
 }

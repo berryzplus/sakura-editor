@@ -21,7 +21,9 @@
 #include "extmodule/CMigemo.h"
 #include "CEditApp.h"
 #include "util/design_template.h"
+
 class CEditWnd;
+class CDlgGrep;
 
 /*-----------------------------------------------------------------------
 クラスの宣言

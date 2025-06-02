@@ -7,6 +7,8 @@
 #include "StdAfx.h"
 #include "CGrepAgent.h"
 
+#include "CEditApp.h"
+
 #include "_main/CControlTray.h"
 #include "dlg/CDlgCancel.h"
 #include "dlg/CDlgGrep.h"
@@ -334,11 +336,10 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 	return 1;
 }
 
-DWORD CGrepAgent::DoGrep(
-	CEditView* pcViewDst,
-	CDlgGrep& cDlgGrep		//!< [in] Grepダイアログ
-)
+DWORD CEditWnd::DoGrep(CDlgGrep& cDlgGrep)
 {
+	auto pcViewDst = &GetActiveView();
+
 	const auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep);
 
 	CNativeW cmWork1(cDlgGrep.m_strText);
@@ -354,7 +355,7 @@ DWORD CGrepAgent::DoGrep(
 		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
 		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
 	*/
-	if( (  m_bGrepMode && !m_bGrepRunning ) ||
+	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode && !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ) ||
 		( !GetDocument()->m_cDocEditor.IsModified() &&
 		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* 現在編集中のファイルのパス */
 		  !CAppMode::getInstance()->IsDebugMode()
@@ -374,8 +375,7 @@ DWORD CGrepAgent::DoGrep(
 			GetDocument()->m_cDocType.LockDocumentType();
 			GetDocument()->OnChangeType();
 		}
-		
-		const auto ret = DoGrep(
+		const auto ret = CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
 			pcViewDst,
 			pDlgGrepReplace,
 			&cmWork1,
@@ -403,8 +403,8 @@ DWORD CGrepAgent::DoGrep(
 		}
 
 		// コマンドラインからのGrep起動で標準出力モードが指定されている場合、即時終了
-		if (bGrepStdout) {
-			SendMessageW(GetEditWnd().GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
+		if (cDlgGrep.m_bGrepStdout) {
+			SendMessageW(GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
 		}
 
 		return ret;
