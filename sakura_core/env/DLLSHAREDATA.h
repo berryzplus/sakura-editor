@@ -27,8 +27,6 @@
 #include "recent/SShare_History.h"	//SShare_History
 #include "charset/charcode.h"
 
-#include "version.h"
-
 struct SMultiUserSettings {
 	UINT         userRootFolder = 0;
 	std::wstring userSubFolder  = L"sakura";
@@ -133,8 +131,10 @@ struct SShare_Handles{
  * 将来的に削除するのが妥当と考えられる。
  */
 struct SShare_Version{
-	DWORD				m_dwProductVersionMS =  MAKELONG(VER_B, VER_A);
-	DWORD				m_dwProductVersionLS =  MAKELONG(VER_D, VER_C);
+	DWORD				m_dwProductVersionMS = NULL;
+	DWORD				m_dwProductVersionLS = NULL;
+
+	SShare_Version() noexcept;
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

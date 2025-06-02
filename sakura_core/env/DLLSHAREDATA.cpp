@@ -20,6 +20,7 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "config/system_constants.h"
+#include "version.h"
 #include "String_define.h"
 
 //GetDllShareData用グローバル変数
@@ -57,6 +58,12 @@ DLLSHAREDATA::DLLSHAREDATA(
 		m_PrintSettingArr[i] = m_PrintSettingArr[0];
 		swprintf_s(m_PrintSettingArr[i].m_szPrintSettingName, L"%s %d", LS(STR_PRINT_SET_NAME), i + 1);
 	}
+}
+
+SShare_Version::SShare_Version() noexcept
+{
+	m_dwProductVersionMS = MAKELONG(VER_B, VER_A);
+	m_dwProductVersionLS = MAKELONG(VER_D, VER_C);
 }
 
 CShareDataLockCounter::CShareDataLockCounter(){

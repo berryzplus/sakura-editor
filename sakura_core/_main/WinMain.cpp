@@ -29,7 +29,6 @@
 #include "util/os.h"
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
-#include "version.h"
 #include "util/std_macro.h"
 #include "env/DLLSHAREDATA.h"
 

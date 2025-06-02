@@ -35,6 +35,7 @@
 #include "util/window.h"
 #include "CDataProfile.h" // StringBufferW
 #include "uiparts/CMenuDrawer.h"
+#include "version.h"
 
 UINT GetPrivateProfileIntW(
 	_In_ LPCWSTR lpAppName,
