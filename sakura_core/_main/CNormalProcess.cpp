@@ -228,9 +228,7 @@ bool CNormalProcess::InitializeProcess()
 		// Grep実行
 		CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
 			&pEditWnd->GetActiveView(),
-			pEditWnd->m_cDlgGrep,
-			gi.bGrepStdout,
-			gi.bGrepHeader
+			pEditWnd->m_cDlgGrep
 		);
 		return true;
 	}
@@ -425,15 +423,16 @@ bool CNormalProcess::ApplyGrepOptions(CDlgGrep& cDlgGrep) const noexcept {
 		else if (!bGrepDlg && !pszGrepFolder && sSearchKeywords.m_aGrepFolders.size()) {
 			cDlgGrep.m_szFolder = sSearchKeywords.m_aGrepFolders[0];
 		}
-
-		cDlgGrep.m_bSubFolder            = sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
-		cDlgGrep.m_sSearchOption         = sSearch.m_sSearchOption;				// 検索オプション
-		cDlgGrep.m_nGrepCharSet          = sSearch.m_nGrepCharSet;				// 文字コードセット
-		cDlgGrep.m_nGrepOutputLineType   = sSearch.m_nGrepOutputLineType;		// 行を出力/該当部分/否マッチ行 を出力
-		cDlgGrep.m_nGrepOutputStyle      = sSearch.m_nGrepOutputStyle;			// Grep: 出力形式
-		cDlgGrep.m_bGrepOutputFileOnly   = sSearch.m_bGrepOutputFileOnly;
-		cDlgGrep.m_bGrepOutputBaseFolder = sSearch.m_bGrepOutputBaseFolder;
-		cDlgGrep.m_bGrepSeparateFolder   = sSearch.m_bGrepSeparateFolder;
+		cDlgGrep.m_bGrepStdout				= gi.bGrepStdout;
+		cDlgGrep.m_bGrepHeader				= gi.bGrepHeader;
+		cDlgGrep.m_bSubFolder				= sSearch.m_bGrepSubFolder;			// Grep: サブフォルダーも検索
+		cDlgGrep.m_sSearchOption			= sSearch.m_sSearchOption;				// 検索オプション
+		cDlgGrep.m_nGrepCharSet				= sSearch.m_nGrepCharSet;				// 文字コードセット
+		cDlgGrep.m_nGrepOutputLineType		= sSearch.m_nGrepOutputLineType;		// 行を出力/該当部分/否マッチ行 を出力
+		cDlgGrep.m_nGrepOutputStyle			= sSearch.m_nGrepOutputStyle;			// Grep: 出力形式
+		cDlgGrep.m_bGrepOutputFileOnly		= sSearch.m_bGrepOutputFileOnly;
+		cDlgGrep.m_bGrepOutputBaseFolder	= sSearch.m_bGrepOutputBaseFolder;
+		cDlgGrep.m_bGrepSeparateFolder		= sSearch.m_bGrepSeparateFolder;
 
 		if (!bGrepDlg) {
 			bGrepDlg = cDlgGrep.m_strText.empty() || cDlgGrep.m_szFile.empty() || cDlgGrep.m_szFolder.empty();

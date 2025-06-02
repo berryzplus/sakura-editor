@@ -336,9 +336,7 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 
 DWORD CGrepAgent::DoGrep(
 	CEditView* pcViewDst,
-	CDlgGrep& cDlgGrep,		//!< [in] Grepダイアログ
-	bool bGrepStdout,
-	bool bGrepHeader
+	CDlgGrep& cDlgGrep		//!< [in] Grepダイアログ
 )
 {
 	const auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep);
@@ -384,10 +382,10 @@ DWORD CGrepAgent::DoGrep(
 			&cmWork4,
 			&cmWork2,
 			&cmWork3,
-			false,
+			pDlgGrepReplace != nullptr,
 			cDlgGrep.m_bSubFolder,
-			bGrepStdout,
-			bGrepHeader,
+			cDlgGrep.m_bGrepStdout,
+			cDlgGrep.m_bGrepHeader,
 			cDlgGrep.m_sSearchOption,
 			cDlgGrep.m_nGrepCharSet,
 			cDlgGrep.m_nGrepOutputLineType,

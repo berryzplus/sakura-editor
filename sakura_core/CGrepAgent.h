@@ -65,9 +65,7 @@ public:
 
 	DWORD DoGrep(
 		CEditView*				pcViewDst,
-		CDlgGrep&				cDlgGrep,				//!< [in] Grepダイアログ
-		bool					bGrepStdout = false,
-		bool					bGrepHeader = true
+		CDlgGrep&				cDlgGrep				//!< [in] Grepダイアログ
 	);
 
 	// Grep実行

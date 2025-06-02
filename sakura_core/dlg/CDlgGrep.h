@@ -49,7 +49,8 @@ public:
 	bool		m_bFromThisText = false;/*!< この編集中のテキストから検索する */
 
 	SSearchOption	m_sSearchOption;	//!< 検索オプション
-
+	bool		m_bGrepStdout = false;
+	bool		m_bGrepHeader = true;
 	ECodeType	m_nGrepCharSet = CODE_SJIS;			/*!< 文字コードセット */
 	int			m_nGrepOutputStyle = 1;		/*!< Grep: 出力形式 */
 	int			m_nGrepOutputLineType = 1;		//!< 結果出力：行を出力/該当部分/否マッチ行
