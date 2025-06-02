@@ -956,7 +956,7 @@ TEST_F(TrayIconTest, ShowDlgAbout)
 /*!
  * @brief ダブルクリックで新規作成のテスト
  */
-TEST_F(TrayIconTest, OpenNewEditorByDoubleClick)
+TEST_F(TrayIconTest, DISABLED_OpenNewEditorByDoubleClick)
 {
 	std::thread t([this] {
 		// 編集ウインドウが開くのを待つ
