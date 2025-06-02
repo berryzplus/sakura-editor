@@ -225,14 +225,8 @@ bool CNormalProcess::InitializeProcess()
 		return true;
 	}
 
-	// グループIDを取得
-	int nGroupId = CCommandLine::getInstance()->GetGroupId();
-	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
-		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
-	}
-
 	// 編集ウインドウを作成する
-	const auto hWndEditor = pEditWnd->Create(nGroupId);
+	const auto hWndEditor = pEditWnd->Create();
 	if (!hWndEditor) {
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}

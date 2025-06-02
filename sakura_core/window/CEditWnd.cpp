@@ -585,9 +585,7 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 	@date 2007.06.26 ryoji nGroup追加
 	@date 2008.04.19 ryoji 初回アイドリング検出用ゼロ秒タイマーのセット処理を追加
 */
-HWND CEditWnd::Create(
-	int				nGroup		//!< [in] グループID
-)
+HWND CEditWnd::Create()
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
@@ -630,6 +628,12 @@ HWND CEditWnd::Create(
 	if( m_pShareData->m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//最大値修正	//@@@ 2003.05.31 MIK
 		OkMessage( NULL, LS(STR_MAXWINDOW), MAX_EDITWINDOWS );
 		return NULL;
+	}
+
+	// グループIDを取得
+	int nGroup = CCommandLine::getInstance()->GetGroupId();
+	if (GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroup == -1) {
+		nGroup = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
 
 	//タブグループ情報取得
