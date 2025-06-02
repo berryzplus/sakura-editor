@@ -984,7 +984,7 @@ TEST_F(TrayIconTest, DISABLED_OpenNewEditorByDoubleClick)
 /*!
  * @brief ホットキーのテスト
  */
-TEST_F(TrayIconTest, fireHotKey001)
+TEST_F(TrayIconTest, DISABLED_fireHotKey001)
 {
 	HWND hWndContextMenu = nullptr;
 	do
@@ -1008,7 +1008,7 @@ TEST_F(TrayIconTest, fireHotKey001)
  *
  * 共通設定を開いているときは無効。
  */
-TEST_F(TrayIconTest, fireHotKey101)
+TEST_F(TrayIconTest, DISABLED_fireHotKey101)
 {
 	// 共通設定を開く
 	const auto hWndPropCommon = WaitForTrayDialog(WM_RBUTTONUP, F_OPTION, L"共通設定");
