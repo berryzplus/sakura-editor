@@ -19,7 +19,7 @@
 #include "util/module.h"
 #include "util/shell.h"
 
-void CEditApp::Create(HINSTANCE hInst, int nGroupId)
+void CEditApp::Create(HINSTANCE hInst)
 {
 	m_hInst = hInst;
 

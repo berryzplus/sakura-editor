@@ -33,7 +33,7 @@ private:
 	using CEditDocHolder = std::unique_ptr<CEditDoc>;
 
 public:
-	void Create(HINSTANCE hInst, int nGroupId);
+	void Create(HINSTANCE hInst);
 
 	//モジュール情報
 	HINSTANCE GetAppInstance() const{ return m_hInst; }	//!< インスタンスハンドル取得

@@ -209,14 +209,9 @@ bool CNormalProcess::InitializeProcess()
 	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
 
 	// エディタアプリケーションを作成。2007.10.23 kobake
-	// グループIDを取得
-	int nGroupId = CCommandLine::getInstance()->GetGroupId();
-	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
-		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
-	}
 	// CEditAppを作成
 	m_pcEditApp = CEditApp::getInstance();
-	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
+	m_pcEditApp->Create(GetProcessInstance());
 	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
 
 	bGrepDlg = ApplyGrepOptions(pEditWnd->m_cDlgGrep);
@@ -228,6 +223,12 @@ bool CNormalProcess::InitializeProcess()
 		// Grep実行
 		pEditWnd->DoGrep(pEditWnd->m_cDlgGrep);
 		return true;
+	}
+
+	// グループIDを取得
+	int nGroupId = CCommandLine::getInstance()->GetGroupId();
+	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
+		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
 
 	// 編集ウインドウを作成する
