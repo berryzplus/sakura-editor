@@ -43,9 +43,6 @@ public:
 
 	CEditDoc*		GetDocument(){ return m_pcEditDoc.get(); }
 
-	bool OpenPropertySheet( int nPageNum );
-	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );
-
 	bool    IsGrepRunning() const noexcept;
 
 public:

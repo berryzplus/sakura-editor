@@ -118,6 +118,9 @@ public:
 
 	DWORD DoGrep(CDlgGrep& cDlgGrep);
 
+	bool    OpenPropertySheet(int nPageNum);
+	bool    OpenPropertySheetTypes(int nPageNum, CTypeConfig nSettingType);
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

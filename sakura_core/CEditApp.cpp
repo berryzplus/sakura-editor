@@ -58,22 +58,22 @@ bool CEditApp::IsGrepRunning() const noexcept
 }
 
 /*! 共通設定 プロパティシート */
-bool CEditApp::OpenPropertySheet( int nPageNum )
+bool CEditWnd::OpenPropertySheet( int nPageNum )
 {
 	/* プロパティシートの作成 */
-	bool bRet = m_pcEditWnd->m_pcPropertyManager->OpenPropertySheet( m_pcEditWnd->GetHwnd(), nPageNum, false );
+	bool bRet = m_pcPropertyManager->OpenPropertySheet(GetHwnd(), nPageNum, false);
 	if( bRet ){
 		// 2007.10.19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
-		m_pcSMacroMgr->UnloadAll();
+		CEditApp::getInstance()->m_pcSMacroMgr->UnloadAll();
 	}
 
 	return bRet;
 }
 
 /*! タイプ別設定 プロパティシート */
-bool CEditApp::OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType )
+bool CEditWnd::OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType )
 {
-	bool bRet = m_pcEditWnd->m_pcPropertyManager->OpenPropertySheetTypes( m_pcEditWnd->GetHwnd(), nPageNum, nSettingType );
+	bool bRet = m_pcPropertyManager->OpenPropertySheetTypes(GetHwnd(), nPageNum, nSettingType);
 
 	return bRet;
 }

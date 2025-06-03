@@ -23,9 +23,10 @@
 #include "CViewCommander.h"
 #include "CViewCommander_inline.h"
 
+#include "window/CEditWnd.h"
+
 #include "typeprop/CDlgTypeList.h"
 #include "dlg/CDlgFavorite.h"	//履歴の管理	//@@@ 2003.04.08 MIK
-#include "CEditApp.h"
 #include "util/shell.h"
 #include "CPropertyManager.h"
 #include "util/window.h"
@@ -166,7 +167,7 @@ void CViewCommander::Command_TYPE_LIST( void )
 		}
 		else{
 			/* タイプ別設定 */
-			CEditApp::getInstance()->OpenPropertySheetTypes( -1, sResult.cDocumentType );
+			GetEditWnd().OpenPropertySheetTypes( -1, sResult.cDocumentType );
 		}
 	}
 	return;
@@ -193,14 +194,13 @@ void CViewCommander::Command_CHANGETYPE( int nTypePlusOne )
 /* タイプ別設定 */
 void CViewCommander::Command_OPTION_TYPE( void )
 {
-	CEditApp::getInstance()->OpenPropertySheetTypes( -1, GetDocument()->m_cDocType.GetDocumentType() );
+	GetEditWnd().OpenPropertySheetTypes(-1, GetDocument()->m_cDocType.GetDocumentType());
 }
 
 /* 共通設定 */
 void CViewCommander::Command_OPTION( void )
 {
-	/* 設定プロパティシート テスト用 */
-	CEditApp::getInstance()->OpenPropertySheet( -1 );
+	GetEditWnd().OpenPropertySheet(-1);	//前回表示していたタブを復元
 }
 
 /* フォント設定 */
