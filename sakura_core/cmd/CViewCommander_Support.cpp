@@ -50,27 +50,6 @@
 */
 void CViewCommander::Command_HOKAN( void )
 {
-#if 0
-// 2011.06.24 Moca Plugin導入に従い未設定の確認をやめる
-retry:;
-	/* 補完候補一覧ファイルが設定されていないときは、設定するように促す。 */
-	// 2003.06.22 Moca ファイル内から検索する場合には補完ファイルの設定は必須ではない
-	if( m_pCommanderView->m_pTypeData->m_bUseHokanByFile == FALSE &&
-		m_pCommanderView->m_pTypeData->m_bUseHokanByKeyword == false &&
-		L'\0' == m_pCommanderView->m_pTypeData->m_szHokanFile[0]
-	){
-		ConfirmBeep();
-		if( IDYES == ::ConfirmMessage( GetMainWindow(),
-			LS(STR_ERR_DLGEDITVWHOKAN1)
-		) ){
-			/* タイプ別設定 プロパティシート */
-			if( !CEditApp::getInstance()->m_pcPropertyManager->OpenPropertySheetTypes( 2, GetDocument()->m_cDocType.GetDocumentType() ) ){
-				return;
-			}
-			goto retry;
-		}
-	}
-#endif
 	CNativeW	cmemData;
 	/* カーソル直前の単語を取得 */
 	if( 0 < m_pCommanderView->GetParser().GetLeftWord( &cmemData, 100 ) ){
