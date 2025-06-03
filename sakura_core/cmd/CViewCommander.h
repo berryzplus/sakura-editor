@@ -38,9 +38,10 @@ public:
 	CLayoutRange& GetSelect();
 	CCaret& GetCaret();
 
+	CSMacroMgr&		GetSMacroMgr() const noexcept;
+
 private:
 	CEditView*		m_pCommanderView;
-	CSMacroMgr*		m_pcSMacroMgr;
 
 public:
 	/* キーリピート状態 */

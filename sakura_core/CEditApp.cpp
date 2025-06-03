@@ -11,7 +11,6 @@
 #include "doc/CEditDoc.h"
 #include "window/CEditWnd.h"
 #include "uiparts/CVisualProgress.h"
-#include "macro/CSMacroMgr.h"
 #include "CGrepAgent.h"
 #include "_main/CAppMode.h"
 #include "util/module.h"
@@ -33,9 +32,6 @@ void CEditApp::Create(HINSTANCE hInst)
 	//編集モード
 	CAppMode::getInstance();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
 
-	//マクロ
-	m_pcSMacroMgr = new CSMacroMgr();
-
 	//ドキュメントの作成
 	m_pcEditDoc->Create();
 
@@ -45,7 +41,6 @@ void CEditApp::Create(HINSTANCE hInst)
 
 CEditApp::~CEditApp()
 {
-	delete m_pcSMacroMgr;
 	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
 }

@@ -32,6 +32,7 @@
 
 //@@@ 2002.2.2 YAZAKI マクロはCSMacroMgrに統一
 #include "macro/CSMacroMgr.h"
+#include "window/CEditWnd.h"
 #include "CEditApp.h"
 #include "plugin/CJackManager.h"
 #include "apiwrap/StdApi.h"
@@ -42,7 +43,11 @@
 CViewCommander::CViewCommander(CEditView* pEditView) : m_pCommanderView(pEditView)
 {
 	m_bPrevCommand = 0;
-	m_pcSMacroMgr = CEditApp::getInstance()->m_pcSMacroMgr;
+}
+
+CSMacroMgr& CViewCommander::GetSMacroMgr() const noexcept
+{
+	return *GetEditWnd().m_pcSMacroMgr;
 }
 
 /*!
@@ -121,7 +126,7 @@ BOOL CViewCommander::HandleCommand(
 			/* キーマクロのバッファにデータ追加 */
 			//@@@ 2002.1.24 m_CKeyMacroMgrをCEditDocへ移動
 			LPARAM lparams[] = {lparam1, lparam2, lparam3, lparam4};
-			m_pcSMacroMgr->Append( STAND_KEYMACRO, nCommand, lparams, m_pCommanderView );
+			GetSMacroMgr().Append( STAND_KEYMACRO, nCommand, lparams, m_pCommanderView );
 		}
 	}
 
@@ -139,13 +144,13 @@ BOOL CViewCommander::HandleCommand(
 	//	From Here Sep. 29, 2001 genta マクロの実行機能追加
 	if( F_USERMACRO_0 <= nCommand && nCommand < F_USERMACRO_0 + MAX_CUSTMACRO ){
 		//@@@ 2002.2.2 YAZAKI マクロをCSMacroMgrに統一（インターフェースの変更）
-		if( !m_pcSMacroMgr->Exec( nCommand - F_USERMACRO_0, G_AppInstance(), m_pCommanderView,
+		if( !GetSMacroMgr().Exec( nCommand - F_USERMACRO_0, G_AppInstance(), m_pCommanderView,
 			nCommandFrom & FA_NONRECORD )){
 			InfoMessage(
 				this->m_pCommanderView->m_hwndParent,
 				LS(STR_ERR_MACRO1),
 				nCommand - F_USERMACRO_0,
-				m_pcSMacroMgr->GetFile( nCommand - F_USERMACRO_0 )
+				GetSMacroMgr().GetFile( nCommand - F_USERMACRO_0 )
 			);
 		}
 		return TRUE;

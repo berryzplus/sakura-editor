@@ -48,6 +48,7 @@
 #include "uiparts/CImageListMgr.h"
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
+#include "macro/CSMacroMgr.h"
 
 static const int MENUBAR_MESSAGE_MAX_LEN = 30;
 
@@ -85,6 +86,7 @@ class CEditWnd
 , public CDocListenerEx
 {
 
+	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 
@@ -414,6 +416,7 @@ private:
 public:
 	ESelectCountMode	m_nSelectCountMode; // 選択文字カウント方法
 
+	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
 	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
 };

@@ -19,7 +19,6 @@
 
 class CEditWnd;
 class CVisualProgress;
-class CSMacroMgr;
 class CGrepAgent;
 enum EFunctionCode;
 
@@ -56,8 +55,6 @@ public:
 	CVisualProgress*	m_pcVisualProgress;
 
 	//その他ヘルパ
-	CSMacroMgr*			m_pcSMacroMgr;			//マクロ管理
-
 	CGrepAgent*			m_pcGrepAgent;			//GREPモード
 	CSoundSet			m_cSoundSet;			//サウンド管理
 };
@@ -67,4 +64,5 @@ class CAppExitException : public std::exception{
 public:
 	const char* what() const throw(){ return "CAppExitException"; }
 };
+
 #endif /* SAKURA_CEDITAPP_421797BC_DD8E_4209_AAF7_6BDC4D1CAAE9_H_ */

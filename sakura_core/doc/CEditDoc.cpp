@@ -957,7 +957,7 @@ void CEditDoc::RunAutoMacro( int idx, LPCWSTR pszSaveFilePath )
 		return;	// 再入り実行はしない
 
 	bRunning = true;
-	if( CEditApp::getInstance()->m_pcSMacroMgr->IsEnabled(idx) ){
+	if(GetEditWnd().m_pcSMacroMgr->IsEnabled(idx) ){
 		if( !( ::GetAsyncKeyState(VK_SHIFT) & 0x8000 ) ){	// Shift キーが押されていなければ実行
 			if( NULL != pszSaveFilePath )
 				m_cDocFile.SetSaveFilePath(pszSaveFilePath);

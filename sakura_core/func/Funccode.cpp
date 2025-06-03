@@ -992,7 +992,7 @@ bool IsFuncEnable( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, EF
 				return false;
 			}
 		}else{
-			return CEditApp::getInstance()->m_pcSMacroMgr->IsSaveOk();
+			return GetEditWnd().m_pcSMacroMgr->IsSaveOk();
 		}
 	case F_EXECKEYMACRO:	/* キーマクロの実行 */
 		if( pShareData->m_sFlags.m_bRecordingKeyMacro ){	/* キーボードマクロの記録中 */

@@ -2187,7 +2187,7 @@ bool CEditWnd::OpenPropertySheet( int nPageNum )
 	bool bRet = m_pcPropertyManager->OpenPropertySheet(GetHwnd(), nPageNum, false);
 	if( bRet ){
 		// 2007.10.19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
-		CEditApp::getInstance()->m_pcSMacroMgr->UnloadAll();
+		m_pcSMacroMgr->UnloadAll();
 	}
 
 	return bRet;

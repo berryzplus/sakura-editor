@@ -470,7 +470,7 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 			//	現在実行しているマクロファイルパスの取得
 			{
 				// 実行中マクロのインデックス番号 (INVALID_MACRO_IDX:無効 / STAND_KEYMACRO:標準マクロ)
-				CSMacroMgr* pcSMacroMgr = CEditApp::getInstance()->m_pcSMacroMgr;
+				auto& pcSMacroMgr = GetEditWnd().m_pcSMacroMgr;
 				switch( pcSMacroMgr->GetCurrentIdx() ){
 				case INVALID_MACRO_IDX:
 					break;
