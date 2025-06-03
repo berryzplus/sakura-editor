@@ -7,8 +7,6 @@
 #include "StdAfx.h"
 #include "CGrepAgent.h"
 
-#include "CEditApp.h"
-
 #include "_main/CControlTray.h"
 #include "dlg/CDlgCancel.h"
 #include "dlg/CDlgGrep.h"
@@ -308,88 +306,6 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 		pmemTitle->AppendString(L"]");
 	}
 	return 1;
-}
-
-DWORD CEditWnd::DoGrep(CDlgGrep& cDlgGrep)
-{
-	auto pcViewDst = &GetActiveView();
-
-	const auto pDlgGrepReplace = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep);
-
-	CNativeW cmWork1(cDlgGrep.m_strText);
-	CNativeW cmWork2(cDlgGrep.GetPackedGFileString());
-	CNativeW cmWork3(cDlgGrep.m_szFolder);
-
-	CNativeW cmWork4;
-	if (pDlgGrepReplace) {
-		cmWork4 = pDlgGrepReplace->m_strText2;
-	}
-
-	/*	今のEditViewにGrep結果を表示する。
-		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
-		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
-	*/
-	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode && !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ) ||
-		( !GetDocument()->m_cDocEditor.IsModified() &&
-		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* 現在編集中のファイルのパス */
-		  !CAppMode::getInstance()->IsDebugMode()
-		)
-	){
-		// 2011.01.23 Grepタイプ別適用
-		if (!pDlgGrepReplace
-			&& !GetDocument()->m_cDocEditor.IsModified()
-			&& 0 == GetDocument()->m_cDocLineMgr.GetLineCount())
-		{
-			CTypeConfig cTypeGrep = CDocTypeManager().GetDocumentTypeOfExt( L"grepout" );
-			const STypeConfigMini* pConfig = nullptr;
-			if( !CDocTypeManager().GetTypeConfigMini( cTypeGrep, &pConfig ) ){
-				return 0;
-			}
-			GetDocument()->m_cDocType.SetDocumentTypeIdx( pConfig->m_id );
-			GetDocument()->m_cDocType.LockDocumentType();
-			GetDocument()->OnChangeType();
-		}
-		const auto ret = CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
-			pcViewDst,
-			pDlgGrepReplace,
-			&cmWork1,
-			&cmWork4,
-			&cmWork2,
-			&cmWork3,
-			pDlgGrepReplace != nullptr,
-			cDlgGrep.m_bSubFolder,
-			cDlgGrep.m_bGrepStdout,
-			cDlgGrep.m_bGrepHeader,
-			cDlgGrep.m_sSearchOption,
-			cDlgGrep.m_nGrepCharSet,
-			cDlgGrep.m_nGrepOutputLineType,
-			cDlgGrep.m_nGrepOutputStyle,
-			cDlgGrep.m_bGrepOutputFileOnly,
-			cDlgGrep.m_bGrepOutputBaseFolder,
-			cDlgGrep.m_bGrepSeparateFolder,
-			pDlgGrepReplace ? pDlgGrepReplace->m_bPaste : false,
-			pDlgGrepReplace ? pDlgGrepReplace->m_bBackup : false
-		);
-
-		if (!pDlgGrepReplace) {
-			//プラグイン：DocumentOpenイベント実行
-			CJackManager::getInstance()->InvokePlugins(PP_DOCUMENT_OPEN, pcViewDst);
-		}
-
-		// コマンドラインからのGrep起動で標準出力モードが指定されている場合、即時終了
-		if (cDlgGrep.m_bGrepStdout) {
-			SendMessageW(GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, NULL);
-		}
-
-		return ret;
-	}
-	else {
-		/*======= Grepの実行 =============*/
-		/* Grep結果ウィンドウの表示 */
-		CControlTray::DoGrepCreateWindow(G_AppInstance(), pcViewDst->GetHwnd(), cDlgGrep);
-
-		return 0;
-	}
 }
 
 /*! Grep実行

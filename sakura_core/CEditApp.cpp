@@ -12,10 +12,8 @@
 #include "window/CEditWnd.h"
 #include "uiparts/CVisualProgress.h"
 #include "macro/CSMacroMgr.h"
-#include "CPropertyManager.h"
 #include "CGrepAgent.h"
 #include "_main/CAppMode.h"
-#include "_main/CCommandLine.h"
 #include "util/module.h"
 #include "util/shell.h"
 
@@ -50,38 +48,4 @@ CEditApp::~CEditApp()
 	delete m_pcSMacroMgr;
 	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
-}
-
-/* static */ bool CEditWnd::IsGrepRunning() noexcept
-{
-	const auto pApp = CEditApp::getInstance();
-	if (!pApp) {
-		return false; // アプリケーションが存在しない場合はGrepも実行されていない
-	}
-	const auto pcGrepAgent = pApp->m_pcGrepAgent;
-	if (!pcGrepAgent) {
-		return false; // GrepAgentが存在しない場合はGrepも実行されていない
-	}
-	return pcGrepAgent->m_bGrepRunning;
-}
-
-/*! 共通設定 プロパティシート */
-bool CEditWnd::OpenPropertySheet( int nPageNum )
-{
-	/* プロパティシートの作成 */
-	bool bRet = m_pcPropertyManager->OpenPropertySheet(GetHwnd(), nPageNum, false);
-	if( bRet ){
-		// 2007.10.19 genta マクロ登録変更を反映するため，読み込み済みのマクロを破棄する
-		CEditApp::getInstance()->m_pcSMacroMgr->UnloadAll();
-	}
-
-	return bRet;
-}
-
-/*! タイプ別設定 プロパティシート */
-bool CEditWnd::OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType )
-{
-	bool bRet = m_pcPropertyManager->OpenPropertySheetTypes(GetHwnd(), nPageNum, nSettingType);
-
-	return bRet;
 }
