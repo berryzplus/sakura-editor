@@ -9,8 +9,6 @@
 #define SAKURA_CGREPAGENT_97F2B632_71C8_4E4A_AC42_13A6098B248F_H_
 #pragma once
 
-#include "doc/CDocListener.h"
-
 class CDlgCancel;
 class CDlgGrep;
 class CEditView;
@@ -51,13 +49,9 @@ struct SGrepOption{
 
 //	Jun. 26, 2001 genta	正規表現ライブラリの差し替え
 //	Mar. 28, 2004 genta DoGrepFileから不要な引数を削除
-class CGrepAgent : public CDocListenerEx{
+class CGrepAgent {
 public:
-	CGrepAgent();
-
-	// イベント
-	ECallbackResult OnBeforeClose() override;
-	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
+	CGrepAgent() = default;
 
 	static void CreateFolders( const WCHAR* pszPath, std::vector<std::wstring>& vPaths );
 	static std::wstring ChopYen( const std::wstring& str );
@@ -180,4 +174,5 @@ public: //$$ 仮
 	bool	m_bGrepMode = false;		//!< Grepモードか
 	bool	m_bGrepRunning = false;		//!< Grep処理中
 };
+
 #endif /* SAKURA_CGREPAGENT_97F2B632_71C8_4E4A_AC42_13A6098B248F_H_ */

@@ -11,6 +11,9 @@
 #include "CEditApp.h"
 #include "CGrepAgent.h"
 
+#include "CSelectLang.h"
+#include "String_define.h"
+
 bool CAppMode::IsGrepMode() const noexcept
 {
 	return CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode;
@@ -24,8 +27,25 @@ void CAppMode::SetGrepMode(bool bGrepMode) noexcept
 	}
 }
 
+ECallbackResult CAppMode::OnBeforeClose()
+{
+	//GREP処理中は終了できない
+	if(CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ){
+		// アクティブにする
+		ActivateFrameWindow( CEditWnd::getInstance()->GetHwnd() );	//@@@ 2003.06.25 MIK
+		TopInfoMessage(
+			CEditWnd::getInstance()->GetHwnd(),
+			LS(STR_GREP_RUNNINNG)
+		);
+		return CALLBACK_INTERRUPT;
+	}
+	return CALLBACK_CONTINUE;
+}
+
 void CAppMode::OnAfterSave(const SSaveInfo& sSaveInfo)
 {
+	SetGrepMode(false);
+
 	m_bViewMode = false;	/* ビューモード */
 
 	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji

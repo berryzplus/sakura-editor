@@ -27,6 +27,7 @@ public:
 	void	SetGrepMode(bool bGrepMode) noexcept;	//<! Grepモードを設定
 
 	//イベント
+	ECallbackResult OnBeforeClose() override;
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 protected:

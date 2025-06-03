@@ -187,32 +187,6 @@ public:
 	}
 };
 
-CGrepAgent::CGrepAgent()
-{
-}
-
-ECallbackResult CGrepAgent::OnBeforeClose()
-{
-	//GREP処理中は終了できない
-	if( m_bGrepRunning ){
-		// アクティブにする
-		ActivateFrameWindow( CEditWnd::getInstance()->GetHwnd() );	//@@@ 2003.06.25 MIK
-		TopInfoMessage(
-			CEditWnd::getInstance()->GetHwnd(),
-			LS(STR_GREP_RUNNINNG)
-		);
-		return CALLBACK_INTERRUPT;
-	}
-	return CALLBACK_CONTINUE;
-}
-
-void CGrepAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
-{
-	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
-	m_bGrepMode = false;	// grepウィンドウは通常ウィンドウ化
-	CAppMode::getInstance()->m_szGrepKey[0] = L'\0';
-}
-
 /*!
 	@date 2014.03.09 novice 最後の\\を取り除くのをやめる(d:\\ -> d:になる)
 */
