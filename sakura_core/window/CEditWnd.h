@@ -93,6 +93,8 @@ class CEditWnd
 	~CEditWnd();
 
 public:
+	static bool    IsGrepRunning() noexcept;
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           作成                              //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

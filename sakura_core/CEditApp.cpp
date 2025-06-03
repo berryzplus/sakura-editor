@@ -52,9 +52,17 @@ CEditApp::~CEditApp()
 	delete m_pcVisualProgress;
 }
 
-bool CEditApp::IsGrepRunning() const noexcept
+/* static */ bool CEditWnd::IsGrepRunning() noexcept
 {
-	return m_pcGrepAgent && m_pcGrepAgent->m_bGrepRunning;
+	const auto pApp = CEditApp::getInstance();
+	if (!pApp) {
+		return false; // アプリケーションが存在しない場合はGrepも実行されていない
+	}
+	const auto pcGrepAgent = pApp->m_pcGrepAgent;
+	if (!pcGrepAgent) {
+		return false; // GrepAgentが存在しない場合はGrepも実行されていない
+	}
+	return pcGrepAgent->m_bGrepRunning;
 }
 
 /*! 共通設定 プロパティシート */

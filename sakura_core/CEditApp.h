@@ -43,8 +43,6 @@ public:
 
 	CEditDoc*		GetDocument(){ return m_pcEditDoc.get(); }
 
-	bool    IsGrepRunning() const noexcept;
-
 public:
 	HINSTANCE			m_hInst;
 

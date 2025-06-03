@@ -16,7 +16,7 @@
 #include "util/string_ex.h"
 #include <algorithm>
 #include "sakura_rc.h"
-#include "CEditApp.h"
+#include "window/CEditWnd.h"
 #include "CGrepAgent.h"
 #include "apiwrap/CommonControl.h"
 #include "env/DLLSHAREDATA.h"
@@ -782,7 +782,7 @@ void CSearchAgent::ReplaceData( DocLineReplaceArg* pArg, bool bEnableExtEol )
 	CDLgCandelCloser closer(pCDlgCancel);
 	const CLogicInt nDelLines = pArg->sDelRange.GetTo().y - pArg->sDelRange.GetFrom().y;
 	const CLogicInt nEditLines = std::max<CLogicInt>(CLogicInt(1), nDelLines + CLogicInt(pArg->pInsData ? pArg->pInsData->size(): 0));
-	if (!CEditApp::getInstance()->IsGrepRunning()) {
+	if (!CEditWnd::IsGrepRunning()) {
 		if( 3000 < nEditLines ){
 			/* 進捗ダイアログの表示 */
 			pCDlgCancel = new CDlgCancel;
