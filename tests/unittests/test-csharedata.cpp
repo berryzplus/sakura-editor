@@ -661,12 +661,12 @@ MATCHER(IsInitializedCommonSettingBackup, "Checks if CommonSetting_Backup is pro
 MATCHER(IsInitializedCommonSettingFormat, "Checks if CommonSetting_Format is properly initialized") {
 	const CommonSetting_Format& sFormat = arg;
 
-	EXPECT_THAT(sFormat.m_szMidashiKigou, StrEq(L"１２３４５６７８９０（(［[「『【■□▲△▼▽◆◇○◎●§・※☆★第①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ一二三四五六七八九十壱弐参伍"));
+	EXPECT_THAT(sFormat.m_szMidashiKigou, StrEq(LS(STR_ERR_CSHAREDATA14)));
 	EXPECT_THAT(sFormat.m_szInyouKigou, StrEq(L"> "));
 	EXPECT_THAT(sFormat.m_nDateFormatType, 0);
-	EXPECT_THAT(sFormat.m_szDateFormat, StrEq(L"yyyy\'年\'M\'月\'d\'日(\'dddd\')\'"));
+	EXPECT_THAT(sFormat.m_szDateFormat, StrEq(LS(STR_ERR_CSHAREDATA15)));
 	EXPECT_THAT(sFormat.m_nTimeFormatType, 0);
-	EXPECT_THAT(sFormat.m_szTimeFormat, StrEq(L"tthh\'時\'mm\'分\'ss\'秒\'"));
+	EXPECT_THAT(sFormat.m_szTimeFormat, StrEq(LS(STR_ERR_CSHAREDATA16)));
 
 	return true;
 }
@@ -1157,13 +1157,13 @@ MATCHER(IsInitializedCommonSettingFileName, "Checks if CommonSetting_FileName is
 	EXPECT_THAT(sFileName.m_nTransformShortMaxWidth, 100);
 
 	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
-		{ LR"(%DeskTop%\)",           LR"(デスクトップ\)" },
-		{ LR"(%Personal%\)",          LR"(マイドキュメント\)" },
-		{ LR"(%Cache%\Content.IE5\)", LR"(IEキャッシュ\)" },
-		{ LR"(%TEMP%\)",              LR"(TEMP\)" },
-		{ LR"(%Common DeskTop%\)",    LR"(共有デスクトップ\)" },
-		{ LR"(%Common Documents%\)",  LR"(共有ドキュメント\)" },
-		{ LR"(%AppData%\)",           LR"(アプリデータ\)" }
+		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
+		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
+		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
+		{ LR"(%TEMP%\)",              LS(STR_TRANSNAME_TEMP) },
+		{ LR"(%Common DeskTop%\)",    LS(STR_TRANSNAME_COMDESKTOP) },
+		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
+		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
 	}};
 
 	EXPECT_THAT(sFileName.m_nTransformFileNameArrNum, expectedPairs.size());
@@ -1769,7 +1769,7 @@ MATCHER_P4(IsInitializedShareData, pszProfileName, isMultiUserSettings, userRoot
 	}
 
 	for (int i = 0; i < std::size(shareData.m_PrintSettingArr); ++i) {
-		EXPECT_THAT(shareData.m_PrintSettingArr[i].m_szPrintSettingName, StrEq(strprintf(L"印刷設定 %d", i + 1))) << L"Unexpected value at index " << i;
+		EXPECT_THAT(shareData.m_PrintSettingArr[i].m_szPrintSettingName, StrEq(strprintf(L"%s %d", LS(STR_PRINT_SET_NAME), i + 1))) << L"Unexpected value at index " << i;
 		EXPECT_THAT(shareData.m_PrintSettingArr[i].m_szPrintFontFaceHan, StrEq(L"ＭＳ 明朝"));
 		EXPECT_THAT(shareData.m_PrintSettingArr[i].m_szPrintFontFaceZen, StrEq(L"ＭＳ 明朝"));
 		EXPECT_THAT(shareData.m_PrintSettingArr[i].m_bColorPrint, IsFalse());
