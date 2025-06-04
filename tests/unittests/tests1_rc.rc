@@ -49,6 +49,10 @@ END
 // 101
 //
 IDR_ZIPRES1               101                     "resources.ja-JP.zip"
+IDR_ZIPRES2               101                     "PythonIndent1.1.zip"
+IDR_ZIPRES3               101                     "diff.exe"
+IDR_ZIPRES4               101                     "libiconv2.dll"
+IDR_ZIPRES5               101                     "libintl3.dll"
 
 #endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////

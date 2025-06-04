@@ -149,7 +149,7 @@ $(exe): $(OBJS) $(SAKURA_OBJS)
 $(OBJS):
 
 tests1_rc.o: tests1_rc.rc.utf8 $(sakura_rc) resources.ja-JP.zip
-	$(RC) -c utf-8 -I. -I$(SRCDIR) $(DEFINES) $< -o $@
+	$(RC) -c utf-8 -I. -I$(SRCDIR) -I$(SRCDIR)/../../externals/diffutils -I$(SRCDIR)/../../externals/PythonIndent $(DEFINES) $< -o $@
 
 tests1_rc.rc.utf8: tests1_rc.rc
 	$(ICONV) -f utf-16 -t utf-8 $(SRCDIR)/$(subst .utf8,,$(@F)) | $(SED) -e 1i'#pragma code_page(65001)' > $@
