@@ -89,6 +89,7 @@ class CEditWnd
 {
 	using CSoundSetHolder = std::unique_ptr<CSoundSet>;
 	using CVisualProgressHolder = std::unique_ptr<CVisualProgress>;
+	using CAppModeHolder = std::unique_ptr<CAppMode>;
 	using CGrepAgentHolder = std::unique_ptr<CGrepAgent>;
 	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
@@ -97,7 +98,7 @@ class CEditWnd
 public:
 	static bool    IsGrepRunning() noexcept;
 
-	CEditWnd(CVisualProgressHolder pcVisualProgress);
+	CEditWnd(CVisualProgressHolder pcVisualProgress, CAppModeHolder pcAppMode);
 	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -423,6 +424,7 @@ public:
 
 	CVisualProgressHolder m_pcVisualProgress = nullptr;
 	CSoundSetHolder	m_pcSoundSet = std::make_unique<CSoundSet>();			//サウンド管理
+	CAppModeHolder m_pcAppMode = nullptr;
 	CGrepAgentHolder m_pcGrepAgent = nullptr;			//GREPモード
 	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();

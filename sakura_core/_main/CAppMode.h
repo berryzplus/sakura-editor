@@ -13,11 +13,10 @@
 #include "doc/CDocListener.h"
 #include "CGrepAgent.h"
 
-class CAppMode : public TSingleton<CAppMode>, public CDocListenerEx{ //###仮
-	friend class TSingleton<CAppMode>;
+class CAppMode : public TSingleInstance<CAppMode>, public CDocListenerEx{ //###仮
+public:
 	CAppMode() = default;
 
-public:
 	//インターフェース
 	bool	IsViewMode() const				{ return m_bViewMode; }			//!< ビューモードを取得
 	void	SetViewMode(bool bViewMode)		{ m_bViewMode = bViewMode; }	//!< ビューモードを設定
