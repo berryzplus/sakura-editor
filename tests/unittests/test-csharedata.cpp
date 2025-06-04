@@ -12,7 +12,6 @@
 #include "_main/CNormalProcess.h"
 
 #include "config/system_constants.h"
-#include "version.h"
 #include "String_define.h"
 
 #include "util/window.h"
@@ -1805,10 +1804,6 @@ TEST(CShareData, InitShareData001)
 	// 共有メモリのインスタンスを生成する
 	const auto pShareData = std::make_unique<CShareData>();
 
-	// 共有メモリを初期化するにはコマンドラインのインスタンスが必要
-	CCommandLine cCommandLine;
-	cCommandLine.ParseCommandLine(L"-NOWIN", false);
-
 	// 共有メモリのインスタンスを初期化する
 	EXPECT_TRUE(pShareData->InitShareData());
 
@@ -1828,10 +1823,6 @@ TEST(CShareData, ConvertLangValues)
 
 	// 共有メモリのインスタンスを生成する
 	const auto pShareData = std::make_unique<CShareData>();
-
-	// 共有メモリを初期化するにはコマンドラインのインスタンスが必要
-	CCommandLine cCommandLine;
-	cCommandLine.ParseCommandLine(L"-NOWIN", false);
 
 	// 共有メモリのインスタンスを初期化する
 	ASSERT_TRUE(pShareData->InitShareData());
