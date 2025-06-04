@@ -27,6 +27,12 @@ const int LUOFFSET_MACRO = 0;
 const int LUOFFSET_CUSTMENU = 1;
 const int LUOFFSET_PLUGIN = 2;
 
+CFuncLookup::CFuncLookup(CommonSetting& Common) noexcept
+	: m_Common(Common)
+	, m_pMacroRec(m_Common.m_sMacro.m_MacroTable)
+{
+}
+
 /*!	@brief 分類中の位置に対応する機能番号を返す．
 
 	@param category [in] 分類番号 (0-)
@@ -271,9 +277,9 @@ const WCHAR* CFuncLookup::Custmenu2Name( int index, WCHAR buf[], int bufSize ) c
 		return NULL;
 
 	// 共通設定で名称を設定していればそれを返す
-	if ( m_pCommon->m_sCustomMenu.m_szCustMenuNameArr[ index ][0] != '\0' ) {
-		wcscpyn( buf, m_pCommon->m_sCustomMenu.m_szCustMenuNameArr[ index ], bufSize );
-		return m_pCommon->m_sCustomMenu.m_szCustMenuNameArr[ index ];
+	if ( m_Common.m_sCustomMenu.m_szCustMenuNameArr[ index ][0] != '\0' ) {
+		wcscpyn( buf, m_Common.m_sCustomMenu.m_szCustMenuNameArr[ index ], bufSize );
+		return m_Common.m_sCustomMenu.m_szCustMenuNameArr[ index ];
 	}
 
 	// 共通設定で未設定の場合、リソースのデフォルト名を返す

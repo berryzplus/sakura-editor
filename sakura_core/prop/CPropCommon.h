@@ -104,16 +104,17 @@ public:
 	//	Oct. 16, 2000 genta
 	CImageListMgr*	m_pcIcons;	//	Image List
 	
-	//	Oct. 2, 2001 genta 外部マクロ追加に伴う，対応部分の別クラス化
-	//	Oct. 15, 2001 genta Lookupはダイアログボックス内で別インスタンスを作るように
-	//	(検索対象として，設定用common領域を指すようにするため．)
-	CFuncLookup			m_cLookup;
-
-	CMenuDrawer*		m_pcMenuDrawer;
 	/*
 	|| ダイアログデータ
 	*/
 	CommonSetting	m_Common = m_pShareData->m_Common;
+
+	//	Oct. 2, 2001 genta 外部マクロ追加に伴う，対応部分の別クラス化
+	//	Oct. 15, 2001 genta Lookupはダイアログボックス内で別インスタンスを作るように
+	//	(検索対象として，設定用common領域を指すようにするため．)
+	CFuncLookup			m_cLookup{ m_Common };
+
+	CMenuDrawer*		m_pcMenuDrawer;
 
 	// 2005.01.13 MIK セット数増加
 	struct SKeywordSetIndex{

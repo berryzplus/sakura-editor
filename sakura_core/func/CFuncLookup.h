@@ -23,8 +23,9 @@
 #include "_main/global.h"
 #include "config/maxdata.h"
 #include "func/Funccode.h"
-struct MacroRec;// 2007.11.02 ryoji
-struct CommonSetting;// 2002/2/10 aroka
+
+struct DLLSHAREDATA;
+struct CommonSetting;
 
 //! マクロ情報
 struct MacroRec {
@@ -40,20 +41,11 @@ struct MacroRec {
 	@brief 表示用文字列等の取得
 
 	機能，機能分類と位置，機能番号，文字列などの対応を集約する．
-*/
+ */
 class CFuncLookup {
 
 public:
-	//	Oct. 15, 2001 genta 引数追加
-	// 2007.11.02 ryoji 引数変更（CSMacroMgr->MacroRec）
-//	CFuncLookup( HINSTANCE hInst, MacroRec* pMacroRec, CommonSetting* pCom )
-//		: m_pMacroRec( pMacroRec ), m_pCommon( pCom ) {}
-	CFuncLookup() : m_pMacroRec( NULL ){}
-
-	void Init( MacroRec* pMacroRec, CommonSetting* pCom ){
-		m_pMacroRec = pMacroRec;
-		m_pCommon = pCom;
-	}
+	explicit CFuncLookup(CommonSetting& Common) noexcept;
 
 	EFunctionCode Pos2FuncCode( int category, int position, bool bGetUnavailable = true ) const;	// 2007.10.31 ryoji bGetUnavailableパラメータ追加
 	bool Pos2FuncName( int category, int position, WCHAR* ptr, int bufsize ) const;
@@ -71,10 +63,8 @@ public:
 	int GetItemCount(int category) const;
 
 private:
-	MacroRec* m_pMacroRec;	//!< マクロ情報	// 2007.11.02 ryoji メンバ変更（CSMacroMgr->MacroRec）
-	
-	CommonSetting* m_pCommon;	//! 共通設定データ領域へのポインタ
+	CommonSetting&	m_Common;		//!< 共通設定データ領域へのポインタ
+	MacroRec*		m_pMacroRec;	//!< マクロ情報	// 2007.11.02 ryoji メンバ変更（CSMacroMgr->MacroRec）
 };
 
-/* [EOF] */
 #endif /* SAKURA_CFUNCLOOKUP_9470508D_849D_463F_B507_7843D4D85B4A_H_ */
