@@ -556,9 +556,7 @@ MATCHER_P2(IsInitializedCommonSettingTabBar, lfIconTitle, nIconPointSize, "Check
 	EXPECT_THAT(sTabBar.m_bDispTabWnd, IsFalse());
 	EXPECT_THAT(sTabBar.m_bDispTabWndMultiWin, IsFalse());
 
-	EXPECT_THAT(sTabBar.m_szTabWndCaption, StrEq(
-		L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-	));
+	EXPECT_THAT(sTabBar.m_szTabWndCaption, StrEq(LS(STR_ERR_CSHAREDATA10)));
 
 	EXPECT_THAT(sTabBar.m_bSameTabWidth, IsFalse());
 	EXPECT_THAT(sTabBar.m_bDispTabIcon, IsFalse());
