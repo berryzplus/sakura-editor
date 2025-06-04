@@ -211,9 +211,8 @@ LRESULT CALLBACK CEditWndProc(
 }
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CEditWnd::CEditWnd()
-: m_hWnd( NULL )
-, m_cToolbar(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
+CEditWnd::CEditWnd(CVisualProgressHolder pcVisualProgress)
+: m_cToolbar(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cStatusBar(this)		// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_pPrintPreview( NULL ) //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 , m_pcDragSourceView( NULL )
@@ -228,6 +227,7 @@ CEditWnd::CEditWnd()
 , m_bDragMode( false )
 , m_IconClicked(icNone) //by 鬼(2)
 , m_nSelectCountMode( SELECT_COUNT_TOGGLE )	//文字カウント方法の初期値はSELECT_COUNT_TOGGLE→共通設定に従う
+	, m_pcVisualProgress(std::move(pcVisualProgress))
 {
 }
 

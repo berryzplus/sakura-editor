@@ -780,9 +780,9 @@ void CEditDoc::OnChangeSetting(
 		nMaxLineKetas = m_cLayoutMgr.GetMaxLineKetas();	// 現在の折り返し幅
 		nTabSpace = m_cLayoutMgr.GetTabSpaceKetas();	// 現在のタブ幅
 	}
-	CProgressSubject* pOld = CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(&m_cLayoutMgr);
+	CProgressSubject* pOld = GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(&m_cLayoutMgr);
 	m_cLayoutMgr.SetLayoutInfo( bDoLayout, bBlockingHook, ref, nTabSpace, nTsvMode, nMaxLineKetas, CLayoutXInt(-1), &GetEditWnd().GetLogfont() );
-	CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(pOld);
+	GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(pOld);
 	GetEditWnd().ClearViewCaretPosInfo();
 
 	// 2009.08.28 nasukoji	「折り返さない」ならテキスト最大幅を算出、それ以外は変数をクリア

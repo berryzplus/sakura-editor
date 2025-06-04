@@ -14,11 +14,9 @@
 #include "doc/CEditDoc.h"
 
 #include "util/design_template.h"
-#include "uiparts/CSoundSet.h"
 #include "types/CType.h"
 
 class CEditWnd;
-class CVisualProgress;
 enum EFunctionCode;
 
 //!エディタ部分アプリケーションクラス。CNormalProcess1個につき、1個存在。
@@ -26,27 +24,20 @@ class CEditApp final : public TSingleton<CEditApp>{
 private:
 	friend class TSingleton<CEditApp>;
 	CEditApp() = default;
-	~CEditApp();
+	~CEditApp() = default;
 
 	using CEditDocHolder = std::unique_ptr<CEditDoc>;
 	using CEditWndHolder = std::unique_ptr<CEditWnd>;
 
 public:
-	void Create(HINSTANCE hInst);
+	void Create();
 
 private:
 	//ドキュメント
-	CEditDocHolder		m_pcEditDoc;
+	CEditDocHolder		m_pcEditDoc = nullptr;
 
 	//ウィンドウ
-	CEditWndHolder		m_pcEditWnd;
-
-public:
-	//IO管理
-	CVisualProgress*	m_pcVisualProgress;
-
-	//その他ヘルパ
-	CSoundSet			m_cSoundSet;			//サウンド管理
+	CEditWndHolder		m_pcEditWnd = nullptr;
 };
 
 //WM_QUIT検出例外

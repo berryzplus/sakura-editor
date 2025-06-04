@@ -15,13 +15,13 @@
 #include "util/module.h"
 #include "util/shell.h"
 
-void CEditApp::Create(HINSTANCE hInst)
+void CEditApp::Create()
 {
 	//ドキュメントの作成
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
 	//IO管理
-	m_pcVisualProgress = new CVisualProgress();
+	auto pcVisualProgress = std::make_unique<CVisualProgress>();
 
 	//編集モード
 	CAppMode::getInstance();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
@@ -30,10 +30,5 @@ void CEditApp::Create(HINSTANCE hInst)
 	m_pcEditDoc->Create();
 
 	//ウィンドウの作成
-	m_pcEditWnd = std::make_unique<CEditWnd>();
-}
-
-CEditApp::~CEditApp()
-{
-	delete m_pcVisualProgress;
+	m_pcEditWnd = std::make_unique<CEditWnd>(std::move(pcVisualProgress));
 }

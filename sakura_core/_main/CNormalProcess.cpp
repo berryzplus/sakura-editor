@@ -211,7 +211,7 @@ bool CNormalProcess::InitializeProcess()
 	// エディタアプリケーションを作成。2007.10.23 kobake
 	// CEditAppを作成
 	m_pcEditApp = CEditApp::getInstance();
-	m_pcEditApp->Create(GetProcessInstance());
+	m_pcEditApp->Create();
 	auto pEditWnd = CEditWnd::getInstance();
 
 	bGrepDlg = ApplyGrepOptions(pEditWnd->m_cDlgGrep);

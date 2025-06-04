@@ -305,7 +305,7 @@ bool CDocFileOperation::DoSaveFlow(SSaveInfo* pSaveInfo)
 				if (!m_pcDocRef->m_cDocEditor.IsModified() &&
 					pSaveInfo->cEol.IsNone() &&	//※改行コード指定保存がリクエストされた場合は、「変更があったもの」とみなす
 					!pSaveInfo->bChgCodeSet) {		// 文字コードセットの変更が有った場合は、「変更があったもの」とみなす
-					CEditApp::getInstance()->m_cSoundSet.NeedlessToSaveBeep();
+					GetEditWnd().m_pcSoundSet->NeedlessToSaveBeep();
 					throw CFlowInterruption();
 				}
 			}

@@ -49,6 +49,8 @@
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 #include "macro/CSMacroMgr.h"
+#include "uiparts/CSoundSet.h"
+#include "uiparts/CVisualProgress.h"
 
 static const int MENUBAR_MESSAGE_MAX_LEN = 30;
 
@@ -85,17 +87,18 @@ class CEditWnd
 : public TSingleInstance<CEditWnd>
 , public CDocListenerEx
 {
+	using CSoundSetHolder = std::unique_ptr<CSoundSet>;
+	using CVisualProgressHolder = std::unique_ptr<CVisualProgress>;
 	using CGrepAgentHolder = std::unique_ptr<CGrepAgent>;
 	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 
-	friend class TSingleton<CEditWnd>;
-	CEditWnd();
-	~CEditWnd();
-
 public:
 	static bool    IsGrepRunning() noexcept;
+
+	CEditWnd(CVisualProgressHolder pcVisualProgress);
+	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           作成                              //
@@ -345,7 +348,7 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 private:
 	//自ウィンドウ
-	HWND			m_hWnd;
+	HWND			m_hWnd = nullptr;
 
 public:
 	//子ウィンドウ
@@ -418,6 +421,8 @@ private:
 public:
 	ESelectCountMode	m_nSelectCountMode; // 選択文字カウント方法
 
+	CVisualProgressHolder m_pcVisualProgress = nullptr;
+	CSoundSetHolder	m_pcSoundSet = std::make_unique<CSoundSet>();			//サウンド管理
 	CGrepAgentHolder m_pcGrepAgent = nullptr;			//GREPモード
 	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();

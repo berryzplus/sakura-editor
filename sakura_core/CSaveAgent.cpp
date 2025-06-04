@@ -93,7 +93,7 @@ void CSaveAgent::OnSave(const SSaveInfo& sSaveInfo)
 
 	//カキコ
 	CWriteManager cWriter;
-	CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(&cWriter);
+	GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(&cWriter);
 	cWriter.WriteFile_From_CDocLineMgr(
 		pcDoc->m_cDocLineMgr,
 		sSaveInfo

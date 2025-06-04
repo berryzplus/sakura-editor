@@ -211,7 +211,7 @@ ELoadResult CLoadAgent::OnLoad(const SLoadInfo& sLoadInfo)
 	if(fexist(sLoadInfo.cFilePath)){
 		//CDocLineMgrの構成
 		CReadManager cReader;
-		CProgressSubject* pOld = CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(&cReader);
+		CProgressSubject* pOld = GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(&cReader);
 		EConvertResult eReadResult = cReader.ReadFile_To_CDocLineMgr(
 			&pcDoc->m_cDocLineMgr,
 			sLoadInfo,
@@ -220,7 +220,7 @@ ELoadResult CLoadAgent::OnLoad(const SLoadInfo& sLoadInfo)
 		if(eReadResult==RESULT_LOSESOME){
 			eRet = LOADED_LOSESOME;
 		}
-		CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(pOld);
+		GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(pOld);
 	}
 	else{
 		// 存在しないときもドキュメントに文字コードを反映する
@@ -251,11 +251,11 @@ ELoadResult CLoadAgent::OnLoad(const SLoadInfo& sLoadInfo)
 		pcDoc->m_cLayoutMgr.m_tsvInfo.m_nTsvMode = ref.m_nTsvMode;
 	}
 
-	CProgressSubject* pOld = CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(&pcDoc->m_cLayoutMgr);
+	CProgressSubject* pOld = GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(&pcDoc->m_cLayoutMgr);
 	pcDoc->m_cLayoutMgr.SetLayoutInfo( true, true, ref, ref.m_nTabSpace, ref.m_nTsvMode, nMaxLineKetas, CLayoutXInt(-1), &GetEditWnd().GetLogfont() );
 	GetEditWnd().ClearViewCaretPosInfo();
 	
-	CEditApp::getInstance()->m_pcVisualProgress->CProgressListener::Listen(pOld);
+	GetEditWnd().m_pcVisualProgress->CProgressListener::Listen(pOld);
 
 	return eRet;
 }
