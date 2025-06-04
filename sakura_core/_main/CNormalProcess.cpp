@@ -211,9 +211,6 @@ bool CNormalProcess::InitializeProcess()
 	//ドキュメントの作成
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
-	//ドキュメントの作成
-	m_pcEditDoc->Create();
-
 	//IO管理
 	auto pcVisualProgress = std::make_unique<CVisualProgress>();
 

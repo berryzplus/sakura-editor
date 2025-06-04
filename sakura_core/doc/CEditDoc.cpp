@@ -202,6 +202,10 @@ CEditDoc::CEditDoc()
 		}
 	}
 #endif
+
+	m_cFuncLookup.Init( GetDllShareData().m_Common.m_sMacro.m_MacroTable, &GetDllShareData().m_Common );
+
+	SetBackgroundImage();
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -381,25 +385,6 @@ void CEditDoc::InitAllView( void )
 	GetEditWnd().InitAllViews();
 
 	return;
-}
-
-/*! ウィンドウの作成等
-
-	@date 2001.09.29 genta マクロクラスを渡すように
-	@date 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
-*/
-BOOL CEditDoc::Create( void )
-{
-	MY_RUNNINGTIMER( cRunningTimer, L"CEditDoc::Create" );
-
-	//	Oct. 2, 2001 genta
-	m_cFuncLookup.Init( GetDllShareData().m_Common.m_sMacro.m_MacroTable, &GetDllShareData().m_Common );
-
-	SetBackgroundImage();
-
-	MY_TRACETIME( cRunningTimer, L"End: PropSheet" );
-
-	return TRUE;
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
