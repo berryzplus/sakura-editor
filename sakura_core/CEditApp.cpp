@@ -17,8 +17,6 @@
 
 void CEditApp::Create(HINSTANCE hInst)
 {
-	m_hInst = hInst;
-
 	//ドキュメントの作成
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
@@ -32,7 +30,7 @@ void CEditApp::Create(HINSTANCE hInst)
 	m_pcEditDoc->Create();
 
 	//ウィンドウの作成
-	m_pcEditWnd = CEditWnd::getInstance();
+	m_pcEditWnd = std::make_unique<CEditWnd>();
 }
 
 CEditApp::~CEditApp()

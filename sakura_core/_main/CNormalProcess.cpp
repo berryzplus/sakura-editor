@@ -212,7 +212,7 @@ bool CNormalProcess::InitializeProcess()
 	// CEditAppを作成
 	m_pcEditApp = CEditApp::getInstance();
 	m_pcEditApp->Create(GetProcessInstance());
-	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
+	auto pEditWnd = CEditWnd::getInstance();
 
 	bGrepDlg = ApplyGrepOptions(pEditWnd->m_cDlgGrep);
 
@@ -283,7 +283,7 @@ bool CNormalProcess::InitializeProcess()
 bool CNormalProcess::MainLoop()
 {
 	if( GetMainWindow() ){
-		m_pcEditApp->GetEditWindow()->MessageLoop();	/* メッセージループ */
+		GetEditWnd().MessageLoop();	/* メッセージループ */
 		return true;
 	}
 	return false;

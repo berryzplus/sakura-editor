@@ -29,27 +29,19 @@ private:
 	~CEditApp();
 
 	using CEditDocHolder = std::unique_ptr<CEditDoc>;
+	using CEditWndHolder = std::unique_ptr<CEditWnd>;
 
 public:
 	void Create(HINSTANCE hInst);
 
-	//モジュール情報
-	HINSTANCE GetAppInstance() const{ return m_hInst; }	//!< インスタンスハンドル取得
-
-	//ウィンドウ情報
-	CEditWnd* GetEditWindow(){ return m_pcEditWnd; }		//!< ウィンドウ取得
-
-	CEditDoc*		GetDocument(){ return m_pcEditDoc.get(); }
-
-public:
-	HINSTANCE			m_hInst;
-
+private:
 	//ドキュメント
 	CEditDocHolder		m_pcEditDoc;
 
 	//ウィンドウ
-	CEditWnd*			m_pcEditWnd;
+	CEditWndHolder		m_pcEditWnd;
 
+public:
 	//IO管理
 	CVisualProgress*	m_pcVisualProgress;
 
