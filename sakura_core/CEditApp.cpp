@@ -11,7 +11,6 @@
 #include "doc/CEditDoc.h"
 #include "window/CEditWnd.h"
 #include "uiparts/CVisualProgress.h"
-#include "CGrepAgent.h"
 #include "_main/CAppMode.h"
 #include "util/module.h"
 #include "util/shell.h"
@@ -26,9 +25,6 @@ void CEditApp::Create(HINSTANCE hInst)
 	//IO管理
 	m_pcVisualProgress = new CVisualProgress();
 
-	//GREPモード管理
-	m_pcGrepAgent = new CGrepAgent();
-
 	//編集モード
 	CAppMode::getInstance();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
 
@@ -41,6 +37,5 @@ void CEditApp::Create(HINSTANCE hInst)
 
 CEditApp::~CEditApp()
 {
-	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
 }

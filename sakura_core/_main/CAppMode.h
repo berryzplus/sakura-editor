@@ -11,6 +11,7 @@
 
 #include "util/design_template.h"
 #include "doc/CDocListener.h"
+#include "CGrepAgent.h"
 
 class CAppMode : public TSingleton<CAppMode>, public CDocListenerEx{ //###仮
 	friend class TSingleton<CAppMode>;
@@ -24,7 +25,6 @@ public:
 	void	SetDebugModeON();	//!< デバッグモニタモード設定
 	void	SetDebugModeOFF();	//!< デバッグモニタモード解除
 	bool	IsGrepMode() const noexcept;
-	void	SetGrepMode(bool bGrepMode) noexcept;	//<! Grepモードを設定
 
 	//イベント
 	ECallbackResult OnBeforeClose() override;
@@ -36,6 +36,7 @@ protected:
 private:
 	bool			m_bViewMode = false;		//!< ビューモード
 	bool			m_bDebugMode = false;		//!< デバッグモニタモード
+
 public:
 	wchar_t			m_szGrepKey[1024]{};			//!< Grepモードの場合、その検索キー
 };

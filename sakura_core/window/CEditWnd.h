@@ -82,10 +82,10 @@ struct STabGroupInfo{
 // 2007.10.30 kobake IsFuncEnable,IsFuncCheckedをFunccode.hに移動
 // 2007.10.30 kobake OnHelp_MenuItemをCEditAppに移動
 class CEditWnd
-: public TSingleton<CEditWnd>
+: public TSingleInstance<CEditWnd>
 , public CDocListenerEx
 {
-
+	using CGrepAgentHolder = std::unique_ptr<CGrepAgent>;
 	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
@@ -120,7 +120,9 @@ public:
 	);
 	void UpdateCaption();
 
-	DWORD DoGrep(CDlgGrep& cDlgGrep);
+	bool	IsGrepMode() const noexcept;
+	void	SetGrepMode(bool bGrepMode) noexcept;	//<! Grepモードを設定
+	DWORD   DoGrep(CDlgGrep& cDlgGrep);
 
 	bool    OpenPropertySheet(int nPageNum);
 	bool    OpenPropertySheetTypes(int nPageNum, CTypeConfig nSettingType);
@@ -416,6 +418,7 @@ private:
 public:
 	ESelectCountMode	m_nSelectCountMode; // 選択文字カウント方法
 
+	CGrepAgentHolder m_pcGrepAgent = nullptr;			//GREPモード
 	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
 	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();

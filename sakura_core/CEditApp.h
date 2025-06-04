@@ -19,7 +19,6 @@
 
 class CEditWnd;
 class CVisualProgress;
-class CGrepAgent;
 enum EFunctionCode;
 
 //!エディタ部分アプリケーションクラス。CNormalProcess1個につき、1個存在。
@@ -55,7 +54,6 @@ public:
 	CVisualProgress*	m_pcVisualProgress;
 
 	//その他ヘルパ
-	CGrepAgent*			m_pcGrepAgent;			//GREPモード
 	CSoundSet			m_cSoundSet;			//サウンド管理
 };
 

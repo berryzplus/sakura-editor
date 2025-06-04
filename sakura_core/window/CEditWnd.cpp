@@ -199,11 +199,11 @@ LRESULT CALLBACK CEditWndProc(
 
 /* static */ bool CEditWnd::IsGrepRunning() noexcept
 {
-	const auto pApp = CEditApp::getInstance();
+	auto pApp = CEditWnd::getInstance();
 	if (!pApp) {
 		return false; // アプリケーションが存在しない場合はGrepも実行されていない
 	}
-	const auto pcGrepAgent = pApp->m_pcGrepAgent;
+	const auto& pcGrepAgent = pApp->m_pcGrepAgent;
 	if (!pcGrepAgent) {
 		return false; // GrepAgentが存在しない場合はGrepも実行されていない
 	}
@@ -2098,6 +2098,21 @@ LRESULT CEditWnd::DispatchEvent(
 	}
 }
 
+bool CEditWnd::IsGrepMode() const noexcept
+{
+	return m_pcGrepAgent && m_pcGrepAgent->m_bGrepMode;
+}
+
+void CEditWnd::SetGrepMode(bool bGrepMode) noexcept
+{
+	if (bGrepMode) {
+		m_pcGrepAgent = std::make_unique<CGrepAgent>();
+
+	} else {
+		m_pcGrepAgent = nullptr;	// GrepAgentを解放
+	}
+}
+
 DWORD CEditWnd::DoGrep(CDlgGrep& cDlgGrep)
 {
 	auto pcViewDst = &GetActiveView();
@@ -2117,7 +2132,7 @@ DWORD CEditWnd::DoGrep(CDlgGrep& cDlgGrep)
 		Grepモードのとき、または未編集で無題かつアウトプットでない場合。
 		自ウィンドウがGrep実行中も、(異常終了するので)別ウィンドウにする
 	*/
-	if( (  CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode && !CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ) ||
+	if( (  IsGrepRunning() ) ||
 		( !GetDocument()->m_cDocEditor.IsModified() &&
 		  !GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() &&		/* 現在編集中のファイルのパス */
 		  !CAppMode::getInstance()->IsDebugMode()
@@ -2137,7 +2152,10 @@ DWORD CEditWnd::DoGrep(CDlgGrep& cDlgGrep)
 			GetDocument()->m_cDocType.LockDocumentType();
 			GetDocument()->OnChangeType();
 		}
-		const auto ret = CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
+
+		m_pcGrepAgent = std::make_unique<CGrepAgent>();
+
+		const auto ret = m_pcGrepAgent->DoGrep(
 			pcViewDst,
 			pDlgGrepReplace,
 			&cmWork1,

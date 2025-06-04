@@ -16,21 +16,13 @@
 
 bool CAppMode::IsGrepMode() const noexcept
 {
-	return CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode;
-}
-
-void CAppMode::SetGrepMode(bool bGrepMode) noexcept
-{
-	CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode = bGrepMode;
-	if (!bGrepMode) {
-		wcscpy_s(m_szGrepKey, L"");
-	}
+	return GetEditWnd().IsGrepMode();
 }
 
 ECallbackResult CAppMode::OnBeforeClose()
 {
 	//GREP処理中は終了できない
-	if(CEditApp::getInstance()->m_pcGrepAgent->m_bGrepRunning ){
+	if (CEditWnd::IsGrepRunning()) {
 		// アクティブにする
 		ActivateFrameWindow( CEditWnd::getInstance()->GetHwnd() );	//@@@ 2003.06.25 MIK
 		TopInfoMessage(
@@ -44,7 +36,8 @@ ECallbackResult CAppMode::OnBeforeClose()
 
 void CAppMode::OnAfterSave(const SSaveInfo& sSaveInfo)
 {
-	SetGrepMode(false);
+	GetEditWnd().SetGrepMode(false);
+	wcscpy_s(m_szGrepKey, L"");
 
 	m_bViewMode = false;	/* ビューモード */
 
