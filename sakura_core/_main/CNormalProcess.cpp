@@ -208,11 +208,22 @@ bool CNormalProcess::InitializeProcess()
 	CPluginManager::getInstance()->LoadAllPlugin();
 	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
 
-	// エディタアプリケーションを作成。2007.10.23 kobake
-	// CEditAppを作成
-	m_pcEditApp = CEditApp::getInstance();
-	m_pcEditApp->Create();
-	auto pEditWnd = CEditWnd::getInstance();
+	//ドキュメントの作成
+	m_pcEditDoc = std::make_unique<CEditDoc>();
+
+	//ドキュメントの作成
+	m_pcEditDoc->Create();
+
+	//IO管理
+	auto pcVisualProgress = std::make_unique<CVisualProgress>();
+
+	//編集モード
+	auto pcAppMode = std::make_unique<CAppMode>();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
+
+	//ウィンドウの作成
+	m_pcEditWnd = std::make_unique<CEditWnd>(std::move(pcVisualProgress), std::move(pcAppMode));
+
+	auto pEditWnd = m_pcEditWnd.get();
 
 	bGrepDlg = ApplyGrepOptions(pEditWnd->m_cDlgGrep);
 

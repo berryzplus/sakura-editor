@@ -16,13 +16,13 @@
 #define SAKURA_CNORMALPROCESS_F2808B31_61DC_4BE0_8661_9626478AC7F9_H_
 #pragma once
 
-#include "global.h"
 #include "CProcess.h"
-#include "extmodule/CMigemo.h"
-#include "CEditApp.h"
+#include "doc/CEditDoc.h"
+#include "window/CEditWnd.h"
 #include "util/design_template.h"
 
-class CEditWnd;
+#include "extmodule/CMigemo.h"
+
 class CDlgGrep;
 
 /*-----------------------------------------------------------------------
@@ -34,6 +34,10 @@ class CDlgGrep;
 	エディタプロセスはCEditWndクラスのインスタンスを作る。
 */
 class CNormalProcess final : public CProcess {
+private:
+	using CEditDocHolder = std::unique_ptr<CEditDoc>;
+	using CEditWndHolder = std::unique_ptr<CEditWnd>;
+
 public:
 	static bool StartControlProcess(_In_opt_z_ LPCWSTR pszProfileName);
 
@@ -53,7 +57,9 @@ protected:
 	bool    ApplyGrepOptions(CDlgGrep& cDlgGrep) const noexcept;
 
 private:
-	CEditApp*	m_pcEditApp = nullptr;
+	CEditDocHolder		m_pcEditDoc = nullptr;	//!< ドキュメント
+	CEditWndHolder		m_pcEditWnd = nullptr;	//!< 編集ウィンドウ
+
 	CMigemo		m_cMigemo;
 };
 
