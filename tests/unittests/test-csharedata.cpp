@@ -536,10 +536,7 @@ MATCHER(IsInitializedCommonSettingWindow, "Checks if CommonSetting_Window is pro
 	EXPECT_THAT(sWindow.m_bUseCompatibleBMP, IsTrue());
 	EXPECT_THAT(sWindow.m_bMenuIcon, IsTrue());
 
-	EXPECT_THAT(sWindow.m_szWindowCaptionActive, StrEq(
-		L"${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} -"
-		L" $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>"
-	));
+	EXPECT_THAT(sWindow.m_szWindowCaptionActive, StrEq(LS(STR_ERR_CSHAREDATA17)));
 
 	EXPECT_THAT(sWindow.m_szWindowCaptionInactive, StrEq(
 		L"${w?$h$:アウトプット$:$f$n$}${U?(更新)$} -"
