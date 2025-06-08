@@ -21,8 +21,6 @@ if ($UseBuildWrapper) {
   exit 0
 }
 
-cmd.exe /C ".\tools\BuildDependencies.bat"
-
 $CMD_MSBUILD = $(vswhere -find 'MSBuild\**\Bin\MSBuild.exe' -version "[$VsVersion,$([int]$VsVersion + 1)`)")
 
 $p = Start-Process `

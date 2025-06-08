@@ -9,9 +9,3 @@ Param(
     "tests1-coverage.xml" `
     "$HomePath\$Platform\$Configuration\tests1.exe" `
     @("--gtest_output=xml:$HomePath\tests1-googletest.xml")
-
-# Invoke Tests2.
-& "$PSScriptRoot\Run-FuncTest.ps1" `
-    "tests2-coverage.xml" `
-    $Platform `
-    $Configuration

@@ -5,8 +5,6 @@ Param(
     [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..")
 )
 
-cmd.exe /C ".\tools\BuildDependencies.bat"
-
 $CMD_MSBUILD = $(vswhere -find 'MSBuild\**\Bin\MSBuild.exe' -version "[$VsVersion,$([int]$VsVersion + 1)`)")
 
 $buildWrapperPath = "build-wrapper-win-x86-64"
