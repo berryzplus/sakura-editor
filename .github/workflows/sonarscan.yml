@@ -77,4 +77,4 @@ jobs:
       with:
         args: >
           -D"sonar.organization=${{ github.repository_owner }}"
-          -D"sonar.projectKey=$('${{ github.repository }}' -replace '${{ github.repository_owner }}/', '')"
+          -D"sonar.projectKey=${{ github.repository.split('/')[1] }}"
