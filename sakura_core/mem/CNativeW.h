@@ -59,8 +59,6 @@ private:
 	using Me = CNativeW;
 	using Base = CNative<WCHAR>;
 
-	friend bool operator == (const CNativeW& lhs, const wchar_t* rhs) noexcept;
-
 public:
 	//コンストラクタ・デストラクタ
 	using Base::Base;

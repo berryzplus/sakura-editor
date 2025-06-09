@@ -538,34 +538,6 @@ TEST(StaticString, append103)
 /*!
  * @brief StaticStringのテスト
  *
- * 末尾に文字列参照を追加する(サイズオーバー)
- */
-TEST(StaticString, append104)
-{
-	// ARRANGE
-	StaticString<4> szText = L"ザク";
-
-	// ACT & ASSERT
-	szText += L"Ⅱ MS-06F"sv;
-
-	// ASSERT
-	EXPECT_THAT(szText, StrEq(L"ザクⅡ"));
-	EXPECT_THAT(szText.length(), 3);
-
-	// ARRANGE
-	szText = L"ザク";
-
-	// ACT & ASSERT
-	EXPECT_THAT(szText.append(L"Ⅱ MS-06F"sv), STRUNCATE);
-
-	// ASSERT
-	EXPECT_THAT(szText, StrEq(L"ザクⅡ"));
-	EXPECT_THAT(szText.length(), 3);
-}
-
-/*!
- * @brief StaticStringのテスト
- *
  * 末尾に文字列ポインタを追加する(途中にNULを含む)
  */
 TEST(StaticString, append202)

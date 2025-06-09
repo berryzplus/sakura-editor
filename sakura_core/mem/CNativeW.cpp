@@ -76,7 +76,8 @@ CNativeW operator + (const CNativeW& lhs, const wchar_t* rhs) noexcept(false)
 CNativeW operator + (const wchar_t* lhs, const CNativeW& rhs) noexcept(false)
 {
 	CNativeW tmp(lhs);
-	return tmp + rhs;
+	tmp += rhs;
+	return tmp;
 }
 
 /*!

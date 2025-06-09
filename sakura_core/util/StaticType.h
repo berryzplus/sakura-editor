@@ -221,10 +221,6 @@ public:
 
 	SString() = default;
 
-	SString(const Me& rhs) = default;
-
-	explicit SString(string_view_type rhs) noexcept { assign(rhs); }
-
 	/* implicit */ SString(_In_opt_z_ const char_type* rhs) noexcept { assign(rhs); }
 	/* implicit */ SString(const string_type& rhs) noexcept { assign(rhs); }
 	/* implicit */ SString(const std::filesystem::path& rhs) noexcept { assign(rhs); }
@@ -241,13 +237,9 @@ public:
 		return buffer_type(data() + currentLength, size() - currentLength).assign(text, count);
 	}
 
-	errno_t append(string_view_type rhs) {
-		return append(rhs.data(), rhs.length());
-	}
-
 	errno_t append(_In_z_ const char_type* rhs) {
 		if (!rhs) return EINVAL;
-		return append(string_view_type(rhs));
+		return append(rhs, auto_strlen(rhs));
 	}
 
 	errno_t append(const string_type& rhs) {
@@ -264,15 +256,11 @@ public:
 		return buffer_type(data(), size()).assign(text, count);
 	}
 
-	errno_t assign(string_view_type rhs) {
-		return assign(rhs.data(), rhs.length());
-	}
-
 	errno_t assign(_In_opt_z_ const char_type* rhs) {
 		if (!rhs) {
 			return assign(nullptr, 0);
 		} else {
-			return assign(string_view_type(rhs));
+			return assign(rhs, auto_strlen(rhs));
 		}
 	}
 
@@ -313,15 +301,13 @@ public:
 	 */
 	int Length() const { return int(length()); }
 
-	Me& operator = (const Me& rhs) = default;
-
-	Me& operator = (string_view_type rhs) { assign(rhs); return *this; }
+	Me& operator = (string_view_type rhs) { assign(rhs.data(), rhs.length()); return *this; }
 	Me& operator = (_In_opt_z_ const char_type* rhs) { assign(rhs); return *this; }
 	Me& operator = (const string_type& rhs) { assign(rhs); return *this; }
 	Me& operator = (const char_type ch) { assign(&ch, 1); return *this; }
 	Me& operator = (const std::filesystem::path& rhs) { assign(rhs); return *this; }
 
-	Me& operator += (string_view_type rhs) { append(rhs); return *this; }
+	Me& operator += (string_view_type rhs) { append(rhs.data(), rhs.length()); return *this; }
 	Me& operator += (_In_z_ const char_type* rhs) { append(rhs); return *this; }
 	Me& operator += (const string_type& rhs) { append(rhs); return *this; }
 	Me& operator += (const char_type ch) { append(&ch, 1); return *this; }
