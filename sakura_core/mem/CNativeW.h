@@ -76,8 +76,9 @@ public:
 
 	//演算子
 	Me& operator += (const Me& rhs)			{ AppendNativeData(rhs); return *this; }
-	bool operator == (const Me& rhs) const noexcept { return 0 == Compare(rhs); }
-	bool operator != (const Me& rhs) const noexcept { return !(*this == rhs); }
+
+	friend bool operator == (const Me& lhs, const Me& rhs) noexcept { return 0 == lhs.Compare(rhs); }
+	friend bool operator != (const Me& lhs, const Me& rhs) noexcept { return !(lhs == rhs); }
 
 	//! 任意位置の文字取得。nIndexは文字単位。
 	char_type operator[]( size_t nIndex ) const	//!< 任意位置の文字取得。nIndexは文字単位。
