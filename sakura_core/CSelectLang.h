@@ -16,43 +16,41 @@
 #define SAKURA_CSELECTLANG_657416B2_2B3D_455C_AC28_8B86244F5F83_H_
 #pragma once
 
-#include <windows.h>
-#include <vector>
+#include "cxx_util/ResourceHolder.hpp"
 
 #define MAX_SELLANG_NAME_STR	128		// メッセージリソースの言語名の最大文字列長（サイズは適当）
 
+// メッセージリソース用構造体
+struct SLangDll {
+	//! HANDLE型のスマートポインタ
+	using ModuleHolder = cxx_util::ResourceHolder<HMODULE, &FreeLibrary>;
+
+	ModuleHolder hInstance = nullptr;	//!< 読み込んだリソースのインスタンスハンドル
+	std::filesystem::path dllPath;		//!< メッセージリソースDLLのパス
+	std::wstring langName;				//!< 言語名
+	WORD wLangId = 0;					//!< 言語ID
+
+	SLangDll() = default;
+	SLangDll(const std::filesystem::path& dllPath, LPCWSTR pszLangName, WORD wLangId)
+		: dllPath(dllPath)
+		, langName(pszLangName)
+		, wLangId(wLangId)
+	{
+	}
+
+	LPCWSTR GetDllName() const noexcept { return dllPath.c_str(); }
+	LPCWSTR GetLangName() const noexcept { return langName.c_str(); }
+};
+
 class CSelectLang
 {
-
 	using Me = CSelectLang;
+	using LangDllList = std::vector<SLangDll>;
+	using LangDllIter = LangDllList::iterator;
 
 public:
-	// メッセージリソース用構造体
-	struct SSelLangInfo {
-		WCHAR szDllName[MAX_PATH];		// メッセージリソースDLLのファイル名
-		WCHAR szLangName[MAX_SELLANG_NAME_STR];		// 言語名
-		HINSTANCE hInstance;			// 読み込んだリソースのインスタンスハンドル
-		WORD wLangId;					// 言語ID
-		BOOL bValid;					// メッセージリソースDLLとして有効
-	};
-
-protected:
-	//static LPWSTR m_szDefaultLang;					// メッセージリソースDLL未読み込み時のデフォルト言語
-	static SSelLangInfo* m_psLangInfo;				// メッセージリソースの情報
-public:
-	typedef std::vector<SSelLangInfo*> PSSelLangInfoList;
-	static PSSelLangInfoList m_psLangInfoList;
-
-public:
-	/*
-	||  Constructors
-	*/
-	CSelectLang() noexcept = default;
-	CSelectLang(const Me&) = delete;
-	Me& operator = (const Me&) = delete;
-	CSelectLang(Me&&) noexcept = delete;
-	Me& operator = (Me&&) noexcept = delete;
-	~CSelectLang();
+	static inline LangDllList gm_LangDllList{};
+	static inline LangDllIter gm_LangDll = gm_LangDllList.begin();
 
 	/*
 	||  Attributes & Operations
@@ -62,8 +60,7 @@ public:
 	static WORD getDefaultLangId(void);
 
 	static HINSTANCE InitializeLanguageEnvironment(void);		// 言語環境を初期化する
-	static HINSTANCE LoadLangRsrcLibrary( SSelLangInfo& lang );	// メッセージ用リソースDLLをロードする
-	static void ChangeLang( const WCHAR* pszDllName );	// 言語を変更する
+	static void ChangeLang(const std::filesystem::path& dllPath);	// 言語を変更する
 	static void UninitializeLanguageEnvironment();
 
 protected:
@@ -71,8 +68,6 @@ protected:
 	||  実装ヘルパ関数
 	*/
 	static HINSTANCE ChangeLang( UINT nSelIndex );	// 言語を変更する
-
-private:
 };
 
 /*!
@@ -123,8 +118,8 @@ protected:
 		CLoadStrBuffer operator = ( const CLoadStrBuffer& );		// 代入禁止とする
 	};
 
-	static CLoadStrBuffer m_acLoadStrBufferTemp[5];		// 文字列読み込みバッファの配列（CLoadString::LoadStringSt() が使用する）
-	static int m_nDataTempArrayIndex;					// 最後に使用したバッファのインデックス（CLoadString::LoadStringSt() が使用する）
+	static inline std::array<CLoadStrBuffer, 5> m_acLoadStrBufferTemp{};		// 文字列読み込みバッファの配列（CLoadString::LoadStringSt() が使用する）
+	static inline int m_nDataTempArrayIndex = 0;					// 最後に使用したバッファのインデックス（CLoadString::LoadStringSt() が使用する）
 	CLoadStrBuffer m_cLoadStrBuffer;					// 文字列読み込みバッファ（CLoadString::LoadString() が使用する）
 
 public:
