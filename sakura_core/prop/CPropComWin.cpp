@@ -353,11 +353,10 @@ void CPropWin::SetData( HWND hwndDlg )
 	HWND hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_LANGUAGE );
 	Combo_ResetContent( hwndCombo );
 	int nSelPos = 0;
-	UINT uiIndex = 0;
-	for( uiIndex = 0; uiIndex < CSelectLang::m_psLangInfoList.size(); uiIndex++ ){
-		CSelectLang::SSelLangInfo* psLangInfo = CSelectLang::m_psLangInfoList.at( uiIndex );
-		Combo_InsertString( hwndCombo, uiIndex, psLangInfo->szLangName );
-		if ( wcscmp( m_Common.m_sWindow.m_szLanguageDll, psLangInfo->szDllName ) == 0 ) {
+	for (UINT uiIndex = 0; uiIndex < CSelectLang::gm_LangDllList.size(); ++uiIndex) {
+		const auto& langDll = CSelectLang::gm_LangDllList.at(uiIndex);
+		Combo_InsertString(hwndCombo, uiIndex, langDll.GetLangName());
+		if ( wcscmp( m_Common.m_sWindow.m_szLanguageDll, langDll.GetDllName() ) == 0 ) {
 			nSelPos = uiIndex;
 		}
 	}
@@ -445,9 +444,8 @@ int CPropWin::GetData( HWND hwndDlg )
 	// 言語選択
 	HWND hwndCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_LANGUAGE );
 	int nSelPos = Combo_GetCurSel( hwndCombo );
-	CSelectLang::SSelLangInfo *psLangInfo = CSelectLang::m_psLangInfoList.at( nSelPos );
-	if ( wcscmp( m_Common.m_sWindow.m_szLanguageDll, psLangInfo->szDllName ) != 0 ) {
-		wcsncpy( m_Common.m_sWindow.m_szLanguageDll, psLangInfo->szDllName, _countof(m_Common.m_sWindow.m_szLanguageDll) );
+	if (const auto& langDll = CSelectLang::gm_LangDllList.at( nSelPos ); wcscmp( m_Common.m_sWindow.m_szLanguageDll, langDll.GetDllName() ) != 0 ) {
+		wcscpy_s( m_Common.m_sWindow.m_szLanguageDll, langDll.GetDllName() );
 	}
 
 	return TRUE;
