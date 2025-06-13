@@ -54,7 +54,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Label="sakura.common">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\sakura_core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\sakura_core'));$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\src\main\cpp'));%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=_WIN32_WINNT_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -478,6 +478,7 @@
     <ClInclude Include="..\sakura_core\_os\CClipboard.h" />
     <ClInclude Include="..\sakura_core\_os\CDropTarget.h" />
     <ClInclude Include="..\sakura_core\_os\OleTypes.h" />
+    <ClInclude Include="..\src\main\cpp\cxx_util\ResourceHolder.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur" />
