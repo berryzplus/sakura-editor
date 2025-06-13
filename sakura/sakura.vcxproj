@@ -488,6 +488,7 @@
     <ClInclude Include="..\sakura_core\_os\CClipboard.h" />
     <ClInclude Include="..\sakura_core\_os\CDropTarget.h" />
     <ClInclude Include="..\sakura_core\_os\OleTypes.h" />
+    <ClInclude Include="..\src\main\cpp\cxx_util\ResourceHolder.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur" />
