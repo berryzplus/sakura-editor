@@ -118,8 +118,8 @@ protected:
 		CLoadStrBuffer operator = ( const CLoadStrBuffer& );		// 代入禁止とする
 	};
 
-	static CLoadStrBuffer m_acLoadStrBufferTemp[5];		// 文字列読み込みバッファの配列（CLoadString::LoadStringSt() が使用する）
-	static int m_nDataTempArrayIndex;					// 最後に使用したバッファのインデックス（CLoadString::LoadStringSt() が使用する）
+	static inline std::array<CLoadStrBuffer, 5> m_acLoadStrBufferTemp{};		// 文字列読み込みバッファの配列（CLoadString::LoadStringSt() が使用する）
+	static inline int m_nDataTempArrayIndex = 0;					// 最後に使用したバッファのインデックス（CLoadString::LoadStringSt() が使用する）
 	CLoadStrBuffer m_cLoadStrBuffer;					// 文字列読み込みバッファ（CLoadString::LoadString() が使用する）
 
 public:

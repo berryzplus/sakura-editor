@@ -184,10 +184,6 @@ HINSTANCE CSelectLang::ChangeLang( UINT nIndex )
 	return gm_LangDll->hInstance;
 }
 
-// 文字列リソース読み込み用グローバル
-CLoadString::CLoadStrBuffer CLoadString::m_acLoadStrBufferTemp[];	// 文字列読み込みバッファの配列（CLoadString::LoadStringSt() が使用する）
-int CLoadString::m_nDataTempArrayIndex = 0;							// 最後に使用したバッファのインデックス（CLoadString::LoadStringSt() が使用する）
-
 /*!
 	@brief 静的バッファに文字列リソースを読み込む（各国語メッセージリソース対応）
 
@@ -210,7 +206,7 @@ int CLoadString::m_nDataTempArrayIndex = 0;							// 最後に使用したバッ
 LPCWSTR CLoadString::LoadStringSt( UINT uid )
 {
 	// 使用するバッファの現在位置を進める
-	m_nDataTempArrayIndex = (m_nDataTempArrayIndex + 1) % _countof(m_acLoadStrBufferTemp);
+	m_nDataTempArrayIndex = (m_nDataTempArrayIndex + 1) % std::size(m_acLoadStrBufferTemp);
 
 	m_acLoadStrBufferTemp[m_nDataTempArrayIndex].LoadString( uid );
 
@@ -275,7 +271,7 @@ int CLoadString::CLoadStrBuffer::LoadString( UINT uid )
 
 	if( !hRsrc ){
 		// メッセージリソースDLL読込処理前は内部リソースを使う
-		hRsrc = ::GetModuleHandle(NULL);
+		hRsrc = G_AppInstance();
 	}
 
 	int nRet = 0;
@@ -285,8 +281,8 @@ int CLoadString::CLoadStrBuffer::LoadString( UINT uid )
 
 		// リソースが無い
 		if( nRet == 0 ){
-			if( hRsrc != ::GetModuleHandle(NULL) ){
-				hRsrc = ::GetModuleHandle(NULL);	// 内部リソースを使う
+			if( hRsrc != G_AppInstance()){
+				hRsrc = G_AppInstance();	// 内部リソースを使う
 			}else{
 				// 内部リソースからも読めなかったら諦める（普通はあり得ない）
 				m_pszString[0] = L'\0';
@@ -302,7 +298,7 @@ int CLoadString::CLoadStrBuffer::LoadString( UINT uid )
 			}
 			catch(const std::bad_alloc&){
 				// メモリ割り当て例外（例外の発生する環境の場合でも旧来の処理にする）
-				pTemp = NULL;
+				pTemp = nullptr;
 			}
 
 			if( pTemp ){
