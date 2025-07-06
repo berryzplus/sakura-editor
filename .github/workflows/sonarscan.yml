@@ -34,12 +34,10 @@ jobs:
         fetch-depth: 0
         submodules: true
 
-    - name: Set Repository Name
-      id: set_repo_name
+    - name: Set Sonar Project Key
       run: |
-        $repo = "${{ github.repository }}"
-        $repoName = $repo.Split('/')[1]
-        echo "REPO_NAME=$repoName" >> $env:GITHUB_ENV
+        $projectKey = $('${{ github.repository }}' -replace '/', '_')
+        echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -84,4 +82,4 @@ jobs:
       with:
         args: >
           -D"sonar.organization=${{ github.repository_owner }}"
-          -D"sonar.projectKey=${{ env.REPO_NAME }}"
+          -D"sonar.projectKey=${{ env.SONAR_PROJECT_KEY }}"
