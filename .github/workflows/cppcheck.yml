@@ -32,8 +32,7 @@ jobs:
         shell: cmd
 
       - name: Install cppcheck
-        run: msiexec /i externals\cppcheck\cppcheck-1.84-x64-Setup.msi /quiet /qn /norestart /log cppcheck-install.log
-        shell: cmd
+        run: choco install cppcheck -y
 
       - name: Run cppcheck
         run: run-cppcheck.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
