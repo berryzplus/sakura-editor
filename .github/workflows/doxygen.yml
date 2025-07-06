@@ -35,8 +35,7 @@ jobs:
         shell: cmd
 
       - name: Install doxygen
-        run: externals\doxygen\doxygen-${{ env.DOXYGEN_VERSION }}-setup.exe /silent /suppressmsgboxes
-        shell: cmd
+        run: choco install doxygen.install -y
 
       - name: Run doxygen
         run: run-doxygen.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
