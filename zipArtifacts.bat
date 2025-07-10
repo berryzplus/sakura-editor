@@ -274,6 +274,8 @@ pushd %WORKDIR_INST% && call %ZIP_CMD%       %OUTFILE_INST% .  && popd
 pushd %WORKDIR_EXE%  && call %ZIP_CMD%       %OUTFILE_EXE%  .  && popd
 pushd %WORKDIR_DEV%  && call %ZIP_CMD%       %OUTFILE_DEV%  .  && popd
 
+@echo WORKDIR_INST is "%WORKDIR_INST%"
+
 @echo start zip asm
 mkdir %WORKDIR_ASM%
 copy /Y build\%platform%\%configuration%\sakura_core\*.asm %WORKDIR_ASM%\ > NUL
@@ -281,9 +283,9 @@ pushd %WORKDIR_ASM%  && call %ZIP_CMD%       %OUTFILE_ASM%  .  && popd
 
 @echo end   zip asm
 
-if exist "%WORKDIR%" (
-	rmdir /s /q "%WORKDIR%"
-)
+:: if exist "%WORKDIR%" (
+:: 	rmdir /s /q "%WORKDIR%"
+:: )
 if exist "%WORKDIR_ASM%" (
 	rmdir /s /q "%WORKDIR_ASM%"
 )
