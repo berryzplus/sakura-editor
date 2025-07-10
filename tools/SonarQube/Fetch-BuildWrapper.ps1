@@ -1,9 +1,12 @@
+# Fetch-BuildWrapper.ps1
 Param(
-    [String]$Destination = [System.IO.Path]::Combine($PSScriptRoot, "..\.sonar")
+    [String]$Destination = [System.IO.Path]::Combine($PSScriptRoot, "..\..\.sonar")
 )
+
 if (-not(Test-Path $Destination)) {
     New-Item -Path $Destination -ItemType Directory
 }
+
 if (-not(Test-Path "$Destination\build-wrapper\build-wrapper-win-x86-64.exe")) {
     Push-Location $Destination
     if (-not(Test-Path "$Destination\build-wrapper-win-x86.zip")) {

@@ -1,10 +1,13 @@
+# Fetch-SonarScanner.ps1
 Param(
     [String]$Version = $(Get-Content -Path "$PSScriptRoot\SCANNER_CLI_VERSION"),
-    [String]$Destination = [System.IO.Path]::Combine($PSScriptRoot, "..\.sonar")
+    [String]$Destination = [System.IO.Path]::Combine($PSScriptRoot, "..\..\.sonar")
 )
+
 if (-not(Test-Path $Destination)) {
     New-Item -Path $Destination -ItemType Directory
 }
+
 if (-not(Test-Path "$Destination\scanner\bin")) {
     Push-Location $Destination
     if (-not(Test-Path "$Destination\sonar-scanner.zip")) {

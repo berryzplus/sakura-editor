@@ -1,7 +1,8 @@
+# Run-SonarScanner.ps1
 Param(
     [String]$Platform = "x64",
     [String]$Configuration = "Debug",
-    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..")
+    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
 )
 
 $SonarScannerProperties = "$HomePath\.sonar\scanner\conf\sonar-scanner.properties"
@@ -19,26 +20,43 @@ if (-not((Get-Content $SonarScannerProperties | Select-String "^sonar.host.url=.
 }
 
 # Fetch the sonar-scanner.
-.\tools\Fetch-SonarScanner.ps1
+. "$PSScriptRoot\Fetch-SonarScanner.ps1"
 
 # SONAR_TOKEN未定義の場合、ファイルから取得を試みる
 if ([string]::IsNullOrEmpty($env:SONAR_TOKEN)) {
-    $env:SONAR_TOKEN = "$(Get-Content $HomePath\tools\SONAR_TOKEN)"
+    $env:SONAR_TOKEN = "$(Get-Content $HomePath\SONAR_TOKEN)"
 }
 
-# Check SONAR_TOKEN
+# それでもSONAR_TOKEN未定義の場合、異常終了する
 if ([string]::IsNullOrEmpty($env:SONAR_TOKEN)) {
     Throw "`$env:SONAR_TOKEN is not defined"
 }
 
 # Run SonarScanner.
 $p = Start-Process `
-    -FilePath .sonar\scanner\bin\sonar-scanner.bat `
+    -FilePath $HomePath\.sonar\scanner\bin\sonar-scanner.bat `
     -NoNewWindow `
     -WorkingDirectory $HomePath `
     -PassThru `
     -Wait
 
 if ($p.ExitCode -ne 0) {
-  throw "SonarScanner was Failed."
+    throw "SonarScanner was Failed."
 }
+
+# SonarSourceはsonarscanner-cliのDockerイメージも提供している。
+# これを使うとローカル環境に依存せずSonarScannerを実行できるはずだがC/C++には未対応らしい。
+
+# docker run `
+#     --rm `
+#     -e SONAR_HOST_URL="$env:SONAR_HOST_URL"  `
+#     -e SONAR_TOKEN="$env:SONAR_TOKEN" `
+#     -v "$($HomePath):/usr/src" `
+#     sonarsource/sonar-scanner-cli `
+#     -D"sonar.organization=berryzplus" `
+#     -D"sonar.projectKey=berryzplus_sakura-editor" `
+#     -D"sonar.branch.name=work"
+# 
+# if ($LASTEXITCODE -ne 0) {
+#     throw "SonarScanner was Failed."
+# }

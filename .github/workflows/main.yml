@@ -1,0 +1,659 @@
+name: build sakura
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - .gitignore
+      - .editorconfig
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - .gitignore
+      - .editorconfig
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  check-encoding:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 過去の履歴も含めて全て取得 (checkEncoding.py で origin/master にアクセスするため)
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r requirements.txt
+
+    - name: Python version check
+      run: python --version
+      shell: cmd
+
+    - name: Python compile check
+      run: python -m compileall -f .
+
+    - name: Check encoding
+      run: python checkEncoding.py
+
+  buildBmpTools:
+    needs: check-encoding
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        config: [ Debug, Release ]
+
+    env:
+      BUILD_PLATFORM: x64
+      BUILD_CONFIGURATION: ${{ matrix.config }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: microsoft/setup-msbuild@v2
+
+    - name: Setup environment variables
+      run: |
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+    # Toolbar Bitmap Split/Mux
+    - run: build-bmp-tools.bat ${{ env.BUILD_CONFIGURATION }}
+      name: Bitmap Split/Mux
+      shell: cmd
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-bmpTools-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          tools/ToolBarTools/ToolBarImageMuxer/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageMuxer.exe
+          tools/ToolBarTools/ToolBarImageSplitter/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageSplitter.exe
+
+  cppcheck:
+    needs: check-encoding
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [ x64, Win32 ]
+        config: [ Debug, Release ]
+
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform }}
+      BUILD_CONFIGURATION: ${{ matrix.config }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup environment variables
+      run: |
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
+          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
+        }
+
+    - name: Install cppcheck
+      run: choco install cppcheck -y
+
+    - name: Run cppcheck
+      run: run-cppcheck.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      shell: cmd
+
+    - name: Upload cppcheck artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.xml
+          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
+
+  doxygen:
+    needs: check-encoding
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [ x64, Win32 ]
+        config: [ Debug, Release ]
+
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform }}
+      BUILD_CONFIGURATION: ${{ matrix.config }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup environment variables
+      run: |
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+    - name: Install doxygen
+      run: choco install doxygen.install -y
+
+    - name: Run doxygen
+      run: run-doxygen.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      shell: cmd
+
+    - name: Upload doxygen artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          html\sakura-doxygen.chm
+          html\sakura-doxygen.chi
+          doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
+
+  buildChm:
+    needs: check-encoding
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup environment variables
+      run: |
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+    - name: Install Locale Emulator
+      run: |
+        choco install autohotkey.install --confirm
+        $LEExpandDir = "${{github.workspace}}\tools\locale-emulator"
+        $LEInitScript = "${{github.workspace}}\ci\init-locale-emulator.ahk"
+        New-Item "${LEExpandDir}" -ItemType Directory
+        Invoke-WebRequest `
+          "https://github.com/xupefei/Locale-Emulator/releases/download/v2.5.0.1/Locale.Emulator.2.5.0.1.zip" `
+          -OutFile "${LEExpandDir}\locale-emulator.zip"
+        Expand-Archive "${LEExpandDir}\locale-emulator.zip" "${LEExpandDir}"
+        Start-Process "AutoHotKey" "${LEInitScript}"
+        Start-Process "${LEExpandDir}\LEInstaller.exe"
+        echo "${LEExpandDir}" >> $env:GITHUB_PATH
+      shell: pwsh
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build HTML Help
+      run: build-chm.bat
+      shell: cmd
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-chm.zip
+        path: |
+          help\*\*.chm
+          help\*\Compile.log
+  
+  buildSakura:
+    needs: buildChm
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [ x64, Win32 ]
+        config: [ Debug, Release ]
+
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform }}
+      BUILD_CONFIGURATION: ${{ matrix.config }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    ## see https://github.com/actions/checkout
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Setup environment variables
+      run: |
+        echo "CI_ACCOUNT_NAME=${{github.actor}}" >> $env:GITHUB_ENV
+        echo "CI_REPO_NAME=${{github.repository}}" >> $env:GITHUB_ENV
+        echo "CI_BUILD_VERSION=${{github.run_id}}" >> $env:GITHUB_ENV
+        echo "CI_BUILD_NUMBER=${{github.run_number}}" >> $env:GITHUB_ENV
+
+        echo("CI_BUILD_URL=" `
+          + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+          + "actions/runs/${{github.run_id}}") >> $env:GITHUB_ENV
+
+        echo("GITHUB_COMMIT_URL=" `
+          + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+          + "commit/${{github.sha}}") >> $env:GITHUB_ENV
+
+        if ('pull_request' -eq '${{github.event_name}}') {
+          echo("GITHUB_PR_NUMBER=" `
+            + "${{github.event.pull_request.number}}") >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_SHORT_COMMIT=" `
+            + "${{github.event.pull_request.head.sha}}".SubString(0, 8)) >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_COMMIT=" `
+            + "${{github.event.pull_request.head.sha}}") >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_URL=" `
+            + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+            + "pull/${{github.event.pull_request.number}}/" `
+            + "commits/${{github.event.pull_request.head.sha}}") >> $env:GITHUB_ENV
+        }
+
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
+          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
+        }
+      shell: pwsh
+
+    - name: Set Sonar Project Key
+      if: env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Debug'
+      run: |
+        $projectKey = $('${{ github.repository }}' -replace '/', '_')
+        echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
+        echo "SONAR_QUBE=Yes" >> $env:GITHUB_ENV
+
+    - name: Download Compiled HTML Help artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-chm.zip
+        path: help\
+
+    ## see https://github.com/microsoft/setup-msbuild
+    - uses: microsoft/setup-msbuild@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r requirements.txt
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+
+    - name: Install Build Wrapper
+      if: env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Debug'
+      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
+      
+    - name: Build SakuraEditor with BuildWrapper
+      if: env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Debug'
+      run: .\tools\SonarQube\Build-SakuraEditorWithBuildWrapper.ps1
+
+    - name: Build SakuraEditor without BuildWrapper
+      if: env.BUILD_PLATFORM != 'x64' || env.BUILD_CONFIGURATION != 'Debug'
+      run: build-sln.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      shell: cmd
+
+    - name: Install OpenCppCoverage with XmlExporter
+      if: env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Debug'
+      working-directory: ${{ runner.temp }}
+      run: |
+        choco install OpenCppCoverage -y
+        Invoke-WebRequest -OutFile XmlExporter-x64.zip https://github.com/berryzplus/XmlExporter/releases/download/v1.0.0/XmlExporter-x64.zip
+        7z e XmlExporter-x64.zip
+        Move-Item -Path XmlExporter.dll -Destination "C:\Program Files\OpenCppCoverage\Plugins\Exporter\xml.dll"
+        echo "C:\Program Files\OpenCppCoverage" >> $env:GITHUB_PATH
+
+    - name: Run Tests
+      run: .\tools\Run-Tests.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }} ${{ env.SONAR_QUBE }}
+
+    - name: Upload test result
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
+      if: env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Release'
+      with:
+        files: |
+          *-googletest.xml
+
+    - name: Upload Generated Assemblies
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-asm-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          build\${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\sakura_core\*.asm
+
+    - name: Upload Exe artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.exe
+          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.dll
+
+    - name: Upload Dev artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-dev-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.pdb
+
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        LC_ALL: ja_JP.UTF-8
+      if: env.SONAR_TOKEN && env.BUILD_PLATFORM == 'x64' && env.BUILD_CONFIGURATION == 'Debug'
+      with:
+        args: >
+          -D"sonar.organization=${{ github.repository_owner }}"
+          -D"sonar.projectKey=${{ env.SONAR_PROJECT_KEY }}"
+          -D"sonar.host.url=https://sonarcloud.io"
+    
+    - name: Upload Log artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          msbuild-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
+          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
+          doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
+          help\*\Compile.log
+
+  mingw:
+    needs: buildChm
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        config: [ Debug, Release ]
+
+    env:
+      BuildPlatform: MinGW
+      Configuration: ${{ matrix.config }}
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up MSYS2
+      id: msys2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-make
+
+    - run: pacman -S --noconfirm p7zip
+
+    - env:
+        MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
+      run: |
+        echo "$env:MSYS2_LOCATION"
+        gcc --version
+
+    - name: Build with MinGW-w64-gcc
+      run: ./build-gnu.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
+
+    - name: Run unit tests
+      run: ./tests1.exe --gtest_output=xml:tests1-googletest.xml
+      working-directory: ${{ env.BuildPlatform }}/${{ env.Configuration }}
+
+  buildInstaller:
+    needs: [cppcheck, doxygen, buildSakura]
+    name: buildInstaller
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [ x64, Win32 ]
+
+    env:
+      BUILD_PLATFORM: ${{ matrix.platform }}
+      BUILD_CONFIGURATION: Release
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup environment variables
+      run: |
+        echo "CI_ACCOUNT_NAME=${{github.actor}}" >> $env:GITHUB_ENV
+        echo "CI_REPO_NAME=${{github.repository}}" >> $env:GITHUB_ENV
+        echo "CI_BUILD_VERSION=${{github.run_id}}" >> $env:GITHUB_ENV
+        echo "CI_BUILD_NUMBER=${{github.run_number}}" >> $env:GITHUB_ENV
+
+        echo("CI_BUILD_URL=" `
+          + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+          + "actions/runs/${{github.run_id}}") >> $env:GITHUB_ENV
+
+        echo("GITHUB_COMMIT_URL=" `
+          + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+          + "commit/${{github.sha}}") >> $env:GITHUB_ENV
+
+        if ('pull_request' -eq '${{github.event_name}}') {
+          echo("GITHUB_PR_NUMBER=" `
+            + "${{github.event.pull_request.number}}") >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_SHORT_COMMIT=" `
+            + "${{github.event.pull_request.head.sha}}".SubString(0, 8)) >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_COMMIT=" `
+            + "${{github.event.pull_request.head.sha}}") >> $env:GITHUB_ENV
+          echo("GITHUB_PR_HEAD_URL=" `
+            + "${env:GITHUB_SERVER_URL}/${{github.repository}}/" `
+            + "pull/${{github.event.pull_request.number}}/" `
+            + "commits/${{github.event.pull_request.head.sha}}") >> $env:GITHUB_ENV
+        }
+        $baseName = "sakura-${{ github.actor }}"
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $baseName += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $baseName += "-PR${{ github.event.pull_request.number }}"
+        }
+        $baseName += "-build${{ github.run_number }}"
+        $baseName += "-$('${{ github.sha }}'.SubString(0, 9))"
+        $baseName += "-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
+          $baseName += "-alpha"
+        }
+        echo "BASENAME=${baseName}" >> $env:GITHUB_ENV
+        echo "BASENAME=${baseName}"
+        ls sakura-*
+
+        $build_id = ""
+        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
+          $build_id += "-${{ github.actor }}"
+        }
+        if ('tag' -eq '${{ github.ref_type }}') {
+          $build_id += "-${{ github.ref_name }}"
+        }
+        if ('pull_request' -eq '${{ github.event_name }}') {
+          $build_id += "-PR${{ github.event.pull_request.number }}"
+        }
+        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
+        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
+        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
+
+        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
+          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
+        }
+      shell: pwsh
+
+    - name: Download cppcheck artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+
+    - name: Download doxygen artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+
+    - name: Download Compiled HTML Help artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-chm.zip
+        path: help\
+
+    - name: Download Exe artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
+
+    - name: Download Dev artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-dev-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
+
+    - name: Download Compiled HTML Help artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-chm.zip
+        path: help\
+
+    - name: Download Log artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+
+    - name: Update/Install Inno Setup
+      run: choco upgrade innosetup --confirm
+      shell: pwsh
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build installer with Inno Setup
+      run: build-installer.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      shell: cmd
+
+    - name: zipArtifacts
+      run: zipArtifacts.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      shell: cmd
+
+    - name: Re-Upload cppcheck artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.xml
+        overwrite: true
+
+    - name: Re-Upload doxygen artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          html\sakura-doxygen.chm
+          html\sakura-doxygen.chi
+        overwrite: true
+
+    - name: Re-Upload Exe artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          ${{ env.BASENAME }}\EXE\*
+        overwrite: true
+
+    - name: Re-Upload Compiled HTML Help artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-chm.zip
+        path: |
+          ${{ env.BASENAME }}\EXE\*.chm
+        overwrite: true
+  
+    - name: Re-Upload Dev artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-dev-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          ${{ env.BASENAME }}\DEV\*
+        overwrite: true
+
+    - name: Re-Upload Log artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
+        path: |
+          ${{ env.BASENAME }}\LOG\*
+        overwrite: true
+
+    ## see https://github.com/actions/upload-artifact
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: sakura${{ env.BUILD_ID }}-installer-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}.zip
+        path: |
+          ${{ env.BASENAME }}\Installer\*

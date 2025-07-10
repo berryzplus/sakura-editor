@@ -1,19 +1,20 @@
 Param(
-    [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
     [String]$Platform = "x64",
     [String]$Configuration = "Debug",
-    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..")
+    [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
+    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
 )
 
 $CMD_MSBUILD = $(vswhere -find 'MSBuild\**\Bin\MSBuild.exe' -version "[$VsVersion,$([int]$VsVersion + 1)`)")
 
 $buildWrapperPath = "build-wrapper-win-x86-64"
 
-where.exe build-wrapper-win-x86-64
+# build-wrapperがパス内にあるかチェックする
+cmd.exe /C "where.exe build-wrapper-win-x86-64 >NUL 2>&1"
 
 if ($LASTEXITCODE -ne 0) {
-    ./Tools/Fetch-BuildWrapper.ps1
-    $buildWrapperPath = ".sonar\build-wrapper\build-wrapper-win-x86-64.exe"
+    . "$PSScriptRoot/Fetch-BuildWrapper.ps1"
+    $buildWrapperPath = "$HomePath\.sonar\build-wrapper\build-wrapper-win-x86-64.exe"
 }
 
 $p = Start-Process `
