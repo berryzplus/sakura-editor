@@ -163,7 +163,7 @@ https://github.com/sakura-editor/sakura/actions/workflows/build-sakura.yml
 
 ### デバッグ方法
 
-- [タスクトレイのメニュー項目をデバッグする方法](debug-tasktray-menu.md) を参照
+- [タスクトレイのメニュー項目をデバッグする方法](tools/debug-tasktray-menu.md) を参照
 - [大きなファイルの作成方法](tools/create-big-file.md)
 
 ## 変更履歴
