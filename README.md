@@ -30,17 +30,12 @@
     - [Visual Studio Install options required](#visual-studio-install-options-required)
     - [Visual Studio 2019 以降の対応に関して](#visual-studio-2019-以降の対応に関して)
     - [.vsconfig に関して](#vsconfig-に関して)
-      - [全対応バージョン共通](#visual-studio-2017-以降共通)
+      - [全対応バージョン共通](#全対応バージョン共通)
       - [Visual Studio 2019 以降のみ](#visual-studio-2019-以降のみ)
       - [参照](#参照)
   - [How to build](#how-to-build)
     - [詳細情報](#詳細情報)
   - [CI Buildおよびローカルビルドの環境変数](#ci-buildおよびローカルビルドの環境変数)
-  - [PR(Pull Request) を簡単にローカルに取得する方法](#prpull-request-を簡単にローカルに取得する方法)
-  - [CI Build (Azure Pipelines)](#ci-build-azure-pipelines)
-    - [ビルドの仕組み (Azure Pipelines)](#ビルドの仕組み-azure-pipelines)
-  - [CI Build (AppVeyor)](#ci-build-appveyor)
-    - [ビルドの仕組み (AppVeyor)](#ビルドの仕組み-appveyor)
     - [ビルド成果物を利用する上での注意事項](#ビルド成果物を利用する上での注意事項)
     - [ビルド成果物のダウンロード(バイナリ、インストーラなど)](#ビルド成果物のダウンロードバイナリインストーラなど)
       - [master の 最新](#master-の-最新)
@@ -169,7 +164,7 @@ https://github.com/sakura-editor/sakura/actions/workflows/build-sakura.yml
 ### デバッグ方法
 
 - [タスクトレイのメニュー項目をデバッグする方法](debug-tasktray-menu.md) を参照
-- [大きなファイルの作成方法](create-big-file.md)
+- [大きなファイルの作成方法](tools/create-big-file.md)
 
 ## 変更履歴
 
