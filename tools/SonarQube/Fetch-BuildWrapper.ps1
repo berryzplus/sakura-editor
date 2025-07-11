@@ -3,16 +3,36 @@ Param(
     [String]$Destination = [System.IO.Path]::Combine($PSScriptRoot, "..\..\.sonar")
 )
 
+# 宛先フォルダが存在しなければ作成する
 if (-not(Test-Path $Destination)) {
     New-Item -Path $Destination -ItemType Directory
 }
 
-if (-not(Test-Path "$Destination\build-wrapper\build-wrapper-win-x86-64.exe")) {
-    Push-Location $Destination
+# BuildWrapperが存在しなければダウンロードする
+if (-not(Test-Path "$Destination\build-wrapper-win-x86-64.exe")) {
+    # BuildWrapperをダウンロードする
     if (-not(Test-Path "$Destination\build-wrapper-win-x86.zip")) {
-        Invoke-WebRequest -OutFile build-wrapper-win-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-win-x86.zip
-        7z rn build-wrapper-win-x86.zip build-wrapper-win-x86 build-wrapper
+        $sonarHostUrl = "https://sonarcloud.io"
+
+        $SonarScannerProperties = "$Destination\scanner\conf\sonar-scanner.properties"
+        if (Test-Path $SonarScannerProperties) {
+            $hostUrlLine = Get-Content $SonarScannerProperties | Select-String "^sonar.host.url=.+"
+            if ($hostUrlLine -and ($hostUrlLine -match "sonar.host.url=(.+)")) {
+                $sonarHostUrl = $matches[1]
+            }
+        }
+        Invoke-WebRequest -OutFile "$Destination\build-wrapper-win-x86.zip" "$sonarHostUrl/static/cpp/build-wrapper-win-x86.zip"
     }
-    7z x build-wrapper-win-x86.zip
-    Pop-Location
+
+    # BuildWrapperを展開する
+    if (-not(Test-Path "$Destination\build-wrapper-win-x86-64.exe")) {
+        # zipを展開する
+        7z x "$Destination\build-wrapper-win-x86.zip" "-o$Destination" "*"
+
+        # 解凍したフォルダ名から-win-x86を取り除く
+        Move-Item -Path "$Destination\build-wrapper-win-x86\build-wrapper-win-x86-64.exe" -Destination "$Destination\build-wrapper-win-x86-64.exe"
+
+        # 展開したフォルダを削除する
+        Remove-Item -Path "$Destination\build-wrapper-win-x86" -Recurse -Force
+    }
 }

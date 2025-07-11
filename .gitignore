@@ -9,6 +9,11 @@ MinGW/
 Win32/
 x64/
 
+# ビルドログ
+msbuild-*.log
+msbuild-*.log.csv
+msbuild-*.log.xlsx
+
 # ユニットテスト結果
 TestResults/
 LastCoverageResults.log
@@ -19,8 +24,6 @@ LastCoverageResults.log
 .sonar/
 .sonarqube/
 .scannerwork/
-bw-output/
-build-wrapper-win-x86*
 SONAR_TOKEN
 
 # 自動でaddさせない拡張子
@@ -34,19 +37,17 @@ SONAR_TOKEN
 *.vcxproj.user
 
 # Visual Studioが生成する一時ファイル（定義しておく意義が微妙。）
-Backup
+Backup/
 UpgradeLog.htm
+
+# doxygenの出力
+html/
 
 # NuGetパッケージフォルダー
 packages/
 
 # 過去の遺物（未整理）
-/cppcheck-*.xml
 /help/sakura/sakura.hh
-html
-msbuild-*.log
-msbuild-*.log.csv
-msbuild-*.log.xlsx
 sakura-*.zip
 sakura-*.zip.md5
 sha256.txt

@@ -1,12 +1,10 @@
+# Analyze-SakuraEditor.ps1
 Param(
     [String]$Platform = "x64",
     [String]$Configuration = "Debug",
     [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
-    [String]$HomePath = $PSScriptRoot
+    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
 )
-
-# Fetch the sonar-scanner.
-. "$HomePath\tools\SonarQube\Fetch-SonarScanner.ps1"
 
 # SONAR_TOKEN未定義の場合、ファイルから取得を試みる
 if ([string]::IsNullOrEmpty($env:SONAR_TOKEN)) {
@@ -19,10 +17,10 @@ if ([string]::IsNullOrEmpty($env:SONAR_TOKEN)) {
 }
 
 # Re-Build project.
-. "$HomePath\tools\SonarQube\Build-SakuraEditorWithBuildWrapper.ps1" $Platform $Configuration $VsVersion $HomePath
+. "$PSScriptRoot\Build-Project.ps1" $Platform $Configuration $VsVersion $HomePath
 
 # Run Tests.
-. "$HomePath\tools\Run-Tests.ps1" $Platform $Configuration "Yes"
+. "$PSScriptRoot\Run-Tests.ps1" $Platform $Configuration $VsVersion $HomePath
 
 # Run SonarScanner.
-. "$HomePath\tools\SonarQube\Run-SonarScanner.ps1" $Platform $Configuration $HomePath
+. "$PSScriptRoot\Run-SonarScanner.ps1" $Platform $Configuration $VsVersion $HomePath
