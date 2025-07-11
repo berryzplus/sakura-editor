@@ -180,7 +180,7 @@ jobs:
       run: choco install doxygen.install -y
 
     - name: Run doxygen
-      run: run-doxygen.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      run: .\tools\doxygen\run-doxygen.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
       shell: cmd
 
     - name: Upload doxygen artifact
