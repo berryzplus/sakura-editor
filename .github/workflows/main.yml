@@ -89,59 +89,6 @@ jobs:
           tools/ToolBarTools/ToolBarImageMuxer/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageMuxer.exe
           tools/ToolBarTools/ToolBarImageSplitter/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageSplitter.exe
 
-  cppcheck:
-    needs: check-encoding
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        platform: [ x64, Win32 ]
-        config: [ Debug, Release ]
-
-    env:
-      BUILD_PLATFORM: ${{ matrix.platform }}
-      BUILD_CONFIGURATION: ${{ matrix.config }}
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Setup environment variables
-      run: |
-        $build_id = ""
-        if (-not('sakura-editor/sakura' -eq '${{ github.repository }}')) {
-          $build_id += "-${{ github.actor }}"
-        }
-        if ('tag' -eq '${{ github.ref_type }}') {
-          $build_id += "-${{ github.ref_name }}"
-        }
-        if ('pull_request' -eq '${{ github.event_name }}') {
-          $build_id += "-PR${{ github.event.pull_request.number }}"
-        }
-        $build_id += "-build$('{0:D5}' -f ${{ github.run_number }})"
-        $build_id += "-$('${{ github.sha }}'.SubString(0, 8))"
-        echo "BUILD_ID=${build_id}" >> $env:GITHUB_ENV
-
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
-          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
-        }
-
-    - name: Install cppcheck
-      run: choco install cppcheck -y
-
-    - name: Run cppcheck
-      run: run-cppcheck.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
-      shell: cmd
-
-    - name: Upload cppcheck artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
-        path: |
-          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.xml
-          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
-
   doxygen:
     needs: checkEncoding
     runs-on: windows-latest
@@ -416,7 +363,6 @@ jobs:
         name: sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
         path: |
           msbuild-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
-          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
           doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
           help\*\Compile.log
 
@@ -466,7 +412,7 @@ jobs:
       working-directory: ${{ env.BuildPlatform }}/${{ env.Configuration }}
 
   buildInstaller:
-    needs: [cppcheck, doxygen, buildSakura]
+    needs: [ doxygen, buildSakura ]
     name: buildInstaller
     runs-on: windows-latest
 
@@ -546,11 +492,6 @@ jobs:
         }
       shell: pwsh
 
-    - name: Download cppcheck artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
-
     - name: Download doxygen artifact
       uses: actions/download-artifact@v4
       with:
@@ -599,14 +540,6 @@ jobs:
     - name: zipArtifacts
       run: zipArtifacts.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
       shell: cmd
-
-    - name: Re-Upload cppcheck artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: sakura${{ env.BUILD_ID }}-cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.zip
-        path: |
-          cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.xml
-        overwrite: true
 
     - name: Re-Upload doxygen artifact
       uses: actions/upload-artifact@v4
