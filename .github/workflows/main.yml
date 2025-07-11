@@ -17,7 +17,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  check-encoding:
+  checkEncoding:
     runs-on: windows-latest
 
     steps:
@@ -35,16 +35,15 @@ jobs:
 
     - name: Python version check
       run: python --version
-      shell: cmd
 
     - name: Python compile check
       run: python -m compileall -f .
 
     - name: Check encoding
-      run: python checkEncoding.py
+      run: python tools/checkEncoding/checkEncoding.py
 
   buildBmpTools:
-    needs: check-encoding
+    needs: checkEncoding
     runs-on: windows-latest
 
     strategy:
@@ -144,7 +143,7 @@ jobs:
           cppcheck-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
 
   doxygen:
-    needs: check-encoding
+    needs: checkEncoding
     runs-on: windows-latest
 
     strategy:
@@ -194,7 +193,7 @@ jobs:
           doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
 
   buildChm:
-    needs: check-encoding
+    needs: checkEncoding
     runs-on: windows-latest
 
     steps:
