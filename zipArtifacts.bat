@@ -244,15 +244,6 @@ if exist "doxygen-%platform%-%configuration%.log" (
 	copy /Y "doxygen-%platform%-%configuration%.log" %WORKDIR_LOG%\
 )
 
-set HASHFILE=sha256.txt
-if exist "%HASHFILE%" (
-	del %HASHFILE%
-)
-call calc-hash.bat %HASHFILE% %WORKDIR%\
-if exist "%HASHFILE%" (
-	copy /Y %HASHFILE%           %WORKDIR%\
-)
-
 copy /Y installer\warning.txt   %WORKDIR%\
 if "%ALPHA%" == "1" (
 	copy /Y installer\warning-alpha.txt   %WORKDIR%\

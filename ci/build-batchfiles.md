@@ -35,7 +35,6 @@
 |[build-chm.bat](../build-chm.bat) | compiled HTML ファイルをビルドする |
 |[build-installer.bat](../build-installer.bat) | インストーラをビルドする |
 |[zipArtifacts.bat](../zipArtifacts.bat) | 成果物を zip ファイルにまとめる |
-|[calc-hash.bat](../calc-hash.bat) | 成果物のハッシュ値を計算する |
 
 ### 関連情報
 
@@ -79,8 +78,6 @@ SonarQube に関しては [こちら](../SonarQube.md) も参照してくださ�
     - [zipArtifacts.bat](../zipArtifacts.bat)
         - [sakura\githash.bat](../sakura/githash.bat)
             - git.exe
-        - [calc-hash.bat](../calc-hash.bat)
-            - [calc-hash.py](../calc-hash.py)
         - [tools\zip\zip.bat](../tools/zip/zip.bat) : 成果物を ZIP ファイルにまとめる
             - 7z.exe または [tools\zip\zip.ps1](../tools/zip/zip.ps1)
 
@@ -96,7 +93,6 @@ SonarQube に関しては [こちら](../SonarQube.md) も参照してくださ�
 |build-chm.bat       | なし | なし |
 |build-installer.bat | platform ("Win32" または "x64") | configuration ("Debug" または "Release")  |
 |zipArtifacts.bat    | platform ("Win32" または "x64") | configuration ("Debug" または "Release")  |
-|calc-hash.bat       | sha256 のハッシュ値の出力先ファイル | ハッシュ値を計算するフォルダーパス |
 
 ## バッチファイルの仕組み
 
@@ -120,6 +116,5 @@ SonarQube に関しては [こちら](../SonarQube.md) も参照してくださ�
 * if 文の条件判定を元に、成果物のファイル名、フォルダー名を構築して環境変数に設定する
     - 設定される環境変数については [こちら](build-envvars.md#zipartifactsbat-で設定する環境変数) を参照してください。
 * 作業用フォルダーに必要なファイルをコピーする
-* [calc-hash.bat](../calc-hash.bat) で sha256 のハッシュを計算して、作業用フォルダーにコピーする
 * [tools\zip\zip.bat](../tools/zip/zip.bat) を使用して作業用フォルダーの中身を zip ファイルにまとめる
     - [7-Zip](https://7-zip.opensource.jp/) が利用できる場合は 7z.exe を、利用できない場合は PowerShell を利用してファイルを作成します。
