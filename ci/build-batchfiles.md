@@ -24,30 +24,23 @@
 |[build-all.bat](../build-all.bat)| すべてをビルドできるバッチファイル  |
 |[build-sln.bat](../build-sln.bat) | solution をビルドする |
 |[build-gnu.bat](../build-gnu.bat) | Makefile をビルドする |
-|[build-sonar-qube-start.bat](../build-sonar-qube-start.bat) | SonarQube の準備を行う |
-|[build-sonar-qube-env.bat](../build-sonar-qube-env.bat) | SonarQube の実行に必要な環境変数の設定を行う |
 |[sakura\preBuild.bat](../sakura/preBuild.bat) | 特に何もしない |
 |[sakura\githash.bat](../sakura/githash.bat) | Git や CI の環境変数から githash.h を生成する |
 |[sakura\postBuild.bat](../sakura/postBuild.bat) | bregonig.dll と ctags.exe を展開しコピーする |
 |[tests\googletest.build.cmd](../tests/googletest.build.cmd) | Google Test をビルドする |
 |[tests\compiletests.run.cmd](../tests/compiletests.run.cmd) | コンパイルテストを実行する |
-|[build-sonar-qube-finish.bat](../build-sonar-qube-finish.bat) | SonarQube の解析結果をアップロードする |
 |[build-chm.bat](../build-chm.bat) | compiled HTML ファイルをビルドする |
 |[build-installer.bat](../build-installer.bat) | インストーラをビルドする |
 |[zipArtifacts.bat](../zipArtifacts.bat) | 成果物を zip ファイルにまとめる |
 
 ### 関連情報
 
-SonarQube に関しては [こちら](../SonarQube.md) も参照してください。
+SonarQube に関しては [こちら](../tools/SonarQube/SonarQube.adoc) も参照してください。
 
 ## 呼び出し構造
 
 - [build-all.bat](../build-all.bat)
     - [build-sln.bat](../build-sln.bat)
-        - [build-sonar-qube-start.bat](../build-sonar-qube-start.bat)
-            - [build-sonar-qube-env.bat](../build-sonar-qube-env.bat)
-            - [tools\zip\unzip.bat](../tools/zip/unzip.bat) : ZIP ファイルを展開する
-                - 7z.exe または [tools\zip\unzip.ps1](../tools/zip/unzip.ps1)
         - MSBuild.exe sakura.sln
             - [sakura\preBuild.bat](../sakura/preBuild.bat)
             - HeaderMake.exe : Funccode_define.h, Funccode_enum.h を生成する
@@ -61,8 +54,6 @@ SonarQube に関しては [こちら](../SonarQube.md) も参照してくださ�
                 - cmake.exe
             - [tests\compiletests.run.cmd](../tests/compiletests.run.cmd)
                 - cmake.exe
-        - [build-sonar-qube-finish.bat](../build-sonar-qube-finish.bat)
-            - [build-sonar-qube-env.bat](../build-sonar-qube-env.bat)
     - [build-gnu.bat](../build-gnu.bat)
         - mingw32-make.exe sakura_core
             - [sakura\githash.bat](../sakura/githash.bat)
