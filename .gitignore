@@ -8,6 +8,7 @@ build/
 MinGW/
 Win32/
 x64/
+ARM64/
 
 # ビルドログ
 msbuild-*.log

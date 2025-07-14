@@ -173,43 +173,29 @@ jobs:
 
     strategy:
       matrix:
-        platform: [ x64, Win32 ]
+        platform: [ x64, ARM64, Win32 ]
         config: [ Debug, Release ]
 
     env:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: ${{ matrix.config }}
+      VCPKG_HOST_TRIPLET: x64-windows
+      LC_ALL: ja_JP.UTF-8
 
     steps:
-    ## see https://github.com/actions/checkout
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
+        fetch-depth: 0
         submodules: true
+
+    - name: Run vcpkg bootstrap
+      run: |
+        .\tools\vcpkg\bootstrap-vcpkg.bat
+      shell: cmd
 
     - name: Setup environment variables
       run: |
-        echo "CI_ACCOUNT_NAME=${{ github.actor }}" >> $env:GITHUB_ENV
-        echo "CI_REPO_NAME=${{ github.repository }}" >> $env:GITHUB_ENV
-        echo "CI_BUILD_VERSION=${{ github.run_id }}" >> $env:GITHUB_ENV
-        echo "CI_BUILD_NUMBER=${{ github.run_number }}" >> $env:GITHUB_ENV
-
-        $gitUrl = "${ env:GITHUB_SERVER_URL }/${{ github.repository }}"
-        echo("CI_BUILD_URL=$gitUrl/actions/runs/${{ github.run_id }}") >> $env:GITHUB_ENV
-        echo("GITHUB_COMMIT_URL=$gitUrl/commit/${{ github.sha }}") >> $env:GITHUB_ENV
-
-        if ('pull_request' -eq '${{github.event_name}}') {
-          echo("GITHUB_PR_NUMBER= ${{ github.event.pull_request.number }}") >> $env:GITHUB_ENV
-          echo("GITHUB_PR_HEAD_SHORT_COMMIT=${{ github.event.pull_request.head.sha }}".SubString(0, 8)) >> $env:GITHUB_ENV
-          echo("GITHUB_PR_HEAD_COMMIT=${{ github.event.pull_request.head.sha }}") >> $env:GITHUB_ENV
-          echo("GITHUB_PR_HEAD_URL=$gitUrl/pull/${{ github.event.pull_request.number }}/commits/${{ github.event.pull_request.head.sha }}") >> $env:GITHUB_ENV
-        }
-
-        if ('tag' -eq '${{ github.ref_type }}') {
-          echo("GITHUB_TAG_NAME= ${{ github.ref_name }}") >> $env:GITHUB_ENV
-        }
-
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
+        if ('x64' -eq '${{ env.BUILD_PLATFORM }}' -or 'ARM64' -eq '${{ env.BUILD_PLATFORM }}') {
           echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
         }
 
@@ -222,7 +208,19 @@ jobs:
         $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
         echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
 
+        switch ('${{ env.BUILD_PLATFORM }}') {
+          'x64'   { echo "VCPKG_TARGET_TRIPLET=x64-windows-static" >> $env:GITHUB_ENV }
+          'Win32' { echo "VCPKG_TARGET_TRIPLET=x86-windows-static" >> $env:GITHUB_ENV }
+          'ARM64' { echo "VCPKG_TARGET_TRIPLET=arm64-windows-static" >> $env:GITHUB_ENV }
+        }
+
     - uses: microsoft/setup-msbuild@v2
+
+    - name: Install Build Wrapper
+      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
+
+    - name: Build SakuraEditor
+      run: .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
 
     ## see https://github.com/actions/setup-dotnet
     - name: Setup .NET (for dotnet tools)
@@ -244,13 +242,8 @@ jobs:
       with:
         node-version: 'lts/*'
 
-    - name: Install Build Wrapper
-      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
-      
-    - name: Build SakuraEditor
-      run: .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
-
     - name: Run Tests
+      if: env.BUILD_PLATFORM != 'ARM64' # ARM64モジュールは実行できない
       run: .\tools\SonarQube\Run-Tests.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
 
     - name: Upload test result
@@ -287,7 +280,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        LC_ALL: ja_JP.UTF-8
       if: env.SONAR_TOKEN && env.SONAR_QUBE == 'Yes'
       with:
         args: >
@@ -313,11 +305,14 @@ jobs:
 
     strategy:
       matrix:
+        msystem: [ MINGW64, UCRT64 ]
         config: [ Debug, Release ]
 
     env:
-      BuildPlatform: MinGW
-      Configuration: ${{ matrix.config }}
+      BUILD_PLATFORM: MinGW
+      BUILD_CONFIGURATION: ${{ matrix.config }}
+      VCPKG_HOST_TRIPLET: x64-mingw-dynamic
+      VCPKG_TARGET_TRIPLET: x64-mingw-static
 
     defaults:
       run:
@@ -325,32 +320,48 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Run vcpkg bootstrap
+      run: |
+        .\tools\vcpkg\bootstrap-vcpkg.bat
+      shell: cmd
 
     - name: Set up MSYS2
       id: msys2
       uses: msys2/setup-msys2@v2
       with:
-        msystem: MINGW64
-        update: true
         install: >-
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-make
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-cmake
+        msystem: ${{ matrix.msystem }}
+        update: true
 
-    - run: pacman -S --noconfirm p7zip
-
-    - env:
+    - name: Show gcc version
+      env:
         MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
       run: |
         echo "$env:MSYS2_LOCATION"
         gcc --version
 
+    - name: Configure CMake project
+      run: |
+        cmake -G "Ninja" -B build -S . \
+          -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_CONFIGURATION }}" \
+          -DCMAKE_TOOLCHAIN_FILE:FILEPATH="${{ github.workspace }}\tools\vcpkg\scripts\buildsystems\vcpkg.cmake" \
+          -DVCPKG_HOST_TRIPLET="${{ env.VCPKG_HOST_TRIPLET }}" \
+          -DVCPKG_INSTALLED_DIR:FILEPATH="${{ github.workspace }}\build\vcpkg_installed" \
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:FILEPATH="${{ github.workspace }}\output" \
+          -DVCPKG_TARGET_TRIPLET="${{ env.VCPKG_TARGET_TRIPLET }}"
+
     - name: Build with MinGW-w64-gcc
-      run: ./build-gnu.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
+      run: cmake --build build
 
     - name: Run unit tests
-      run: ./tests1.exe --gtest_output=xml:tests1-googletest.xml
-      working-directory: ${{ env.BuildPlatform }}/${{ env.Configuration }}
+      run: ctest --test-dir build --output-on-failure
 
   buildInstaller:
     needs: [ doxygen, buildChm, buildSakura ]
@@ -374,7 +385,6 @@ jobs:
         }
         $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
         echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
-
 
     - name: Download doxygen artifact
       uses: actions/download-artifact@v4

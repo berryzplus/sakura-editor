@@ -1,0 +1,12 @@
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\main\msbuild\cmaketools.targets" />
+  <Target Name="MakeTestResource" DependsOnTargets="ConfigureCMakeTools" BeforeTargets="ResourceCompile">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;resource_zip&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="AppendCMakeToolsForTestCleanTargets" BeforeTargets="CoreClean">
+    <!-- Add files to @Clean just before running CoreClean. -->
+    <ItemGroup>
+      <Clean Include="$(CMakeToolsBuildDir)resources.ja-JP.zip" />
+    </ItemGroup>
+  </Target>
+</Project>

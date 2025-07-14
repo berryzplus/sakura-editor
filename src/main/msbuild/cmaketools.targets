@@ -1,0 +1,49 @@
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="CMakeTools">
+    <CMakeExe>$(VsInstallDir)Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe</CMakeExe>
+    <CMakeToolsBuildDir>$([MSBuild]::NormalizePath('$(IntDir)', '..\..\CMakeTools'))</CMakeToolsBuildDir>
+    <CMakeToolsOutDir>$([MSBuild]::NormalizePath('$(OutDir)', '..\'))</CMakeToolsOutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Label="CMakeTools.common">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(CMakeToolsBuildDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(CMakeToolsBuildDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <Target Name="MakeCMakeToolsBuildDir" Condition="!Exists('$(CMakeToolsBuildDir)')">
+    <MakeDir Directories="$(CMakeToolsBuildDir)" />
+  </Target>
+  <Target Name="ConfigureCMakeTools" DependsOnTargets="MakeCMakeToolsBuildDir" Condition="!Exists('$(CMakeToolsBuildDir)CMakeCache.txt')">
+    <PropertyGroup>
+      <VsVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(VisualStudioVersion)', '^(\d+).*', '$1'))</VsVersion>
+    </PropertyGroup>
+    <Exec Command="chcp 65001 >nul &amp; powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { &amp; '$(MSBuildThisFileDirectory)..\pwsh\cmaketools.ps1' -Platform '$(Platform)' -Configuration '$(Configuration)' -VsVersion '$(VsVersion)' -VcpkgInstalledDir '$(VcpkgInstalledDir)' -CMakeToolsBuildDir '$(CMakeToolsBuildDir)' -CMakeToolsOutDir '$(CMakeToolsOutDir)' }&quot;" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateVersionHeader" DependsOnTargets="ConfigureCMakeTools" BeforeTargets="ResourceCompile;ClCompile">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_version_header&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateFuncCodeDefine" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ResourceCompile">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_funccode_define&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateFuncCodeEnum" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ClCompile">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_funccode_enum&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateLang_en_US" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;sakura_lang_en_US&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateLang_zh_CN" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;sakura_lang_zh_CN&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="AppendCMakeToolsCleanTargetsForCMakeTools" BeforeTargets="CoreClean">
+    <RemoveDir Directories="$(CMakeToolsBuildDir)" />
+    <!-- Add files to @Clean just before running CoreClean. -->
+    <ItemGroup>
+      <Clean Include="$(OutDir)sakura_lang_en_US.dll" />
+      <Clean Include="$(OutDir)sakura_lang_en_US.pdb" />
+      <Clean Include="$(OutDir)sakura_lang_zh_CN.dll" />
+      <Clean Include="$(OutDir)sakura_lang_zh_CN.pdb" />
+    </ItemGroup>
+  </Target>
+</Project>

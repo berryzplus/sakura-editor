@@ -1,15 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Other Files">
-      <UniqueIdentifier>{0eefa0df-ca7f-489c-9844-9a182e1dba18}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{5c65d7b0-dbc3-457b-b062-2662606d3160}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="C Source Files">
       <UniqueIdentifier>{6a236fae-9c81-4376-87fc-725f282ca48a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pre-Compiled Headers">
+      <UniqueIdentifier>{131a015e-b8b0-4788-becf-6a9407fb3a1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{b50fc2d7-a5f2-4b9f-af30-bf04dda44839}</UniqueIdentifier>
     </Filter>
     <Filter Include="Cpp Source Files">
       <UniqueIdentifier>{b6f61c8b-ac13-4987-9a99-2b7da1df0b64}</UniqueIdentifier>
@@ -119,24 +122,27 @@
     <Filter Include="Cpp Source Files\uiparts">
       <UniqueIdentifier>{930f3f82-ab3f-49e3-af4a-d4f9c2d51f46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Other Files">
+      <UniqueIdentifier>{0eefa0df-ca7f-489c-9844-9a182e1dba18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sakura_core\Funccode_define.h">
-      <Filter>Other Files</Filter>
+    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_define.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\Funccode_enum.h">
-      <Filter>Other Files</Filter>
+    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_enum.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\sakura.hh">
       <Filter>Other Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\sakura_rc.h">
+    <ClInclude Include="..\src\main\resources\sakura_rc.h">
       <Filter>Other Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\StdAfx.h">
-      <Filter>Other Files</Filter>
+      <Filter>Pre-Compiled Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\String_define.h">
+    <ClInclude Include="..\src\main\resources\String_define.h">
       <Filter>Other Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\CAutoReloadAgent.h">
@@ -1060,9 +1066,8 @@
     <ClInclude Include="..\sakura_core\uiparts\HandCursor.h">
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\githash.h" />
-    <ClInclude Include="..\sakura_core\version.h">
-      <Filter>Other Files</Filter>
+    <ClInclude Include="build\$(Platform\CMakeTools\version.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\recent\CRecentExcludeFile.h">
       <Filter>Cpp Source Files\recent</Filter>
@@ -1171,18 +1176,18 @@
     <None Include="..\resource\MainMenu.ini">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\sakura_core\sakura_rc.rc2">
+    <None Include="..\src\main\resources\sakura_rc.rc2">
       <Filter>Other Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\sakura_core\sakura_rc.rc">
+    <ResourceCompile Include="..\src\main\resources\sakura_rc.rc">
       <Filter>Other Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sakura_core\StdAfx.cpp">
-      <Filter>Other Files</Filter>
+      <Filter>Pre-Compiled Headers</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\CAutoReloadAgent.cpp">
       <Filter>Cpp Source Files</Filter>
@@ -2345,6 +2350,8 @@
     <FuncCodeRes Include="..\sakura_core\Funccode_x.hsrc" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="sakura.natvis" />
+    <Natvis Include="..\src\main\resources\sakura.natvis">
+      <Filter>Resource Files</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

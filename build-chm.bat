@@ -37,14 +37,6 @@ call :BuildChm %HHP_MACRO%  %CHM_MACRO%   || (echo error && exit /b 1)
 call :BuildChm %HHP_PLUGIN% %CHM_PLUGIN%  || (echo error && exit /b 1)
 call :BuildChm %HHP_SAKURA% %CHM_SAKURA%  || (echo error && exit /b 1)
 
-copy /Y %TMP_HELP%\macro\*.chm   %SRC_HELP%\macro\   || (echo error && exit /b 1)
-copy /Y %TMP_HELP%\plugin\*.chm  %SRC_HELP%\plugin\  || (echo error && exit /b 1)
-copy /Y %TMP_HELP%\sakura\*.chm  %SRC_HELP%\sakura\  || (echo error && exit /b 1)
-
-copy /Y %TMP_HELP%\macro\*.Log   %SRC_HELP%\macro\   || (echo error && exit /b 1)
-copy /Y %TMP_HELP%\plugin\*.Log  %SRC_HELP%\plugin\  || (echo error && exit /b 1)
-copy /Y %TMP_HELP%\sakura\*.Log  %SRC_HELP%\sakura\  || (echo error && exit /b 1)
-
 rmdir /s /q %TMP_HELP%
 exit /b 0
 
@@ -55,5 +47,9 @@ exit /b 0
 set PROJECT_HHP=%1
 set PROJECT_CHM=%2
 
-powershell.exe -ExecutionPolicy RemoteSigned -File %~dp0help\CompileChm.ps1 %PROJECT_HHP% %PROJECT_CHM%
+powershell.exe -ExecutionPolicy RemoteSigned -File %~dp0src\main\pwsh\compilechm.ps1 %PROJECT_HHP% %PROJECT_CHM%
+
+copy /Y %TMP_HELP%\%~n2\*.chm   %SRC_HELP%\%~n2\ || (echo error && exit /b 1)
+copy /Y %TMP_HELP%\%~n2\*.Log   %SRC_HELP%\%~n2\ || (echo error && exit /b 1)
+
 exit /b 0

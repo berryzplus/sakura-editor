@@ -1,4 +1,3 @@
-call sakura\githash.bat "%~dp0sakura_core"
 call tools\find-tools.bat
 
 if exist html rmdir /s /q html
