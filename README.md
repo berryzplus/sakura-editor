@@ -82,8 +82,6 @@ Sakura Editor は、[Open Source Initiative (OSI) 認定ライセンスである
 
 [2022対応コミット]: https://github.com/sakura-editor/sakura/pull/1872/commits/93cf3f3eacfed6a4d0a2c30d5445b53b2599db3c
 
-[仕組みに関してはこちらを参照](vcx-props/project-PlatformToolset.md)
-
 ### .vsconfig に関して
 
 Sakura Editor のコンパイルに必要なコンポーネントを Visual Studio にインストールするために [.vsconfig](.vsconfig) という設定ファイルを用意しています。
