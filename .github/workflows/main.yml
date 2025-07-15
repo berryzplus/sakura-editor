@@ -85,8 +85,9 @@ jobs:
 
     # Toolbar Bitmap Split/Mux
     - name: Bitmap Split/Mux
-      run: build-bmp-tools.bat ${{ env.BUILD_CONFIGURATION }}
-      shell: cmd
+      run: |
+        "msbuild.exe tools\ToolBarTools\ToolBarTools.sln `"/p:Platform=Any CPU`" /p:Configuration=${{ env.BUILD_CONFIGURATION }} /t:Build /v:q"
+        msbuild.exe tools\ToolBarTools\ToolBarTools.sln "/p:Platform=Any CPU" /p:Configuration=${{ env.BUILD_CONFIGURATION }} /t:Build /v:q
 
     ## see https://github.com/actions/upload-artifact
     - name: Upload BmpTools artifact
