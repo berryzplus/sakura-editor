@@ -31,7 +31,6 @@
     - [Visual Studio 2019 以降の対応に関して](#visual-studio-2019-以降の対応に関して)
     - [.vsconfig に関して](#vsconfig-に関して)
       - [全対応バージョン共通](#全対応バージョン共通)
-      - [Visual Studio 2019 以降のみ](#visual-studio-2019-以降のみ)
       - [参照](#参照)
   - [How to build](#how-to-build)
     - [詳細情報](#詳細情報)
@@ -67,11 +66,9 @@ https://github.com/sakura-editor/sakura/wiki
 ## Build Requirements
 
 Sakura Editor をコンパイルするためには、 
-[最新のVisual Studio][Visual Studio 最新版] または [以前のバージョンのVisual Studio（Visual Studio 2017 以降。ただし Express 2017 for Windows Desktop は除く）][Visual Studio 以前のバージョン]が必要です。
+[最新のVisual Studio][Visual Studio 最新版] または [以前のバージョンのVisual Studio（Visual Studio 2019 以降。）][Visual Studio 以前のバージョン]が必要です。
 
 Sakura Editor は、[Open Source Initiative (OSI) 認定ライセンスである zlib ライセンス][ライセンスの OSI のページ][に基づいている](LICENSE)ため、[通常 Community エディションの対象外であるエンタープライズ組織でも、特例で Community エディションを利用しての開発・テストができます。][Visual Studio Community ライセンス]もちろん、Professional・Enterprise エディションも利用できます。
-
-正式バイナリは [Visual Studio Community 2017][Visual Studio 以前のバージョン] でビルドされます。
 
 ### Visual Studio Install options required
 - Windows 10 SDK
@@ -81,7 +78,7 @@ Sakura Editor は、[Open Source Initiative (OSI) 認定ライセンスである
 | Visual Studioバージョン | 対応済みIssue/PR                                           |
 | ----------------------- | ---------------------------------------------------------- |
 | 2022                    | [#1872](https://github.com/sakura-editor/sakura/pull/1872)（[コミット][2022対応コミット]） |
-| 2017/2019同時           | [#866](https://github.com/sakura-editor/sakura/issues/866) |
+| 2019                    | [#866](https://github.com/sakura-editor/sakura/issues/866) |
 
 [2022対応コミット]: https://github.com/sakura-editor/sakura/pull/1872/commits/93cf3f3eacfed6a4d0a2c30d5445b53b2599db3c
 
@@ -101,8 +98,6 @@ Sakura Editor のコンパイルに必要なコンポーネントを Visual Stud
 ```
 vs_community__XXXXX.exe --config <.vsconfig のファイルパス>
 ```
-
-#### Visual Studio 2019 以降のみ
 
 最新のVisual Studio(Visual Studio 2019 以降)で `sakura.sln` を開くと、同じディレクトリにある [.vsconfig](.vsconfig) から必要なコンポーネントのリストが読み込まれます。インストールされていないコンポーネントがある場合、インストールボタンが表示されます。インストールをクリックすると不足しているコンポーネントが自動的にインストールされます。
 

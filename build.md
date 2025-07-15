@@ -17,7 +17,6 @@
         - [具体例 (Win32 の Release)](#具体例-win32-の-release)
       - [Visual Studio 2019 を使用してコマンドラインでビルド](#visual-studio-2019-を使用してコマンドラインでビルド)
   - [ビルドの仕組み](#ビルドの仕組み)
-    - [appveyor でのビルドの仕組み](#appveyor-でのビルドの仕組み)
     - [Azure Pipelines でのビルドの仕組み](#azure-pipelines-でのビルドの仕組み)
     - [インストーラの仕組み](#インストーラの仕組み)
   - [開発者向けの情報](#開発者向けの情報)
@@ -39,7 +38,7 @@
 ### 実行ファイルのビルドに必要なもの
 
 - (オプション) [7-Zip](https://7-zip.opensource.jp/) (外部依存ファイルの解凍に使用)
-- Community または Professional エディション以上の Visual Studio 2017 または Visual Studio 2019
+- Visual Studio 2019以降
    - Windows 10 SDK のインストールも必要です。
 
 ### HTML ヘルプのビルドに必要なもの
@@ -48,7 +47,7 @@
    - Visual Studio のインストールにて以下のオプションを有効にすることにより導入されます。
       - 「C++ によるデスクトップ開発」を有効にする
       - 右のペインで 「C++ によるデスクトップ開発」を選ぶ
-      - Visual Studio 2017 の場合は「x86用とx64用のVisual C++ MFC」を、Visual Studio 2019 の場合は「最新 v142 ビルド ツールの C++ MFC (x86 & x64)」をチェックする
+      - Visual Studio 2019 の場合は「最新 v142 ビルド ツールの C++ MFC (x86 & x64)」をチェックする
       - 変更を確定する
    - VSインストール後でもVisual Studio Installerを起動して導入可能です。 
 ![vsi](https://user-images.githubusercontent.com/39618965/44622575-012dcc80-a8f6-11e8-906a-14d8cd6dfac9.PNG)
