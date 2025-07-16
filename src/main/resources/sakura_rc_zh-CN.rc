@@ -3473,7 +3473,7 @@ BEGIN
     STR_INS_MODE_INS        "插入"
     STR_INS_MODE_OVR        "改写"
     STR_GREP_SEARCH_CONDITION "\r\n□ 搜索条件  "
-    STR_GREP_SEARCH_FILE    "\<文件搜索\>\r\n"
+    STR_GREP_SEARCH_FILE    "<文件搜索>\r\n"
     STR_GREP_SEARCH_TARGET  "搜索目标    "
     STR_GREP_SEARCH_FOLDER  "目录          "
     STR_GREP_SUBFOLDER_YES  "    (包含子目录 = 是)\r\n"
@@ -3523,7 +3523,7 @@ BEGIN
     STR_FILETREE_FROM_COMMON "设置: 通用"
     STR_FILETREE_FROM_TYPE  "设置: 类型"
     STR_FILETREE_FROM_FILE  "设置: %s"
-    STR_FILETREE_CURDIR     "\<当前目录\>"
+    STR_FILETREE_CURDIR     "<当前目录>"
     STR_FILETREE_MAXCOUNT   "超过最大数量(%d)，已截断"
     STR_FILETREE_MENU_ROOT  "&配置根目录"
     STR_FILETREE_MENU_MYDOC "我的文档(&Y)"
@@ -3894,7 +3894,7 @@ BEGIN
     STR_IMPEXP_REGEX1       "因达到关键字数量上限，部分关键字已被截断"
     STR_IMPEXP_REGEX2       "因关键字存储空间已满，部分关键字已被截断"
     STR_IMPEXP_REGEX3       "已忽略无效关键字"
-    STR_IMPEXP_DIC_NOTFOUND "\<未找到词典文件\>"
+    STR_IMPEXP_DIC_NOTFOUND "<未找到词典文件>"
 END
 
 STRINGTABLE
@@ -3944,7 +3944,7 @@ BEGIN
     STR_PROPTYPKEYHELP_DIC  "   字典文件名"
     STR_PROPTYPKEYHELP_INFO "描述"
     STR_PROPTYPKEYHELP_PATH "路径"
-    STR_PROPTYPKEYHELP_LINE1 "\<\<在此处输入字典文件首行\>\>"
+    STR_PROPTYPKEYHELP_LINE1 "<<在此处输入字典文件首行>>"
     STR_PROPTYPKEYHELP_DICPATH "关键字字典文件路径"
     STR_PROPTYPKEYHELP_ERR_REG1 "无法继续注册更多字典"
     STR_PROPTYPKEYHELP_SELECT "请从列表中选择要更新的字典"
