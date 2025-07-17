@@ -1,7 +1,6 @@
 # Sakura Editor
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 [![build sakura](https://github.com/sakura-editor/sakura/workflows/build%20sakura/badge.svg)](https://github.com/sakura-editor/sakura/actions?query=workflow%3A%22build+sakura%22)
-[![CodeFactor](https://www.codefactor.io/repository/github/sakura-editor/sakura/badge)](https://www.codefactor.io/repository/github/sakura-editor/sakura)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sakura-editor_sakura&metric=alert_status)](https://sonarcloud.io/dashboard?id=sakura-editor_sakura)
 [![Github Releases All](https://img.shields.io/github/downloads/sakura-editor/sakura/total.svg)](https://github.com/sakura-editor/sakura/releases "All Releases")
 [![Star History](https://img.shields.io/badge/star-histroy-yellow.svg)](https://star-history.t9t.io/#sakura-editor/sakura)
@@ -44,7 +43,6 @@
     - [デバッグ方法](#デバッグ方法)
   - [変更履歴](#変更履歴)
   - [マクロのサンプル](#マクロのサンプル)
-  - [静的コード解析](#静的コード解析)
 
 <!-- /TOC -->
 
@@ -172,10 +170,3 @@ https://github.com/sakura-editor/sakura/actions/workflows/build-sakura.yml
 
 [こちら](tools/macro)でマクロのサンプルを提供してます。  
 もしサンプルを作ってもいいよ～という方がおられましたら PR の作成お願いします。
-
-## 静的コード解析
-
-- CodeFactor を利用しています。
-    - [cpplint.py](CPPLINT.md) で cpp のスタイルのチェックを行っています。
-
-
