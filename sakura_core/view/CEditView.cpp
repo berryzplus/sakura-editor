@@ -1864,7 +1864,7 @@ bool CEditView::GetSelectedData(
 		//>> 2002/04/18 Azumaiya
 
 		// メモリ確保に失敗したら抜ける
-		if( buffer->Capacity() < nBufSize ){
+		if( buffer->Capacity() < size_t(nBufSize) ){
 			return false;
 		}
 
@@ -1948,7 +1948,7 @@ bool CEditView::GetSelectedData(
 		//>> 2002/04/18 Azumaiya
 
 		// メモリ確保に失敗したら抜ける
-		if( buffer->Capacity() < nBufSize ){
+		if( buffer->Capacity() < size_t(nBufSize) ){
 			return false;
 		}
 

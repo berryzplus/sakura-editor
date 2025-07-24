@@ -55,8 +55,7 @@ void DetectIndentationStyle(const CEditDoc* pcDoc, size_t nMaxLinesToCheck, Inde
 			int width = 0;
 			while (*str++ == ' ')
 				++width;
-			int indent = abs(width - last);
-			if (indent > 1 && indent < indents.size()) {
+			if (const auto indent = abs(width - last); indent > 1 && size_t(indent) < indents.size()) {
 				++indents[indent];
 			}
 			last = width;
