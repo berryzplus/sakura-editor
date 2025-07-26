@@ -1,64 +1,82 @@
-cmake_minimum_required(VERSION 3.6)
-include(${CMAKE_SOURCE_DIR}/runtime.cmake)
+cmake_minimum_required(VERSION 3.16)
+
+# Find GTest
+find_package(GTest CONFIG REQUIRED)
+
+# Create a custom target for resource_zip generation
+add_custom_target(resource_zip ALL
+  COMMAND ${7ZIP_EXECUTABLE}
+    u -tzip -r -mcu=on
+    ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+    ${CMAKE_CURRENT_LIST_DIR}/resources/ja-JP/test-plugin
+  BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+  COMMENT "Generating resources.ja-JP.zip"
+)
 
 # define a variable of project name
-set(project_name tests1)
+set(PROJECT_NAME tests1)
 
-# define a variable SRC with file GLOB
-file(GLOB TEST_SRC ${CMAKE_CURRENT_LIST_DIR}/test*.cpp)
-file(GLOB TARGET_SRC ${CMAKE_CURRENT_LIST_DIR}/code*.cpp)
+# define source files of tests1
+file(GLOB_RECURSE TESTS1_SOURCES
+  ${CMAKE_CURRENT_LIST_DIR}/test*.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/code*.cpp)
+
+# define header files of tests1
+file(GLOB_RECURSE TESTS1_HEADERS
+  ${CMAKE_CURRENT_LIST_DIR}/*.hpp
+  ${CMAKE_CURRENT_LIST_DIR}/*.h)
+
+# define precompiled headers
+set(TESTS1_PCH_HEADER ${CMAKE_CURRENT_LIST_DIR}/pch.h)
+
+set(TESTS1_RESOURCE_SCRIPTS
+  ${CMAKE_CURRENT_LIST_DIR}/tests1_rc.rc)
+
+if(MINGW)
+  # Convert RC files to UTF-8 for MinGW
+  convert_rc_files_to_utf8(TESTS1_RESOURCE_SCRIPTS ${CMAKE_BINARY_DIR})
+endif(MINGW)
 
 # define sources files of an executable
-add_executable(${project_name} ${TEST_SRC} ${TARGET_SRC})
+add_executable(${PROJECT_NAME} ${TESTS1_PCH_HEADER} ${TESTS1_SOURCES} ${TESTS1_RESOURCE_SCRIPTS} ${TESTS1_HEADERS})
 
-# add definitions
-target_compile_definitions(${project_name} PUBLIC _CONSOLE UNICODE _UNICODE)
+# Enable precompiled headers
+target_precompile_headers(${PROJECT_NAME} PRIVATE ${TESTS1_PCH_HEADER})
 
-# add include directories for sakura_core
-target_include_directories(${project_name} PRIVATE ${CMAKE_SOURCE_DIR}/../sakura_core)
+# add definitions for project
+target_compile_definitions(${PROJECT_NAME}
+  PUBLIC
+    _CONSOLE
+)
 
-# use shared library version
-# this is required when using parameterized test
-if (BUILD_SHARED_LIBS)
-	# fix linker error "class testing::internal::Mutex testing::internal::g_linked_ptr_mutex"
-	target_compile_definitions(${project_name} PUBLIC -DGTEST_LINKED_AS_SHARED_LIBRARY=1)
+# add include directories for project
+target_include_directories(${PROJECT_NAME}
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/test/cpp
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_SOURCE_DIR}/src/test/resources
+)
 
-	# suppress warning
-	if (MSVC)
-		target_compile_options(${project_name} PUBLIC /wd4251 PUBLIC /wd4275)
-	endif(MSVC)
-endif (BUILD_SHARED_LIBS)
-
-# Hacks to reuse compiled editor objects.
-target_compile_definitions(${project_name} PRIVATE WIN32 _WIN32_WINNT=_WIN32_WINNT_WIN7)
-if (MSVC)
-	target_compile_options (${project_name} PRIVATE $<$<CONFIG:Release>:/GL> /MT$<$<CONFIG:Debug>:d> /GF /FD /EHsc /Zi /TP /source-charset:utf-8 /execution-charset:shift_jis)
-	target_link_libraries  (${project_name} PRIVATE $<$<CONFIG:Release>:-LTCG> "${CMAKE_CURRENT_LIST_DIR}/../../sakura/${CMAKE_GENERATOR_PLATFORM}/$<CONFIG>/*.obj" "${CMAKE_CURRENT_LIST_DIR}/../../sakura/${CMAKE_GENERATOR_PLATFORM}/$<CONFIG>/*.res")
-	set_target_properties  (${project_name} PROPERTIES
-		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_GENERATOR_PLATFORM}/$<CONFIG>"
-	)
-elseif (MINGW)
-	target_compile_options (${project_name} PRIVATE -finput-charset=utf-8 -fexec-charset=cp932)
-	target_compile_definitions (${project_name} PUBLIC $<$<CONFIG:Debug>:_DEBUG>)
-	file (GLOB_RECURSE ALL_O
-		"${CMAKE_CURRENT_LIST_DIR}/../../sakura_core/*.cpp"
-		"${CMAKE_CURRENT_LIST_DIR}/../../sakura_core/*.rc"
-	)
-	list (TRANSFORM ALL_O REPLACE "\\.(cpp|rc)$" ".o")
-	target_link_libraries (${project_name} PRIVATE ${ALL_O})
-endif ()
-
-# link with GoogleTest
-if(BUILD_GTEST)
-	# Build GoogleTest from source code.
-	target_link_libraries(${project_name} PRIVATE gtest)
-	target_link_libraries(${project_name} PRIVATE gmock)
-else()
-	# Build without GoogleTest(use system library).
-	find_package(GTest REQUIRED)
-	target_link_libraries(${project_name} PRIVATE GTest::GTest)
-	target_link_libraries(${project_name} PRIVATE GTest::GMock)
-endif()
+# Add dependencies
+add_dependencies(${PROJECT_NAME}
+  resource_zip
+)
 
 # link libraries
-target_link_libraries (${project_name} PRIVATE winspool ole32 oleaut32 uuid comctl32 imm32 mpr imagehlp shlwapi winmm windowscodecs msimg32)
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    sakura_core
+)
+
+# link with GoogleTest
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    GTest::gtest
+    GTest::gmock)
+
+if(MINGW)
+  target_link_options(${PROJECT_NAME}
+    PRIVATE
+      -mconsole
+  )
+endif(MINGW)

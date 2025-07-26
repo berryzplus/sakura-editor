@@ -1,4 +1,4 @@
-@echo off
+@echo on
 set platform=%1
 set configuration=%2
 
@@ -25,6 +25,19 @@ if not defined CMD_MSBUILD (
 	exit /b 1
 )
 
+if not exist %~dp0tools\vcpkg\bootstrap-vcpkg.bat (
+	"%CMD_GIT%" submodule update --init
+)
+
+if errorlevel 1 (
+	echo ERROR submodule update %errorlevel%
+	exit /b 1
+)
+
+if not exist %~dp0tools\vcpkg\vcpkg.exe (
+	call %~dp0tools\vcpkg\bootstrap-vcpkg.bat
+)
+
 set SLN_FILE=sakura.sln
 
 @rem https://www.appveyor.com/docs/environment-variables/
@@ -34,27 +47,11 @@ set LOG_FILE=msbuild-%platform%-%configuration%.log
 @rem https://msdn.microsoft.com/ja-jp/library/ms171470.aspx
 set LOG_OPTION=/flp:logfile=%LOG_FILE%
 
-call %~dp0build-sonar-qube-start.bat
-if errorlevel 1 (
-	echo ERROR build %errorlevel%
-	exit /b 1
-)
+@echo "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
+		"%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
 
-if "%SONAR_QUBE_TOKEN%" == "" (
-	@echo "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
-	      "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
-) else (
-    @echo "%BUILDWRAPPER_EXE%" --out-dir %~dp0bw-output "%CMD_MSBUILD%"  %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Rebuild" %LOG_OPTION%
-          "%BUILDWRAPPER_EXE%" --out-dir %~dp0bw-output "%CMD_MSBUILD%"  %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Rebuild" %LOG_OPTION%
-)
 if errorlevel 1 (
 	echo ERROR in msbuild.exe errorlevel %errorlevel%
-	exit /b 1
-)
-
-call %~dp0build-sonar-qube-finish.bat
-if errorlevel 1 (
-	echo ERROR build %errorlevel%
 	exit /b 1
 )
 

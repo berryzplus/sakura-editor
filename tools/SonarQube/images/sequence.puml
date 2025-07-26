@@ -1,0 +1,34 @@
+@startuml sequence
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 60
+skinparam sequenceParticipant underline
+
+actor "ユーザー" as User
+participant "Analyze-Project.ps1" as AP
+participant "Build-Project.ps1" as BW
+participant "Run-Tests.ps1" as RT
+participant "Run-SonarScanner.ps1" as RS
+
+User -> AP: ./tools/SonarQube/Analyze-Project.ps1 x64 Debug
+
+AP -> BW: Build-Project.ps1実行
+BW -> BW: build-wrapper + msbuildでリビルド実行
+BW --> AP: 完了
+
+AP -> RT: Run-Tests.ps1実行
+alt Visual Studio Code Coverage利用可能
+    RT -> RT: vstest.console.exe実行
+else その他
+    RT -> RT: OpenCppCoverage実行
+end
+RT --> AP: 完了
+
+AP -> RS: Run-SonarScanner.ps1実行
+RS -> RS: SonarScanner実行
+RS --> AP: 完了
+
+AP --> User: 解析完了
+
+@enduml

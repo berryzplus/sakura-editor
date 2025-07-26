@@ -1,0 +1,7 @@
+*.exe
+*.dll
+
+LEVersion.xml
+Lang/
+
+locale-emulator.zip
