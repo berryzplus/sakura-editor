@@ -6,11 +6,13 @@ on:
   workflow_dispatch:
   push:
     paths-ignore:
+      - '**/*.adoc'
       - '**/*.md'
       - .gitignore
       - .editorconfig
   pull_request:
     paths-ignore:
+      - '**/*.adoc'
       - '**/*.md'
       - .gitignore
       - .editorconfig
@@ -191,7 +193,6 @@ jobs:
     - name: Run vcpkg bootstrap
       run: |
         .\tools\vcpkg\bootstrap-vcpkg.bat
-      shell: cmd
 
     - name: Setup environment variables
       run: |
@@ -326,7 +327,7 @@ jobs:
     - name: Run vcpkg bootstrap
       run: |
         .\tools\vcpkg\bootstrap-vcpkg.bat
-      shell: cmd
+      shell: pwsh
 
     - name: Set up MSYS2
       id: msys2
