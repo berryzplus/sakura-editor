@@ -19,6 +19,21 @@
 #include "CDataProfile.h" // StringBufferW
 #include "uiparts/CMenuDrawer.h"
 
+UINT GetPrivateProfileIntW(
+	_In_ LPCWSTR lpAppName,
+	_In_ LPCWSTR lpKeyName,
+	_In_ INT nDefault,
+	std::optional<std::filesystem::path> iniPath = std::nullopt
+);
+
+std::wstring GetPrivateProfileStringW(
+	_In_opt_ LPCWSTR lpAppName,
+	_In_opt_ LPCWSTR lpKeyName,
+	_In_opt_ LPCWSTR lpDefault,
+	_In_     DWORD nSize,
+	std::optional<std::filesystem::path> iniPath = std::nullopt
+);
+
 struct SMenuItem {
 	int m_nLevel;
 	EFunctionCode m_eFuncCode;
@@ -263,6 +278,203 @@ MATCHER_P(EqSTypeConfig, expected, "Checks if STypeConfig is equal to the expect
     // 常に true を返す
     return true;
 }
+
+namespace sakura_ini {
+
+/*!
+ * @brief APIラッパー関数のテスト
+ */
+TEST(apiwrap, test)
+{
+	const auto exeIniPath = GetExeFileName().concat(L".ini");
+
+	// 設定を書き込む
+	WritePrivateProfileStringW(L"Settings", L"UserRootFolder", L"2", exeIniPath.c_str());
+	WritePrivateProfileStringW(L"Settings", L"UserSubFolder", L"", exeIniPath.c_str());
+
+	EXPECT_THAT(GetPrivateProfileIntW(L"Settings", L"MultiUser", 1, exeIniPath), 1);
+	EXPECT_THAT(GetPrivateProfileIntW(L"Settings", L"UserRootFolder", 0, exeIniPath), 2);
+	EXPECT_THAT(GetPrivateProfileStringW(L"Settings", L"UserSubFolder", L"sakura", _MAX_DIR, exeIniPath), StrEq(L"sakura"));
+	EXPECT_THAT(GetPrivateProfileStringW(L"Settings", L"UserRootFolder", L"sakura", _MAX_DIR, exeIniPath), StrEq(L"2"));
+
+	if (std::filesystem::exists(exeIniPath)) {
+		std::filesystem::remove(exeIniPath);
+	}
+}
+
+/*!
+ * @brief マルチユーザー設定読み込みのテスト
+ */
+TEST(CShareData, LoadMultiUserSettings001)
+{
+	const auto exeIniPath = GetExeFileName().concat(L".ini");
+
+	// 設定を書き込む
+	WritePrivateProfileStringW(L"Settings", L"MultiUser", L"1", exeIniPath.c_str());
+	WritePrivateProfileStringW(L"Settings", L"UserRootFolder", L"2", exeIniPath.c_str());
+	WritePrivateProfileStringW(L"Settings", L"UserSubFolder", L"", exeIniPath.c_str());
+
+	// マルチユーザー設定を読み込む
+	const auto multiUserSettings = CShareData::LoadMultiUserSettings(GetExeFileName().concat(L".ini"));
+
+	EXPECT_THAT(multiUserSettings.has_value(), IsTrue());
+	EXPECT_THAT(multiUserSettings.value().userRootFolder, 2);
+	EXPECT_THAT(multiUserSettings.value().userSubFolder, StrEq(L"sakura"));
+
+	if (std::filesystem::exists(exeIniPath)) {
+		std::filesystem::remove(exeIniPath);
+	}
+}
+
+/*!
+ * @brief マルチユーザー設定読み込みのテスト
+ */
+TEST(CShareData, LoadMultiUserSettings101)
+{
+	const auto exeIniPath = GetExeFileName().concat(L".ini");
+
+	// 設定を書き込む
+	WritePrivateProfileStringW(L"Settings", L"MultiUser", L"0", exeIniPath.c_str());
+
+	// マルチユーザー設定を読み込む
+	const auto multiUserSettings = CShareData::LoadMultiUserSettings(GetExeFileName().concat(L".ini"));
+
+	EXPECT_THAT(multiUserSettings.has_value(), IsFalse());
+
+	if (std::filesystem::exists(exeIniPath)) {
+		std::filesystem::remove(exeIniPath);
+	}
+}
+
+/*!
+ * @brief iniファイルパスの取得
+ */
+TEST(CShareData, BuildPrivateIniFileName_RoamingAppData)
+{
+	const auto& pszProfileName = L"profile1";
+
+	const SMultiUserSettings multiUserSettings = {
+		0,
+		L"sakura"
+	};
+
+	// exe基準のiniファイルパスを得る
+	const auto iniPath = GetExeFileName().replace_extension(L".ini");
+
+	// 設定ファイルフォルダー
+	auto iniFolder = iniPath;
+	iniFolder.remove_filename();
+
+	// iniファイル名を得る
+	const auto filename = iniPath.filename();
+
+	// 期待値を取得する
+	std::wstring expected(2048, L'\0');
+	EXPECT_TRUE(ExpandEnvironmentStringsW(LR"(%USERPROFILE%\AppData\Roaming\sakura\profile1\)", expected.data(), DWORD(expected.capacity())));
+	expected.assign(expected.data());
+	expected += iniPath.filename();
+
+	// テスト実施
+	EXPECT_THAT(CShareData::BuildPrivateIniFileName(iniPath, pszProfileName, multiUserSettings), StrEq(expected));
+}
+
+/*!
+ * @brief iniファイルパスの取得
+ */
+TEST(CShareData, BuildPrivateIniFileName_Desktop)
+{
+	const auto& pszProfileName = L"";
+
+	const SMultiUserSettings multiUserSettings = {
+		3,
+		L"sakura"
+	};
+
+	// exe基準のiniファイルパスを得る
+	const auto iniPath = GetExeFileName().replace_extension(L".ini");
+
+	// 設定ファイルフォルダー
+	auto iniFolder = iniPath;
+	iniFolder.remove_filename();
+
+	// iniファイル名を得る
+	const auto filename = iniPath.filename();
+
+	// 期待値を取得する
+	std::wstring expected(2048, L'\0');
+	EXPECT_TRUE(ExpandEnvironmentStrings(LR"(%USERPROFILE%\Desktop\sakura\)", expected.data(), (DWORD)expected.capacity()));
+	expected.assign(expected.data());
+	expected += iniPath.filename();
+
+	// テスト実施
+	EXPECT_THAT(CShareData::BuildPrivateIniFileName(iniPath, pszProfileName, multiUserSettings), StrEq(expected));
+}
+
+/*!
+ * @brief iniファイルパスの取得
+ */
+TEST(CShareData, BuildPrivateIniFileName_Profile)
+{
+	const auto& pszProfileName = L"";
+
+	const SMultiUserSettings multiUserSettings = {
+		1,
+		L"sakura"
+	};
+
+	// exe基準のiniファイルパスを得る
+	const auto iniPath = GetExeFileName().replace_extension(L".ini");
+
+	// 設定ファイルフォルダー
+	auto iniFolder = iniPath;
+	iniFolder.remove_filename();
+
+	// iniファイル名を得る
+	const auto filename = iniPath.filename();
+
+	// 期待値を取得する
+	std::wstring expected(2048, L'\0');
+	EXPECT_TRUE(ExpandEnvironmentStrings(LR"(%USERPROFILE%\sakura\)", expected.data(), (DWORD)expected.capacity()));
+	expected.assign(expected.data());
+	expected += iniPath.filename();
+
+	// テスト実施
+	EXPECT_THAT(CShareData::BuildPrivateIniFileName(iniPath, pszProfileName, multiUserSettings), StrEq(expected));
+}
+
+/*!
+ * @brief iniファイルパスの取得
+ */
+TEST(CShareData, BuildPrivateIniFileName_Document)
+{
+	const auto& pszProfileName = L"";
+
+	const SMultiUserSettings multiUserSettings = {
+		2,
+		L"sakura"
+	};
+
+	// exe基準のiniファイルパスを得る
+	const auto iniPath = GetExeFileName().replace_extension(L".ini");
+
+	// 設定ファイルフォルダー
+	auto iniFolder = iniPath;
+	iniFolder.remove_filename();
+
+	// iniファイル名を得る
+	const auto filename = iniPath.filename();
+
+	// 期待値を取得する
+	std::wstring expected(2048, L'\0');
+	EXPECT_TRUE(ExpandEnvironmentStrings(LR"(%USERPROFILE%\Documents\sakura\)", expected.data(), (DWORD)expected.capacity()));
+	expected.assign(expected.data());
+	expected += iniPath.filename();
+
+	// テスト実施
+	EXPECT_THAT(CShareData::BuildPrivateIniFileName(iniPath, pszProfileName, multiUserSettings), StrEq(expected));
+}
+
+} // namespace sakura_ini
 
 namespace share_data {
 
@@ -1466,7 +1678,11 @@ MATCHER_P4(IsInitializedShareData, pszProfileName, isMultiUserSettings, userRoot
 	auto iniFolder = iniPath;
 	iniFolder.remove_filename();
 
-	auto privateIniPath = iniPath;
+	// iniファイル名を得る
+	const auto filename = iniPath.filename();
+
+	// マルチユーザー用のiniファイルパスを組み立てる
+	auto privateIniPath = CShareData::BuildPrivateIniFileName(iniPath, pszProfileName);
 
 	EXPECT_THAT(shareData.m_vStructureVersion, N_SHAREDATA_VERSION);
 	EXPECT_THAT(shareData.m_nSize, sizeof(DLLSHAREDATA));
@@ -1645,10 +1861,6 @@ TEST(CShareData, InitShareData001)
 	// 共有メモリのインスタンスを生成する
 	const auto pShareData = std::make_unique<CShareData>();
 
-	// 共有メモリを初期化するにはコマンドラインのインスタンスが必要
-	CCommandLine cCommandLine;
-	cCommandLine.ParseCommandLine(L"-NOWIN", false);
-
 	// 共有メモリのインスタンスを初期化する
 	EXPECT_TRUE(pShareData->InitShareData());
 
@@ -1668,10 +1880,6 @@ TEST(CShareData, ConvertLangValues)
 
 	// 共有メモリのインスタンスを生成する
 	const auto pShareData = std::make_unique<CShareData>();
-
-	// 共有メモリを初期化するにはコマンドラインのインスタンスが必要
-	CCommandLine cCommandLine;
-	cCommandLine.ParseCommandLine(L"-NOWIN", false);
 
 	// 共有メモリのインスタンスを初期化する
 	ASSERT_TRUE(pShareData->InitShareData());

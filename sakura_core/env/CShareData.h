@@ -33,6 +33,7 @@
 #define SAKURA_CSHAREDATA_B25C0FA2_B810_4327_8EC6_0AF46D49593A_H_
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include "CSelectLang.h"		// 2011.04.10 nasukoji
 #include "charset/charset.h"
@@ -45,6 +46,12 @@ class CMutex;
 struct DLLSHAREDATA;
 struct SFileTree;
 struct STypeConfig;
+
+//! マルチユーザー設定
+struct SMultiUserSettings {
+	UINT         userRootFolder = 0;
+	std::wstring userSubFolder = L"sakura";
+};
 
 /*!	@brief 共有データの管理
 
@@ -63,8 +70,17 @@ struct STypeConfig;
 class CShareData : public TSingleInstance<CShareData>
 {
 public:
+	static std::optional<SMultiUserSettings> LoadMultiUserSettings(
+		const std::filesystem::path& exeIniPath
+	);
+	static std::filesystem::path BuildPrivateIniFileName(
+		const std::filesystem::path& iniPath,
+		_In_opt_z_ LPCWSTR pszProfileName,
+		const std::optional<SMultiUserSettings>& multiUserSettings = std::nullopt
+	);
+
 	CShareData();
-	~CShareData();
+	~CShareData() override;
 
 	/*
 	||  Attributes & Operations

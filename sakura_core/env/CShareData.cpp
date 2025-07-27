@@ -55,6 +55,110 @@ struct ARRHEAD {
 
 const unsigned int uShareDataVersion = N_SHAREDATA_VERSION;
 
+UINT GetPrivateProfileIntW(
+	_In_ LPCWSTR lpAppName,
+	_In_ LPCWSTR lpKeyName,
+	_In_ INT nDefault,
+	std::optional<std::filesystem::path> iniPath
+)
+{
+	return GetPrivateProfileIntW(lpAppName, lpKeyName, nDefault, iniPath.has_value() ? iniPath.value().c_str() : nullptr);
+}
+
+std::wstring GetPrivateProfileStringW(
+	_In_opt_ LPCWSTR lpAppName,
+	_In_opt_ LPCWSTR lpKeyName,
+	_In_opt_ LPCWSTR lpDefault,
+	_In_     DWORD nSize,
+	std::optional<std::filesystem::path> iniPath
+)
+{
+	std::wstring buffer(nSize, L'\0');
+	if (!GetPrivateProfileStringW(lpAppName, lpKeyName, lpDefault, buffer.data(), DWORD(buffer.size()), iniPath.has_value() ? iniPath.value().c_str() : nullptr) && lpDefault && *lpDefault) {
+		buffer = lpDefault;
+	}
+	return buffer.data();
+}
+
+std::filesystem::path SHGetKnownFolderPath(
+	_In_ REFKNOWNFOLDERID refFolderId,
+	_In_ DWORD dwFlags,
+	_In_opt_ HANDLE hToken = nullptr
+)
+{
+	std::filesystem::path privateIniPath;
+	if (PWSTR pFolderPath = nullptr; SUCCEEDED(::SHGetKnownFolderPath(refFolderId, dwFlags, hToken, &pFolderPath))) {
+		privateIniPath = pFolderPath;
+		CoTaskMemFree(pFolderPath);
+	}
+	return privateIniPath;
+}
+
+/*!
+	@brief マルチユーザー設定を読み込む
+ */
+/* static */ std::optional<SMultiUserSettings> CShareData::LoadMultiUserSettings(
+	const std::filesystem::path& exeIniPath
+)
+{
+	if (const auto isMultiUser = GetPrivateProfileIntW(L"Settings", L"MultiUser", 0, exeIniPath)) {
+		const SMultiUserSettings multiUserSettings = {
+			GetPrivateProfileIntW(L"Settings", L"UserRootFolder", 0, exeIniPath),
+			GetPrivateProfileStringW(L"Settings", L"UserSubFolder", L"sakura", _MAX_DIR, exeIniPath)
+		};
+		return multiUserSettings;
+	}
+	return std::nullopt;
+}
+
+/*!
+	@brief マルチユーザー用のiniファイルパスを組み立てる
+ */
+/* static */ std::filesystem::path CShareData::BuildPrivateIniFileName(
+	const std::filesystem::path& iniPath,
+	_In_opt_z_ LPCWSTR pszProfileName,
+	const std::optional<SMultiUserSettings>& multiUserSettings
+)
+{
+	auto privateIniPath = iniPath;
+	privateIniPath.remove_filename();
+
+	if (multiUserSettings.has_value()) {
+		const auto userRootFolder =multiUserSettings.value().userRootFolder;
+
+		KNOWNFOLDERID refFolderId;
+		switch (userRootFolder) {
+		case 1:
+		case 3:
+			refFolderId = FOLDERID_Profile;			// ユーザーのルートフォルダー
+			break;
+
+		case 2:
+			refFolderId = FOLDERID_Documents;		// ユーザーのドキュメントフォルダー
+			break;
+
+		default:
+			refFolderId = FOLDERID_RoamingAppData;	// ユーザーのアプリケーションデータフォルダー
+			break;
+		}
+
+		privateIniPath = SHGetKnownFolderPath(refFolderId, KF_FLAG_DEFAULT_PATH);
+		if (3 == userRootFolder) {
+			privateIniPath /= L"Desktop";
+		}
+
+		privateIniPath /= multiUserSettings.value().userSubFolder;
+	}
+
+	if (pszProfileName && *pszProfileName) {
+		privateIniPath /= pszProfileName;
+	}
+
+	privateIniPath /= iniPath.filename();
+
+	return privateIniPath;
+}
+
 //	CShareData_new2.cppと統合
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動
 CShareData::CShareData()
@@ -114,9 +218,10 @@ bool CShareData::InitShareData()
 
 	m_hwndTraceOutSource = nullptr;	// 2006.06.26 ryoji
 
+	const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
+
 	/* ファイルマッピングオブジェクト */
 	{
-		const auto pszProfileName = CCommandLine::getInstance()->GetProfileName();
 		std::wstring strShareDataName = GSTR_SHAREDATA;
 		strShareDataName += pszProfileName;
 		m_hFileMap = ::CreateFileMapping(
@@ -140,6 +245,23 @@ bool CShareData::InitShareData()
 
 	if( GetLastError() != ERROR_ALREADY_EXISTS ){
 		/* オブジェクトが存在していなかった場合 */
+
+		// exe基準のiniファイルパスを得る
+		const auto iniPath = GetExeFileName().replace_extension(L".ini");
+
+		// マルチユーザー設定を読み込む
+		const auto multiUserSettings = LoadMultiUserSettings(GetExeFileName().concat(L".ini"));
+
+		// マルチユーザー用のiniファイルパスを組み立てる
+		auto privateIniPath = BuildPrivateIniFileName(iniPath, pszProfileName, multiUserSettings);
+
+		// 設定ファイルフォルダー
+		auto iniFolder = privateIniPath;
+		iniFolder.remove_filename();
+
+		// iniファイル名を得る
+		const auto filename = privateIniPath.filename();
+
 		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
 		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
 			m_hFileMap,
@@ -175,16 +297,13 @@ bool CShareData::InitShareData()
 		}
 
 		// マルチユーザー用のiniファイルパス(exe基準の初期化よりも先に行う必要がある)
-		auto privateIniPath = GetIniFileName();
-		m_pShareData->m_szPrivateIniFile = privateIniPath.c_str();
+		m_pShareData->m_szPrivateIniFile = privateIniPath;
 
 		// exe基準のiniファイルパス
-		auto iniPath = GetExeFileName().replace_extension(L".ini");
-		m_pShareData->m_szIniFile = iniPath.c_str();
+		m_pShareData->m_szIniFile = iniPath;
 
 		// 設定ファイルフォルダー
-		WCHAR	szIniFolder[_MAX_PATH];
-		GetInidir(szIniFolder);
+		SFilePath szIniFolder(iniFolder);
 
 //@@@ 2001.12.26 YAZAKI MRUリストは、CMRUに依頼する
 		CMRUFile cMRU;
