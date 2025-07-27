@@ -50,9 +50,20 @@ LPCWSTR GetAppName( void )
 const COLORREF	SELECTEDAREA_RGB = RGB( 255, 255, 255 );
 const int		SELECTEDAREA_ROP2 = R2_XORPEN;
 
+/*!
+ * アプリのインスタンスハンドルを取得する。
+ *
+ * @return アプリのインスタンスハンドル。wWinMainの第1引数と同じ。
+ */
 HINSTANCE G_AppInstance()
 {
-	return CProcess::getInstance()->GetProcessInstance();
+	// CProcessのインスタンスが存在する場合は、そこからインスタンスハンドルを取得する
+	if (const auto process = CProcess::getInstance()) {
+		return process->GetProcessInstance();
+	}
+
+	// CProcessのインスタンスが存在しない場合は、API経由でPEBのプロセスインスタンスハンドルを取得する
+	return GetModuleHandleW(nullptr);
 }
 
 /*!
