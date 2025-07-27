@@ -4,9 +4,8 @@
 
 	SPDX-License-Identifier: Zlib
 */
-#define NOMINMAX
-#include "charset/charcode.h"
 #include "pch.h"
+#include "charset/charcode.h"
 #include <algorithm>
 #include <cstring>
 #include <string>
