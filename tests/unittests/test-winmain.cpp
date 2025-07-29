@@ -33,21 +33,10 @@
 
 #include "StartEditorProcessForTest.h"
 
-using namespace std::literals::string_literals;
-
-/*!
- * HANDLE型のスマートポインタを実現するためのdeleterクラス
- */
-struct handle_closer
-{
-	void operator()( HANDLE handle ) const
-	{
-		::CloseHandle( handle );
-	}
-};
+#include "cxx_util/ResourceHolder.hpp"
 
 //! HANDLE型のスマートポインタ
-using handleHolder = std::unique_ptr<std::remove_pointer<HANDLE>::type, handle_closer>;
+using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
 
 /*!
  * WinMain起動テストのためのフィクスチャクラス
@@ -126,7 +115,7 @@ void CControlProcess_WaitForInitialized(std::wstring_view profileName)
 	}
 
 	// イベントハンドラをスマートポインタに入れる
-	handleHolder eventHolder( hEvent );
+	HandleHolder eventHolder( hEvent );
 
 	// 初期化完了イベントを待つ
 	DWORD dwRet = ::WaitForSingleObject( hEvent, 30000 );
@@ -220,7 +209,7 @@ void CControlProcess_Terminate(std::wstring_view profileName)
 	}
 
 	// プロセスハンドルをスマートポインタに入れる
-	handleHolder processHolder( hControlProcess );
+	HandleHolder processHolder( hControlProcess );
 
 	// トレイウインドウを閉じる
 	::SendMessage( hTrayWnd, WM_CLOSE, 0, 0 );
