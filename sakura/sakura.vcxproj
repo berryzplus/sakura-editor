@@ -76,7 +76,7 @@
   <ItemDefinitionGroup Label="sakura.common">
     <ClCompile>
       <AdditionalIncludeDirectories>..\src\main\cpp;..\src\main\resources;..\sakura_core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32_WINNT=_WIN32_WINNT_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_WIN32_WINNT=_WIN32_WINNT_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -488,6 +488,7 @@
     <ClInclude Include="..\sakura_core\_os\CClipboard.h" />
     <ClInclude Include="..\sakura_core\_os\CDropTarget.h" />
     <ClInclude Include="..\sakura_core\_os\OleTypes.h" />
+    <ClInclude Include="..\src\main\cpp\cxx_util\ResourceHolder.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur" />

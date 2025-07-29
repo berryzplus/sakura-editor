@@ -6,10 +6,6 @@
 */
 #include "pch.h"
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif /* #ifndef NOMINMAX */
-
 #include <tchar.h>
 #include <Windows.h>
 
@@ -65,7 +61,7 @@ protected:
 	/*!
 	 * 設定ファイルのパス
 	 *
-	 * GetIniFileNameを使ってtests1.iniのパスを取得する。
+	 * CShareData::BuildPrivateIniFileNameを使ってtests1.iniのパスを取得する。
 	 */
 	std::filesystem::path iniPath;
 
@@ -84,8 +80,10 @@ protected:
 		// プロセスのインスタンスを用意する
 		CControlProcess dummy(nullptr, strCommandLine.data());
 
-		// INIファイルのパスを取得
-		iniPath = GetIniFileName();
+		iniPath = GetExeFileName().replace_extension(L".ini");
+
+		// INIファイルのパスを組み立てる
+		iniPath = CShareData::BuildPrivateIniFileName(iniPath, profileName.data());
 
 		// INIファイルを削除する
 		if (fexist(iniPath.c_str())) {

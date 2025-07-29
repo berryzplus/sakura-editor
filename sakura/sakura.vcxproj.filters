@@ -125,6 +125,9 @@
     <Filter Include="Other Files">
       <UniqueIdentifier>{0eefa0df-ca7f-489c-9844-9a182e1dba18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\cxx_util">
+      <UniqueIdentifier>{6f753c35-56c2-43a7-bd0e-b507ac88133d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build\$(Platform\CMakeTools\Funccode_define.h">
@@ -1116,6 +1119,9 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\parse\DetectIndentationStyle.h">
       <Filter>Cpp Source Files\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\main\cpp\cxx_util\ResourceHolder.hpp">
+      <Filter>Cpp Source Files\cxx_util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

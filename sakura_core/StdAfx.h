@@ -20,9 +20,6 @@
 #define STRICT 1
 #endif
 
-// Windows SDKのmin/maxマクロは使いません
-#define NOMINMAX
-
 // MS Cランタイムの非セキュア関数の使用を容認します
 #define _CRT_SECURE_NO_WARNINGS
 

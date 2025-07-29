@@ -18,6 +18,8 @@
 #include "StdAfx.h"
 #include "_main/CProcess.h"
 
+#include "_main/CCommandLine.h"
+
 #include "util/module.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
@@ -37,9 +39,8 @@ CProcess::CProcess(
 )
 : m_hInstance( hInstance )
 , m_hWnd( nullptr )
+	, m_cShareData(CCommandLine::getInstance() ? CCommandLine::getInstance()->GetProfileName() : nullptr)
 {
-	// アプリ名をリソースから読み込む
-	m_strAppName = LS(STR_GSTR_APPNAME);
 }
 
 /*!
@@ -99,12 +100,4 @@ bool CProcess::Run()
 void CProcess::RefreshString()
 {
 	m_cShareData.RefreshString();
-}
-
-/*!
-	言語選択後にアプリ名を更新します。
- */
-void CProcess::UpdateAppName( std::wstring_view appName )
-{
-	m_strAppName = appName;
 }

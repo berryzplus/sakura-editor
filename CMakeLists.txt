@@ -94,6 +94,9 @@ include_directories(
 )
 
 if(MSVC)
+  add_compile_definitions(
+    NOMINMAX
+  )
   add_compile_options(
     /FAsu
     /Fa"${CMAKE_BINARY_DIR}"
