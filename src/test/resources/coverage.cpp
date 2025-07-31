@@ -12,3 +12,5 @@ ExcludeSourceFromCodeCoverage(Exclusion1, L"*\\tests\\unittests\\*");
 ExcludeSourceFromCodeCoverage(Exclusion2, L"*\\googletest\\*");
 ExcludeSourceFromCodeCoverage(Exclusion3, L"*\\Windows Kits\\10\\Include\\*");
 ExcludeSourceFromCodeCoverage(Exclusion4, L"*\\VC\\Tools\\MSVC\\*\\include\\*");
+ExcludeSourceFromCodeCoverage(Exclusion5, L"*\\vcpkg\\buildtrees\\*");
+ExcludeSourceFromCodeCoverage(Exclusion6, L"*\\vcpkg_installed\\*");

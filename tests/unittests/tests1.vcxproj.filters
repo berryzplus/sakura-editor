@@ -20,10 +20,10 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="..\..\src\test\cpp\pch.cpp">
       <Filter>Pre-Compiled Headers</Filter>
     </ClCompile>
-    <ClCompile Include="coverage.cpp" />
+    <ClCompile Include="..\..\src\test\resources\coverage.cpp" />
     <ClCompile Include="test-cmemory.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -179,7 +179,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="..\..\src\test\cpp\pch.h">
       <Filter>Pre-Compiled Headers</Filter>
     </ClInclude>
     <ClInclude Include="StartEditorProcessForTest.h">
@@ -193,10 +193,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="tests1_rc.h">
+    <ClInclude Include="..\..\src\test\resources\tests1_rc.h">
       <Filter>Other Files</Filter>
     </ClInclude>
-    <ResourceCompile Include="tests1_rc.rc">
+    <ResourceCompile Include="..\..\src\test\resources\tests1_rc.rc">
       <Filter>Other Files</Filter>
     </ResourceCompile>
   </ItemGroup>
