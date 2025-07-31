@@ -300,7 +300,8 @@ jobs:
           -D"sonar.projectKey=${{ env.SONAR_PROJECT_KEY }}"
           -D"sonar.host.url=https://sonarcloud.io"
           -D"sonar.cfamily.compile-commands=build/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_CONFIGURATION }}/bw-output/compile_commands.json"
-          -D"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml"
+          -D"sonar.cfamily.cppunit.reportPath=*-googletest.xml"
+          -D"sonar.cfamily.cobertura.reportPaths=tests1-coverage.xml"
 
     - name: Upload Log artifact
       uses: actions/upload-artifact@v4
