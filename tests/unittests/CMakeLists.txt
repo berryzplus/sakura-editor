@@ -8,7 +8,7 @@ add_custom_target(resource_zip ALL
   COMMAND ${7ZIP_EXECUTABLE}
     u -tzip -r -mcu=on
     ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
-    ${CMAKE_CURRENT_LIST_DIR}/resources/ja-JP/test-plugin
+    ${CMAKE_SOURCE_DIR}/src/test/resources/test-plugin
   BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
   COMMENT "Generating resources.ja-JP.zip"
 )
