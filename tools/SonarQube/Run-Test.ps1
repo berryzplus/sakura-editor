@@ -1,47 +1,52 @@
 # Run-Test.ps1
 Param(
-    [String]$testCommand,
-    [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
-    [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
+  [String]$testCommand,
+  [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
+  [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
 )
 
 $testName = $([System.IO.Path]::GetFileNameWithoutExtension($testCommand))
 
 $VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
 
-$VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
+# $VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
 
-if (Test-Path $VcCodeCoverage) {
-    $VsExtentions = "$VsInstallationPath\Common7\IDE\Extensions"
+# if (("$env:GITHUB_ACTIONS" -eq 'true') -or (Test-Path -Path $VcCodeCoverage)) {
+$useOpenCppCoverage = "true"
+if (-not($useOpenCppCoverage -eq 'true')) {
+  $VsExtentions = "$VsInstallationPath\Common7\IDE\Extensions"
 
-    # GoogleTestAdapterのパスを取得する
-    $testAdapterPath = (Get-ChildItem $VsExtentions -Filter GoogleTestAdapter.TestAdapter.dll -Recurse).DirectoryName
+  # GoogleTestAdapterのパスを取得する
+  $testAdapterPath = (Get-ChildItem $VsExtentions -Filter GoogleTestAdapter.TestAdapter.dll -Recurse).DirectoryName
 
-    Write-Host "`$testAdapterPath is '$testAdapterPath'"
+  Write-Host "`$testAdapterPath is '$testAdapterPath'"
 
-    $vstest = "$VsInstallationPath\Common7\IDE\Extensions\TestPlatform\vstest.console.exe"
+  $vstest = "$VsInstallationPath\Common7\IDE\Extensions\TestPlatform\vstest.console.exe"
 
-    # VSTestを実行する(一旦trx形式で出す)
-    & $vstest @(
-        $testCommand,
-        "/EnableCodeCoverage",
-        "/Collect:`"Code Coverage;Format=Xml`"",
-        "/ResultsDirectory:TestResults"
-        "/TestAdapterPath:`"$testAdapterPath`"",
-        "/Logger:trx;LogFileName=$testName-vstest.trx"
-    )
+  # VSTestを実行する(一旦trx形式で出す)
+  & $vstest @(
+    $testCommand,
+    "/EnableCodeCoverage",
+    "/Collect:`"Code Coverage;Format=Xml`"",
+    "/ResultsDirectory:TestResults"
+    "/TestAdapterPath:`"$testAdapterPath`"",
+    "/Logger:trx;LogFileName=$testName-vstest.trx"
+  )
 
-    # trx2junitのインストールチェック
-    cmd.exe /c "where.exe trx2junit >NUL"
-    if ($LASTEXITCODE -ne 0) {
-        dotnet tool install --global trx2junit
-    }
+  # trx2junitのインストールチェック
+  cmd.exe /c "where.exe trx2junit >NUL"
+  if ($LASTEXITCODE -ne 0) {
+      dotnet tool install --global trx2junit
+  }
 
-    # trx2junitを実行する
-    trx2junit "$HomePath\TestResults\$testName-vstest.trx"
-    Copy-Item -Path "$HomePath\TestResults\$testName-vstest.xml" -Destination "$HomePath\$testName-googletest.xml"
+  # trx2junitを実行する
+  trx2junit "$HomePath\TestResults\$testName-vstest.trx"
+  Copy-Item -Path "$HomePath\TestResults\$testName-vstest.xml" -Destination "$HomePath\$testName-googletest.xml"
 
-    return 0
+  # xmlファイルは消しておく
+  Remove-Item -Path "$HomePath\TestResults\$testName-vstest.xml"
+
+  return 0
 }
 
 # テストコマンドをフルパスにする
@@ -62,12 +67,12 @@ $openCppCoverageArgs = @(
 
 # Invoke command with OpenCppCoverage.
 $p = Start-Process `
-    -FilePath "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" `
-    -ArgumentList $openCppCoverageArgs `
-    -NoNewWindow `
-    -WorkingDirectory $HomePath `
-    -PassThru `
-    -Wait
+  -FilePath "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" `
+  -ArgumentList $openCppCoverageArgs `
+  -NoNewWindow `
+  -WorkingDirectory $HomePath `
+  -PassThru `
+  -Wait
 
 if ($p.ExitCode -ne 0) {
   throw "$(Split-Path -Path $testCommand -Leaf) was Failed."
