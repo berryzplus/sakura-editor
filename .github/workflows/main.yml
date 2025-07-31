@@ -223,12 +223,20 @@ jobs:
     - name: Build SakuraEditor
       run: .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
 
+    - name: Setup VSTest.console.exe
+      uses: darenm/Setup-VSTest@v1.3
+
+    - name: Show environment variables for debug
+      run: set
+      shell: cmd
+
+    - name: Set VSINSTALLDIR
+      run: echo "VSINSTALLDIR=$(vswhere -latest -property installationPath)" >> $env:GITHUB_ENV    ## see https://github.com/actions/setup-dotnet
+
     ## see https://github.com/actions/setup-dotnet
     - name: Setup .NET (for dotnet tools)
       uses: actions/setup-dotnet@v4
-
-    - name: Setup VSTest Path
-      uses: darenm/Setup-VSTest@v1.3
+    - run: dotnet tool install --global trx2junit
 
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -292,8 +300,7 @@ jobs:
           -D"sonar.projectKey=${{ env.SONAR_PROJECT_KEY }}"
           -D"sonar.host.url=https://sonarcloud.io"
           -D"sonar.cfamily.compile-commands=build/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_CONFIGURATION }}/bw-output/compile_commands.json"
-          -D"sonar.cfamily.cppunit.reportPath=*-googletest.xml"
-          -D"sonar.cfamily.cobertura.reportPaths=tests1-coverage.xml"
+          -D"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml"
 
     - name: Upload Log artifact
       uses: actions/upload-artifact@v4

@@ -55,7 +55,7 @@ $sonarScannerArgs += @(
 # $VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
 # 
 # if (("$env:GITHUB_ACTIONS" -eq 'true') -or (Test-Path -Path $VcCodeCoverage)) {
-$useOpenCppCoverage = "true"
+$useOpenCppCoverage = "false"
 if (-not($useOpenCppCoverage -eq 'true')) {
         $sonarScannerArgs += @(
         "-D`"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml`""
