@@ -12,7 +12,7 @@ $VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$
 # $VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
 
 # if (("$env:GITHUB_ACTIONS" -eq 'true') -or (Test-Path -Path $VcCodeCoverage)) {
-$useOpenCppCoverage = "true"
+$useOpenCppCoverage = "false"
 if (-not($useOpenCppCoverage -eq 'true')) {
   $VsExtentions = "$VsInstallationPath\Common7\IDE\Extensions"
 
@@ -20,6 +20,11 @@ if (-not($useOpenCppCoverage -eq 'true')) {
   $testAdapterPath = (Get-ChildItem $VsExtentions -Filter GoogleTestAdapter.TestAdapter.dll -Recurse).DirectoryName
 
   Write-Host "`$testAdapterPath is '$testAdapterPath'"
+
+  # データコレクターのパスを取得する
+  $DataCollectorPath = (Get-ChildItem $VsExtentions -Filter Microsoft.VisualStudio.TraceDataCollector.dll -Recurse).DirectoryName
+
+  Write-Host "`$DataCollectorPath is '$DataCollectorPath'"
 
   $vstest = "$VsInstallationPath\Common7\IDE\Extensions\TestPlatform\vstest.console.exe"
 
@@ -29,7 +34,7 @@ if (-not($useOpenCppCoverage -eq 'true')) {
     "/EnableCodeCoverage",
     "/Collect:`"Code Coverage;Format=Xml`"",
     "/ResultsDirectory:TestResults"
-    "/TestAdapterPath:`"$testAdapterPath`"",
+    "/TestAdapterPath:`"$testAdapterPath;$DataCollectorPath`"",
     "/Logger:trx;LogFileName=$testName-vstest.trx"
   )
 
