@@ -27,10 +27,10 @@ file(GLOB_RECURSE TESTS1_HEADERS
   ${CMAKE_CURRENT_LIST_DIR}/*.h)
 
 # define precompiled headers
-set(TESTS1_PCH_HEADER ${CMAKE_CURRENT_LIST_DIR}/pch.h)
+set(TESTS1_PCH_HEADER ${CMAKE_CURRENT_LIST_DIR}/../../src/test/cpp/pch.h)
 
 set(TESTS1_RESOURCE_SCRIPTS
-  ${CMAKE_CURRENT_LIST_DIR}/tests1_rc.rc)
+  ${CMAKE_CURRENT_LIST_DIR}/../../src/test/resources/tests1_rc.rc)
 
 if(MINGW)
   # Convert RC files to UTF-8 for MinGW
