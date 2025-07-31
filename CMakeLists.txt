@@ -98,8 +98,6 @@ if(MSVC)
     NOMINMAX
   )
   add_compile_options(
-    /FAsu
-    /Fa"${CMAKE_BINARY_DIR}"
     /source-charset:utf-8
     /execution-charset:shift_jis
   )
@@ -184,6 +182,15 @@ if(MSVC)
   target_sources(sakura_core
     PUBLIC
       ${CMAKE_SOURCE_DIR}/src/main/resources/sakura.natvis
+  )
+  target_compile_options(sakura_core
+    PRIVATE
+      /FAsu
+      /Fa"${CMAKE_BINARY_DIR}"
+  )
+  target_link_options(sakura_core
+    PUBLIC
+      "/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='${VCPKG_ARCH}' publicKeyToken='6595b64144ccf1df' language='*'"
   )
 endif(MSVC)
 

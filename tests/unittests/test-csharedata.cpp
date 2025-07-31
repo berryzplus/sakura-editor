@@ -1017,10 +1017,7 @@ MATCHER(IsInitializedCommonSettingToolBar, "Checks if CommonSetting_ToolBar is p
 		EXPECT_THAT(sToolBar.m_nToolBarButtonIdxArr[i], buttonId);
 	}
 
-// MinGW版にはComCtl32.DLLのマニフェストを入れてないので必ずエラーになる。マニフェストを実装できるまで無効化。
-#ifndef __MINGW32__
 	EXPECT_THAT(sToolBar.m_bToolBarIsFlat, IsFalse());
-#endif
 
 	return true;
 }
