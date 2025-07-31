@@ -36,9 +36,7 @@ if ($remote -match "git@github\.com:(.+)\.git") {
 
 $sonarScannerArgs = @(
     "-D`"sonar.organization=$organization`"",
-    "-D`"sonar.projectKey=$projectKey`"",
-    "-D`"sonar.cfamily.compile-commands=build/$Platform/$Configuration/bw-output/compile_commands.json`""
-)
+    "-D`"sonar.projectKey=$projectKey`"")
 
 $SonarScannerProperties = "$HomePath\.sonar\scanner\conf\sonar-scanner.properties"
 
@@ -48,18 +46,24 @@ if (-not((Get-Content $SonarScannerProperties | Select-String "^sonar.host.url=.
     )
 }
 
-$VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
+$sonarScannerArgs += @(
+    "-D`"sonar.cfamily.compile-commands=build/$Platform/$Configuration/bw-output/compile_commands.json`""
+)
 
-$VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
-
-if (Test-Path $VcCodeCoverage) {
-    $sonarScannerArgs += @(
-        "-D`"sonar.cfamily.cppunit.reportPath=*-googletest.xml`"",
+# $VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
+# 
+# $VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
+# 
+# if (("$env:GITHUB_ACTIONS" -eq 'true') -or (Test-Path -Path $VcCodeCoverage)) {
+$useOpenCppCoverage = "true"
+if (-not($useOpenCppCoverage -eq 'true')) {
+        $sonarScannerArgs += @(
         "-D`"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml`""
     )
 
-} elseif (Test-Path "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe") {
+} elseif (Test-Path -Path "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe") {
     $sonarScannerArgs += @(
+        "-D`"sonar.cfamily.cppunit.reportPath=*-googletest.xml`"",
         "-D`"sonar.cfamily.cobertura.reportPaths=tests1-coverage.xml`""
     )
 }
@@ -75,6 +79,9 @@ if (-not([String]::IsNullOrEmpty($branch))) {
 if ([string]::IsNullOrEmpty($env:LC_ALL)) {
     $env:LC_ALL = "ja_JP.UTF-8"
 }
+
+Write-Host "SonarScanner Arguments:"
+$sonarScannerArgs | ForEach-Object { Write-Host $_ }
 
 # Run SonarScanner.
 $p = Start-Process `
