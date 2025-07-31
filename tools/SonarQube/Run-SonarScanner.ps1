@@ -36,9 +36,7 @@ if ($remote -match "git@github\.com:(.+)\.git") {
 
 $sonarScannerArgs = @(
     "-D`"sonar.organization=$organization`"",
-    "-D`"sonar.projectKey=$projectKey`"",
-    "-D`"sonar.cfamily.compile-commands=build/$Platform/$Configuration/bw-output/compile_commands.json`""
-)
+    "-D`"sonar.projectKey=$projectKey`"")
 
 $SonarScannerProperties = "$HomePath\.sonar\scanner\conf\sonar-scanner.properties"
 
@@ -48,45 +46,52 @@ if (-not((Get-Content $SonarScannerProperties | Select-String "^sonar.host.url=.
     )
 }
 
-$VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
+$sonarScannerArgs += @(
+    "-D`"sonar.cfamily.compile-commands=build/$Platform/$Configuration/bw-output/compile_commands.json`""
+)
 
-$VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
+$productId = vswhere -property productId -version "[$VsVersion,$([int]$VsVersion + 1))"
 
-if (Test-Path $VcCodeCoverage) {
-    $sonarScannerArgs += @(
-        "-D`"sonar.cfamily.cppunit.reportPath=*-googletest.xml`"",
-        "-D`"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml`""
-    )
+$useOpenCppCoverage = ($env:GITHUB_ACTIONS -eq 'true') -or (-not ($productId -match "Enterprise$"))
 
-} elseif (Test-Path "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe") {
-    $sonarScannerArgs += @(
-        "-D`"sonar.cfamily.cobertura.reportPaths=tests1-coverage.xml`""
-    )
+if (-not($useOpenCppCoverage)) {
+  $sonarScannerArgs += @(
+    "-D`"sonar.cfamily.vscoveragexml.reportsPath=TestResults/*/*.xml`""
+  )
+
+} elseif (Test-Path -Path "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe") {
+  $sonarScannerArgs += @(
+    "-D`"sonar.cfamily.cppunit.reportPath=*-googletest.xml`"",
+    "-D`"sonar.cfamily.cobertura.reportPaths=tests1-coverage.xml`""
+  )
 }
 
 $branch = & $env:CMD_GIT @("branch", "--show-current")
 
 if (-not([String]::IsNullOrEmpty($branch))) {
-    $sonarScannerArgs += @(
-        "-D`"sonar.branch.name=$branch`""
-    )
+  $sonarScannerArgs += @(
+    "-D`"sonar.branch.name=$branch`""
+  )
 }
 
 if ([string]::IsNullOrEmpty($env:LC_ALL)) {
-    $env:LC_ALL = "ja_JP.UTF-8"
+  $env:LC_ALL = "ja_JP.UTF-8"
 }
+
+Write-Host "SonarScanner Arguments:"
+$sonarScannerArgs | ForEach-Object { Write-Host $_ }
 
 # Run SonarScanner.
 $p = Start-Process `
-    -FilePath $HomePath\.sonar\scanner\bin\sonar-scanner.bat `
-    -ArgumentList $sonarScannerArgs `
-    -NoNewWindow `
-    -WorkingDirectory $HomePath `
-    -PassThru `
-    -Wait
+  -FilePath $HomePath\.sonar\scanner\bin\sonar-scanner.bat `
+  -ArgumentList $sonarScannerArgs `
+  -NoNewWindow `
+  -WorkingDirectory $HomePath `
+  -PassThru `
+  -Wait
 
 if ($p.ExitCode -ne 0) {
-    throw "SonarScanner was Failed."
+  throw "SonarScanner was Failed."
 }
 
 # SonarSourceはsonarscanner-cliのDockerイメージも提供している。
