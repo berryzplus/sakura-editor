@@ -1,20 +1,17 @@
 # Run-Test.ps1
 Param(
   [String]$testCommand,
-  [String]$VsVersion = $($(vswhere -latest -property catalog_productDisplayVersion) -replace '^(\d+)\..+$', '$1'),
+  [bool]$useOpenCppCoverage,
   [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..")
 )
 
 $testName = $([System.IO.Path]::GetFileNameWithoutExtension($testCommand))
 
-$VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
-
-# $VcCodeCoverage = "$VsInstallationPath\VC\Auxiliary\VS\include\CodeCoverage\CodeCoverage.h"
-
-# if (("$env:GITHUB_ACTIONS" -eq 'true') -or (Test-Path -Path $VcCodeCoverage)) {
-$useOpenCppCoverage = "true"
-if (-not($useOpenCppCoverage -eq 'true')) {
+if (-not($useOpenCppCoverage)) {
+  $VsInstallationPath = vswhere -property installationPath -version "[$VsVersion,$([int]$VsVersion + 1))"
   $VsExtentions = "$VsInstallationPath\Common7\IDE\Extensions"
+
+  Write-Host "`$VsExtentions is '$VsExtentions'"
 
   # GoogleTestAdapterのパスを取得する
   $testAdapterPath = (Get-ChildItem $VsExtentions -Filter GoogleTestAdapter.TestAdapter.dll -Recurse).DirectoryName

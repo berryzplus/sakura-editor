@@ -223,16 +223,6 @@ jobs:
     - name: Build SakuraEditor
       run: .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
 
-    - name: Setup VSTest.console.exe
-      uses: darenm/Setup-VSTest@v1.3
-
-    - name: Show environment variables for debug
-      run: set
-      shell: cmd
-
-    - name: Set VSINSTALLDIR
-      run: echo "VSINSTALLDIR=$(vswhere -latest -property installationPath)" >> $env:GITHUB_ENV    ## see https://github.com/actions/setup-dotnet
-
     ## see https://github.com/actions/setup-dotnet
     - name: Setup .NET (for dotnet tools)
       uses: actions/setup-dotnet@v4
@@ -257,7 +247,21 @@ jobs:
 
     - name: Run Tests
       if: env.BUILD_PLATFORM != 'ARM64' # ARM64モジュールは実行できない
-      run: .\tools\SonarQube\Run-Tests.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      run: |
+        $HomePath = "${{ github.workspace }}"
+        $testCommand = "$HomePath\${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\tests1.exe"
+        $testName = $([System.IO.Path]::GetFileNameWithoutExtension($testCommand))
+        & "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" @(
+          "--export_type", "cobertura:$testName-coverage.xml",
+          "--modules", "$testCommand",
+          "--sources", "$HomePath",
+          "--excluded_sources", "$HomePath\build",
+          "--working_dir", "$([System.IO.Path]::GetDirectoryName($testCommand))",
+          "--cover_children",
+          "--",
+          $testCommand,
+          "--gtest_output=xml:$testName-googletest.xml"
+        )
 
     - name: Upload test result
       uses: EnricoMi/publish-unit-test-result-action/windows@v2
