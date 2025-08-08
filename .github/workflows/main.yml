@@ -26,6 +26,8 @@ jobs:
   # Job to calculate shared environment variables
   setup:
     runs-on: windows-latest
+    outputs:
+      output1: ${{ steps.setup-env.outputs.build-id }}
 
     steps:
     ## see https://github.com/actions/checkout
@@ -35,10 +37,11 @@ jobs:
         fetch-depth: 0  # 過去の履歴も含めて全て取得 (checkEncoding.py で origin/master にアクセスするため)
 
     - name: Setup environment variables
+      id: setup-env
       run: |
         $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
-        "BUILD_ID is '$buildId'"
+        echo "build-id=$buildId" >> $env:GITHUB_OUTPUT
+        "build-id is '$buildId'"
 
     - name: Show environment variables for debug
       run: set
@@ -71,15 +74,10 @@ jobs:
     env:
       BUILD_PLATFORM: x64
       BUILD_CONFIGURATION: ${{ matrix.config }}
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Setup environment variables
-      run: |
-        $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
-        "BUILD_ID is '$buildId'"
 
     ## see https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild
@@ -112,14 +110,10 @@ jobs:
     env:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: ${{ matrix.config }}
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Setup environment variables
-      run: |
-        $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
 
     - name: Install doxygen
       run: choco install doxygen.install -y
@@ -141,13 +135,11 @@ jobs:
     needs: setup
     runs-on: windows-latest
 
+    env:
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
+
     steps:
     - uses: actions/checkout@v4
-
-    - name: Setup environment variables
-      run: |
-        $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
 
     - name: Install Locale Emulator
       run: |
@@ -181,6 +173,7 @@ jobs:
     env:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: ${{ matrix.config }}
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
       VCPKG_HOST_TRIPLET: x64-windows
       LC_ALL: ja_JP.UTF-8
 
@@ -205,9 +198,6 @@ jobs:
           echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
           echo "SONAR_QUBE=Yes" >> $env:GITHUB_ENV
         }
-
-        $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
 
         switch ('${{ env.BUILD_PLATFORM }}') {
           'x64'   { echo "VCPKG_TARGET_TRIPLET=x64-windows-static" >> $env:GITHUB_ENV }
@@ -380,7 +370,7 @@ jobs:
       run: ctest --test-dir build --output-on-failure
 
   buildInstaller:
-    needs: [ doxygen, buildChm, buildSakura ]
+    needs: [ setup, doxygen, buildChm, buildSakura ]
     runs-on: windows-latest
 
     strategy:
@@ -390,6 +380,7 @@ jobs:
     env:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: Release
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
 
     steps:
     - uses: actions/checkout@v4
@@ -399,8 +390,6 @@ jobs:
         if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
           echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
         }
-        $buildId = $(.\.github\Get-BuildId.ps1 ${{ github.sha }})
-        echo "BUILD_ID=$buildId" >> $env:GITHUB_ENV
 
     - name: Download doxygen artifact
       uses: actions/download-artifact@v4
