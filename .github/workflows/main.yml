@@ -104,11 +104,10 @@ jobs:
 
     strategy:
       matrix:
-        platform: [ x64, Win32 ]
         config: [ Debug, Release ]
 
     env:
-      BUILD_PLATFORM: ${{ matrix.platform }}
+      BUILD_PLATFORM: x64
       BUILD_CONFIGURATION: ${{ matrix.config }}
       BUILD_ID: ${{ needs.setup.outputs.output1 }}
 
@@ -125,7 +124,7 @@ jobs:
     - name: Upload doxygen artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
         path: |
           html\sakura-doxygen.chm
           html\sakura-doxygen.chi
@@ -394,7 +393,7 @@ jobs:
     - name: Download doxygen artifact
       uses: actions/download-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
 
     - name: Download Exe artifact
       uses: actions/download-artifact@v4
@@ -448,7 +447,7 @@ jobs:
     - name: Re-Upload doxygen artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
         path: |
           html\sakura-doxygen.chm
           html\sakura-doxygen.chi
