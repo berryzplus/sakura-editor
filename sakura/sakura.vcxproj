@@ -333,8 +333,8 @@
     <ClInclude Include="..\sakura_core\extmodule\CIcu4cI18n.h" />
     <ClInclude Include="..\sakura_core\extmodule\CMigemo.h" />
     <ClInclude Include="..\sakura_core\extmodule\CUchardet.h" />
-    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_define.h" />
-    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_enum.h" />
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_define.h" />
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_enum.h" />
     <ClInclude Include="..\sakura_core\func\CFuncKeyWnd.h" />
     <ClInclude Include="..\sakura_core\func\CFuncLookup.h" />
     <ClInclude Include="..\sakura_core\func\CKeyBind.h" />
@@ -409,7 +409,7 @@
     <ClInclude Include="..\src\main\resources\sakura_rc.h" />
     <ClInclude Include="..\sakura_core\StdAfx.h" />
     <ClInclude Include="..\src\main\resources\String_define.h" />
-    <ClInclude Include="build\$(Platform\CMakeTools\version.h" />
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\version.h" />
     <ClInclude Include="..\sakura_core\typeprop\CDlgKeywordSelect.h" />
     <ClInclude Include="..\sakura_core\typeprop\CDlgSameColor.h" />
     <ClInclude Include="..\sakura_core\typeprop\CDlgTypeAscertain.h" />

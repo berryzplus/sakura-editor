@@ -130,10 +130,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_define.h">
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_define.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="build\$(Platform\CMakeTools\Funccode_enum.h">
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_enum.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\sakura.hh">
@@ -1069,7 +1069,7 @@
     <ClInclude Include="..\sakura_core\uiparts\HandCursor.h">
       <Filter>Cpp Source Files\uiparts</Filter>
     </ClInclude>
-    <ClInclude Include="build\$(Platform\CMakeTools\version.h">
+    <ClInclude Include="..\build\$(Platform)\CMakeTools\version.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\recent\CRecentExcludeFile.h">

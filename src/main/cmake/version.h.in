@@ -8,8 +8,6 @@
 #define SAKURA_VERSION_F8EBA970_BB7A_43D9_B89A_04FB0B586A8A_H_
 #pragma once
 
-#include "config/build_config.h"
-
 // バージョン定義 //
 #define VER_A	2				// メジャーバージョン(2固定)
 #define VER_B	4				// マイナーバージョン(4以降はGitHub版)
