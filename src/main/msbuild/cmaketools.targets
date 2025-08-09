@@ -12,28 +12,31 @@
       <AdditionalIncludeDirectories>$(CMakeToolsBuildDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
-  <Target Name="MakeCMakeToolsBuildDir" Condition="!Exists('$(CMakeToolsBuildDir)')">
-    <MakeDir Directories="$(CMakeToolsBuildDir)" />
+  <Target Name="ConfigureCMakeTools" Outputs="$(CMakeToolsBuildDir)CMakeCache.txt">
+    <SetEnv name="BUILD_PLATFORM" value="$(Platform)" prefix="false" />
+    <SetEnv name="BUILD_CONFIGURATION" value="$(Configuration)" prefix="false" />
+    <SetEnv name="VisualStudioVersion" value="$(VisualStudioVersion)" prefix="false" />
+    <Exec Command="chcp 65001 >nul &amp; powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { &amp; '$(MSBuildThisFileDirectory)..\pwsh\cmaketools.ps1' -HomePath '$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\..\..'))' }&quot;" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
-  <Target Name="ConfigureCMakeTools" DependsOnTargets="MakeCMakeToolsBuildDir" Condition="!Exists('$(CMakeToolsBuildDir)CMakeCache.txt')">
-    <PropertyGroup>
-      <VsVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(VisualStudioVersion)', '^(\d+).*', '$1'))</VsVersion>
-    </PropertyGroup>
-    <Exec Command="chcp 65001 >nul &amp; powershell.exe -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { &amp; '$(MSBuildThisFileDirectory)..\pwsh\cmaketools.ps1' -Platform '$(Platform)' -Configuration '$(Configuration)' -VsVersion '$(VsVersion)' -VcpkgInstalledDir '$(VcpkgInstalledDir)' -CMakeToolsBuildDir '$(CMakeToolsBuildDir)' -CMakeToolsOutDir '$(CMakeToolsOutDir)' }&quot;" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
-  </Target>
-  <Target Name="GenerateVersionHeader" DependsOnTargets="ConfigureCMakeTools" BeforeTargets="ResourceCompile;ClCompile">
+  <Target Name="GenerateVersionHeader" Outputs="$(CMakeToolsBuildDir)version.h" DependsOnTargets="ConfigureCMakeTools" BeforeTargets="ResourceCompile;ClCompile">
     <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_version_header&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
-  <Target Name="GenerateFuncCodeDefine" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ResourceCompile">
+  <Target Name="GenerateFuncCodeDefine" Outputs="$(CMakeToolsBuildDir)Funccode_define.h" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ResourceCompile">
     <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_funccode_define&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
-  <Target Name="GenerateFuncCodeEnum" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ClCompile">
+  <Target Name="GenerateFuncCodeEnum" Outputs="$(CMakeToolsBuildDir)Funccode_enum.h" DependsOnTargets="ConfigureCMakeTools" AfterTargets="GenerateVersionHeader" BeforeTargets="ClCompile">
     <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;generate_funccode_enum&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
-  <Target Name="GenerateLang_en_US" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
+  <Target Name="ExtractBregonig" Outputs="$(CMakeToolsOutDir)$(Configuration)\bregonig.dll" Condition="'$(Platform)'=='x64' Or '$(Platform)'=='Win32'" AfterTargets="Link">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;extract_bregonig&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="ExtractCTags" Outputs="$(CMakeToolsOutDir)$(Configuration)\ctags.exe" Condition="'$(Platform)'=='x64' Or '$(Platform)'=='Win32'" AfterTargets="Link">
+    <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;extract_ctags&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
+  </Target>
+  <Target Name="GenerateLang_en_US" Outputs="$(CMakeToolsOutDir)sakura_lang_en_US.dll" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
     <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;sakura_lang_en_US&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
-  <Target Name="GenerateLang_zh_CN" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
+  <Target Name="GenerateLang_zh_CN" Outputs="$(CMakeToolsOutDir)sakura_lang_zh_CN.dll" DependsOnTargets="GenerateVersionHeader;GenerateFuncCodeDefine" AfterTargets="Link">
     <Exec Command="chcp 65001 >nul &amp; &quot;$(CMakeExe)&quot; --build &quot;$(CMakeToolsBuildDir)&quot; --config &quot;$(Configuration)&quot; --target &quot;sakura_lang_zh_CN&quot; -- /nologo" StdOutEncoding="UTF-8" ConsoleToMSBuild="true" />
   </Target>
   <Target Name="AppendCMakeToolsCleanTargetsForCMakeTools" BeforeTargets="CoreClean">

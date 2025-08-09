@@ -3,12 +3,13 @@ cmake_minimum_required(VERSION 3.16)
 # Find GTest
 find_package(GTest CONFIG REQUIRED)
 
-# Create a custom target for resource_zip generation
-add_custom_target(resource_zip ALL
+# Create a custom target for test_resource_zip generation
+add_custom_target(test_resource_zip ALL
   COMMAND ${7ZIP_EXECUTABLE}
     u -tzip -r -mcu=on
     ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
     ${CMAKE_SOURCE_DIR}/src/test/resources/test-plugin
+    > NUL
   BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
   COMMENT "Generating resources.ja-JP.zip"
 )
@@ -59,7 +60,7 @@ target_include_directories(${PROJECT_NAME}
 
 # Add dependencies
 add_dependencies(${PROJECT_NAME}
-  resource_zip
+  test_resource_zip
 )
 
 # link libraries

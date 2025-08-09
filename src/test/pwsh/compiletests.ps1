@@ -1,30 +1,18 @@
-# cmaketools.ps1
+# compiletests.ps1
 Param(
-  [String]$HomePath = [System.IO.Path]::GetFullPath("$PSScriptRoot\..\..\..")
+  [String]$CompileTestSourceDir
 )
 
 # UTF-8エンコーディングを設定（chcp 65001相当）
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host "=== CMake Tools Parameters ==="
-Write-Host "HomePath: $HomePath"
-Write-Host "`$env:BUILD_PLATFORM: $env:BUILD_PLATFORM"
-Write-Host "`$env:BUILD_CONFIGURATION: $env:BUILD_CONFIGURATION"
+Write-Host "=== CompileTests Parameters ==="
+Write-Host "CompileTestSourceDir: $CompileTestSourceDir"
 Write-Host "`$env:VisualStudioVersion: $env:VisualStudioVersion"
 Write-Host "==============================="
 
-# ホストトリプレットは x64 固定
-$env:HOST_TRIPLET = "x64-windows"
-
-# プラットフォーム指定からターゲットトリプレットを導出する
-$env:TARGET_TRIPLET = switch ($env:BUILD_PLATFORM)
-{
-  "x64"   { "$env:BUILD_PLATFORM-windows-static" }
-  "ARM64" { "arm64-windows-static" }
-  "Win32" { "x86-windows-static" } 
-  default { throw "Unsupported Platform: $env:BUILD_PLATFORM" }
-}
+Write-Host "Building project for CompileTestSourceDir: $CompileTestSourceDir"
 
 # Visual Studio同梱のCMakeパスを取得する
 $VsVersion = $($env:VisualStudioVersion -replace '^(\d+)\..+$', '$1')
@@ -35,8 +23,8 @@ $VsProductLineVersion = vswhere -property productLineVersion -version "[$VsVersi
 $generator = "Visual Studio $VsVersion $VsProductLineVersion"
 
 # CMake configureを実行する
-Write-Host "cmake --preset CMakeTools -S `"$HomePath`""
-& $cmake --preset CMakeTools -S "$HomePath" `
+Write-Host "cmake --preset CompileTests -S `"$CompileTestSourceDir`""
+& $cmake --preset CompileTests -S "$CompileTestSourceDir" `
   -G "$generator" -A "$env:BUILD_PLATFORM"
 
 if ($LASTEXITCODE -ne 0) {

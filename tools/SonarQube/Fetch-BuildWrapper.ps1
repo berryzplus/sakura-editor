@@ -27,12 +27,6 @@ if (-not(Test-Path "$Destination\build-wrapper-win-x86-64.exe")) {
     # BuildWrapperを展開する
     if (-not(Test-Path "$Destination\build-wrapper-win-x86-64.exe")) {
         # zipを展開する
-        7z x "$Destination\build-wrapper-win-x86.zip" "-o$Destination" "*"
-
-        # 解凍したフォルダ名から-win-x86を取り除く
-        Move-Item -Path "$Destination\build-wrapper-win-x86\build-wrapper-win-x86-64.exe" -Destination "$Destination\build-wrapper-win-x86-64.exe"
-
-        # 展開したフォルダを削除する
-        Remove-Item -Path "$Destination\build-wrapper-win-x86" -Recurse -Force
+        7z e "$Destination\build-wrapper-win-x86.zip" "-o$Destination" "build-wrapper-win-x86\build-wrapper-win-x86-64.exe"
     }
 }

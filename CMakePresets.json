@@ -1,0 +1,68 @@
+﻿{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "common",
+      "displayName": "Default Config",
+      "hidden": true,
+      "toolchainFile": "${sourceDir}/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    {
+      "name": "vs-common",
+      "displayName": "Visual Studio generator Build",
+      "inherits": "common",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/$env{BUILD_PLATFORM}",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/$env{BUILD_PLATFORM}/vcpkg_installed",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/$env{BUILD_PLATFORM}",
+        "VCPKG_HOST_TRIPLET": "$env{HOST_TRIPLET}",
+        "VCPKG_TARGET_TRIPLET": "$env{TARGET_TRIPLET}"
+      }
+    },
+    {
+      "name": "CMakeTools",
+      "displayName": "CMakeTools Build",
+      "inherits": "vs-common",
+      "binaryDir": "${sourceDir}/build/$env{BUILD_PLATFORM}/CMakeTools"
+    },
+    {
+      "name": "msys2",
+      "displayName": "Msys2 Build",
+      "inherits": "common",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "$env{BUILD_CONFIGURATION}",
+        "VCPKG_INSTALLED_DIR": "${sourceDir}/build/${presetName}/vcpkg_installed",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/output",
+        "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "CMakeTools",
+      "configurePreset": "CMakeTools",
+      "configuration": "$env{BUILD_CONFIGURATION}"
+    },
+    {
+      "name": "msys2",
+      "configurePreset": "msys2"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "msys2",
+      "configurePreset": "msys2",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
