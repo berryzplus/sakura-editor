@@ -928,7 +928,7 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <Import Project="..\src\main\msbuild\cmaketools.targets" />
-  <Import Project="..\tests\compiletests.targets" />
+  <Import Project="..\src\test\msbuild\compiletests.targets" />
   <Target Name="AppendCleanTargets" BeforeTargets="CoreClean">
     <!-- Add files to @Clean just before running CoreClean. -->
     <ItemGroup>

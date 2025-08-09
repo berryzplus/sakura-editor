@@ -51,7 +51,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgConfiguration Condition="'$(Configuration)'=='Debug'">Debug</VcpkgConfiguration>
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgEnableManifest>false</VcpkgEnableManifest>
     <VcpkgInstalledDir>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\..\build\$(Platform)\vcpkg_installed\'))</VcpkgInstalledDir>
     <VcpkgTriplet Condition="'$(Platform)'=='Win32'">x86-windows-static</VcpkgTriplet>
     <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static</VcpkgTriplet>
@@ -75,6 +75,7 @@
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(IntDir);..\..\src\test\resources;..\..\src\main\resources;..\..\src\main\resources;..\..\sakura_core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Culture>0x0411</Culture>
     </ResourceCompile>
     <ProjectReference>
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
@@ -224,6 +225,9 @@
   </ItemGroup>
   <ItemGroup>
     <TestResource Include="test-plugin\plugin.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\test\resources\resources.ja-JP.zip" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..\..\tools\vcpkg\scripts\buildsystems\msbuild\vcpkg.targets'))" />

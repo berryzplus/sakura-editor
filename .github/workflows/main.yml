@@ -93,7 +93,7 @@ jobs:
     - name: Upload BmpTools artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-bmpTools-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_CONFIGURATION }}-bmpTools"
         path: |
           tools/ToolBarTools/ToolBarImageMuxer/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageMuxer.exe
           tools/ToolBarTools/ToolBarImageSplitter/bin/${{ env.BUILD_CONFIGURATION }}/ToolBarImageSplitter.exe
@@ -124,7 +124,7 @@ jobs:
     - name: Upload doxygen artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_CONFIGURATION }}-doxygen"
         path: |
           html\sakura-doxygen.chm
           html\sakura-doxygen.chi
@@ -173,8 +173,11 @@ jobs:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: ${{ matrix.config }}
       BUILD_ID: ${{ needs.setup.outputs.output1 }}
-      VCPKG_HOST_TRIPLET: x64-windows
       LC_ALL: ja_JP.UTF-8
+      OUTPUT_DIRECTORY: ${{ github.workspace }}\${{ matrix.platform }}\${{ matrix.config }}
+      VCPKG_HOST_TRIPLET: x64-windows
+      SONAR_QUBE: ('x64' == ${{ matrix.platform }} || 'Debug' == ${{ matrix.config }}) && 'Yes' || ''
+      IS_ALPHA: ${{ contains(fromJSON('["x64","ARM64"]'), matrix.platform) && '-alpha' || '' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -185,23 +188,15 @@ jobs:
     - name: Run vcpkg bootstrap
       run: |
         .\tools\vcpkg\bootstrap-vcpkg.bat
-
-    - name: Setup environment variables
+        
+    - name: Setup SonarQube environment variables
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      if: env.SONAR_TOKEN
       run: |
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}' -or 'ARM64' -eq '${{ env.BUILD_PLATFORM }}') {
-          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
-        }
-
         if ('x64' -eq '${{ env.BUILD_PLATFORM }}' -and 'Debug' -eq '${{ env.BUILD_CONFIGURATION }}') {
           $projectKey = $('${{ github.repository }}' -replace '/', '_')
           echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
-          echo "SONAR_QUBE=Yes" >> $env:GITHUB_ENV
-        }
-
-        switch ('${{ env.BUILD_PLATFORM }}') {
-          'x64'   { echo "VCPKG_TARGET_TRIPLET=x64-windows-static" >> $env:GITHUB_ENV }
-          'Win32' { echo "VCPKG_TARGET_TRIPLET=x86-windows-static" >> $env:GITHUB_ENV }
-          'ARM64' { echo "VCPKG_TARGET_TRIPLET=arm64-windows-static" >> $env:GITHUB_ENV }
         }
 
     - uses: microsoft/setup-msbuild@v2
@@ -210,7 +205,45 @@ jobs:
       uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
 
     - name: Build SakuraEditor
-      run: .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+      run: |
+        .\tools\SonarQube\Build-Project.ps1 ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
+
+    - name: Upload Generated Assemblies
+      uses: actions/upload-artifact@v4
+      with:
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}-asm"
+        path: |
+          build\${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\sakura_core\*.asm
+
+    - name: Download Compiled HTML Help artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: "sakura${{ env.BUILD_ID }}-chm"
+        path: help\
+    - run: |
+        Copy-Item -Path help\macro\macro.chm   -Destination ${{ env.OUTPUT_DIRECTORY }}\
+        Copy-Item -Path help\plugin\plugin.chm -Destination ${{ env.OUTPUT_DIRECTORY }}\
+        Copy-Item -Path help\sakura\sakura.chm -Destination ${{ env.OUTPUT_DIRECTORY }}\
+
+    - name: Prepare Exe artifacts
+      run: |
+        Copy-Item -Path LICENSE -Destination ${{ env.OUTPUT_DIRECTORY }}\license
+        if ('-alpha' -eq '${{ env.IS_ALPHA }}') {
+          Copy-Item -Path installer\warning-alpha.txt -Destination ${{ env.OUTPUT_DIRECTORY }}\
+        }
+        Copy-Item -Path installer\warning.txt -Destination ${{ env.OUTPUT_DIRECTORY }}\
+
+    - name: Upload Exe artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}-exe"
+        path: |
+          ${{ env.OUTPUT_DIRECTORY }}\*.exe
+          ${{ env.OUTPUT_DIRECTORY }}\*.dll
+          ${{ env.OUTPUT_DIRECTORY }}\license\
+          ${{ env.OUTPUT_DIRECTORY }}\*.txt
+          ${{ env.OUTPUT_DIRECTORY }}\*.chm
+          !${{ env.OUTPUT_DIRECTORY }}\tests1.exe
 
     ## see https://github.com/actions/setup-dotnet
     - name: Setup .NET (for dotnet tools)
@@ -237,19 +270,18 @@ jobs:
     - name: Run Tests
       if: env.BUILD_PLATFORM != 'ARM64' # ARM64モジュールは実行できない
       run: |
-        $HomePath = "${{ github.workspace }}"
-        $testCommand = "$HomePath\${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\tests1.exe"
+        $testCommand = "${{ env.OUTPUT_DIRECTORY }}\tests1.exe"
         $testName = $([System.IO.Path]::GetFileNameWithoutExtension($testCommand))
         & "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" `
-          --export_type cobertura:$HomePath\$testName-coverage.xml `
+          --export_type cobertura:${{ github.workspace }}\$testName-coverage.xml `
           --modules $testCommand `
-          --sources $HomePath `
-          --excluded_sources $HomePath\build `
+          --sources "${{ github.workspace }}" `
+          --excluded_sources "${{ github.workspace }}\build" `
           --working_dir $([System.IO.Path]::GetDirectoryName($testCommand)) `
           --cover_children `
           -- `
           $testCommand `
-          --gtest_output=xml:$HomePath\$testName-googletest.xml
+          --gtest_output=xml:${{ github.workspace }}\$testName-googletest.xml
 
     - name: Upload test result
       uses: EnricoMi/publish-unit-test-result-action/windows@v2
@@ -258,27 +290,26 @@ jobs:
         files: |
           *-googletest.xml
 
-    - name: Upload Generated Assemblies
-      uses: actions/upload-artifact@v4
+    - name: Download doxygen artifact
+      uses: actions/download-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-asm-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
-        path: |
-          build\${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\sakura_core\*.asm
-
-    - name: Upload Exe artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}"
-        path: |
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.exe
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.dll
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_CONFIGURATION }}-doxygen"
+    - run: |
+        Copy-Item -Path html\sakura-doxygen.chm -Destination ${{ env.OUTPUT_DIRECTORY }}\
+        Copy-Item -Path html\sakura-doxygen.chi -Destination ${{ env.OUTPUT_DIRECTORY }}\
 
     - name: Upload Dev artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-dev-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}-dev"
         path: |
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.pdb
+          ${{ env.OUTPUT_DIRECTORY }}\*.exe
+          ${{ env.OUTPUT_DIRECTORY }}\*.dll
+          ${{ env.OUTPUT_DIRECTORY }}\*.pdb
+          ${{ env.OUTPUT_DIRECTORY }}\license\
+          ${{ env.OUTPUT_DIRECTORY }}\*.txt
+          ${{ env.OUTPUT_DIRECTORY }}\*.chm
+          ${{ env.OUTPUT_DIRECTORY }}\*.chi
 
     - name: SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v5
@@ -298,7 +329,7 @@ jobs:
     - name: Upload Log artifact
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}-log"
         path: |
           msbuild-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
           doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
@@ -316,8 +347,6 @@ jobs:
     env:
       BUILD_PLATFORM: MinGW
       BUILD_CONFIGURATION: ${{ matrix.config }}
-      VCPKG_HOST_TRIPLET: x64-mingw-dynamic
-      VCPKG_TARGET_TRIPLET: x64-mingw-static
 
     defaults:
       run:
@@ -354,19 +383,13 @@ jobs:
 
     - name: Configure CMake project
       run: |
-        cmake -G "Ninja" -B build -S . \
-          -DCMAKE_BUILD_TYPE:STRING="${{ env.BUILD_CONFIGURATION }}" \
-          -DCMAKE_TOOLCHAIN_FILE:FILEPATH="${{ github.workspace }}\tools\vcpkg\scripts\buildsystems\vcpkg.cmake" \
-          -DVCPKG_HOST_TRIPLET="${{ env.VCPKG_HOST_TRIPLET }}" \
-          -DVCPKG_INSTALLED_DIR:FILEPATH="${{ github.workspace }}\build\vcpkg_installed" \
-          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:FILEPATH="${{ github.workspace }}\output" \
-          -DVCPKG_TARGET_TRIPLET="${{ env.VCPKG_TARGET_TRIPLET }}"
+        cmake --preset msys2
 
     - name: Build with MinGW-w64-gcc
-      run: cmake --build build
+      run: cmake --build --preset msys2
 
     - name: Run unit tests
-      run: ctest --test-dir build --output-on-failure
+      run: ctest --preset msys2
 
   buildInstaller:
     needs: [ setup, doxygen, buildChm, buildSakura ]
@@ -377,59 +400,36 @@ jobs:
         platform: [ x64, Win32 ]
 
     env:
+      BUILD_ID: ${{ needs.setup.outputs.output1 }}
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: Release
-      BUILD_ID: ${{ needs.setup.outputs.output1 }}
+      OUTPUT_DIRECTORY: ${{ github.workspace }}\${{ matrix.platform }}\Release
+      IS_ALPHA: ${{ contains(fromJSON('["x64","ARM64"]'), matrix.platform) && '-alpha' || '' }}
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup environment variables
-      run: |
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
-          echo "IS_ALPHA=-alpha" >> $env:GITHUB_ENV
-        }
-
     - name: Download doxygen artifact
       uses: actions/download-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
-
-    - name: Download Exe artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}"
-        path: ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
-    - run: |
-        New-Item -Path ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\license          -ItemType Directory
-        New-Item -Path ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\license\bregonig -ItemType Directory
-        New-Item -Path ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\license\ctags    -ItemType Directory
-        Copy-Item -Path LICENSE -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\license
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
-          Copy-Item -Path installer\warning-alpha.txt -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
-        }
-        Copy-Item -Path installer\warning.txt -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_CONFIGURATION }}-doxygen"
 
     - name: Download Compiled HTML Help artifact
       uses: actions/download-artifact@v4
       with:
         name: "sakura${{ env.BUILD_ID }}-chm"
         path: help\
-    - run: |
-        Copy-Item -Path help\macro\macro.chm   -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
-        Copy-Item -Path help\plugin\plugin.chm -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
-        Copy-Item -Path help\sakura\sakura.chm -Destination ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
 
-    - name: Download Dev artifact
+    - name: Download Exe artifact
       uses: actions/download-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-dev-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
-        path: ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}-exe"
+        path: ${{ env.OUTPUT_DIRECTORY }}\
 
     - name: Download Log artifact
       uses: actions/download-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}-log"
 
     - name: Update/Install Inno Setup
       run: choco upgrade innosetup --confirm
@@ -438,55 +438,10 @@ jobs:
       run: build-installer.bat ${{ env.BUILD_PLATFORM }} ${{ env.BUILD_CONFIGURATION }}
       shell: cmd
 
-    - run: |
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}') {
-          Copy-Item -Path installer\warning-alpha.txt -Destination installer\Output-${{ env.BUILD_PLATFORM }}\
-        }
-        Copy-Item -Path installer\warning.txt -Destination installer\Output-${{ env.BUILD_PLATFORM }}\
-
-    - name: Re-Upload doxygen artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-doxygen-${{ env.BUILD_CONFIGURATION }}"
-        path: |
-          html\sakura-doxygen.chm
-          html\sakura-doxygen.chi
-        overwrite: true
-
-    - name: Re-Upload Exe artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-exe-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-${{ env.BUILD_CONFIGURATION }}"
-        path: |
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.exe
-          !${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\tests*.exe
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.dll
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\warning-alpha.txt
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\warning.txt
-        overwrite: true
-
-    - name: Re-Upload Compiled HTML Help artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-chm"
-        path: |
-          ${{ env.BUILD_PLATFORM }}\${{ env.BUILD_CONFIGURATION }}\*.chm
-        overwrite: true
-  
-    - name: Re-Upload Log artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: "sakura${{ env.BUILD_ID }}-log-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}"
-        path: |
-          help\*\Compile.log
-          doxygen-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
-          msbuild-${{ env.BUILD_PLATFORM }}-${{ env.BUILD_CONFIGURATION }}.log
-        overwrite: true
-
     - name: Upload Installer
       uses: actions/upload-artifact@v4
       with:
-        name: "sakura${{ env.BUILD_ID }}-installer-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}"
+        name: "sakura${{ env.BUILD_ID }}-${{ env.BUILD_PLATFORM }}${{ env.IS_ALPHA }}-installer"
         path: |
           installer\Output-${{ env.BUILD_PLATFORM }}\*.exe
           installer\Output-${{ env.BUILD_PLATFORM }}\warning-alpha.txt

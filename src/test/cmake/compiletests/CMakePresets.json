@@ -1,0 +1,22 @@
+﻿{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "CompileTests",
+      "displayName": "Compile Tests",
+      "toolchainFile": "${sourceDir}/../../../../tools/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/../../../../build/$env{BUILD_PLATFORM}/CompileTests",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release"
+      },
+      "warnings": {
+        "dev": false
+      }
+    }
+  ]
+}

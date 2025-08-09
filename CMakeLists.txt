@@ -231,6 +231,12 @@ else()
   message(STATUS "7z not found")
 endif()
 
+if(CMAKE_CONFIGURATION_TYPES)
+  set(OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+else()
+  set(OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
+
 # Extract bregonig.dll from zip file
 if(VCPKG_ARCH STREQUAL "x64" OR VCPKG_ARCH STREQUAL "x86")
   set(BREGONIG_ZIP_FILE "${CMAKE_SOURCE_DIR}/installer/externals/bregonig/bron420.zip")
@@ -239,22 +245,26 @@ if(VCPKG_ARCH STREQUAL "x64" OR VCPKG_ARCH STREQUAL "x86")
   else()
     set(BREGONIG_EXTRACT_TARGET "bregonig.dll")
   endif()
-  set(BREGONIG_OUTPUT_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/bregonig.dll")
+  set(BREGONIG_OUTPUT_FILE "${OUTPUT_DIRECTORY}/bregonig.dll")
 
   add_custom_command(
-    OUTPUT ${BREGONIG_OUTPUT_FILE}
-    COMMAND ${7ZIP_EXECUTABLE} e "${BREGONIG_ZIP_FILE}" -o"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" -y "${BREGONIG_EXTRACT_TARGET}"
+    OUTPUT "${BREGONIG_OUTPUT_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}"
+    COMMAND ${7ZIP_EXECUTABLE} e "${BREGONIG_ZIP_FILE}" -o"${OUTPUT_DIRECTORY}" -y "${BREGONIG_EXTRACT_TARGET}" > NUL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}/license"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}/license/bregonig"
+    COMMAND ${7ZIP_EXECUTABLE} e "${BREGONIG_ZIP_FILE}" -o"${OUTPUT_DIRECTORY}/license/bregonig" -y "*.txt" > NUL
     DEPENDS ${BREGONIG_ZIP_FILE}
     COMMENT "Extracting bregonig.dll from ${BREGONIG_ZIP_FILE}"
   )
 
-  add_custom_target(bregonig ALL
-    DEPENDS ${BREGONIG_OUTPUT_FILE}
+  add_custom_target(extract_bregonig ALL
+    DEPENDS "${BREGONIG_OUTPUT_FILE}"
   )
 
   # Add dependencies
   add_dependencies(${PROJECT_NAME}
-    bregonig
+    extract_bregonig
   )
 endif()
 
@@ -262,22 +272,26 @@ endif()
 if(VCPKG_ARCH STREQUAL "x64" OR VCPKG_ARCH STREQUAL "x86")
   set(CTAGS_VERSION "v6.1.0")
   set(CTAGS_ZIP_FILE "${CMAKE_SOURCE_DIR}/installer/externals/universal-ctags/ctags-${CTAGS_VERSION}-${VCPKG_ARCH}.zip")
-  set(CTAGS_OUTPUT_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ctags.exe")
+  set(CTAGS_OUTPUT_FILE "${OUTPUT_DIRECTORY}/ctags.exe")
 
   add_custom_command(
-    OUTPUT ${CTAGS_OUTPUT_FILE}
-    COMMAND ${7ZIP_EXECUTABLE} e "${CTAGS_ZIP_FILE}" -o"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" -y ctags.exe
+    OUTPUT "${CTAGS_OUTPUT_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}"
+    COMMAND ${7ZIP_EXECUTABLE} e "${CTAGS_ZIP_FILE}" -o"${OUTPUT_DIRECTORY}" -y ctags.exe > NUL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}/license"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${OUTPUT_DIRECTORY}/license/ctags"
+    COMMAND ${7ZIP_EXECUTABLE} e "${CTAGS_ZIP_FILE}" -o"${OUTPUT_DIRECTORY}/license/ctags" -y "license/*" > NUL
     DEPENDS ${CTAGS_ZIP_FILE}
     COMMENT "Extracting ctags.exe from ${CTAGS_ZIP_FILE}"
   )
 
-  add_custom_target(ctags ALL
-    DEPENDS ${CTAGS_OUTPUT_FILE}
+  add_custom_target(extract_ctags ALL
+    DEPENDS "${CTAGS_OUTPUT_FILE}"
   )
 
   # Add dependencies
   add_dependencies(${PROJECT_NAME}
-    ctags
+    extract_ctags
   )
 endif()
 

@@ -13,6 +13,9 @@
     <Filter Include="Pre-Compiled Headers">
       <UniqueIdentifier>{7b508b25-349b-4d39-8fd2-d8e42ceafe83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{a03bf4b5-7918-41b2-88fd-5585efc88c4e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt">
@@ -199,5 +202,10 @@
     <ResourceCompile Include="..\..\src\test\resources\tests1_rc.rc">
       <Filter>Other Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\test\resources\resources.ja-JP.zip">
+      <Filter>Generated Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
