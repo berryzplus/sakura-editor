@@ -173,10 +173,9 @@ jobs:
       BUILD_PLATFORM: ${{ matrix.platform }}
       BUILD_CONFIGURATION: ${{ matrix.config }}
       BUILD_ID: ${{ needs.setup.outputs.output1 }}
-      LC_ALL: ja_JP.UTF-8
       OUTPUT_DIRECTORY: ${{ github.workspace }}\${{ matrix.platform }}\${{ matrix.config }}
-      VCPKG_HOST_TRIPLET: x64-windows
-      SONAR_QUBE: ('x64' == ${{ matrix.platform }} || 'Debug' == ${{ matrix.config }}) && 'Yes' || ''
+      SONAR_QUBE: ${{ secrets.SONAR_TOKEN && 'x64' == matrix.platform && 'Debug' == matrix.config && 'Yes' || '' }}
+      SONAR_PROJECT_KEY: ${{ github.repository }}
       IS_ALPHA: ${{ contains(fromJSON('["x64","ARM64"]'), matrix.platform) && '-alpha' || '' }}
 
     steps:
@@ -190,14 +189,10 @@ jobs:
         .\tools\vcpkg\bootstrap-vcpkg.bat
         
     - name: Setup SonarQube environment variables
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      if: env.SONAR_TOKEN
+      if: env.SONAR_QUBE == 'Yes'
       run: |
-        if ('x64' -eq '${{ env.BUILD_PLATFORM }}' -and 'Debug' -eq '${{ env.BUILD_CONFIGURATION }}') {
-          $projectKey = $('${{ github.repository }}' -replace '/', '_')
-          echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
-        }
+        $projectKey = $('${{ github.repository }}' -replace '/', '_')
+        echo "SONAR_PROJECT_KEY=$projectKey" >> $env:GITHUB_ENV
 
     - uses: microsoft/setup-msbuild@v2
 
@@ -316,7 +311,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      if: env.SONAR_TOKEN && env.SONAR_QUBE == 'Yes'
+        LC_ALL: ja_JP.UTF-8
+      if: env.SONAR_QUBE == 'Yes' && env.SONAR_TOKEN
       with:
         args: >
           -D"sonar.organization=${{ github.repository_owner }}"
