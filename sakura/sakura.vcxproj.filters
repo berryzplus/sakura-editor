@@ -1123,6 +1123,9 @@
     <ClInclude Include="..\src\main\cpp\cxx_util\ResourceHolder.hpp">
       <Filter>Cpp Source Files\cxx_util</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\main\cpp\env\SMenuItem.hpp">
+      <Filter>Cpp Source Files\env</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2319,6 +2322,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\parse\DetectIndentationStyle.cpp">
       <Filter>Cpp Source Files\parse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\cpp\env\SMenuItem.cpp">
+      <Filter>Cpp Source Files\env</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

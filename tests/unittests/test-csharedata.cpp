@@ -19,6 +19,8 @@
 #include "CDataProfile.h" // StringBufferW
 #include "uiparts/CMenuDrawer.h"
 
+#include "env/SMenuItem.hpp"
+
 UINT GetPrivateProfileIntW(
 	_In_ LPCWSTR lpAppName,
 	_In_ LPCWSTR lpKeyName,
@@ -33,68 +35,6 @@ std::wstring GetPrivateProfileStringW(
 	_In_     DWORD nSize,
 	std::optional<std::filesystem::path> iniPath = std::nullopt
 );
-
-struct SMenuItem {
-	int m_nLevel;
-	EFunctionCode m_eFuncCode;
-	wchar_t m_chAccessKey = '\0';
-
-	SMenuItem(
-		int nLevel,
-		int nFuncCode,
-		KEYCODE accessKey = '\0'
-	)
-		: m_nLevel( nLevel )
-		, m_eFuncCode(EFunctionCode(nFuncCode))
-		, m_chAccessKey(accessKey)
-	{
-	}
-
-	SMenuItem(
-		int nFuncCode,
-		KEYCODE accessKey = '\0'
-	)
-		: SMenuItem(0, nFuncCode, accessKey)
-	{
-	}
-
-	auto GetType() const noexcept
-	{
-		// セパレーター
-		if (1 == m_eFuncCode) return T_SEPARATOR;
-
-		// 特殊メニュー
-		if (29001 <= m_eFuncCode && m_eFuncCode <= 29006) return T_SPECIAL;
-
-		// 最上位ポップアップメニュー
-		if (34052 <= m_eFuncCode && m_eFuncCode <= 34059) return T_NODE;
-
-		// ポップアップメニュー
-		const std::set<int> popupFuncCodes{
-			32805,
-			34000,
-			34005,
-			34006,
-			34007,
-			34008,
-			34009,
-			34010,
-			34011,
-			34012,
-			34013,
-			34022,
-			34023,
-			34044,
-			34047,
-			34048,
-			34051,
-			34060,
-		};
-		if (const auto found = popupFuncCodes.find(m_eFuncCode); found != popupFuncCodes.cend()) return T_NODE;
-
-		return T_LEAF;
-	}
-};
 
 using SFuncCodeArray = std::array<EFunctionCode, 8>;
 
