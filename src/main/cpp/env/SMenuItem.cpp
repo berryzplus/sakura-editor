@@ -225,6 +225,32 @@ void ParseMenuItem(
 }
 
 /*!
+ * メニューハンドルから読み込む
+ */
+/* static */ std::vector<SMenuItem> SMenuItem::LoadCustomMenuFromResource(WORD resourceId)
+{
+	// 戻り値配列を宣言する
+	auto menuItems = LoadFromResource(resourceId);
+
+	// メニューリソースが読み込めなかった場合は空の配列を返す
+	if (menuItems.empty()) {
+		return {};
+	}
+
+	// 先頭1要素を削除する
+	menuItems.erase(menuItems.begin());
+
+	// カスタムメニューとの仕様の違いを吸収するために、セパレーターをF_0に変換する
+	for (auto& menuItem : menuItems) {
+		if (F_SEPARATOR == menuItem.m_eFuncCode) {
+			menuItem.m_eFuncCode = F_0;
+		}
+	}
+
+	return menuItems;
+}
+
+/*!
  * コンストラクタ
  */
 SMenuItem::SMenuItem(

@@ -160,6 +160,68 @@ TEST(SMenuItem, LoadMainMenuFromResource_106)
 	EXPECT_THAT(menuItems.size(), Gt(1));
 }
 
+/*!
+	SMenuItemのテスト：存在しないリソースIDを指定した場合。
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_100)
+{
+	// 存在しないリソースIDを指定したら空が返る
+	constexpr auto IDR_NOT_FOUND = 65535;
+	const auto menuItems = SMenuItem::LoadCustomMenuFromResource(IDR_NOT_FOUND);
+	EXPECT_TRUE(menuItems.empty());
+}
+
+/*!
+	SMenuItemのテスト：不明なトップ項目
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_101)
+{
+	const auto menuItems = SMenuItem::LoadCustomMenuFromResource(IDR_BAD_MAINMENU1);
+	EXPECT_THAT(menuItems.size(), Ge(1));
+}
+
+/*!
+	SMenuItemのテスト：トップ項目のアクセスキーがない
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_102)
+{
+	const auto menuItems = SMenuItem::LoadCustomMenuFromResource(IDR_BAD_MAINMENU2);
+	EXPECT_THAT(menuItems.size(), Ge(1));
+}
+
+/*!
+	SMenuItemのテスト：不明なポップアップ項目
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_103)
+{
+	EXPECT_THAT([] { SMenuItem::LoadCustomMenuFromResource(IDR_BAD_MAINMENU3); }, ThrowsMessage<basis::message_error>(StrEq("unknown popup menu \"不明な項目\"")));
+}
+
+/*!
+	SMenuItemのテスト：ポップアップ項目のアクセスキーがない
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_104)
+{
+	const auto menuItems = SMenuItem::LoadFromResource(IDR_BAD_MAINMENU4);
+	EXPECT_THAT(menuItems.size(), Ge(1));
+}
+
+/*!
+	SMenuItemのテスト：不明なメニュー項目
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_105)
+{
+	const auto menuItems = SMenuItem::LoadCustomMenuFromResource(IDR_BAD_MAINMENU5);
+	EXPECT_THAT(menuItems.size(), Ge(1));
+}
+
+/*!
+	SMenuItemのテスト：メニュー項目のアクセスキーがない
+ */
+TEST(SMenuItem, LoadCustomMenuFromResource_106)
+{
+	const auto menuItems = SMenuItem::LoadCustomMenuFromResource(IDR_BAD_MAINMENU6);
+	EXPECT_THAT(menuItems.size(), Ge(1));
 }
 
 } // namespace share_data

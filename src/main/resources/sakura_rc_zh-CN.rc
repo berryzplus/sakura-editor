@@ -2554,6 +2554,91 @@ BEGIN
     END
 END
 
+F_MENU_RBUTTON MENU
+BEGIN
+    POPUP "右键菜单"
+    BEGIN
+        MENUITEM "撤销(&U)",                                   F_UNDO
+        MENUITEM "重做(&R)",                                   F_REDO
+        MENUITEM SEPARATOR          
+        MENUITEM "剪切(&T)",                                   F_CUT
+        MENUITEM "复制(&C)",                                   F_COPY
+        MENUITEM "粘贴(&P)",                                   F_PASTE
+        MENUITEM "删除(&D)",                                   F_DELETE
+        MENUITEM SEPARATOR         
+        MENUITEM "复制为CRLF格式(&L)",                         F_COPY_CRLF
+        MENUITEM "添加CRLF后复制(&H)",                         F_COPY_ADDCRLF
+        MENUITEM "框粘贴(&X)",                                 F_PASTEBOX
+        MENUITEM SEPARATOR         
+        MENUITEM "全选(&A)",                                   F_SELECTALL
+        MENUITEM SEPARATOR         
+        MENUITEM "标签跳转(&G)",                               F_TAGJUMP
+        MENUITEM "返回标签跳转(&B)",                           F_TAGJUMPBACK
+        MENUITEM SEPARATOR         
+        MENUITEM "复制选中行(&@)",                             F_COPYLINES
+        MENUITEM "以段落形式复制选中内容(&.)",                 F_COPYLINESASPASSAGE
+        MENUITEM SEPARATOR   
+        MENUITEM "复制当前文件名(&F)",                         F_COPYFNAME
+        MENUITEM "复制当前文件路径(&\\)",                      F_COPYPATH
+        MENUITEM "复制所在目录路径(&O)",                       F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "在资源管理器中打开所在文件夹(&E)",           F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "打开命令提示符(&W)",                         F_OPEN_COMMAND_PROMPT
+        MENUITEM "以管理员身份打开命令提示符(&w)",             F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "打开PowerShell(&P)",                         F_OPEN_POWERSHELL
+        MENUITEM "以管理员身份打开PowerShell(&p)",             F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM "文件属性(&F)",                               F_PROPERTY_FILE
+    END
+END
+
+F_CUSTMENU_24 MENU
+BEGIN
+    POPUP "标签菜单"
+    BEGIN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "另存为...(&A)",                              F_FILESAVEAS_DIALOG
+        MENUITEM "关闭未命名文件(&R)",                         F_FILECLOSE
+        MENUITEM "关闭并打开...(&L)",                          F_FILECLOSE_OPEN
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "重新打开(&W)",                               F_FILE_REOPEN
+        MENUITEM SEPARATOR       
+        MENUITEM "复制当前文件名(&F)",                         F_COPYFNAME
+        MENUITEM "复制当前文件路径",                           F_COPYPATH
+        MENUITEM "复制所在目录路径",                           F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "在资源管理器中打开所在文件夹(&F)",           F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "打开命令提示符(&W)",                         F_OPEN_COMMAND_PROMPT
+        MENUITEM "以管理员身份打开命令提示符(&w)",             F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "打开PowerShell(&P)",                         F_OPEN_POWERSHELL
+        MENUITEM "以管理员身份打开PowerShell(&p)",             F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM SEPARATOR
+        MENUITEM "关闭组(&G)",                                 F_GROUPCLOSE
+        MENUITEM "关闭其他窗口或标签页(&O)",                   F_TAB_CLOSEOTHER
+        MENUITEM "关闭左侧所有标签页(&H)",                     F_TAB_CLOSELEFT
+        MENUITEM "关闭右侧所有标签页(&M)",                     F_TAB_CLOSERIGHT
+        MENUITEM SEPARATOR
+        MENUITEM "向右移动标签页(&0)",                         F_TAB_MOVERIGHT
+        MENUITEM "向左移动标签页(&1)",                         F_TAB_MOVELEFT
+        MENUITEM "新建标签组(&E)",                             F_TAB_SEPARATE
+        MENUITEM "合并到下一组(&X)",                           F_TAB_JOINTNEXT
+        MENUITEM "合并到上一组(&V)",                           F_TAB_JOINTPREV
+    END
+END
+
+F_CUSTMENU_1 MENU
+BEGIN
+    POPUP "自定义菜单1"
+    BEGIN
+        MENUITEM "打开...(&O)",                                F_FILEOPEN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "下一窗口(&N)",                               F_NEXTWINDOW
+        MENUITEM "转换为小写(&L)",                             F_TOLOWER
+        MENUITEM "转换为大写(&U)",                             F_TOUPPER
+        MENUITEM SEPARATOR          
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

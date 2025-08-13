@@ -2580,6 +2580,91 @@ BEGIN
     END
 END
 
+F_MENU_RBUTTON MENU
+BEGIN
+    POPUP "右クリックメニュー"
+    BEGIN
+        MENUITEM "元に戻す(&U)",                             F_UNDO
+        MENUITEM "やり直し(&R)",                             F_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "切り取り(&T)",                             F_CUT
+        MENUITEM "コピー(&C)",                               F_COPY
+        MENUITEM "貼り付け(&P)",                             F_PASTE
+        MENUITEM "削除(&D)",                                 F_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "CRLF改行でコピー(&L)",                     F_COPY_CRLF
+        MENUITEM "折り返し位置に改行をつけてコピー(&H)",     F_COPY_ADDCRLF
+        MENUITEM "矩形貼り付け(&X)",                         F_PASTEBOX
+        MENUITEM SEPARATOR
+        MENUITEM "すべて選択(&A)",                           F_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "タグジャンプ(&G)",                         F_TAGJUMP
+        MENUITEM "タグジャンプバック(&B)",                   F_TAGJUMPBACK
+        MENUITEM SEPARATOR
+        MENUITEM "選択範囲内全行コピー(&@)",                 F_COPYLINES
+        MENUITEM "選択範囲内全行引用符付きコピー(&.)",       F_COPYLINESASPASSAGE
+        MENUITEM SEPARATOR
+        MENUITEM "このファイル名をコピー(&F)",               F_COPYFNAME
+        MENUITEM "このファイルのパス名をコピー(&\\)",        F_COPYPATH
+        MENUITEM "このファイルのフォルダー名をコピー(&O)",   F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "ファイルの場所を開く(&E)",                 F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "コマンドプロンプトを開く(&W)",             F_OPEN_COMMAND_PROMPT
+        MENUITEM "管理者としてコマンドプロンプトを開く(&w)", F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "PowerShellを開く(&P)",                     F_OPEN_POWERSHELL
+        MENUITEM "管理者としてPowerShellを開く(&p)",         F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM "ファイルのプロパティ(&F)",                 F_PROPERTY_FILE
+    END
+END
+
+F_CUSTMENU_24 MENU
+BEGIN
+    POPUP "タブメニュー"
+    BEGIN
+        MENUITEM "上書き保存(&S)",                           F_FILESAVE
+        MENUITEM "名前を付けて保存...(&A)",                  F_FILESAVEAS_DIALOG
+        MENUITEM "閉じて(無題)(&R)",                         F_FILECLOSE
+        MENUITEM "閉じて開く...(&L)",                        F_FILECLOSE_OPEN
+        MENUITEM "閉じる(&C)",                               F_WINCLOSE
+        MENUITEM "開き直す(&W)",                             F_FILE_REOPEN
+        MENUITEM SEPARATOR
+        MENUITEM "このファイル名をコピー(&F)",               F_COPYFNAME
+        MENUITEM "このファイルのパス名をコピー",             F_COPYPATH
+        MENUITEM "このファイルのフォルダー名をコピー",       F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "ファイルの場所を開く(&F)",                 F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "コマンドプロンプトを開く(&W)",             F_OPEN_COMMAND_PROMPT
+        MENUITEM "管理者としてコマンドプロンプトを開く(&w)", F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "PowerShellを開く(&P)",                     F_OPEN_POWERSHELL
+        MENUITEM "管理者としてPowerShellを開く(&p)",         F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM SEPARATOR
+        MENUITEM "グループを閉じる(&G)",                     F_GROUPCLOSE
+        MENUITEM "このタブ／ウィンドウ以外を閉じる(&O)",     F_TAB_CLOSEOTHER
+        MENUITEM "左をすべて閉じる(&H)",                     F_TAB_CLOSELEFT
+        MENUITEM "右をすべて閉じる(&M)",                     F_TAB_CLOSERIGHT
+        MENUITEM SEPARATOR
+        MENUITEM "タブを右に移動(&0)",                       F_TAB_MOVERIGHT
+        MENUITEM "タブを左に移動(&1)",                       F_TAB_MOVELEFT
+        MENUITEM "新規グループ(&E)",                         F_TAB_SEPARATE
+        MENUITEM "次のグループに移動(&X)",                   F_TAB_JOINTNEXT
+        MENUITEM "前のグループに移動(&V)",                   F_TAB_JOINTPREV
+    END
+END
+
+F_CUSTMENU_1 MENU
+BEGIN
+    POPUP "カスタムメニュー1"
+    BEGIN
+        MENUITEM "開く...(&O)",                              F_FILEOPEN
+        MENUITEM "上書き保存(&S)",                           F_FILESAVE
+        MENUITEM "次のウィンドウ(&N)",                       F_NEXTWINDOW
+        MENUITEM "小文字(&L)",                               F_TOLOWER
+        MENUITEM "大文字(&U)",                               F_TOUPPER
+        MENUITEM SEPARATOR
+        MENUITEM "閉じる(&C)",                               F_WINCLOSE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

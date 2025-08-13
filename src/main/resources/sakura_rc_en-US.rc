@@ -2637,6 +2637,91 @@ BEGIN
     END
 END
 
+F_MENU_RBUTTON MENU
+BEGIN
+    POPUP "Right Click Menu"
+    BEGIN
+        MENUITEM "Undo(&U)",                                      F_UNDO
+        MENUITEM "Redo(&R)",                                      F_REDO
+        MENUITEM SEPARATOR                 
+        MENUITEM "Cut(&T)",                                       F_CUT
+        MENUITEM "Copy(&C)",                                      F_COPY
+        MENUITEM "Paste(&P)",                                     F_PASTE
+        MENUITEM "Delete(&D)",                                    F_DELETE
+        MENUITEM SEPARATOR                 
+        MENUITEM "Copy using CRLF(&L)",                           F_COPY_CRLF
+        MENUITEM "Copy adding CRLF(&H)",                          F_COPY_ADDCRLF
+        MENUITEM "Paste Box(&X)",                                 F_PASTEBOX
+        MENUITEM SEPARATOR                 
+        MENUITEM "Select All(&A)",                                F_SELECTALL
+        MENUITEM SEPARATOR                 
+        MENUITEM "Tagjump(&G)",                                   F_TAGJUMP
+        MENUITEM "Tag Jump Back(&B)",                             F_TAGJUMPBACK
+        MENUITEM SEPARATOR                 
+        MENUITEM "Copy selected lines(&@)",                       F_COPYLINES
+        MENUITEM "Copy selected as passage(&.)",                  F_COPYLINESASPASSAGE
+        MENUITEM SEPARATOR                 
+        MENUITEM "Copy this file's name(&F)",                     F_COPYFNAME
+        MENUITEM "Copy this file's path(&\\)",                    F_COPYPATH
+        MENUITEM "Copy this file's directory path(&O)",           F_COPYDIRPATH
+        MENUITEM SEPARATOR         
+        MENUITEM "Open Containing Folder(&E)",                    F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "Open Command Prompt(&W)",                       F_OPEN_COMMAND_PROMPT
+        MENUITEM "Open Command Prompt As Admin(&w)",              F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "Open PowerShell(&P)",                           F_OPEN_POWERSHELL
+        MENUITEM "Open PowerShell As Admin(&p)",                  F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM "File Property(&F)",                             F_PROPERTY_FILE
+    END      
+END      
+      
+F_CUSTMENU_24 MENU      
+BEGIN      
+    POPUP "Tab Menu"      
+    BEGIN      
+        MENUITEM "Save(&S)",                                      F_FILESAVE
+        MENUITEM "Save As(&A)",                                   F_FILESAVEAS_DIALOG
+        MENUITEM "Close Untitled(&R)",                            F_FILECLOSE
+        MENUITEM "Close and Open...(&L)",                         F_FILECLOSE_OPEN
+        MENUITEM "Close(&C)",                                     F_WINCLOSE
+        MENUITEM "Re-Open(&W)",                                   F_FILE_REOPEN
+        MENUITEM SEPARATOR                  
+        MENUITEM "Copy this file's name(&F)",                     F_COPYFNAME
+        MENUITEM "Copy this file's path",                         F_COPYPATH
+        MENUITEM "Copy this file's directory path",               F_COPYDIRPATH
+        MENUITEM SEPARATOR             
+        MENUITEM "Open Containing Folder(&F)",                    F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "Open Command Prompt(&W)",                       F_OPEN_COMMAND_PROMPT
+        MENUITEM "Open Command Prompt As Admin(&w)",              F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "Open PowerShell(&P)",                           F_OPEN_POWERSHELL
+        MENUITEM "Open PowerShell As Admin(&p)",                  F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM SEPARATOR             
+        MENUITEM "Group Close(&G)",                               F_GROUPCLOSE
+        MENUITEM "Close all Other windows or tabs(&O)",           F_TAB_CLOSEOTHER
+        MENUITEM "Close all tabs to the Left(&H)",                F_TAB_CLOSELEFT
+        MENUITEM "Close all tabs to the Right(&M)",               F_TAB_CLOSERIGHT
+        MENUITEM SEPARATOR      
+        MENUITEM "Move tab Right(&0)",                            F_TAB_MOVERIGHT
+        MENUITEM "Move tab Left(&1)",                             F_TAB_MOVELEFT
+        MENUITEM "New Tab Group(&E)",                             F_TAB_SEPARATE
+        MENUITEM "Move to next group(&X)",                        F_TAB_JOINTNEXT
+        MENUITEM "Move to prev group(&V)",                        F_TAB_JOINTPREV
+    END      
+END      
+      
+F_CUSTMENU_1 MENU      
+BEGIN      
+    POPUP "Custom Menu 1"      
+    BEGIN      
+        MENUITEM "Open...(&O)",                                   F_FILEOPEN
+        MENUITEM "Save(&S)",                                      F_FILESAVE
+        MENUITEM "Next window(&N)",                               F_NEXTWINDOW
+        MENUITEM "Lower case(&L)",                                F_TOLOWER
+        MENUITEM "Upper case(&U)",                                F_TOUPPER
+        MENUITEM SEPARATOR                  
+        MENUITEM "Close(&C)",                                     F_WINCLOSE
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

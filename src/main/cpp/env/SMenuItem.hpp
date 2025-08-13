@@ -18,6 +18,7 @@ struct SMenuItem {
 	static inline std::map<std::wstring, EFunctionCode, std::less<>> popupMenuItems{};
 	static std::vector<SMenuItem> LoadFromResource(WORD resourceId);
 	static std::vector<SMenuItem> LoadMainMenuFromResource(WORD resourceId);
+	static std::vector<SMenuItem> LoadCustomMenuFromResource(WORD resourceId);
 
 	EFunctionCode	m_eFuncCode;			//!< 機能コード
 	int				m_nLevel;				//!< メニュー階層。トップ、メニューバー項目なら0。

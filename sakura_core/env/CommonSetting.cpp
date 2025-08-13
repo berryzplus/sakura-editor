@@ -58,6 +58,55 @@ CommonSetting_Format::CommonSetting_Format() noexcept
 	wcscpy_s(m_szTimeFormat, LS(STR_ERR_CSHAREDATA16));
 }
 
+/*!
+ * @brief 共有メモリ初期化/ポップアップメニュー
+ *
+ *	ポップアップメニューの初期化処理
+ *
+ *	@date 2005.01.30 genta CShareData::Init()から分離．
+ */
+CommonSetting_CustomMenu::CommonSetting_CustomMenu() noexcept
+{
+	/* カスタムメニュー 規定値 */
+	for (int i = 0; i < MAX_CUSTOM_MENU; ++i) {
+		m_szCustMenuNameArr[i][0] = '\0';
+		m_nCustMenuItemNumArr[i] = 0;
+		for (int j = 0; j < MAX_CUSTOM_MENU_ITEMS; ++j) {
+			m_nCustMenuItemFuncArr[i][j] = F_0;
+			m_nCustMenuItemKeyArr [i][j] = '\0';
+		}
+		m_bCustMenuPopupArr[i] = true;
+	}
+	m_szCustMenuNameArr[CUSTMENU_INDEX_FOR_TABWND][0] = '\0';	//@@@ 2003.06.13 MIK
+	
+	/* 右クリックメニュー */
+	const auto editRMenuItems = SMenuItem::LoadCustomMenuFromResource(F_MENU_RBUTTON);
+	constexpr int EDIT_RMENU = 0;
+	for (size_t i = 0; i < std::size(editRMenuItems); ++i) {
+		m_nCustMenuItemFuncArr[EDIT_RMENU][i] = editRMenuItems[i].m_eFuncCode;
+		m_nCustMenuItemKeyArr [EDIT_RMENU][i] = editRMenuItems[i].m_chAccessKey;
+	}
+	m_nCustMenuItemNumArr[EDIT_RMENU] = int(std::size(editRMenuItems));
+
+	/* カスタムメニュー１ */
+	const auto custumMenu1Items = SMenuItem::LoadCustomMenuFromResource(F_CUSTMENU_1);
+	constexpr int CUST_MENU = 1;
+	for (size_t i = 0; i < std::size(custumMenu1Items); ++i) {
+		m_nCustMenuItemFuncArr[CUST_MENU][i] = custumMenu1Items[i].m_eFuncCode;
+		m_nCustMenuItemKeyArr [CUST_MENU][i] = custumMenu1Items[i].m_chAccessKey;
+	}
+	m_nCustMenuItemNumArr[CUST_MENU] = int(std::size(custumMenu1Items));
+
+	/* タブメニュー */
+	const auto tabMenuItems = SMenuItem::LoadCustomMenuFromResource(F_CUSTMENU_24);
+	constexpr int TAB_RMENU = CUSTMENU_INDEX_FOR_TABWND;
+	for (size_t i = 0; i < std::size(tabMenuItems); ++i) {
+		m_nCustMenuItemFuncArr[TAB_RMENU][i] = tabMenuItems[i].m_eFuncCode;
+		m_nCustMenuItemKeyArr [TAB_RMENU][i] = tabMenuItems[i].m_chAccessKey;
+	}
+	m_nCustMenuItemNumArr[TAB_RMENU] = int(std::size(tabMenuItems));
+}
+
 CommonSetting_Helper::CommonSetting_Helper() noexcept
 {
 	auto& lfIconTitle = m_lf;
@@ -120,7 +169,7 @@ CommonSetting_View::CommonSetting_View() noexcept
 
 CommonSetting_MainMenu::CommonSetting_MainMenu() noexcept
 {
-	const auto menuItems = SMenuItem::LoadFromResource(IDR_MAINMENU);
+	const auto menuItems = SMenuItem::LoadMainMenuFromResource(IDR_MAINMENU);
 
 	m_nMainMenuNum = int(std::size(menuItems));
 	for (size_t i = 0; i < m_nMainMenuNum; ++i) {
