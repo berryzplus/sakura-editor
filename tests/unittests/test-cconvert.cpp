@@ -24,6 +24,7 @@
 #include "convert/CConvert_ZeneisuToHaneisu.h"
 #include "convert/CConvert_ZenkataToHankata.h"
 
+#include "basis/message_error.hpp"
 #include "cxx_util/wcstombs_s.hpp"
 
 #include "Funccode_enum.h"
@@ -43,6 +44,20 @@ TEST(wcstombs_s, test101)
 {
 	// 現在のコードページ（日本語）で表現できない文字を渡すと例外が発生する
 	EXPECT_THAT([] { cxx_util::wcstombs_s(L"\U0001F6B9"sv); }, ThrowsMessage<std::invalid_argument>(StrEq("Invalid wide character sequence.")));
+}
+
+TEST(message_error, test001)
+{
+	// 現在のコードページ（日本語）で書けるメッセージ例外を生成できる
+	basis::message_error e(L"テスト"sv);
+	EXPECT_THAT(e.what(), StrEq("テスト"));
+	EXPECT_THAT(e.message(), StrEq(L"テスト"));
+}
+
+TEST(message_error, test002)
+{
+	// 現在のコードページ（日本語）で書けるメッセージ例外をスローできる
+	EXPECT_THAT([] { throw basis::message_error(L"テスト"sv); }, ThrowsMessage<basis::message_error>(StrEq("テスト")));
 }
 
 } // namespace cxx_util

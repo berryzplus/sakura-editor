@@ -1129,6 +1129,9 @@
     <ClInclude Include="..\src\main\cpp\cxx_util\wcstombs_s.hpp">
       <Filter>Cpp Source Files\cxx_util</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\main\cpp\basis\message_error.hpp">
+      <Filter>Cpp Source Files\basis</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2328,6 +2331,9 @@
     </ClCompile>
     <ClCompile Include="..\src\main\cpp\cxx_util\wcstombs_s.cpp">
       <Filter>Cpp Source Files\cxx_util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\cpp\basis\message_error.cpp">
+      <Filter>Cpp Source Files\basis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
