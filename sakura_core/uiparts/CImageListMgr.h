@@ -17,6 +17,10 @@
 #pragma once
 
 #include "_main/global.h"
+#include "cxx_util/ResourceHolder.hpp"
+#include "env/CommonSetting.h" // MAX_TOOLBAR_ICON_COUNT
+
+#include "Funccode_enum.h"
 
 /*! @brief ImageListの管理
 
@@ -34,17 +38,21 @@
 		当初の独自描画に戻した．
 */
 class CImageListMgr {
+	using BitmapHolder = cxx_util::ResourceHolder<HBITMAP, &DeleteObject>;
+
 	using Me = CImageListMgr;
 
 public:
+	static std::array<EFunctionCode, MAX_TOOLBAR_ICON_COUNT> gm_toolIcons;
+	static std::map<int, int> GetFuncIcons();
 
 	//	constructor
-	CImageListMgr();
+	CImageListMgr() = default;
 	CImageListMgr(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CImageListMgr(Me&&) noexcept = delete;
 	Me& operator = (Me&&) noexcept = delete;
-	~CImageListMgr();
+	~CImageListMgr() = default;
 
 	bool Create(HINSTANCE hInstance);	//	生成
 	
@@ -88,22 +96,23 @@ public:
 	*/
 	void  SetToolBarImages(HWND hToolBar, int id = 0) const {}
 
-protected:
-	int m_cx;			//!<	width of icon
-	int m_cy;			//!<	height of icon
+private:
+	int m_cx = 16;			//!<	width of icon
+	int m_cy = 16;			//!<	height of icon
+
 	/*!	@brief 透過色
 	
 		描画を自前で行うため，透過色を覚えておく必要がある．
 		@date 2003.07.21 genta
-	*/
-	COLORREF m_cTrans;
+	 */
+	COLORREF m_cTrans = RGB(0, 0, 0);
 	
-	/*! アイコン用ビットマップを保持する
+	/*! @brief アイコン用ビットマップを保持する
 		@date 2003.07.21 genta
-	*/
-	HBITMAP m_hIconBitmap;
+	 */
+	BitmapHolder m_hIconBitmap = nullptr;
 
-	int m_nIconCount;	//!<	アイコンの個数
+	int m_nIconCount = MAX_TOOLBAR_ICON_COUNT;	//!< アイコンの個数
 
 	// アイコン描画関数
 	void MyBitBlt( HDC drawdc, int nXDest, int nYDest,
@@ -117,4 +126,5 @@ protected:
 	//! ビットマップを一行拡張する
 	void Extend(bool = true);
 };
+
 #endif /* SAKURA_CIMAGELISTMGR_4FA1F1E8_0029_42BD_A346_C51BB0A70B0C_H_ */

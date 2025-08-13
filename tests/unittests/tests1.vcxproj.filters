@@ -16,6 +16,12 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{a03bf4b5-7918-41b2-88fd-5585efc88c4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Other Files\testing">
+      <UniqueIdentifier>{d37419a0-0151-41ee-a41f-4bedae3fd69e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other Files\hooking">
+      <UniqueIdentifier>{cc5900a1-8d31-4c3b-bd14-c635ff234f4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt">
@@ -25,6 +31,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\test\cpp\pch.cpp">
       <Filter>Pre-Compiled Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\test\resources\code-main.cpp">
+      <Filter>Other Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\test\resources\coverage.cpp" />
     <ClCompile Include="test-cmemory.cpp">
@@ -74,9 +83,6 @@
     </ClCompile>
     <ClCompile Include="test-cdlgprofilemgr.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="code-main.cpp">
-      <Filter>Other Files</Filter>
     </ClCompile>
     <ClCompile Include="test-winmain.cpp">
       <Filter>Test Files</Filter>
@@ -141,7 +147,7 @@
     <ClCompile Include="test-printECodeType.cpp">
       <Filter>Other Files</Filter>
     </ClCompile>
-    <ClCompile Include="test-printEFunctionCode.cpp">
+    <ClCompile Include="..\..\src\test\resources\printEFunctionCode.cpp">
       <Filter>Other Files</Filter>
     </ClCompile>
     <ClCompile Include="test-cdocline.cpp">
@@ -180,19 +186,31 @@
     <ClCompile Include="test-codechecker.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\test\cpp\env\test-smenuitem.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\test\resources\testing\StartEditorProcess.cpp">
+      <Filter>Other Files\testing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\test\resources\testing\MessageBoxHook.cpp">
+      <Filter>Other Files\testing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\cpp\pch.h">
       <Filter>Pre-Compiled Headers</Filter>
     </ClInclude>
-    <ClInclude Include="StartEditorProcessForTest.h">
-      <Filter>Other Files</Filter>
-    </ClInclude>
-    <ClInclude Include="eval_outputs.hpp">
-      <Filter>Other Files</Filter>
+    <ClInclude Include="..\..\src\test\resources\testing\StartEditorProcess.hpp">
+      <Filter>Other Files\testing</Filter>
     </ClInclude>
     <ClInclude Include="TExtModule.hpp">
       <Filter>Other Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\test\resources\testing\MessageBoxHook.hpp">
+      <Filter>Other Files\testing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\test\resources\hooking\HookingLibrary.hpp">
+      <Filter>Other Files\hooking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

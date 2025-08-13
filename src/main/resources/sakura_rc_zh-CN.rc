@@ -1,16 +1,16 @@
-// Microsoft Visual c++生成的资源脚本。
+// Microsoft Visual C++ generated resource script.
 //
-#include "sakura_rc.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
-// 由TEXTINCLUDE 2资源生成。
+// Generated from the TEXTINCLUDE 2 resource.
 //
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include <Windows.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
+#include "sakura_rc.h"
 #include "Funccode_define.h"
 #include "String_define.h"
 #include "version.h"
@@ -18,7 +18,9 @@
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// 中国語 (簡体字、中国) resources
+
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
@@ -30,7 +32,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 1 TEXTINCLUDE 
 BEGIN
-    "..\\sakura_core\\sakura_rc.h\0"
+    "\0"
 END
 
 2 TEXTINCLUDE 
@@ -39,6 +41,7 @@ BEGIN
     "#include <Windows.h>\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "\r\n"
+    "#include ""sakura_rc.h""\r\n"
     "#include ""Funccode_define.h""\r\n"
     "#include ""String_define.h""\r\n"
     "#include ""version.h""\r\n"
@@ -70,12 +73,9 @@ BEGIN
     CONTROL         "单词匹配(&W)",IDC_CHK_WORD,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,5,21,130,10
     CONTROL         "区分大小写(&C)",IDC_CHK_LOHICASE,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,32,130,10
     CONTROL         "正则表达式(&E)",IDC_CHK_REGULAREXP,"Button",BS_AUTOCHECKBOX | BS_LEFT | WS_TABSTOP,5,43,55,10
-    CONTROL         "未找到时显示提示(&M)",IDC_CHECK_NOTIFYNOTFOUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,54,140,10
-    CONTROL         "自动关闭对话框(&L)",IDC_CHECK_bAutoCloseDlgFind,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,65,140,10
-    CONTROL         "循环查找(&Z)",IDC_CHECK_SEARCHALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,76,130,10
+    CONTROL         "未找到时显示提示(&M)",IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,54,140,10
+    CONTROL         "自动关闭对话框(&L)",IDC_CHECK_bAutoCloseDlgFind,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,65,140,10
+    CONTROL         "循环查找(&Z)",IDC_CHECK_SEARCHALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,76,130,10
     LTEXT           "",IDC_STATIC_JRE32VER,62,43,154,10
     PUSHBUTTON      "上一个(&U)",IDC_BUTTON_SEARCHPREV,221,4,58,14,WS_GROUP
     DEFPUSHBUTTON   "下一个(&D)",IDC_BUTTON_SEARCHNEXT,221,20,58,14
@@ -91,12 +91,11 @@ CAPTION "跳转到行"
 FONT 9, "微软雅黑", 0, 0, 0x1
 BEGIN
     LTEXT           "行号(&N)",IDC_STATIC,5,6,34,8
-    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12, ES_NUMBER
+    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12,ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_LINENUM,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,82,4,9,12
     CONTROL         "使用布局(&R)",IDC_RADIO_LINENUM_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,94,5,97,10
     CONTROL         "使用CRLF(&W)",IDC_RADIO_LINENUM_CRLF,"Button",BS_AUTORADIOBUTTON,94,20,87,10
-    CONTROL         "PL/SQL编译器错误处理(&P)",IDC_CHECK_PLSQL,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,50,137,10
+    CONTROL         "PL/SQL编译器错误处理(&P)",IDC_CHECK_PLSQL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,10,50,137,10
     LTEXT           "将行视为由&1行组成的块",IDC_LABEL_PLSQL2,92,66,92,8,NOT WS_GROUP
     EDITTEXT        IDC_EDIT_PLSQL_E1,47,64,40,12
     CONTROL         "Spin1",IDC_SPIN_PLSQL_E1,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,87,64,9,12
@@ -122,11 +121,9 @@ BEGIN
     DEFPUSHBUTTON   "跳转(&J)",IDOK,76,255,50,14
     PUSHBUTTON      "取消(&X)",IDCANCEL,128,255,50,14
     PUSHBUTTON      "帮助(&H)",IDC_BUTTON_HELP,180,255,50,14
-    CONTROL         "自动关闭对话框(&D)",IDC_CHECK_bAutoCloseDlgFuncList,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,271,79,10
+    CONTROL         "自动关闭对话框(&D)",IDC_CHECK_bAutoCloseDlgFuncList,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,271,79,10
     CONTROL         "切换焦点(&F)",IDC_CHECK_bFunclistSetFocusOnJump,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,271,70,10
-    CONTROL         "标记空行(&B)",IDC_CHECK_bMarkUpBlankLineEnable,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,271,76,10
+    CONTROL         "标记空行(&B)",IDC_CHECK_bMarkUpBlankLineEnable,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,271,76,10
     LTEXT           "排序方式(&S)",IDC_STATIC_nSortType,3,5,28,8
     PUSHBUTTON      "设置(&O)",IDC_BUTTON_SETTING,3,3,45,14
     COMBOBOX        IDC_COMBO_nSortType,34,3,94,65,CBS_DROPDOWNLIST | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
@@ -149,8 +146,7 @@ BEGIN
     PUSHBUTTON      "...",IDC_BUTTON_FOLDER,356,50,16,10
     CONTROL         "当前文本(&M)",IDC_CHK_FROMTHISTEXT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,64,120,8
     CONTROL         "包含子文件夹(&S)",IDC_CHK_SUBFOLDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,74,120,8
-    CONTROL         "设为默认文件夹(&D)",IDC_CHK_DEFAULTFOLDER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,84,120,8
+    CONTROL         "设为默认文件夹(&D)",IDC_CHK_DEFAULTFOLDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,72,84,120,8
     PUSHBUTTON      "上移(&U)",IDC_BUTTON_FOLDER_UP,260,64,50,14
     PUSHBUTTON      "当前文件夹(&G)",IDC_BUTTON_CURRENTFOLDER,312,64,60,14
     RTEXT           "文件过滤(&I):",IDC_STATIC,4,96,64,8,NOT WS_GROUP
@@ -168,11 +164,9 @@ BEGIN
     CONTROL         "按文件分组(&5)",IDC_RADIO_OUTPUTSTYLE2,"Button",BS_AUTORADIOBUTTON,176,162,60,8
     CONTROL         "仅结果(&6)",IDC_RADIO_OUTPUTSTYLE3,"Button",BS_AUTORADIOBUTTON,176,172,60,8
     GROUPBOX        "其他选项",IDC_STATIC,244,140,180,44,WS_GROUP
-    CONTROL         "每个文件仅首匹配(&7)",IDC_CHECK_FILE_ONLY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,252,152,108,8
+    CONTROL         "每个文件仅首匹配(&7)",IDC_CHECK_FILE_ONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,252,152,108,8
     CONTROL         "分文件夹输出(&8)",IDC_CHECK_SEP_FOLDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,252,162,108,8
-    CONTROL         "相对路径输出(&9)",IDC_CHECK_BASE_PATH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,252,172,108,8
+    CONTROL         "相对路径输出(&9)",IDC_CHECK_BASE_PATH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,252,172,108,8
     LTEXT           "编码(&A):",IDC_STATIC,360,148,60,8
     COMBOBOX        IDC_COMBO_CHARSET,360,158,60,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "复制结果(&P)",IDC_CHECK_CP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,360,172,60,8
@@ -627,20 +621,16 @@ BEGIN
     LISTBOX         IDC_LIST_DIFF_FILES,13,102,236,77,LBS_SORT | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
     CONTROL         "不区分大小写(&C)",IDC_CHECK_DIFF_OPT_CASE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,191,101,10
     CONTROL         "忽略空白字符(&W)",IDC_CHECK_DIFF_OPT_SPACE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,203,101,10
-    CONTROL         "忽略空白差异(&B)",IDC_CHECK_DIFF_OPT_SPCCHG,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,216,101,10
+    CONTROL         "忽略空白差异(&B)",IDC_CHECK_DIFF_OPT_SPCCHG,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,216,101,10
     CONTROL         "忽略空行(&L)",IDC_CHECK_DIFF_OPT_BLINE,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,229,101,10
     CONTROL         "Tab与空格视为相同(&T)",IDC_CHECK_DIFF_OPT_TABSPC,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,7,242,101,10
     GROUPBOX        "当前编辑器文件为...",IDC_FRAME_DIFF_FILE12,110,190,146,26,WS_GROUP
     CONTROL         "新文件(&N)",IDC_RADIO_DIFF_FILE1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,119,201,59,10
     CONTROL         "旧文件(&D)",IDC_RADIO_DIFF_FILE2,"Button",BS_AUTORADIOBUTTON | WS_GROUP,183,201,59,10
     GROUPBOX        "跳转到上一个/下一个差异",IDC_FRAME_SEARCH_MSG,110,221,146,41
-    CONTROL         "未找到时显示提示信息(&M)",IDC_CHECK_NOTIFYNOTFOUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,232,140,10
-    CONTROL         "从文件顶部继续搜索(&Z)",IDC_CHECK_SEARCHALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,245,130,10
-    CONTROL         "无差异时显示提示信息",IDC_CHECK_DIFF_EXEC_STATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,110,267,139,10
+    CONTROL         "未找到时显示提示信息(&M)",IDC_CHECK_NOTIFYNOTFOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,232,140,10
+    CONTROL         "从文件顶部继续搜索(&Z)",IDC_CHECK_SEARCHALL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,245,130,10
+    CONTROL         "无差异时显示提示信息",IDC_CHECK_DIFF_EXEC_STATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,110,267,139,10
     DEFPUSHBUTTON   "确定(&O)",IDOK,93,282,50,14
     PUSHBUTTON      "取消(&X)",IDCANCEL,147,282,50,14
     PUSHBUTTON      "帮助(&H)",IDC_BUTTON_HELP,202,282,50,14
@@ -747,16 +737,14 @@ BEGIN
     COMBOBOX        IDC_COMBO_TSV_MODE,16,123,46,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "布局",IDC_STATIC,3,22,145,117
     CONTROL         "自动缩进(&U)",IDC_CHECK_INDENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,154,72,10
-    CONTROL         "全角空格字符(&Z)",IDC_CHECK_INDENT_WSPACE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,154,61,10
+    CONTROL         "全角空格字符(&Z)",IDC_CHECK_INDENT_WSPACE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,154,61,10
     LTEXT           "智能缩进(&S)",IDC_STATIC,8,169,68,8
     COMBOBOX        IDC_COMBO_SMARTINDENT,82,167,60,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "替代缩进字符(&I)",IDC_STATIC,8,183,120,8
     EDITTEXT        IDC_EDIT_INDENTCHARS,38,195,103,12,ES_AUTOHSCROLL
     LTEXT           "折行缩进(&2)",IDC_STATIC,8,211,75,8
     COMBOBOX        IDC_COMBO_INDENTLAYOUT,87,209,54,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "修剪行尾空白(&E)",IDC_CHECK_RTRIM_PREVLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,224,113,10
+    CONTROL         "修剪行尾空白(&E)",IDC_CHECK_RTRIM_PREVLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,224,113,10
     GROUPBOX        "缩进",IDC_STATIC,3,143,145,97
     CONTROL         "标准规则(&B)",IDC_RADIO_OUTLINEDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,162,33,82,10
     COMBOBOX        IDC_COMBO_OUTLINES,173,46,81,85,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -770,10 +758,8 @@ BEGIN
     GROUPBOX        "特定类型字体",IDC_STATIC,153,97,145,42
     CONTROL         "ASCII自动换行(&W)",IDC_CHECK_WORDWRAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,154,78,10
     CONTROL         "不换行新行(&^)",IDC_CHECK_KINSOKURET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,168,100,10
-    CONTROL         "不显示换行边距(&-)",IDC_CHECK_KINSOKUHIDE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,182,100,10
-    CONTROL         "不换行标点符号(&\\)",IDC_CHECK_KINSOKUKUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,196,95,10
+    CONTROL         "不显示换行边距(&-)",IDC_CHECK_KINSOKUHIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,182,100,10
+    CONTROL         "不换行标点符号(&\\)",IDC_CHECK_KINSOKUKUTO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,196,95,10
     EDITTEXT        IDC_EDIT_KINSOKUKUTO,258,195,30,12,ES_AUTOHSCROLL
     CONTROL         "行不能以(&[)开头",IDC_CHECK_KINSOKUHEAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,210,54,10
     EDITTEXT        IDC_EDIT_KINSOKUHEAD,218,209,70,12,ES_AUTOHSCROLL
@@ -834,8 +820,7 @@ BEGIN
     GROUPBOX        "转义字符(&Q)",IDC_STATIC,156,168,142,42,WS_GROUP
     COMBOBOX        IDC_COMBO_STRINGLITERAL,160,180,68,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "单行转义(&\\)",IDC_CHECK_STRINGLINEONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,233,180,64,10
-    CONTROL         "若无结束标记则高亮至行尾(&E)",IDC_CHECK_STRINGENDLINE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,194,136,10
+    CONTROL         "若无结束标记则高亮至行尾(&E)",IDC_CHECK_STRINGENDLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,194,136,10
     LTEXT           "垂直参考线(&3)",IDC_STATIC,164,218,66,8
     EDITTEXT        IDC_EDIT_VERTLINE,220,216,74,12,ES_AUTOHSCROLL
     LTEXT           "* 使用 步长(起始,结束) 对齐，并用逗号分隔",IDC_STATIC,115,230,192,8
@@ -861,18 +846,14 @@ BEGIN
     GROUPBOX        "外部HTML帮助设置",IDC_STATIC,3,95,295,45,WS_GROUP
     EDITTEXT        IDC_EDIT_TYPEEXTHTMLHELP,8,109,264,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "(&3)...",IDC_BUTTON_TYPEOPENEXTHTMLHELP,275,107,19,14
-    CONTROL         "不重复打开查看器(&N)",IDC_CHECK_TYPEHTMLHELPISSINGLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,125,109,10
-    CONTROL         "保存时检查换行符一致性(&E)",IDC_CHECK_CHKENTERATEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,146,10
-    CONTROL         "忽略字符串内字符(&S)",IDC_CHECK_INDENTCPPSTR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,146,10
-    CONTROL         "忽略注释内字符(&C)",IDC_CHECK_INDENTCPPCMT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,171,130,10
-    CONTROL         "撤销操作独立处理(&U)",IDC_CHECK_INDENTCPPUNDO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
+    CONTROL         "不重复打开查看器(&N)",IDC_CHECK_TYPEHTMLHELPISSINGLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,125,109,10
+    CONTROL         "保存时检查换行符一致性(&E)",IDC_CHECK_CHKENTERATEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,145,146,10
+    CONTROL         "忽略字符串内字符(&S)",IDC_CHECK_INDENTCPPSTR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,146,10
+    CONTROL         "忽略注释内字符(&C)",IDC_CHECK_INDENTCPPCMT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,171,130,10
+    CONTROL         "撤销操作独立处理(&U)",IDC_CHECK_INDENTCPPUNDO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
     GROUPBOX        "C/C++缩进设置",IDC_STATIC,3,159,295,40,WS_GROUP
-    CONTROL         "文件载入时检测缩进风格(&T)",IDC_CHECK_DETECT_INDENTATION_STYLE_ON_FILE_LOAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,205,240,10
+    CONTROL         "文件载入时检测缩进风格(&T)",IDC_CHECK_DETECT_INDENTATION_STYLE_ON_FILE_LOAD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,205,240,10
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244
@@ -924,11 +905,9 @@ BEGIN
     PUSHBUTTON      "置底(&B)",IDC_BUTTON_KEYHELP_LAST,251,98,38,15
     PUSHBUTTON      "导入(&I)...",IDC_BUTTON_KEYHELP_IMPORT,173,199,60,14,WS_GROUP
     PUSHBUTTON      "导出(&E)...",IDC_BUTTON_KEYHELP_EXPORT,236,199,60,14
-    CONTROL         "继续搜索其他词典(&A)",IDC_CHECK_KEYHELP_ALLSEARCH,
-                    "Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,200,105,10
+    CONTROL         "继续搜索其他词典(&A)",IDC_CHECK_KEYHELP_ALLSEARCH,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,200,105,10
     CONTROL         "同时显示关键字(&W)",IDC_CHECK_KEYHELP_KEYDISP,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,212,95,10
-    CONTROL         "在选中范围内搜索(&P)",IDC_CHECK_KEYHELP_PREFIX,
-                    "Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,224,108,10
+    CONTROL         "在选中范围内搜索(&P)",IDC_CHECK_KEYHELP_PREFIX,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,7,224,108,10
     LTEXT           "右键菜单(&M)",IDC_STATIC_MENU,120,225,70,8,NOT WS_GROUP
     COMBOBOX        IDC_COMBO_MENU,192,223,60,180,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
@@ -944,8 +923,7 @@ BEGIN
     LTEXT           "编码(&C)",IDC_STATIC,8,49,46,8
     COMBOBOX        IDC_COMBO_DEFAULT_CODETYPE,57,47,52,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "代码页(&C)",IDC_CHECK_CP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,48,25,10
-    CONTROL         "自动检测时优先CESU-8(&U)",IDC_CHECK_PRIOR_CESU8,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,63,135,10
+    CONTROL         "自动检测时优先CESU-8(&U)",IDC_CHECK_PRIOR_CESU8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,63,135,10
     GROUPBOX        "默认编码",IDC_STATIC,3,22,145,58
     LTEXT           "开关(&M)",IDC_STATIC,189,34,55,8
     COMBOBOX        IDC_COMBO_IMESWITCH,232,32,61,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1055,14 +1033,11 @@ BEGIN
     CONTROL         "MS-DOS风格(&D)",IDC_RADIO_CARETTYPE1,"Button",BS_AUTORADIOBUTTON,69,99,61,10
     GROUPBOX        "系统托盘",IDC_STATIC,3,115,149,71,WS_GROUP
     CONTROL         "启用托盘图标(&T)",IDC_CHECK_USETRAYICON,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,127,81,10
-    CONTROL         "常驻系统托盘(&R)",IDC_CHECK_STAYTASKTRAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,141,104,10
+    CONTROL         "常驻系统托盘(&R)",IDC_CHECK_STAYTASKTRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,141,104,10
     LTEXT           "添加快捷方式到右键菜单(&C)",IDC_STATIC,8,157,131,8
     CONTROL         "HotKey1",IDC_HOTKEY_TRAYMENU,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,8,167,95,12
-    CONTROL         "关闭多个编辑器窗口时\n需要确认(&C)",IDC_CHECK_CLOSEALLCONFIRM,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,193,124,19
-    CONTROL         "关闭所有Sakura编辑器时\n确认退出(&V)",IDC_CHECK_EXITCONFIRM,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,212,124,19
+    CONTROL         "关闭多个编辑器窗口时\n需要确认(&C)",IDC_CHECK_CLOSEALLCONFIRM,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,193,124,19
+    CONTROL         "关闭所有Sakura编辑器时\n确认退出(&V)",IDC_CHECK_EXITCONFIRM,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,8,212,124,19
     GROUPBOX        "滚动设置",IDC_STATIC,158,3,130,125,WS_GROUP
     LTEXT           "滚动行数(&N)",IDC_STATIC,163,19,29,8,NOT WS_GROUP
     EDITTEXT        IDC_EDIT_REPEATEDSCROLLLINENUM,196,17,40,12,ES_AUTOHSCROLL | WS_GROUP
@@ -1110,10 +1085,8 @@ BEGIN
     CONTROL         "Spin1",IDC_SPIN_nLineNumberRightSpace,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,124,94,10,12
     LTEXT           "像素",IDC_STATIC,133,96,17,8
     GROUPBOX        "标尺/行号设置",IDC_STATIC,3,56,153,54
-    CONTROL         "同步垂直滚动条(&V)",IDC_CHECK_SplitterWndVScroll,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,126,115,10
-    CONTROL         "同步水平滚动条(&H)",IDC_CHECK_SplitterWndHScroll,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,139,116,10
+    CONTROL         "同步垂直滚动条(&V)",IDC_CHECK_SplitterWndVScroll,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,126,115,10
+    CONTROL         "同步水平滚动条(&H)",IDC_CHECK_SplitterWndHScroll,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,139,116,10
     GROUPBOX        "窗口分割设置",IDC_STATIC,3,114,153,39,WS_GROUP
     LTEXT           "位置",IDC_STATIC,167,68,16,8
     CONTROL         "顶部(&T)",IDC_RADIO_FUNCKEYWND_PLACE1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,191,68,44,10
@@ -1158,14 +1131,11 @@ EXSTYLE WS_EX_CONTEXTHELP
 FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
     CONTROL         "显示标签栏(&D)",IDC_CHECK_DispTabWnd,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,11,111,10
-    CONTROL         "标签组使用公共窗口(&G)",IDC_CHECK_DispTabWndMultiWin,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,40,239,10
+    CONTROL         "标签组使用公共窗口(&G)",IDC_CHECK_DispTabWndMultiWin,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,40,239,10
     CONTROL         "关闭最后一个文档后打开新空白文档(&R)",IDC_CHECK_RetainEmptyWindow,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,53,226,10
-    CONTROL         "关闭主窗口时仅关闭活动文件(&C)",IDC_CHECK_CloseOneWin,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,66,226,10
-    CONTROL         "从外部启动时在新窗口打开(&O)",IDC_CHECK_OpenNewWin,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,79,170,10
+    CONTROL         "关闭主窗口时仅关闭活动文件(&C)",IDC_CHECK_CloseOneWin,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,66,226,10
+    CONTROL         "从外部启动时在新窗口打开(&O)",IDC_CHECK_OpenNewWin,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,79,170,10
     GROUPBOX        "自动模式",IDC_STATIC,7,27,280,68
     CONTROL         "显示图标(&I)",IDC_CHECK_DispTabIcon,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,115,53,10
     CONTROL         "固定宽度(&X)",IDC_CHECK_SameTabWidth,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,70,115,59,10
@@ -1180,8 +1150,7 @@ BEGIN
     LTEXT           "标题(&T)",IDC_TextTabCaption,15,160,40,10
     EDITTEXT        IDC_TABWND_CAPTION,56,157,226,14,ES_AUTOHSCROLL
     GROUPBOX        "标签外观",IDC_STATIC,7,102,280,76,WS_GROUP
-    CONTROL         "使用鼠标滚轮切换标签(&W)",IDC_CHECK_ChgWndByWheel,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,196,127,10
+    CONTROL         "使用鼠标滚轮切换标签(&W)",IDC_CHECK_ChgWndByWheel,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,196,127,10
     GROUPBOX        "其他设置",IDC_STATIC,7,184,280,28,WS_GROUP
 END
 
@@ -1199,13 +1168,11 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,48,205,10
     CONTROL         "使用UTF-8/CESU-8时显示代码点(&8)",IDC_CHECK_DISP_UTF8_CODEPOINT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,64,205,10
-    CONTROL         "显示代理对的代码点(&P)",IDC_CHECK_DISP_SP_CODEPOINT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,205,10
+    CONTROL         "显示代理对的代码点(&P)",IDC_CHECK_DISP_SP_CODEPOINT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,205,10
     GROUPBOX        "字符统计",IDC_STATIC,3,98,285,47
     CONTROL         "按字节数统计字符（高负载）(&B)",IDC_CHECK_DISP_SELCOUNT_BY_BYTE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,112,274,10
-    CONTROL         "按字符数显示列位置(&C)",IDC_CHECK_DISP_COL_BY_CHAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,274,10
+    CONTROL         "按字符数显示列位置(&C)",IDC_CHECK_DISP_COL_BY_CHAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,274,10
 END
 
 IDD_PROP_EDIT DIALOGEX 0, 0, 293, 240
@@ -1213,29 +1180,20 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_CENTER | DS_CONTEXTHELP | WS_P
 EXSTYLE WS_EX_CONTEXTHELP
 FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
-    CONTROL         "复制时在换行处插入CR(&R)",IDC_CHECK_ADDCRLFWHENCOPY,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,16,143,10
-    CONTROL         "复制后取消选择(&A)",IDC_CHECK_COPYnDISABLESELECTEDAREA,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,29,143,10
-    CONTROL         "无选择复制时复制当前行(&E)",IDC_CHECK_bEnableNoSelectCopy,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,42,143,10
-    CONTROL         "行模式粘贴时在行首粘贴(&L)",IDC_CHECK_bEnableLineModePaste,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,55,143,10
-    CONTROL         "粘贴时转换换行符(&P)",IDC_CHECK_CONVERTEOLPASTE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,68,143,10
+    CONTROL         "复制时在换行处插入CR(&R)",IDC_CHECK_ADDCRLFWHENCOPY,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,16,143,10
+    CONTROL         "复制后取消选择(&A)",IDC_CHECK_COPYnDISABLESELECTEDAREA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,29,143,10
+    CONTROL         "无选择复制时复制当前行(&E)",IDC_CHECK_bEnableNoSelectCopy,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,42,143,10
+    CONTROL         "行模式粘贴时在行首粘贴(&L)",IDC_CHECK_bEnableLineModePaste,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,55,143,10
+    CONTROL         "粘贴时转换换行符(&P)",IDC_CHECK_CONVERTEOLPASTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,68,143,10
     GROUPBOX        "复制/粘贴",IDC_STATIC,3,3,149,81,WS_GROUP
     CONTROL         "启用拖放编辑(&D)",IDC_CHECK_DRAGDROP,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,104,143,10
     CONTROL         "允许其他程序拖放(&T)",IDC_CHECK_DROPSOURCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,117,143,10
     GROUPBOX        "拖放设置",IDC_STATIC,3,91,149,43,WS_GROUP
-    CONTROL         "覆盖模式时不替换现有换行符(&N)",IDC_CHECK_bNotOverWriteCRLF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,156,143,10
-    CONTROL         "用1字节覆盖2字节时填充空格(&F)",IDC_CHECK_bOverWriteFixMode,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,169,143,10
-    CONTROL         "框选删除时清除选中区域(&G)",IDC_CHECK_bOverWriteBoxDelete,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,143,10
+    CONTROL         "覆盖模式时不替换现有换行符(&N)",IDC_CHECK_bNotOverWriteCRLF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,156,143,10
+    CONTROL         "用1字节覆盖2字节时填充空格(&F)",IDC_CHECK_bOverWriteFixMode,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,169,143,10
+    CONTROL         "框选删除时清除选中区域(&G)",IDC_CHECK_bOverWriteBoxDelete,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,143,10
     GROUPBOX        "覆盖模式设置",IDC_STATIC,3,143,149,58,WS_GROUP
-    CONTROL         "单击选中完整URL(&U)",IDC_CHECK_bSelectClickedURL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,18,120,10
+    CONTROL         "单击选中完整URL(&U)",IDC_CHECK_bSelectClickedURL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,18,120,10
     GROUPBOX        "URL选择",IDC_STATIC,156,3,131,35,WS_GROUP
     CONTROL         "当前目录(&C)",IDC_RADIO_CURDIR,"Button",BS_AUTORADIOBUTTON,161,54,90,8
     CONTROL         "最近使用目录(&M)",IDC_RADIO_MRUDIR,"Button",BS_AUTORADIOBUTTON,161,69,90,8
@@ -1245,10 +1203,8 @@ BEGIN
     GROUPBOX        "文件对话框初始目录",IDC_STATIC,156,41,130,79,WS_GROUP
     CONTROL         "启用Vista风格文件对话框(&I)",IDC_CHECK_VISTA_STYLE_FILEDIALOG,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,161,128,125,10
-    CONTROL         "启用CR代码NEL/PS/LS(&O)",IDC_CHECK_ENABLEEXTEOL,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,161,158,122,10
-    CONTROL         "锁定移动框选(&B)",IDC_CHECK_BOXSELECTLOCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,171,122,10
+    CONTROL         "启用CR代码NEL/PS/LS(&O)",IDC_CHECK_ENABLEEXTEOL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,161,158,122,10
+    CONTROL         "锁定移动框选(&B)",IDC_CHECK_BOXSELECTLOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,161,171,122,10
     GROUPBOX        "其他功能",IDC_STATIC,156,145,131,42,WS_GROUP
 END
 
@@ -1259,8 +1215,7 @@ FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
     LTEXT           "独占模式(&H)",IDC_STATIC,8,16,48,10
     COMBOBOX        IDC_COMBO_FILESHAREMODE,50,14,111,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "监视文件更新(&W)",IDC_CHECK_bCheckFileTimeStamp,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,31,70,10
+    CONTROL         "监视文件更新(&W)",IDC_CHECK_bCheckFileTimeStamp,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,31,70,10
     LTEXT           "自动加载延迟(&A)",IDC_LABEL_AUTOLOAD_DELAY,80,32,62,10
     EDITTEXT        IDC_EDIT_AUTOLOAD_DELAY,130,30,30,12
     CONTROL         "Spin1",IDC_SPIN_AUTOLOAD_DELAY,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,150,30,9,12
@@ -1275,30 +1230,21 @@ BEGIN
     CONTROL         "Spin1",IDC_SPIN_AUTOBACKUP_INTERVAL,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,266,45,9,12
     LTEXT           "分钟",IDC_LABEL_AUTOSAVE2,250,47,21,8,NOT WS_GROUP
     GROUPBOX        "文件保存设置",IDC_STATIC,170,3,118,57,WS_GROUP
-    CONTROL         "新建文件时显示所有文件类型(&O)",IDC_CHECK_NoFilterSaveNew,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,77,133,10
-    CONTROL         "保存文件时显示所有文件类型(&F)",IDC_CHECK_NoFilterSaveFile,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,77,142,10
+    CONTROL         "新建文件时显示所有文件类型(&O)",IDC_CHECK_NoFilterSaveNew,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,77,133,10
+    CONTROL         "保存文件时显示所有文件类型(&F)",IDC_CHECK_NoFilterSaveFile,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,77,142,10
     GROUPBOX        "文件对话框筛选器设置",IDC_STATIC,3,65,285,28
-    CONTROL         "拖放新文件时关闭现有文件(&L)",IDC_CHECK_bDropFileAndClose,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,110,149,10
+    CONTROL         "拖放新文件时关闭现有文件(&L)",IDC_CHECK_bDropFileAndClose,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,110,149,10
     LTEXT           "最大支持文件数(&M)",IDC_LABEL_AUTOSAVE3,18,126,101,8,NOT WS_GROUP
     EDITTEXT        IDC_EDIT_nDropFileNumMax,123,124,25,12,ES_AUTOHSCROLL
     CONTROL         "Spin1",IDC_SPIN_nDropFileNumMax,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,179,124,9,12
     LTEXT           "个文件",IDC_LABEL_AUTOSAVE4,151,126,41,8,NOT WS_GROUP
     LTEXT           "注意：只能拖放1个文件",IDC_LANEL_NOTE,161,111,106,8
-    CONTROL         "打开文件时恢复光标位置(&C)",IDC_CHECK_RestoreCurPosition,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,140,174,10
-    CONTROL         "打开文件时恢复书签(&B)",IDC_CHECK_RestoreBookmarks,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,155,214,10
-    CONTROL         "打开文件时自动解码MIME头(&D)",IDC_CHECK_AutoMIMEDecode,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,169,231,10
-    CONTROL         "字符编码变更时显示对话框(&Q)",IDC_CHECK_QueryIfCodeChange,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,223,13
-    CONTROL         "文件不存在时提示(&T)",IDC_CHECK_AlertIfFileNotExist,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,198,223,10
-    CONTROL         "大文件警告(&L)",IDC_CHECK_ALERT_IF_LARGEFILE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,214,167,10
+    CONTROL         "打开文件时恢复光标位置(&C)",IDC_CHECK_RestoreCurPosition,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,140,174,10
+    CONTROL         "打开文件时恢复书签(&B)",IDC_CHECK_RestoreBookmarks,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,155,214,10
+    CONTROL         "打开文件时自动解码MIME头(&D)",IDC_CHECK_AutoMIMEDecode,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,169,231,10
+    CONTROL         "字符编码变更时显示对话框(&Q)",IDC_CHECK_QueryIfCodeChange,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,182,223,13
+    CONTROL         "文件不存在时提示(&T)",IDC_CHECK_AlertIfFileNotExist,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,198,223,10
+    CONTROL         "大文件警告(&L)",IDC_CHECK_ALERT_IF_LARGEFILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,214,167,10
     EDITTEXT        IDC_EDIT_ALERT_FILESIZE,181,212,30,12,ES_AUTOHSCROLL
     CONTROL         "Spin1",IDC_SPIN_ALERT_FILESIZE,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,240,211,9,14
     LTEXT           "MB",IDC_STATIC,214,214,25,10
@@ -1339,14 +1285,10 @@ BEGIN
     CONTROL         "详细设置(&T)",IDC_CHECK_BACKUP_ADVANCED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,32,79,10
     EDITTEXT        IDC_EDIT_BACKUPFILE,24,44,255,13,ES_AUTOHSCROLL
     CONTROL         "单次保存为.bak(&A)",IDC_RADIO_BACKUP_TYPE1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,66,142,10
-    CONTROL         "循环保存为.b00～b98(&G)",IDC_RADIO_BACKUP_TYPE3,
-                    "Button",BS_AUTORADIOBUTTON,12,80,156,10
-    CONTROL         "在文件名后追加备份时间(&D)",IDC_RADIO_BACKUP_DATETYPE1,
-                    "Button",BS_AUTORADIOBUTTON,12,106,204,10
-    CONTROL         "每次备份都追加时间戳(&T)",IDC_RADIO_BACKUP_DATETYPE2,
-                    "Button",BS_AUTORADIOBUTTON,12,120,230,10
-    CONTROL         "保留原扩展名(&R)",IDC_CHECK_BACKUP_RETAINEXT,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,162,66,96,10
+    CONTROL         "循环保存为.b00～b98(&G)",IDC_RADIO_BACKUP_TYPE3,"Button",BS_AUTORADIOBUTTON,12,80,156,10
+    CONTROL         "在文件名后追加备份时间(&D)",IDC_RADIO_BACKUP_DATETYPE1,"Button",BS_AUTORADIOBUTTON,12,106,204,10
+    CONTROL         "每次备份都追加时间戳(&T)",IDC_RADIO_BACKUP_DATETYPE2,"Button",BS_AUTORADIOBUTTON,12,120,230,10
+    CONTROL         "保留原扩展名(&R)",IDC_CHECK_BACKUP_RETAINEXT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,162,66,96,10
     LTEXT           "备份数量(&N) (1-99)",IDC_LABEL_BACKUP_3,22,94,91,8
     EDITTEXT        IDC_EDIT_BACKUP_3,116,92,28,12
     CONTROL         "Spin1",IDC_SPIN_BACKUP_GENS,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,92,9,12
@@ -1357,21 +1299,16 @@ BEGIN
     CONTROL         "分(&I)",IDC_CHECK_BACKUP_MIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,132,31,10
     CONTROL         "秒(&S)",IDC_CHECK_BACKUP_SEC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,205,132,33,10
     LTEXT           "",IDC_STATIC,12,60,271,83,NOT WS_VISIBLE
-    CONTROL         "使用文件保存时间",IDC_RADIO_BACKUP_DATETYPE1A,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,104,111,10
-    CONTROL         "使用文件最后修改时间",IDC_RADIO_BACKUP_DATETYPE2A,
-                    "Button",BS_AUTORADIOBUTTON,12,118,149,10
+    CONTROL         "使用文件保存时间",IDC_RADIO_BACKUP_DATETYPE1A,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,104,111,10
+    CONTROL         "使用文件最后修改时间",IDC_RADIO_BACKUP_DATETYPE2A,"Button",BS_AUTORADIOBUTTON,12,118,149,10
     LTEXT           "$x : 第x级父目录名 (x=0-9)\r* : 扩展名\r%Y/%m/%d : 年月日 %y (两位年份) \r%H:%M:%S: 时分秒   \r%% : '%'符号\r",IDC_LABEL_BACKUP_HELP2,165,75,115,50,SS_SUNKEN
     CONTROL         "指定备份目录(&P)",IDC_CHECK_BACKUPFOLDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,148,107,10
-    CONTROL         "对可移动介质生效(&M)",IDC_CHECK_BACKUP_FOLDER_RM,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,148,133,10
+    CONTROL         "对可移动介质生效(&M)",IDC_CHECK_BACKUP_FOLDER_RM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,148,133,10
     LTEXT           "目录名称(&F)",IDC_LABEL_BACKUP_4,24,162,87,8
     EDITTEXT        IDC_EDIT_BACKUPFOLDER,73,160,195,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_BACKUP_FOLDER_REF,271,160,9,12
-    CONTROL         "备份文件放入回收站(&X)",IDC_CHECK_BACKUP_DUSTBOX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,176,150,10
-    CONTROL         "创建前确认(&V)",IDC_CHECK_BACKUPDIALOG,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,196,104,10
+    CONTROL         "备份文件放入回收站(&X)",IDC_CHECK_BACKUP_DUSTBOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,176,150,10
+    CONTROL         "创建前确认(&V)",IDC_CHECK_BACKUPDIALOG,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,196,104,10
 END
 
 IDD_PROP_FORMAT DIALOGEX 0, 0, 293, 240
@@ -1412,14 +1349,11 @@ BEGIN
     LTEXT           "",IDC_LABEL_REGEXP_VER,8,62,275,14
     EDITTEXT        IDC_EDIT_REGEXPLIB,110,47,162,13,ES_AUTOHSCROLL
     GROUPBOX        "搜索/替换/Grep",IDC_STATIC,3,7,285,70,WS_GROUP
-    CONTROL         "退出Grep结果时确认(&V)",IDC_CHECK_bGrepExitConfirm,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,94,130,10
-    CONTROL         "实时显示结果(&R)",IDC_CHECK_GREPREALTIME,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,106,111,10
+    CONTROL         "退出Grep结果时确认(&V)",IDC_CHECK_bGrepExitConfirm,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,94,130,10
+    CONTROL         "实时显示结果(&R)",IDC_CHECK_GREPREALTIME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,106,111,10
     GROUPBOX        "Grep设置",IDC_STATIC,3,80,285,42,WS_GROUP
     CONTROL         "使用Enter键跳转标签(&E)",IDC_CHECK_GTJW_RETURN,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,8,142,109,10
-    CONTROL         "使用双击跳转标签(&W)",IDC_CHECK_GTJW_LDBLCLK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,154,115,10
+    CONTROL         "使用双击跳转标签(&W)",IDC_CHECK_GTJW_LDBLCLK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,154,115,10
     GROUPBOX        "Grep结果标签跳转",IDC_STATIC,3,127,285,46,WS_GROUP
     GROUPBOX        "标签跳转设置",IDC_STATIC,3,178,285,52,WS_GROUP
     LTEXT           "标签文件搜索(&T):",IDC_STATIC,8,192,112,8
@@ -1518,8 +1452,7 @@ BEGIN
     GROUPBOX        "外部HTML帮助设置(&H)",IDC_STATIC,3,73,285,45,WS_GROUP
     EDITTEXT        IDC_EDIT_EXTHTMLHELP,8,89,253,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "(&2)...",IDC_BUTTON_OPENEXTHTMLHELP,264,88,19,14
-    CONTROL         "不打开多个查看器(&N)",IDC_CHECK_HTMLHELPISSINGLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,105,108,10
+    CONTROL         "不打开多个查看器(&N)",IDC_CHECK_HTMLHELPISSINGLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,105,108,10
     GROUPBOX        "关键字帮助",IDC_STATIC,3,123,285,33,WS_GROUP
     RTEXT           "当前字体",IDC_STATIC_KEYWORDHELPFONT,8,136,219,17
     PUSHBUTTON      "字体(&F)...",IDC_BUTTON_KEYWORDHELPFONT,232,136,51,14
@@ -1545,15 +1478,13 @@ BEGIN
     EDITTEXT        IDC_MACRONAME,39,176,203,14,ES_AUTOHSCROLL
     LTEXT           "文件(&F)",IDC_STATIC,6,194,12,8
     COMBOBOX        IDC_MACROPATH,39,192,203,130,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "执行宏时重新加载文件(&L)",IDC_CHECK_RELOADWHENEXECUTE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,211,178,10
+    CONTROL         "执行宏时重新加载文件(&L)",IDC_CHECK_RELOADWHENEXECUTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,211,178,10
     LTEXT           "取消超时",IDC_STATIC,185,212,75,8
     EDITTEXT        IDC_MACROCANCELTIMER,255,209,18,14,ES_AUTOHSCROLL
     LTEXT           "秒",IDC_STATIC,275,212,13,8
     LTEXT           "自动运行:",IDC_STATIC,6,225,34,8
     CONTROL         "新建/打开文件后(&O)",IDC_CHECK_MacroOnOpened,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,44,224,89,10
-    CONTROL         "类型变更后(&T)",IDC_CHECK_MacroOnTypeChanged,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,224,77,10
+    CONTROL         "类型变更后(&T)",IDC_CHECK_MacroOnTypeChanged,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,224,77,10
     CONTROL         "保存前(&S)",IDC_CHECK_MacroOnSave,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,216,224,69,10
     LTEXT           "ID:",IDC_STATIC,249,176,8,8
     COMBOBOX        IDC_COMBO_MACROID,260,174,28,129,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1593,8 +1524,7 @@ BEGIN
     COMBOBOX        IDC_COMBO_FUNCKIND,57,4,80,180,CBS_DROPDOWNLIST | CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "功能(&F)",IDC_LABEL_MENUFUNC,4,15,40,8
     LISTBOX         IDC_LIST_FUNC,4,25,123,192,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    CONTROL         "在括号中显示访问键(&P)",IDC_CHECK_KEY_PARENTHESES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,176,4,113,10
+    CONTROL         "在括号中显示访问键(&P)",IDC_CHECK_KEY_PARENTHESES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,176,4,113,10
     LTEXT           "菜单(&M)",IDC_LABEL_MENU,166,15,35,8
     CONTROL         "菜单",IDC_TREE_RES,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,166,25,123,192,WS_EX_ACCEPTFILES
     PUSHBUTTON      "删除(&D)",IDC_BUTTON_DELETE,128,25,37,14,WS_GROUP
@@ -1676,8 +1606,7 @@ CAPTION "配置文件管理器"
 FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
     LISTBOX         IDC_LIST_PROFILE,9,9,109,128,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    CONTROL         "启动时使用默认设置(&E)",IDC_CHECK_PROF_DEFSTART,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,150,10
+    CONTROL         "启动时使用默认设置(&E)",IDC_CHECK_PROF_DEFSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,150,10
     DEFPUSHBUTTON   "启动(&S)",IDOK,8,161,56,14
     PUSHBUTTON      "关闭(&X)",IDCANCEL,68,161,56,14
     PUSHBUTTON      "帮助(&H)",IDC_BUTTON_HELP,128,161,56,14
@@ -2149,75 +2078,67 @@ END
 // Bitmap
 //
 
-IDB_MYTOOL              BITMAP                  "../resource/mytool.bmp"
+IDB_MYTOOL              BITMAP                  "../../../resource/mytool.bmp"
 
-IDB_SCROLL_CENTER       BITMAP                  "../resource/auto_scroll_center.bmp"
+IDB_SCROLL_CENTER       BITMAP                  "../../../resource/auto_scroll_center.bmp"
 
-IDB_SCROLL_VERTICAL     BITMAP                  "../resource/auto_scroll_vertical.bmp"
+IDB_SCROLL_VERTICAL     BITMAP                  "../../../resource/auto_scroll_vertical.bmp"
 
-IDB_SCROLL_HORIZONTAL   BITMAP                  "../resource/auto_scroll_horizontal.bmp"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// 图标
-//
-
-//  最低ID值的图标放在首位，以确保应用程序图标
-//  在所有系统上保持一致。
-IDI_ICON_GREP           ICON                    "../resource/icon_grep.ico"
-
-IDI_PRINTER             ICON                    "../resource/printer.ico"
+IDB_SCROLL_HORIZONTAL   BITMAP                  "../../../resource/auto_scroll_horizontal.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// 光标
+// Icon
 //
 
-IDC_CURSOR_COPYARROW    CURSOR                  "../resource/cursor_copy.cur"
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON_GREP           ICON                    "../../../resource/icon_grep.ico"
 
-IDC_CURSOR_MOVEARROW    CURSOR                  "../resource/cursor_move.cur"
-
-IDC_CURSOR_RVARROW      CURSOR                  "../resource/cursor_rvarrow.cur"
-
-IDC_CURSOR_ISEARCH_F    CURSOR                  "../resource/cursor_isf.cur"
-
-IDC_CURSOR_ISEARCH_B    CURSOR                  "../resource/cursor_isb.cur"
-
-IDC_CURSOR_TAB_SEPARATE CURSOR                  "../resource/cursor_tab_separate.cur"
-
-IDC_CURSOR_TAB_JOIN     CURSOR                  "../resource/cursor_tab_join.cur"
-
-IDC_CURSOR_AUTOSCROLL_CENTER CURSOR                  "../resource/auto_scroll_center.cur"
-
-IDC_CURSOR_AUTOSCROLL_HORIZONTAL CURSOR                  "../resource/auto_scroll_horizontal.cur"
-
-IDC_CURSOR_AUTOSCROLL_VERTICAL CURSOR                  "../resource/auto_scroll_vertical.cur"
-
-IDC_CURSOR_AUTOSCROLL_UP CURSOR                  "../resource/auto_scroll_up.cur"
-
-IDC_CURSOR_AUTOSCROLL_DOWN CURSOR                  "../resource/auto_scroll_down.cur"
-
-IDC_CURSOR_AUTOSCROLL_LEFT CURSOR                  "../resource/auto_scroll_left.cur"
-
-IDC_CURSOR_AUTOSCROLL_RIGHT CURSOR                  "../resource/auto_scroll_right.cur"
-
-IDC_CURSOR_AUTOSCROLL_UP_LEFT CURSOR                  "../resource/auto_scroll_up_left.cur"
-
-IDC_CURSOR_AUTOSCROLL_UP_RIGHT CURSOR                  "../resource/auto_scroll_up_right.cur"
-
-IDC_CURSOR_AUTOSCROLL_DOWN_LEFT CURSOR                  "../resource/auto_scroll_down_left.cur"
-
-IDC_CURSOR_AUTOSCROLL_DOWN_RIGHT CURSOR                  "../resource/auto_scroll_down_right.cur"
+IDI_PRINTER             ICON                    "../../../resource/printer.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// 100
+// Cursor
 //
 
-IDR_MENU1               100                     "../resource/MainMenu.ini"
+IDC_CURSOR_COPYARROW    CURSOR                  "../../../resource/cursor_copy.cur"
+
+IDC_CURSOR_MOVEARROW    CURSOR                  "../../../resource/cursor_move.cur"
+
+IDC_CURSOR_RVARROW      CURSOR                  "../../../resource/cursor_rvarrow.cur"
+
+IDC_CURSOR_ISEARCH_F    CURSOR                  "../../../resource/cursor_isf.cur"
+
+IDC_CURSOR_ISEARCH_B    CURSOR                  "../../../resource/cursor_isb.cur"
+
+IDC_CURSOR_TAB_SEPARATE CURSOR                  "../../../resource/cursor_tab_separate.cur"
+
+IDC_CURSOR_TAB_JOIN     CURSOR                  "../../../resource/cursor_tab_join.cur"
+
+IDC_CURSOR_AUTOSCROLL_CENTER CURSOR                  "../../../resource/auto_scroll_center.cur"
+
+IDC_CURSOR_AUTOSCROLL_HORIZONTAL CURSOR                  "../../../resource/auto_scroll_horizontal.cur"
+
+IDC_CURSOR_AUTOSCROLL_VERTICAL CURSOR                  "../../../resource/auto_scroll_vertical.cur"
+
+IDC_CURSOR_AUTOSCROLL_UP CURSOR                  "../../../resource/auto_scroll_up.cur"
+
+IDC_CURSOR_AUTOSCROLL_DOWN CURSOR                  "../../../resource/auto_scroll_down.cur"
+
+IDC_CURSOR_AUTOSCROLL_LEFT CURSOR                  "../../../resource/auto_scroll_left.cur"
+
+IDC_CURSOR_AUTOSCROLL_RIGHT CURSOR                  "../../../resource/auto_scroll_right.cur"
+
+IDC_CURSOR_AUTOSCROLL_UP_LEFT CURSOR                  "../../../resource/auto_scroll_up_left.cur"
+
+IDC_CURSOR_AUTOSCROLL_UP_RIGHT CURSOR                  "../../../resource/auto_scroll_up_right.cur"
+
+IDC_CURSOR_AUTOSCROLL_DOWN_LEFT CURSOR                  "../../../resource/auto_scroll_down_left.cur"
+
+IDC_CURSOR_AUTOSCROLL_DOWN_RIGHT CURSOR                  "../../../resource/auto_scroll_down_right.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2238,7 +2159,490 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// 字符串表
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "新建(&N)",                                   F_FILENEW
+        MENUITEM "新建窗口(&M)",                               F_FILENEW_NEWWINDOW
+        MENUITEM "打开...(&O)",                                F_FILEOPEN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "另存为...(&A)",                              F_FILESAVEAS_DIALOG
+        MENUITEM "全部保存(&Z)",                               F_FILESAVEALL
+        MENUITEM SEPARATOR
+        MENUITEM "保存并关闭(&E)",                             F_FILESAVECLOSE
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "关闭未命名文件(&R)",                         F_FILECLOSE
+        MENUITEM "关闭并打开...(&L)",                          F_FILECLOSE_OPEN
+        POPUP "重新打开(指定编码)(&W)"
+        BEGIN
+            MENUITEM "重新打开(&W)",                           F_FILE_REOPEN
+            MENUITEM SEPARATOR
+            MENUITEM "以SJIS重新打开(&S)",                     F_FILE_REOPEN_SJIS
+            MENUITEM "以JIS重新打开(&J)",                      F_FILE_REOPEN_JIS
+            MENUITEM "以EUC重新打开(&E)",                      F_FILE_REOPEN_EUC
+            MENUITEM "以Latin1重新打开(&L)",                   F_FILE_REOPEN_LATIN1
+            MENUITEM "以UTF-16重新打开(&U)",                   F_FILE_REOPEN_UNICODE
+            MENUITEM "以UTF-16 BE重新打开(&N)",                F_FILE_REOPEN_UNICODEBE
+            MENUITEM "以UTF-8重新打开(&8)",                    F_FILE_REOPEN_UTF8
+            MENUITEM "以CESU-8重新打开(&C)",                   F_FILE_REOPEN_CESU8
+            MENUITEM "以UTF-7重新打开(&7)",                    F_FILE_REOPEN_UTF7
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "打印...(&P)",                                F_PRINT
+        MENUITEM "打印预览...(&V)",                            F_PRINT_PREVIEW
+        MENUITEM "页面设置...(&U)",                            F_PRINT_PAGESETUP
+        MENUITEM SEPARATOR
+        MENUITEM "文件属性(&T)",                               F_PROPERTY_FILE
+        MENUITEM "浏览(&B)",                                   F_BROWSE
+        MENUITEM SEPARATOR
+        POPUP "最近使用的文件(&F)"
+        BEGIN
+            MENUITEM "最近使用的文件",                         F_FILE_USED_RECENTLY
+        END
+        POPUP "最近使用的文件夹(&D)"
+        BEGIN
+            MENUITEM "最近使用的文件夹",                       F_FOLDER_USED_RECENTLY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "关闭组(&G)",                                 F_GROUPCLOSE
+        MENUITEM "退出所有编辑器(&Q)",                         F_EXITALLEDITORS
+        MENUITEM "完全退出Sakura(&X)",                         F_EXITALL
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "撤销(&U)",                                   F_UNDO
+        MENUITEM "重做(&R)",                                   F_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "剪切(&T)",                                   F_CUT
+        MENUITEM "复制(&C)",                                   F_COPY
+        MENUITEM "粘贴(&P)",                                   F_PASTE
+        MENUITEM "删除(&D)",                                   F_DELETE
+        MENUITEM "全选(&A)",                                   F_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "重新转换(&R)",                               F_RECONVERT
+        MENUITEM SEPARATOR
+        MENUITEM "复制为CRLF格式(&L)",                         F_COPY_CRLF
+        MENUITEM "添加CRLF后复制(&H)",                         F_COPY_ADDCRLF
+        MENUITEM "框粘贴(&X)",                                 F_PASTEBOX
+        MENUITEM "向后删除(&B)",                               F_DELETE_BACK
+        MENUITEM SEPARATOR
+        POPUP "插入(&I)"
+        BEGIN
+            MENUITEM "插入日期(&D)",                           F_INS_DATE
+            MENUITEM "插入时间(&T)",                           F_INS_TIME
+            MENUITEM "控制码输入对话框(&C)",                   F_CTRL_CODE_DIALOG
+            MENUITEM "插入最近使用文件(&F)",                   F_INS_FILE_USED_RECENTLY
+            MENUITEM "插入最近使用文件夹(&O)",                 F_INS_FOLDER_USED_RECENTLY
+        END
+        POPUP "高级编辑(&V)"
+        BEGIN
+            MENUITEM "删除至词首(&L)",                         F_WordDeleteToStart
+            MENUITEM "删除至词尾(&R)",                         F_WordDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "选中光标处单词(&W)",                     F_SELECTWORD
+            MENUITEM "剪切整个单词(&T)",                       F_WordCut
+            MENUITEM "删除整个单词(&D)",                       F_WordDelete
+            MENUITEM SEPARATOR
+            MENUITEM "剪切至行首(&U)",                         F_LineCutToStart
+            MENUITEM "剪切至行尾(&K)",                         F_LineCutToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "删除至行首(&H)",                         F_LineDeleteToStart
+            MENUITEM "删除至行尾(&E)",                         F_LineDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "剪切整行(&X)",                           F_CUT_LINE
+            MENUITEM "删除整行(&Y)",                           F_DELETE_LINE
+            MENUITEM SEPARATOR
+            MENUITEM "复制行(&2)",                             F_DUPLICATELINE
+            MENUITEM SEPARATOR
+            MENUITEM "Tab缩进(&A)",                            F_INDENT_TAB
+            MENUITEM "反向Tab缩进(&B)",                        F_UNINDENT_TAB
+            MENUITEM "空格缩进(&S)",                           F_INDENT_SPACE
+            MENUITEM "反向空格缩进(&P)",                       F_UNINDENT_SPACE
+            MENUITEM SEPARATOR
+            MENUITEM "复制选中行(&@)",                         F_COPYLINES
+            MENUITEM "以段落形式复制选中内容(&.)",             F_COPYLINESASPASSAGE
+            MENUITEM "带行号复制选中行(&:)",                   F_COPYLINESWITHLINENUMBER
+            MENUITEM "带HTML标记复制选中内容(&C)",             F_COPY_COLOR_HTML
+            MENUITEM "带行号和HTML标记复制(&F)",               F_COPY_COLOR_HTML_LINENUMBER
+            MENUITEM SEPARATOR
+            MENUITEM "复制当前文件名(&-)",                     F_COPYFNAME
+            MENUITEM "复制当前文件路径(&\\)",                  F_COPYPATH
+            MENUITEM "复制文件路径及光标位置(&^)",             F_COPYTAG
+        END
+        POPUP "光标移动(&O)"
+        BEGIN
+            MENUITEM "光标上移2行(&Q)",                        F_UP2
+            MENUITEM "光标下移2行(&K)",                        F_DOWN2
+            MENUITEM "移至词首(&L)",                           F_WORDLEFT
+            MENUITEM "移至词尾(&R)",                           F_WORDRIGHT
+            MENUITEM "上一段落(&A)",                           F_GOPREVPARAGRAPH
+            MENUITEM "下一段落(&Z)",                           F_GONEXTPARAGRAPH
+            MENUITEM "移至行首(&H)",                           F_GOLINETOP
+            MENUITEM "移至行尾(&E)",                           F_GOLINEEND
+            MENUITEM SEPARATOR
+            MENUITEM "向上翻页(&U)",                           F_1PageUp
+            MENUITEM "向下翻页(&D)",                           F_1PageDown
+            MENUITEM "跳至文件首(&T)",                         F_GOFILETOP
+            MENUITEM "跳至文件尾(&B)",                         F_GOFILEEND
+            MENUITEM SEPARATOR
+            MENUITEM "当前行居中(&C)",                         F_CURLINECENTER
+            MENUITEM SEPARATOR
+            MENUITEM "跳转到行(&J)",                           F_JUMP_DIALOG
+            MENUITEM "跳转至初始搜索位置(&I)",                 F_JUMP_SRCHSTARTPOS
+            MENUITEM SEPARATOR
+            MENUITEM "跳转历史：上一位置(&P)",                 F_JUMPHIST_PREV
+            MENUITEM "跳转历史：下一位置(&N)",                 F_JUMPHIST_NEXT
+            MENUITEM "记录当前位置到跳转历史(&S)",             F_JUMPHIST_SET
+            MENUITEM SEPARATOR
+            MENUITEM "跳转至下一个函数标记",                   F_FUNCLIST_NEXT
+            MENUITEM "跳转至上一个函数标记",                   F_FUNCLIST_PREV
+            MENUITEM "下一修改行",                             F_MODIFYLINE_NEXT
+            MENUITEM "上一修改行",                             F_MODIFYLINE_PREV
+        END
+        POPUP "选择(&S)"
+        BEGIN
+            MENUITEM "选中光标处单词(&W)",                     F_SELECTWORD
+            MENUITEM "全选(&A)",                               F_SELECTALL
+            MENUITEM "开始选择(&S)",                           F_BEGIN_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "向上选择2行(&Q)",                        F_UP2_SEL
+            MENUITEM "向下选择2行(&K)",                        F_DOWN2_SEL
+            MENUITEM "选中至词首左侧(&L)",                     F_WORDLEFT_SEL
+            MENUITEM "选中至词尾右侧(&R)",                     F_WORDRIGHT_SEL
+            MENUITEM "选中上一段落(&2)",                       F_GOPREVPARAGRAPH_SEL
+            MENUITEM "选中下一段落(&8)",                       F_GONEXTPARAGRAPH_SEL
+            MENUITEM "选中至行首(&H)",                         F_GOLINETOP_SEL
+            MENUITEM "选中至行尾(&T)",                         F_GOLINEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "向上选择1页(&U)",                        F_1PageUp_Sel
+            MENUITEM "向下选择1页(&D)",                        F_1PageDown_Sel
+            MENUITEM "选中至文件首(&1)",                       F_GOFILETOP_SEL
+            MENUITEM "选中至文件尾(&9)",                       F_GOFILEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "选中下一修改行",                         F_MODIFYLINE_NEXT_SEL
+            MENUITEM "选中上一修改行",                         F_MODIFYLINE_PREV_SEL
+        END
+        POPUP "框选模式(&F)"
+        BEGIN
+            MENUITEM "开始框选(&S)",                           F_BEGIN_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(框选)向上2行(&Q)",                      F_UP2_BOX
+            MENUITEM "(框选)向下2行(&K)",                      F_DOWN2_BOX
+            MENUITEM "(框选)至词首左侧(&L)",                   F_WORDLEFT_BOX
+            MENUITEM "(框选)至词尾右侧(&R)",                   F_WORDRIGHT_BOX
+            MENUITEM "(框选)至逻辑行首(&A)",                   F_GOLOGICALLINETOP_BOX
+            MENUITEM "(框选)至行首左侧(&H)",                   F_GOLINETOP_BOX
+            MENUITEM "(框选)至行尾(&T)",                       F_GOLINEEND_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(框选)向上1页(&U)",                      F_1PageUp_BOX
+            MENUITEM "(框选)向下1页(&D)",                      F_1PageDown_BOX
+            MENUITEM "(框选)跳至文件首(&1)",                   F_GOFILETOP_BOX
+            MENUITEM "(框选)跳至文件尾(&9)",                   F_GOFILEEND_BOX
+        END
+        POPUP "格式整理(&K)"
+        BEGIN
+            MENUITEM "左端空白修剪(&L)",                       F_LTRIM
+            MENUITEM "右端空白修剪(&R)",                       F_RTRIM
+            MENUITEM SEPARATOR
+            MENUITEM "升序排列选中行(&A)",                     F_SORT_ASC
+            MENUITEM "降序排列选中行(&D)",                     F_SORT_DESC
+            MENUITEM SEPARATOR
+            MENUITEM "合并选中行(去重)(&U)",                   F_MERGE
+        END
+    END
+    POPUP "转换(&C)"
+    BEGIN
+        MENUITEM "转换为小写(&L)",                             F_TOLOWER
+        MENUITEM "转换为大写(&U)",                             F_TOUPPER
+        MENUITEM SEPARATOR
+        MENUITEM "全角转半角(&F)",                             F_TOHANKAKU
+        MENUITEM "半角字符+平假名→全角片假名(&Z)",            F_TOZENKAKUKATA
+        MENUITEM "半角字符+片假名→全角平假名(&N)",            F_TOZENKAKUHIRA
+        MENUITEM "全角字母→半角字母(&A)",                     F_TOHANEI
+        MENUITEM "半角字母→全角字母(&M)",                     F_TOZENEI
+        MENUITEM "全角片假名→半角片假名(&J)",                 F_TOHANKATA
+        MENUITEM "半角片假名→全角片假名(&K)",                 F_HANKATATOZENKATA
+        MENUITEM "半角片假名→全角平假名(&H)",                 F_HANKATATOZENHIRA
+        MENUITEM SEPARATOR
+        MENUITEM "TAB转为空格(&S)",                            F_TABTOSPACE
+        MENUITEM "空格转为TAB(&T)",                            F_SPACETOTAB
+        POPUP "更改编码(&C)"
+        BEGIN
+            MENUITEM "自动编码→SJIS编码(&A)",                 F_CODECNV_AUTO2SJIS
+            MENUITEM "邮件编码转换(JIS→SJIS)(&M)",            F_CODECNV_EMAIL
+            MENUITEM "EUC→SJIS编码(&W)",                      F_CODECNV_EUC2SJIS
+            MENUITEM "UTF-16→SJIS编码(&U)",                   F_CODECNV_UNICODE2SJIS
+            MENUITEM "UTF-16 BE→SJIS编码(&N)",                F_CODECNV_UNICODEBE2SJIS
+            MENUITEM "UTF-8→SJIS编码(&T)",                    F_CODECNV_UTF82SJIS
+            MENUITEM "UTF-7→SJIS编码(&F)",                    F_CODECNV_UTF72SJIS
+            MENUITEM SEPARATOR
+            MENUITEM "SJIS→JIS编码(&J)",                      F_CODECNV_SJIS2JIS
+            MENUITEM "SJIS→EUC编码(&E)",                      F_CODECNV_SJIS2EUC
+            MENUITEM "SJIS→UTF-8编码(&8)",                    F_CODECNV_SJIS2UTF8
+            MENUITEM "SJIS→UTF-7编码(&7)",                    F_CODECNV_SJIS2UTF7
+            MENUITEM SEPARATOR
+            MENUITEM "Base64解码并保存(&B)",                   F_BASE64DECODE
+            MENUITEM "UUDecode解码并保存(&D)",                 F_UUDECODE
+        END
+    END
+    POPUP "搜索(&S)"
+    BEGIN
+        MENUITEM "查找(&F)",                                   F_SEARCH_DIALOG
+        MENUITEM "查找下一个(&N)",                             F_SEARCH_NEXT
+        MENUITEM "查找上一个(&P)",                             F_SEARCH_PREV
+        MENUITEM "替换(&R)",                                   F_REPLACE_DIALOG
+        MENUITEM "清除搜索标记(&C)",                           F_SEARCH_CLEARMARK
+        MENUITEM "跳转至初始搜索位置(&I)",                     F_JUMP_SRCHSTARTPOS
+        POPUP "增量搜索(&S)"
+        BEGIN
+            MENUITEM "向前增量搜索(&F)",                       F_ISEARCH_NEXT
+            MENUITEM "向后增量搜索(&B)",                       F_ISEARCH_PREV
+            MENUITEM "正则表达式向前增量搜索(&R)",             F_ISEARCH_REGEXP_NEXT
+            MENUITEM "正则表达式向后增量搜索(&X)",             F_ISEARCH_REGEXP_PREV
+            MENUITEM "Migemo向前增量搜索(&M)",                 F_ISEARCH_MIGEMO_NEXT
+            MENUITEM "Migemo向后增量搜索(&N)",                 F_ISEARCH_MIGEMO_PREV
+        END
+        MENUITEM SEPARATOR
+        POPUP "书签管理(&M)"
+        BEGIN
+            MENUITEM "设置/删除书签(&S)",                      F_BOOKMARK_SET
+            MENUITEM "下一个书签(&A)",                         F_BOOKMARK_NEXT
+            MENUITEM "上一个书签(&Z)",                         F_BOOKMARK_PREV
+            MENUITEM "清除所有书签(&X)",                       F_BOOKMARK_RESET
+            MENUITEM "查看书签列表(&V)",                       F_BOOKMARK_VIEW
+        END
+        MENUITEM "grep全局搜索(&G)",                           F_GREP_DIALOG
+        MENUITEM "grep批量替换...",                            F_GREP_REPLACE_DLG
+        MENUITEM "跳转到行(&J)",                               F_JUMP_DIALOG
+        MENUITEM "大纲分析(&L)",                               F_OUTLINE
+        MENUITEM "文件树视图(&E)",                             F_FILETREE
+        MENUITEM "标签跳转(&T)",                               F_TAGJUMP
+        MENUITEM "返回标签跳转(&B)",                           F_TAGJUMPBACK
+        MENUITEM "生成标签文件...",                            F_TAGS_MAKE
+        MENUITEM "直接标签跳转",                               F_DIRECT_TAGJUMP
+        MENUITEM "设置关键字并跳转",                           F_TAGJUMP_KEYWORD
+        MENUITEM "打开同名C/C++头文件...(&C)",                 F_OPEN_HfromtoC
+        MENUITEM SEPARATOR
+        MENUITEM "文件对比(&@)",                               F_COMPARE
+        MENUITEM "差异对比(&D)",                               F_DIFF_DIALOG
+        MENUITEM "下一处差异",                                 F_DIFF_NEXT
+        MENUITEM "上一处差异",                                 F_DIFF_PREV
+        MENUITEM "重置所有差异标记",                           F_DIFF_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "匹配括号搜索(&[)",                           F_BRACKETPAIR
+    END
+    POPUP "工具(&T)"
+    BEGIN
+        MENUITEM "开始/停止录制键盘宏(&R)",                    F_RECKEYMACRO
+        MENUITEM "保存键盘宏(&M)",                             F_SAVEKEYMACRO
+        MENUITEM "加载键盘宏(&A)",                             F_LOADKEYMACRO
+        MENUITEM "运行键盘宏(&D)",                             F_EXECKEYMACRO
+        POPUP "已注册宏(&B)"
+        BEGIN
+            MENUITEM "已注册宏列表",                           F_USERMACRO_LIST
+        END
+        MENUITEM "运行已有宏(&E)",                             F_EXECEXTMACRO
+        MENUITEM SEPARATOR
+        MENUITEM "执行外部命令(&X)",                           F_EXECMD_DIALOG
+        MENUITEM "激活SQL*Plus(&P)",                           F_ACTIVATE_SQLPLUS
+        MENUITEM "在SQL*Plus上执行(&S)",                       F_PLSQL_COMPILE_ON_SQLPLUS
+        MENUITEM SEPARATOR
+        MENUITEM "补全输入(&/)",                               F_HOKAN
+        MENUITEM SEPARATOR
+        MENUITEM "插件命令列表",                               F_PLUGIN_LIST
+        MENUITEM SEPARATOR
+        POPUP "自定义菜单(&U)"
+        BEGIN
+            MENUITEM "自定义菜单列表",                         F_CUSTMENU_LIST
+        END
+    END
+    POPUP "选项(&O)"
+    BEGIN
+        MENUITEM "显示/隐藏工具栏(&T)",                        F_SHOWTOOLBAR
+        MENUITEM "显示/隐藏功能键(&K)",                        F_SHOWFUNCKEY
+        MENUITEM "显示/隐藏标签栏(&M)",                        F_SHOWTAB
+        MENUITEM "显示/隐藏状态栏(&S)",                        F_SHOWSTATUSBAR
+        MENUITEM "显示/隐藏缩略图(&N)",                        F_SHOWMINIMAP
+        MENUITEM SEPARATOR
+        MENUITEM "文件类型列表(&L)",                           F_TYPE_LIST
+        MENUITEM "文件类型设置(&Y)",                           F_OPTION_TYPE
+        MENUITEM "通用设置(&C)",                               F_OPTION
+        MENUITEM "字体设置(&F)",                               F_FONT
+        MENUITEM "历史记录管理(&O)",                           F_FAVORITE
+        MENUITEM SEPARATOR
+        POPUP "自动换行方式(&X)"
+        BEGIN
+            MENUITEM "不换行(&X)",                             F_TMPWRAPNOWRAP
+            MENUITEM "按设定换行(&S)",                         F_TMPWRAPSETTING
+            MENUITEM "按窗口右侧换行(&W)",                     F_TMPWRAPWINDOW
+        END
+        MENUITEM "自动换行宽度(&W)",                           F_WRAPWINDOWWIDTH
+        MENUITEM "统计字节数(&B)",                             F_SELECT_COUNT_MODE
+        MENUITEM SEPARATOR
+        MENUITEM "插入/覆盖模式切换(&I)",                      F_CHGMOD_INS
+        MENUITEM "查看模式(&R)",                               F_VIEWMODE
+        MENUITEM "切换关键字帮助(&H)",                         F_TOGGLE_KEY_SEARCH
+        MENUITEM "选择编码...(&A)",                            F_CHG_CHARSET
+        POPUP "换行符设置(&E)"
+        BEGIN
+            MENUITEM "换行符类型(CRLF)(&C)",                   F_CHGMOD_EOL_CRLF
+            MENUITEM "换行符类型(LF)(&L)",                     F_CHGMOD_EOL_LF
+            MENUITEM "换行符类型(CR)(&R)",                     F_CHGMOD_EOL_CR
+        END
+    END
+    POPUP "窗口(&W)"
+    BEGIN
+        MENUITEM "切换垂直分割(&-)",                           F_SPLIT_V
+        MENUITEM "切换水平分割(&I)",                           F_SPLIT_H
+        MENUITEM "切换四向分割(&S)",                           F_SPLIT_VH
+        MENUITEM SEPARATOR
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "关闭所有窗口(&Q)",                           F_WIN_CLOSEALL
+        MENUITEM "关闭其他窗口或标签页(&O)",                   F_TAB_CLOSEOTHER
+        MENUITEM "下一窗口(&N)",                               F_NEXTWINDOW
+        MENUITEM "上一窗口(&P)",                               F_PREVWINDOW
+        MENUITEM "窗口列表(&W)",                               F_WINLIST
+        MENUITEM SEPARATOR
+        MENUITEM "层叠窗口(&E)",                               F_CASCADE
+        MENUITEM "垂直平铺(&H)",                               F_TILE_V
+        MENUITEM "水平平铺(&T)",                               F_TILE_H
+        MENUITEM "窗口置顶(&F)",                               F_TOPMOST
+        POPUP "标签页控制(&B)"
+        BEGIN
+            MENUITEM "窗口分组(&B)",                           F_BIND_WINDOW
+            MENUITEM "关闭组(&G)",                             F_GROUPCLOSE
+            MENUITEM "关闭左侧所有标签页(&H)",                 F_TAB_CLOSELEFT
+            MENUITEM "关闭右侧所有标签页(&M)",                 F_TAB_CLOSERIGHT
+            MENUITEM "下一组(&N)",                             F_NEXTGROUP
+            MENUITEM "上一组(&P)",                             F_PREVGROUP
+            MENUITEM "向右移动标签页(&R)",                     F_TAB_MOVERIGHT
+            MENUITEM "向左移动标签页(&L)",                     F_TAB_MOVELEFT
+            MENUITEM "新建标签组(&E)",                         F_TAB_SEPARATE
+            MENUITEM "合并到下一组(&X)",                       F_TAB_JOINTNEXT
+            MENUITEM "合并到上一组(&V)",                       F_TAB_JOINTPREV
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "垂直最大化(&V)",                             F_MAXIMIZE_V
+        MENUITEM "水平最大化(&Y)",                             F_MAXIMIZE_H
+        MENUITEM "最小化全部窗口(&M)",                         F_MINIMIZE_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "重绘界面(&R)",                               F_REDRAW
+        MENUITEM SEPARATOR
+        MENUITEM "显示输出窗口(&U)",                           F_WIN_OUTPUT
+        MENUITEM "窗口列表对话框...(&D)",                      F_DLGWINLIST
+        MENUITEM SEPARATOR
+        POPUP "窗口列表(&A)"
+        BEGIN
+            MENUITEM "窗口列表",                               F_WINDOW_LIST
+        END
+    END
+    POPUP "帮助(&H)"
+    BEGIN
+        MENUITEM "打开帮助目录(&O)",                           F_HELP_CONTENTS
+        MENUITEM "关键字搜索帮助(&S)",                         F_HELP_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "命令列表(&M)",                               F_MENU_ALLFUNC
+        MENUITEM "生成快捷键列表(&Q)",                         F_CREATEKEYBINDLIST
+        MENUITEM "外部帮助1(&E)",                              F_EXTHELP1
+        MENUITEM "外部HTML帮助(&H)",                           F_EXTHTMLHELP
+        MENUITEM SEPARATOR
+        MENUITEM "关于Sakura(&A)",                             F_ABOUT
+    END
+END
+
+F_MENU_RBUTTON MENU
+BEGIN
+    POPUP "右键菜单"
+    BEGIN
+        MENUITEM "撤销(&U)",                                   F_UNDO
+        MENUITEM "重做(&R)",                                   F_REDO
+        MENUITEM SEPARATOR          
+        MENUITEM "剪切(&T)",                                   F_CUT
+        MENUITEM "复制(&C)",                                   F_COPY
+        MENUITEM "粘贴(&P)",                                   F_PASTE
+        MENUITEM "删除(&D)",                                   F_DELETE
+        MENUITEM SEPARATOR         
+        MENUITEM "复制为CRLF格式(&L)",                         F_COPY_CRLF
+        MENUITEM "添加CRLF后复制(&H)",                         F_COPY_ADDCRLF
+        MENUITEM "框粘贴(&X)",                                 F_PASTEBOX
+        MENUITEM SEPARATOR         
+        MENUITEM "全选(&A)",                                   F_SELECTALL
+        MENUITEM SEPARATOR         
+        MENUITEM "标签跳转(&G)",                               F_TAGJUMP
+        MENUITEM "返回标签跳转(&B)",                           F_TAGJUMPBACK
+        MENUITEM SEPARATOR         
+        MENUITEM "复制选中行(&@)",                             F_COPYLINES
+        MENUITEM "以段落形式复制选中内容(&.)",                 F_COPYLINESASPASSAGE
+        MENUITEM SEPARATOR   
+        MENUITEM "复制当前文件名(&F)",                         F_COPYFNAME
+        MENUITEM "复制当前文件路径(&\\)",                      F_COPYPATH
+        MENUITEM "复制所在目录路径(&O)",                       F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "在资源管理器中打开所在文件夹(&E)",           F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "打开命令提示符(&W)",                         F_OPEN_COMMAND_PROMPT
+        MENUITEM "以管理员身份打开命令提示符(&w)",             F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "打开PowerShell(&P)",                         F_OPEN_POWERSHELL
+        MENUITEM "以管理员身份打开PowerShell(&p)",             F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM "文件属性(&F)",                               F_PROPERTY_FILE
+    END
+END
+
+F_CUSTMENU_24 MENU
+BEGIN
+    POPUP "标签菜单"
+    BEGIN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "另存为...(&A)",                              F_FILESAVEAS_DIALOG
+        MENUITEM "关闭未命名文件(&R)",                         F_FILECLOSE
+        MENUITEM "关闭并打开...(&L)",                          F_FILECLOSE_OPEN
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "重新打开(&W)",                               F_FILE_REOPEN
+        MENUITEM SEPARATOR       
+        MENUITEM "复制当前文件名(&F)",                         F_COPYFNAME
+        MENUITEM "复制当前文件路径",                           F_COPYPATH
+        MENUITEM "复制所在目录路径",                           F_COPYDIRPATH
+        MENUITEM SEPARATOR
+        MENUITEM "在资源管理器中打开所在文件夹(&F)",           F_OPEN_FOLDER_IN_EXPLORER
+        MENUITEM "打开命令提示符(&W)",                         F_OPEN_COMMAND_PROMPT
+        MENUITEM "以管理员身份打开命令提示符(&w)",             F_OPEN_COMMAND_PROMPT_AS_ADMIN
+        MENUITEM "打开PowerShell(&P)",                         F_OPEN_POWERSHELL
+        MENUITEM "以管理员身份打开PowerShell(&p)",             F_OPEN_POWERSHELL_AS_ADMIN
+        MENUITEM SEPARATOR
+        MENUITEM "关闭组(&G)",                                 F_GROUPCLOSE
+        MENUITEM "关闭其他窗口或标签页(&O)",                   F_TAB_CLOSEOTHER
+        MENUITEM "关闭左侧所有标签页(&H)",                     F_TAB_CLOSELEFT
+        MENUITEM "关闭右侧所有标签页(&M)",                     F_TAB_CLOSERIGHT
+        MENUITEM SEPARATOR
+        MENUITEM "向右移动标签页(&0)",                         F_TAB_MOVERIGHT
+        MENUITEM "向左移动标签页(&1)",                         F_TAB_MOVELEFT
+        MENUITEM "新建标签组(&E)",                             F_TAB_SEPARATE
+        MENUITEM "合并到下一组(&X)",                           F_TAB_JOINTNEXT
+        MENUITEM "合并到上一组(&V)",                           F_TAB_JOINTPREV
+    END
+END
+
+F_CUSTMENU_1 MENU
+BEGIN
+    POPUP "自定义菜单1"
+    BEGIN
+        MENUITEM "打开...(&O)",                                F_FILEOPEN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "下一窗口(&N)",                               F_NEXTWINDOW
+        MENUITEM "转换为小写(&L)",                             F_TOLOWER
+        MENUITEM "转换为大写(&U)",                             F_TOUPPER
+        MENUITEM SEPARATOR          
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
 //
 
 STRINGTABLE
@@ -2248,10 +2652,37 @@ END
 
 STRINGTABLE
 BEGIN
+    F_TAB_MANIP_SUBMENU     "标签页控制"
+    F_CHGMOD_EOL_SUBMENU    "换行符设置"
+    F_BOOKMARK_SUBMENU      "书签管理"
     F_ISEARCH_SUBMENU       "增量搜索"
+    F_WINDOW_LIST_SUBMENU   "窗口列表"
+END
+
+STRINGTABLE
+BEGIN
     F_TAB_CLOSEOTHER_TAB    "关闭其他标签页"
     F_TAB_CLOSEOTHER_WINDOW "关闭其他窗口"
+END
+
+STRINGTABLE
+BEGIN
+    F_FILE_REOPEN_SUBMENU   "重新打开(指定编码)"
+    F_FILE_RCNTFILE_SUBMENU "最近使用的文件"
+    F_FILE_RCNTFLDR_SUBMENU "最近使用的文件夹"
+    F_EDIT_INS_SUBMENU      "插入"
+    F_EDIT_COS_SUBMENU      "格式整理"
+    F_EDIT_MOV_SUBMENU      "光标移动"
+    F_EDIT_SEL_SUBMENU      "选择"
     F_EDIT_BOX_SEL_SUBMENU  "框选模式"
+    F_EDIT_HLV_SUBMENU      "高级编辑"
+    F_CONV_ENCODE_SUBMENU   "更改编码"
+    F_EXECKEYMACRO_REGD     "已注册宏"
+    F_TOOL_CUSTOM_SUBMENU   "自定义菜单"
+END
+
+STRINGTABLE
+BEGIN
     F_FILE_TOPMENU          "文件"
     F_EDIT_TOPMENU          "编辑"
     F_CONVERT_TOPMENU       "转换"
@@ -2260,7 +2691,6 @@ BEGIN
     F_OPTION_TOPMENU        "选项"
     F_WINDOW_TOPMENU        "窗口"
     F_HELP_TOPMENU          "帮助"
-    F_WINDOW_LIST_SUBMENU   "窗口列表"
 END
 
 STRINGTABLE
@@ -2279,20 +2709,10 @@ END
 
 STRINGTABLE
 BEGIN
-    F_TAB_MANIP_SUBMENU     "标签页控制"
     F_TAB_GROUPIZE          "创建标签组"
     F_TAB_GROUPDEL          "删除标签组"
     F_TOPMOST_REL           "取消窗口置顶"
     F_TOPMOST_SET           "设置窗口置顶"
-    F_FILE_REOPEN_SUBMENU   "重新打开(指定编码)"
-    F_FILE_RCNTFILE_SUBMENU "最近使用的文件"
-    F_FILE_RCNTFLDR_SUBMENU "最近使用的文件夹"
-    F_EDIT_INS_SUBMENU      "插入"
-    F_EDIT_COS_SUBMENU      "格式整理"
-    F_EDIT_MOV_SUBMENU      "光标移动"
-    F_EDIT_SEL_SUBMENU      "选择"
-    F_EDIT_HLV_SUBMENU      "高级编辑"
-    F_CONV_ENCODE_SUBMENU   "更改编码"
     F_RECKEYMACRO_REC       "开始录制宏"
     F_SAVEKEYMACRO_REC      "保存宏"
 END
@@ -2676,10 +3096,8 @@ BEGIN
     F_SPLIT_V_OFF           "取消垂直分割"
     F_SPLIT_H_ON            "水平分割窗口"
     F_SPLIT_H_OFF           "取消水平分割"
-    F_CHGMOD_EOL_SUBMENU    "换行符设置"
     F_SPLIT_VH_ON           "四向分割窗口"
     F_SPLIT_VH_OFF          "取消四向分割"
-    F_BOOKMARK_SUBMENU      "书签管理"
 END
 
 STRINGTABLE
@@ -2743,8 +3161,6 @@ BEGIN
     F_SAVEKEYMACRO_APPE     "停止并保存宏"
     F_LOADKEYMACRO_APPE     "停止并加载宏"
     F_EXECKEYMACRO_APPE     "停止并运行宏"
-    F_EXECKEYMACRO_REGD     "已注册宏"
-    F_TOOL_CUSTOM_SUBMENU   "自定义菜单"
     F_SHOWTOOLBAR_ON        "显示工具栏"
     F_SHOWFUNCKEY_ON        "显示功能键"
     F_SHOWTAB_ON            "显示多标签页"
@@ -2761,7 +3177,7 @@ BEGIN
     STR_FILETREE_MENU_SAKURA "Sakura(&S)"
     STR_FILETREE_MENU_SAKURADATA "Sakura数据(&A)"
     STR_FILETREE_REPLACE_PATH_FROM "请输入替换源路径"
-    STR_FILETREE_REPLACE_PATH_TO   "请输入替换目标路径"
+    STR_FILETREE_REPLACE_PATH_TO "请输入替换目标路径"
     F_SHOWMINIMAP_OFF       "隐藏缩略图"
     F_SHOWMINIMAP_ON        "显示缩略图"
     STR_FUCLIST_NEXT_NOT_FOUND "未找到下一个(↓)函数标记"
@@ -3036,8 +3452,7 @@ BEGIN
     STR_DLGFAV_HIDDEN       "(隐藏)"
     STR_DLGFAV_FAVORITE     "收藏"
     STR_DLGFAV_CONF_DEL_FAV "删除最近的%s历史记录。\n确定吗？"
-    STR_DLGFAV_CONF_DEL_NOTFAV 
-                            "删除最近的%s历史记录(收藏除外)。\n确定吗？"
+    STR_DLGFAV_CONF_DEL_NOTFAV "删除最近的%s历史记录(收藏除外)。\n确定吗？"
 END
 
 STRINGTABLE
@@ -3112,8 +3527,7 @@ BEGIN
     STR_KEYHELP_RMENU_BOTTOM "底部显示"
     STR_ERR_DLGDOCLM_TOOBIG "'%ls'\n文件无法打开。\n文件大小超过限制。"
     STR_LOADAGENT_BIG_ERROR "'%s'\n无法打开文件。\n文件大小超过限制。\n\n指定文件大小：%s\n    文件大小限制：%s"
-    STR_ERR_FILEPATH_TOO_LONG 
-                            "'%s'\n无法打开文件。\n文件路径过长。"
+    STR_ERR_FILEPATH_TOO_LONG "'%s'\n无法打开文件。\n文件路径过长。"
     STR_GREP_EXCLUDE_FILE   "排除文件    "
     STR_GREP_EXCLUDE_FOLDER "排除文件夹  "
     STR_FILEDIALOG_READONLY "以只读方式打开(&R)"
@@ -3189,7 +3603,6 @@ BEGIN
     STR_DLGFNCLST_UNIFY     "当前窗口的停靠配置信息将统一应用到所有通用设置和类型专用设置。\n(同时会统一其他已打开窗口的状态)\n"
     STR_BREGONIG_ERROR      "加载bregonig.dll失败"
     STR_BREGONIG_TITLE      "正则表达式错误"
-    STR_REGEX_COMPILE_ERR_PREAMBLE "正则表达式有误\n详细信息："
     STR_ERR_CWSH09          "已中止执行宏"
     STR_ERR_DLGMACRO03_1    "未定义换行代码"
     STR_ERR_DLGMACRO16      "未定义数字"
@@ -3202,10 +3615,20 @@ END
 
 STRINGTABLE
 BEGIN
+    STR_FILEDIALOG_MRU      "最近文件(&F):"
+    STR_FILEDIALOG_OPENFOLDER "最近目录(&D):"
+    STR_IMPEXP_REGEX4       "关键字过长已被截断。"
+    STR_STATUS_FONTZOOM_0   "%4.0f %%"
+    STR_STATUS_FONTZOOM_1   "%4.1f %%"
+    STR_DLGGREP_THISDOC     "(当前文档)"
+    STR_REGEX_COMPILE_ERR_PREAMBLE "正则表达式有误\n详细信息："
+END
+
+STRINGTABLE
+BEGIN
     STR_DLGGREP4            "请定义目标搜索文件夹"
     STR_DLGGREP5            "目标文件夹不正确"
     STR_DLGGREP6            "目标文件夹路径过长"
-    STR_DLGGREP_THISDOC     "(当前文档)"
     STR_DLGJUMP1            "请输入正确的行号"
     STR_DLGJUMP_PSLQL       "%d 行  %s  包规范"
     STR_DLGOPNFL1           "原样打开"
@@ -3223,8 +3646,7 @@ BEGIN
     STR_IMPEXP_DIC_LENGTH   "词典文件描述最多为%d个字符。\n"
     STR_IMPEXP_DIC_RECORD   "部分数据无法读取\n错误行号：%d"
     STR_IMPEXP_KEY_FORMAT   "按键绑定文件格式错误\n\n"
-    STR_IMPEXP_CUSTMENU_FORMAT 
-                            "自定义菜单设置文件格式错误\n\n"
+    STR_IMPEXP_CUSTMENU_FORMAT "自定义菜单设置文件格式错误\n\n"
     STR_IMPEXP_KEYWORD      "已达到上限，部分关键词无法注册"
     STR_IMPEXP_MEINMENU     "主菜单设置文件格式不一致\n\n"
     STR_STRINGESC_CPP       "C/C++    \\"" "
@@ -3366,8 +3788,7 @@ BEGIN
     STR_DLGPROFILE_ERR_FILE "存在同名文件无法创建"
     STR_DLGPROFILE_RENAME_TITLE "重命名配置"
     STR_DLGPROFILE_RENAME_MSG "输入配置名称"
-    STR_DLGPROFILE_ERR_RENAME 
-                            "重命名失败\n配置可能正在使用"
+    STR_DLGPROFILE_ERR_RENAME "重命名失败\n配置可能正在使用"
     STR_PROPCOMTAB_TAB_POS_TOP "顶部"
     STR_PROPCOMTAB_TAB_POS_BOTTOM "底部"
     STR_PROPCOMTAB_TAB_POS_LEFT "左侧"
@@ -3385,8 +3806,7 @@ BEGIN
     STR_TRAY_CREATEPROC2    "'%s'\n进程执行失败。"
     STR_TRAY_EXITALL        "是否关闭所有打开的窗口并退出编辑器而不保存?"
     STR_LOADAGENT_ERR_OPEN  "'%s'\n无法打开文件。\n您没有读取该文件的权限。"
-    STR_LOADAGENT_BIG_WARNING 
-                            "'%s'\n文件大小超过 %dMB。是否要打开?"
+    STR_LOADAGENT_BIG_WARNING "'%s'\n文件大小超过 %dMB。是否要打开?"
     STR_SAVEAGENT_VIEW_FILE "视图模式下无法覆盖文件。"
     STR_SAVEAGENT_OTHER     "'%s'\n无法保存文件。\n其他编辑器正在打开此文件。"
     STR_ERR_DLGEDITDOC5     "字符编码"
@@ -3394,8 +3814,7 @@ BEGIN
     STR_NOT_EXSIST_SAVE     "%s\n上述文件不存在。\n\n保存时将在磁盘上创建该文件。"
     STR_BACKUP_ERR_TITLE    "文件保存"
     STR_BACKUP_ERR_MSG      "创建备份失败。是否继续覆盖原始文件？"
-    STR_BACKUP_ERR_PATH_CRETE 
-                            "创建备份路径时发生错误。\n路径过长或格式无效。\n是否继续覆盖原始文件？"
+    STR_BACKUP_ERR_PATH_CRETE "创建备份路径时发生错误。\n路径过长或格式无效。\n是否继续覆盖原始文件？"
     STR_BACKUP_CONFORM_TITLE1 "备份创建确认"
     STR_BACKUP_CONFORM_MSG1 "更新前将创建备份。\n确定？  [(N)否] = 不备份直接覆盖（或另存为）。\n\n%s\n    ↓\n%s\n\n备份文件将被移至回收站\n"
     STR_BACKUP_CONFORM_TITLE2 "备份创建确认"
@@ -3430,14 +3849,11 @@ BEGIN
     STR_TAB_SYMBOL_CHARA    "字符"
     STR_TAB_SYMBOL_SHORT_ARROW "短箭头"
     STR_TAB_SYMBOL_LONG_ARROW "长箭头"
-    STR_CODECHECKER_EOL_UNIFY 
-                            "检测到混合换行符。\r\n是否要统一换行符为(%s)?"
+    STR_CODECHECKER_EOL_UNIFY "检测到混合换行符。\r\n是否要统一换行符为(%s)?"
     STR_CODECHECKER_CONFORM_LOSESOME 
                             "正在保存为%s编码...\r\n编码转换会导致部分字符信息丢失。\r\n是否继续保存？\n首个错误点：第%d行 %s 字符[%ls]%s\n取消=跳转到丢失点"
-    STR_CODECHECKER_LOSESOME_SAVE 
-                            "保存时因编码转换丢失了部分字符信息"
-    STR_CODECHECKER_LOSESOME_ROAD 
-                            "加载时因编码转换丢失了部分字符信息"
+    STR_CODECHECKER_LOSESOME_SAVE "保存时因编码转换丢失了部分字符信息"
+    STR_CODECHECKER_LOSESOME_ROAD "加载时因编码转换丢失了部分字符信息"
     STR_SUPPORT_NOT_COMPLITE "没有可用的自动补全项。"
     STR_CONVERT_ERR         "转换时发生错误。"
 END
@@ -3483,15 +3899,6 @@ END
 
 STRINGTABLE
 BEGIN
-    STR_FILEDIALOG_MRU      "最近文件(&F):"
-    STR_FILEDIALOG_OPENFOLDER "最近目录(&D):"
-    STR_IMPEXP_REGEX4       "关键字过长已被截断。"
-    STR_STATUS_FONTZOOM_0   "%4.0f %%"
-    STR_STATUS_FONTZOOM_1   "%4.1f %%"
-END
-
-STRINGTABLE
-BEGIN
     STR_GREP_CASE_SENSITIVE "    (区分大小写 = 是)\r\n"
     STR_GREP_IGNORE_CASE    "    (区分大小写 = 否)\r\n"
     STR_GREP_REGEX_DLL      "    (正则表达式:"
@@ -3503,8 +3910,7 @@ BEGIN
     STR_GREP_MATCH_COUNT    "已检查 %d 个项目。\r\n"
     STR_GREP_RUNNINNG       "正在执行Grep搜索。\n"
     STR_GREP_TIMER          "处理时间: %d毫秒\r\n"
-    STR_GREP_SHOW_FIRST_MATCH 
-                            "    (每个文件仅显示首个匹配区域)\r\n"
+    STR_GREP_SHOW_FIRST_MATCH "    (每个文件仅显示首个匹配区域)\r\n"
     STR_GREP_ERR_ENUMKEYS0  "(未知)"
     STR_GREP_ERR_ENUMKEYS1  "不能在文件指定的目录中使用通配符。"
     STR_GREP_ERR_ENUMKEYS2  "不能在文件指定中使用完整路径。"
@@ -3513,8 +3919,7 @@ END
 
 STRINGTABLE
 BEGIN
-    STR_GREP_SHOW_FIRST_LINE 
-                            "    (仅显示匹配行首位置)\r\n"
+    STR_GREP_SHOW_FIRST_LINE "    (仅显示匹配行首位置)\r\n"
     STR_GREP_REPLACE_COUNT  "已替换 %d 个项目。\r\n"
     STR_GREP_REP_ERR_DELETE "文件删除失败。"
     STR_GREP_REP_ERR_REPLACE "文件替换失败。"
@@ -3594,10 +3999,8 @@ END
 
 STRINGTABLE
 BEGIN
-    STR_ERR_DLGEDITVWCMDNW11 
-                            "文件写入过程中发生错误。"
-    STR_ERR_DLGEDITVWCMDNW12 
-                            "文件读取过程中发生错误。"
+    STR_ERR_DLGEDITVWCMDNW11 "文件写入过程中发生错误。"
+    STR_ERR_DLGEDITVWCMDNW12 "文件读取过程中发生错误。"
     STR_ERR_DLGEDITVWDIFF1  "DIFF命令执行失败。\n\n未找到用于比较的文件。"
     STR_ERR_DLGEDITVWDIFF2  "DIFF命令执行失败。\n\n未找到DIFF.EXE文件。"
     STR_ERR_DLGEDITVWDIFF3  "DIFF命令执行失败。\n\n%ls"
@@ -3744,8 +4147,7 @@ BEGIN
     STR_PROPCOMMAINMENU_ACCKEY1 "菜单项快捷键设置"
     STR_PROPCOMMAINMENU_ACCKEY2 "请输入按键"
     STR_PROPCOMMAINMENU_CLEAR "确认要清除菜单设置吗？"
-    STR_PROPCOMMAINMENU_INIT 
-                            "确认要加载默认菜单设置吗？"
+    STR_PROPCOMMAINMENU_INIT "确认要加载默认菜单设置吗？"
     STR_PROPCOMMAINMENU_DEL "确认要删除选定项吗？"
     STR_PROPCOMMAINMENU_OK  "未检测到问题。"
     STR_PROPCOMMAINMENU_ERR1 "获取菜单设置失败"
@@ -3770,8 +4172,7 @@ BEGIN
                             "确定要删除关键字组 [%ls] 吗？\n该组包含以下类型的关键字：\n删除后相关配置将失效\n\n%s"
     STR_PROPCOMKEYWORD_RENAME1 "关键字组名称已修改"
     STR_PROPCOMKEYWORD_RENAME2 "请输入新的关键字组名称"
-    STR_PROPCOMKEYWORD_KEYMAX 
-                            "已达到最大可注册关键字数量限制\n"
+    STR_PROPCOMKEYWORD_KEYMAX "已达到最大可注册关键字数量限制\n"
     STR_PROPCOMKEYWORD_KEYADD1 "已添加关键字"
     STR_PROPCOMKEYWORD_KEYADD2 "请输入关键字"
 END
@@ -3887,8 +4288,7 @@ BEGIN
     STR_IMPEXP_ERR_EXPORT   "导出失败\n\n"
     STR_IMPEXP_OK_EXPORT    "已成功导出到文件\n\n"
     STR_IMPEXP_OK_IMPORT    "已成功导入文件\n\n"
-    STR_IMPEXP_ERR_COLOR_OLD 
-                            "检测到旧版颜色配置文件格式，当前版本不再支持旧格式\n"
+    STR_IMPEXP_ERR_COLOR_OLD "检测到旧版颜色配置文件格式，当前版本不再支持旧格式\n"
     STR_IMPEXP_ERR_TYPE     "文件格式无效\n已终止导入"
     STR_IMPEXP_VER          "检测到 %s(%s/%d) 版本差异\n\n确定要继续导入吗？"
     STR_IMPEXP_REGEX1       "因达到关键字数量上限，部分关键字已被截断"
@@ -3953,18 +4353,15 @@ BEGIN
     STR_PROPTYPEREGEX_LIST1 "关键字"
     STR_PROPTYPEREGEX_LIST2 "颜色索引"
     STR_PROPTYPEREGEX_NOUSE "无法使用正则表达式"
-    STR_PROPTYPEREGEX_NOTFOUND 
-                            "未找到正则表达式库\n\n是否仍要启用正则表达式功能？"
+    STR_PROPTYPEREGEX_NOTFOUND "未找到正则表达式库\n\n是否仍要启用正则表达式功能？"
     STR_PROPTYPEREGEX_NOREG "无法注册更多关键字"
 END
 
 STRINGTABLE
 BEGIN
     STR_PROPTYPEREGEX_ALREADY "该关键字已存在"
-    STR_PROPTYPEREGEX_KAKOMI 
-                            "正则表达式关键字需用 / 和 /k 包裹\n若关键字含/，请改用 m# 和 #k 包裹"
-    STR_PROPTYPEREGEX_INVALID 
-                            "格式错误或未找到正则表达式库\n\n仍要强制注册吗？"
+    STR_PROPTYPEREGEX_KAKOMI "正则表达式关键字需用 / 和 /k 包裹\n若关键字含/，请改用 m# 和 #k 包裹"
+    STR_PROPTYPEREGEX_INVALID "格式错误或未找到正则表达式库\n\n仍要强制注册吗？"
     STR_PROPTYPEREGEX_FULL  "关键字存储区已满\n无法注册更多关键字"
     STR_PROPTYPEREGEX_NOSEL "未选择关键字"
     STR_ERR_CSHAREDATA01    "CreateFileMapping() 执行失败"
@@ -4131,16 +4528,18 @@ BEGIN
     STR_PLGMGR_INST_RESERVE2 """ 不能用于Plugin.ID"
 END
 
-#endif    // 中文(简体) resources
+#endif    // 中国語 (簡体字、中国) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
-// 由TEXTINCLUDE 3资源生成。
+// Generated from the TEXTINCLUDE 3 resource.
 //
 #include "sakura_rc_zh-CN.rc2"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

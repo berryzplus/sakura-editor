@@ -91,7 +91,7 @@ function(create_language_dll LOCALE_NAME LOCALE_ID)
     if(MINGW)
         # Set RC flags for MinGW (windres uses decimal)
         target_compile_options(${PROJECT_NAME} PRIVATE
-            $<$<COMPILE_LANGUAGE:RC>:-c utf-8 -l ${LOCALE_ID}>
+            $<$<COMPILE_LANGUAGE:RC>:-c 65001 -l ${LOCALE_ID}>
         )
 
         # avoid prefixing of DLL name, set PREFIX to blank.

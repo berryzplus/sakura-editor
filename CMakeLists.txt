@@ -144,7 +144,7 @@ add_library(sakura_core OBJECT ${PCH_HEADER} ${SOURCES} ${RESOURCE_SCRIPTS} ${HE
 target_precompile_headers(sakura_core PRIVATE ${PCH_HEADER})
 
 # Set C++17 standard for sakura_core
-target_compile_features(sakura_core PUBLIC cxx_std_17)
+target_compile_features(sakura_core PUBLIC cxx_std_20)
 
 # Add dependencies for sakura_core
 add_dependencies(sakura_core
@@ -195,6 +195,9 @@ if(MSVC)
 endif(MSVC)
 
 if(MINGW)
+  # Set RC flags for MinGW (windres uses decimal)
+  set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -c 65001 -l 1041 --use-temp-file")
+
   target_link_options(sakura_core
     PUBLIC
       -municode

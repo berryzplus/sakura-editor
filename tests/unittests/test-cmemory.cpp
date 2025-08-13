@@ -3,13 +3,19 @@
 	Copyright (C) 2018-2022, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
-*/
+ */
+
 #include "pch.h"
 #include "mem/CMemory.h"
 
+#include "testing/MessageBoxHook.hpp"
+
+#include "CSelectLang.h"
+#include "String_define.h"
+
 /*!
 	_SetRawLength(0) を呼び出して落ちないことを確認する
-*/
+ */
 TEST(CMemory, SetRawLengthToZero)
 {
 	CMemory memory;
@@ -88,20 +94,27 @@ TEST(CMemory, SwapHLByte)
 TEST(CMemory, OverHeapMaxReq)
 {
 	CMemory cmem;
+	const auto expected = strprintf(LS(STR_ERR_DLGMEM1), -31);	//FIXME: 確保サイズ == -31 はバグと思われる
+
+	testing::MessageBoxHook hook;
 
 	// _HEAP_MAXREQを越える値を指定すると、メモリは確保されない
 	cmem.AllocBuffer(static_cast<unsigned>(_HEAP_MAXREQ) + 1);
-	ASSERT_TRUE(cmem.GetRawPtr() == nullptr);
+	EXPECT_THAT(hook.back().text, StrEq(expected));
+	ASSERT_THAT(cmem.GetRawPtr(), nullptr);
 
 	// 検証用のデータを入れる
 	constexpr auto& data = L"テストデータ";
 	cmem.SetRawData(data, (_countof(data) - 1) * sizeof(wchar_t));
-	ASSERT_STREQ(data, reinterpret_cast<wchar_t*>(cmem.GetRawPtr()));
-	ASSERT_EQ((_countof(data) - 1) * sizeof(wchar_t), cmem.GetRawLength());
+	ASSERT_THAT(reinterpret_cast<wchar_t*>(cmem.GetRawPtr()), StrEq(data));
+	ASSERT_THAT(cmem.GetRawLength(), (_countof(data) - 1) * sizeof(wchar_t));
+
+	hook.push();
 
 	// メモリ確保失敗時は、メモリが解放される
 	cmem.AllocBuffer(static_cast<unsigned>(_HEAP_MAXREQ) + 1);
-	ASSERT_TRUE(cmem.GetRawPtr() == nullptr);
+	EXPECT_THAT(hook.back().text, StrEq(expected));
+	ASSERT_THAT(cmem.GetRawPtr(), nullptr);
 }
 
 /*!
@@ -111,20 +124,27 @@ TEST(CMemory, OverHeapMaxReq)
 TEST(CMemory, OverMaxSize)
 {
 	CMemory cmem;
+	const auto expected = strprintf(LS(STR_ERR_DLGMEM1), static_cast<unsigned>(INT_MAX) + 1);
+
+	testing::MessageBoxHook hook;
 
 	// INT_MAXを越える値を指定すると、メモリは確保されない
 	cmem.AllocBuffer(static_cast<unsigned>(INT_MAX) + 1);
+	EXPECT_THAT(hook.back().text, StrEq(expected));
 	ASSERT_TRUE(cmem.GetRawPtr() == nullptr);
 
 	// 検証用のデータを入れる
 	constexpr auto& data = L"テストデータ";
 	cmem.SetRawData(data, (_countof(data) - 1) * sizeof(wchar_t));
-	ASSERT_STREQ(data, reinterpret_cast<wchar_t*>(cmem.GetRawPtr()));
-	ASSERT_EQ((_countof(data) - 1) * sizeof(wchar_t), cmem.GetRawLength());
+	ASSERT_THAT(reinterpret_cast<wchar_t*>(cmem.GetRawPtr()), StrEq(data));
+	ASSERT_THAT(cmem.GetRawLength(), (_countof(data) - 1) * sizeof(wchar_t));
+
+	hook.push();
 
 	// メモリ確保失敗時は、メモリが解放される
 	cmem.AllocBuffer(static_cast<unsigned>(INT_MAX) + 1);
-	ASSERT_TRUE(cmem.GetRawPtr() == nullptr);
+	EXPECT_THAT(hook.back().text, StrEq(expected));
+	ASSERT_THAT(cmem.GetRawPtr(), nullptr);
 }
 
 /*!

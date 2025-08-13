@@ -3,40 +3,21 @@
 	Copyright (C) 2018-2022, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
-*/
+ */
+
 #include "pch.h"
+#include "testing/StartEditorProcess.hpp"
 
-#include <tchar.h>
-#include <Windows.h>
-
-#include <atomic>
-#include <condition_variable>
-#include <cstdlib>
-#include <filesystem>
-#include <mutex>
-#include <regex>
-#include <string>
-#include <string_view>
-#include <thread>
-#include <fstream>
-
-#include "config/maxdata.h"
-#include "basis/primitive.h"
-#include "debug/Debug2.h"
-#include "basis/CMyString.h"
-#include "mem/CNativeW.h"
-#include "env/DLLSHAREDATA.h"
-#include "util/file.h"
 #include "config/system_constants.h"
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
-
-#include "StartEditorProcessForTest.h"
 
 #include "cxx_util/ResourceHolder.hpp"
 
 //! HANDLE型のスマートポインタ
 using HandleHolder = cxx_util::ResourceHolder<HANDLE, &CloseHandle>;
+
+namespace func {
 
 /*!
  * WinMain起動テストのためのフィクスチャクラス
@@ -63,7 +44,7 @@ protected:
 
 		// コマンドラインのインスタンスを用意する
 		CCommandLine commandLine;
-		const auto strCommandLine = strprintf(LR"(-PROF="%s")", profileName.data());
+		const auto strCommandLine = std::format(LR"(-PROF="{}")", profileName);
 		commandLine.ParseCommandLine(strCommandLine.data(), false);
 
 		// プロセスのインスタンスを用意する
@@ -75,7 +56,7 @@ protected:
 		iniPath = CShareData::BuildPrivateIniFileName(iniPath, profileName.data());
 
 		// INIファイルを削除する
-		if (fexist(iniPath.c_str())) {
+		if (fexist(iniPath)) {
 			std::filesystem::remove(iniPath);
 		}
 	}
@@ -85,7 +66,7 @@ protected:
 	 */
 	void TearDown() override {
 		// INIファイルを削除する
-		if (fexist(iniPath.c_str())) {
+		if (fexist(iniPath)) {
 			std::filesystem::remove(iniPath);
 		}
 
@@ -93,6 +74,16 @@ protected:
 		if (const std::wstring_view profileName(GetParam()); profileName.length() > 0) {
 			std::filesystem::remove(iniPath.parent_path());
 		}
+	}
+
+	/*!
+	 * wWinMain呼出ラッパー
+	 *
+	 * テスト内で使うためのラッパー。
+	 * 関数が呼出元に返らないことをマークしたバージョン。
+	 */
+	static NORETURN void StartEditorProcess(const std::wstring& command) {
+		exit(testing::StartEditorProcess(command));
 	}
 };
 
@@ -140,12 +131,7 @@ void CControlProcess_Start(std::wstring_view profileName)
 
 	const auto exePath = GetExeFileName();
 
-	std::wstring strProfileName;
-	if (profileName.length() > 0) {
-		strProfileName = profileName;
-	}
-
-	std::wstring strCommandLine = strprintf(LR"("%s" -PROF="%s" -NOWIN)", exePath.c_str(), strProfileName.c_str());
+	std::wstring strCommandLine(std::format(LR"("{}" -PROF="{}" -NOWIN)", exePath.c_str(), profileName));
 
 	LPWSTR pszCommandLine = strCommandLine.data();
 	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
@@ -278,59 +264,81 @@ TEST_P(WinMainTest, runEditorProcess)
 	}
 	fs.close();
 
-	// エディタプロセスを起動するため、テスト実行はプロセスごと分離して行う
-	auto separatedTestProc = [szProfileName, strFileName]() {
-		// 起動時実行マクロの中身を作る
-		std::wstring strStartupMacro;
-		strStartupMacro += L"Down();";
-		strStartupMacro += L"Up();";
-		strStartupMacro += L"Right();";
-		strStartupMacro += L"Left();";
-		strStartupMacro += L"Outline(0);";		//アウトライン解析
-		strStartupMacro += L"ShowFunckey();";	//ShowFunckey 出す
-		strStartupMacro += L"ShowMiniMap();";	//ShowMiniMap 出す
-		strStartupMacro += L"ShowTab();";		//ShowTab 出す
-		strStartupMacro += L"SelectAll();";
-		strStartupMacro += L"GoFileEnd();";
-		strStartupMacro += L"GoFileTop();";
-		strStartupMacro += L"ShowFunckey();";	//ShowFunckey 消す
-		strStartupMacro += L"ShowMiniMap();";	//ShowMiniMap 消す
-		strStartupMacro += L"ShowTab();";		//ShowTab 消す
-		strStartupMacro += L"ExpandParameter('$I');";	// INIファイルパスの取得(呼ぶだけ)
+	// 起動時実行マクロの中身を作る
+	constexpr std::array macroCommands = {
+		L"Down();"sv,
+		L"Up();"sv,
+		L"Right();"sv,
+		L"Left();"sv,
+
+		L"Outline(0);"sv,				// アウトライン解析
+
+		L"ShowFunckey();"sv,			// ShowFunckey 出す
+		L"ShowMiniMap();"sv,			// ShowMiniMap 出す
+		L"ShowTab();"sv,				// ShowTab 出す
+
+		L"SelectAll();"sv,
+		L"GoFileEnd();"sv,
+		L"GoFileTop();"sv,
+
+		L"PrintPreview();"sv,
+		L"WheelDown();"sv,
+		L"WheelUp();"sv,
+		L"WheelRight();"sv,
+		L"WheelLeft();"sv,
+		L"PrintPreview();"sv,
+
+		L"SplitWinVH();"sv,
+		L"NextWindow();NextWindow();NextWindow();NextWindow();"sv,
+
+		L"WheelDown();"sv,
+		L"WheelUp();"sv,
+		L"WheelRight();"sv,
+		L"WheelLeft();"sv,
+
+		L"PrevWindow();PrevWindow();PrevWindow();PrevWindow();"sv,
+		L"SplitWinVH();"sv,
+
+		L"ShowFunckey();"sv,			//ShowFunckey 消す
+		L"ShowMiniMap();"sv,			//ShowMiniMap 消す
+		L"ShowTab();"sv,				//ShowTab 消す
+
+		L"ExpandParameter('$I');"sv,	// INIファイルパスの取得(呼ぶだけ)
+
 		// フォントサイズ設定のテスト(ここから)
-		strStartupMacro += L"SetFontSize(0, 1, 0);";	// 相対指定 - 拡大 - 対象：共通設定
-		strStartupMacro += L"SetFontSize(0, -1, 0);";	// 相対指定 - 縮小 - 対象：共通設定
-		strStartupMacro += L"SetFontSize(100, 0, 0);";	// 直接指定 - 対象：共通設定
-		strStartupMacro += L"SetFontSize(100, 0, 1);";	// 直接指定 - 対象：タイプ別設定
-		strStartupMacro += L"SetFontSize(100, 0, 2);";	// 直接指定 - 対象：一時適用
-		strStartupMacro += L"SetFontSize(100, 0, 3);";	// 直接指定 - 対象が不正
-		strStartupMacro += L"SetFontSize(0, 0, 0);";	// 直接指定 - フォントサイズ下限未満
-		strStartupMacro += L"SetFontSize(9999, 0, 0);";	// 直接指定 - フォントサイズ上限超過
-		strStartupMacro += L"SetFontSize(0, 0, 2);";	// 相対指定 - サイズ変化なし
-		strStartupMacro += L"SetFontSize(0, 1, 2);";	// 相対指定 - 拡大
-		strStartupMacro += L"SetFontSize(0, -1, 2);";	// 相対指定 - 縮小
-		strStartupMacro += L"SetFontSize(0, 9999, 2);";	// 相対指定 - 限界まで拡大
-		strStartupMacro += L"SetFontSize(0, 1, 2);";	// 相対指定 - これ以上拡大できない
-		strStartupMacro += L"SetFontSize(0, -9999, 2);";// 相対指定 - 限界まで縮小
-		strStartupMacro += L"SetFontSize(0, -1, 2);";	// 相対指定 - これ以上縮小できない
-		strStartupMacro += L"SetFontSize(100, 0, 2);";	// 元に戻す
+		L"SetFontSize(0, 1, 0);"sv,		// 相対指定 - 拡大 - 対象：共通設定
+		L"SetFontSize(0, -1, 0);"sv,	// 相対指定 - 縮小 - 対象：共通設定
+		L"SetFontSize(100, 0, 0);"sv,	// 直接指定 - 対象：共通設定
+		L"SetFontSize(100, 0, 1);"sv,	// 直接指定 - 対象：タイプ別設定
+		L"SetFontSize(100, 0, 2);"sv,	// 直接指定 - 対象：一時適用
+		L"SetFontSize(100, 0, 3);"sv,	// 直接指定 - 対象が不正
+		L"SetFontSize(0, 0, 0);"sv,		// 直接指定 - フォントサイズ下限未満
+		L"SetFontSize(9999, 0, 0);"sv,	// 直接指定 - フォントサイズ上限超過
+		L"SetFontSize(0, 0, 2);"sv,		// 相対指定 - サイズ変化なし
+		L"SetFontSize(0, 1, 2);"sv,		// 相対指定 - 拡大
+		L"SetFontSize(0, -1, 2);"sv,	// 相対指定 - 縮小
+		L"SetFontSize(0, 9999, 2);"sv,	// 相対指定 - 限界まで拡大
+		L"SetFontSize(0, 1, 2);"sv,		// 相対指定 - これ以上拡大できない
+		L"SetFontSize(0, -9999, 2);"sv,	// 相対指定 - 限界まで縮小
+		L"SetFontSize(0, -1, 2);"sv,	// 相対指定 - これ以上縮小できない
+		L"SetFontSize(100, 0, 2);"sv,	// 元に戻す
 		// フォントサイズ設定のテスト(ここまで)
-		strStartupMacro += L"Outline(2);";		//アウトライン解析を閉じる
-		strStartupMacro += L"ExitAll();";		//NOTE: このコマンドにより、エディタプロセスは起動された直後に終了する。
 
-		// コマンドラインを組み立てる
-		std::wstring strCommandLine = strFileName;
-		strCommandLine += strprintf(LR"( -PROF="%s")", szProfileName);
-		strCommandLine += strprintf(LR"( -MTYPE=js -M="%s")", std::regex_replace( strStartupMacro, std::wregex( L"\"" ), L"\"\"" ).c_str());
+		L"Outline(2);"sv,	//アウトライン解析を閉じる
 
-		// エディタプロセスを起動する
-		const int ret = StartEditorProcessForTest(strCommandLine);
-
-		exit(ret);
+		L"ExitAll();"sv		//NOTE: このコマンドにより、エディタプロセスは起動された直後に終了する。
 	};
 
+	// 起動時実行マクロを組み立てる
+	const auto strStartupMacro = std::accumulate(macroCommands.cbegin(), macroCommands.cend(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return a + std::data(b); });
+
+	// コマンドラインを組み立てる
+	std::wstring command(strFileName);
+	command += std::format(LR"( -PROF="{}")", static_cast<std::wstring_view>(szProfileName));
+	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
+
 	// テストプログラム内のグローバル変数を汚さないために、別プロセスで起動させる
-	ASSERT_EXIT({ separatedTestProc(); }, ::testing::ExitedWithCode(0), ".*" );
+	EXPECT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(0), ".*" );
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	CControlProcess_Terminate(szProfileName);
@@ -346,7 +354,12 @@ TEST_P(WinMainTest, runEditorProcess)
  * @brief パラメータテストをインスタンス化する
  *  プロファイル指定なしとプロファイル指定ありの2パターンで実体化させる
  */
-INSTANTIATE_TEST_CASE_P(ParameterizedTestWinMain
+INSTANTIATE_TEST_SUITE_P(WinMain
 	, WinMainTest
-	, ::testing::Values(L"", L"profile1")
+	, ::testing::Values(
+		L"",
+		L"profile1"
+	)
 );
+
+} // namespace func

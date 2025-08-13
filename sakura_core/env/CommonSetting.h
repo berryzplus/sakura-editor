@@ -444,6 +444,8 @@ struct CommonSetting_CustomMenu
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 struct CommonSetting_ToolBar
 {
+	static std::vector<int> GetDefaultTools() noexcept;
+
 	int			m_nToolBarButtonNum = 25;							//!< ツールバーボタンの数
 	int			m_nToolBarButtonIdxArr[MAX_TOOLBAR_BUTTON_ITEMS];	//!< ツールバーボタン構造体
 	bool		m_bToolBarIsFlat = false;							//!< フラットツールバーにする／しない
@@ -514,6 +516,8 @@ struct CommonSetting_Macro
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 struct CommonSetting_FileName
 {
+	static std::vector<std::pair<std::wstring, std::wstring>> GetDefaultConversion() noexcept;
+
 	bool		m_bTransformShortPath = true;									//!< ファイル名の省略表記
 	int			m_nTransformShortMaxWidth = 100;								//!< ファイル名の省略表記の最大長
 	int			m_nTransformFileNameArrNum = 7;									//!< ファイル名の簡易表示登録数
@@ -698,11 +702,11 @@ public:
 
 struct CommonSetting_MainMenu
 {
-	int				m_nVersion = 0;							//!< メインメニューバージョン
-	int				m_nMenuTopIdx[MAX_MAINMENU_TOP];	//!< メインメニュートップレベル
-	int 			m_nMainMenuNum = 336;						//!< メインメニューデータの数
-	CMainMenu		m_cMainMenuTbl[MAX_MAINMENU];		//!< メインメニューデータ
-	bool 			m_bMainMenuKeyParentheses = true;			//!< アクセスキーを( )付で表示
+	int				m_nVersion = 0;						//!< メインメニューバージョン
+	int				m_nMenuTopIdx[MAX_MAINMENU_TOP]{};	//!< メインメニュートップレベル
+	int 			m_nMainMenuNum = 336;				//!< メインメニューデータの数
+	CMainMenu		m_cMainMenuTbl[MAX_MAINMENU]{};		//!< メインメニューデータ
+	bool 			m_bMainMenuKeyParentheses = true;	//!< アクセスキーを( )付で表示
 
 	CommonSetting_MainMenu() noexcept;
 };

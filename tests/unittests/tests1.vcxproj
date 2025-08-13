@@ -70,7 +70,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
@@ -142,10 +142,13 @@
     <Link Include="$(IntDir)..\sakura_core\*.res" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\test\cpp\env\test-smenuitem.cpp" />
     <ClCompile Include="..\..\src\test\cpp\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="code-main.cpp" />
+    <ClCompile Include="..\..\src\test\resources\testing\MessageBoxHook.cpp" />
+    <ClCompile Include="..\..\src\test\resources\code-main.cpp" />
+    <ClCompile Include="..\..\src\test\resources\testing\StartEditorProcess.cpp" />
     <ClCompile Include="test-cdocline.cpp" />
     <ClCompile Include="test-cdoclinemgr.cpp" />
     <ClCompile Include="test-codechecker.cpp" />
@@ -155,7 +158,7 @@
     <ClCompile Include="test-csharedata.cpp" />
     <ClCompile Include="test-czipfile.cpp" />
     <ClCompile Include="test-extmodules.cpp" />
-    <ClCompile Include="test-printEFunctionCode.cpp" />
+    <ClCompile Include="..\..\src\test\resources\printEFunctionCode.cpp" />
     <ClCompile Include="test-cclipboard.cpp" />
     <ClCompile Include="test-ccodebase.cpp" />
     <ClCompile Include="test-ccommandline.cpp" />
@@ -199,7 +202,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\cpp\pch.h" />
-    <ClInclude Include="eval_outputs.hpp" />
+    <ClInclude Include="..\..\src\test\resources\hooking\HookingLibrary.hpp" />
+    <ClInclude Include="..\..\src\test\resources\testing\MessageBoxHook.hpp" />
+    <ClInclude Include="..\..\src\test\resources\testing\StartEditorProcess.hpp" />
+
     <ClInclude Include="TExtModule.hpp" />
     <ClInclude Include="..\..\src\test\resources\tests1_rc.h" />
   </ItemGroup>
@@ -219,9 +225,6 @@
     <ProjectReference Include="$(SolutionDir)sakura\sakura.vcxproj">
       <Project>{af03508c-515e-4a0e-87be-67ed1e254bd0}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="StartEditorProcessForTest.h" />
   </ItemGroup>
   <ItemGroup>
     <TestResource Include="test-plugin\plugin.def" />

@@ -1,9 +1,8 @@
 ﻿{
-  "version": 3,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 21,
-    "patch": 0
+    "minor": 24
   },
   "configurePresets": [
     {
@@ -27,6 +26,23 @@
       }
     },
     {
+      "name": "msys2-common",
+      "displayName": "Msys2 Build",
+      "inherits": "msys2",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "C:/msys64/mingw64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/mingw64/bin/g++.exe",
+        "CMAKE_RC_COMPILER": "C:/msys64/mingw64/bin/windres.exe",
+        "CMAKE_MAKE_PROGRAM": "C:/msys64/mingw64/bin/ninja.exe",
+        "ICONV_PATH": "C:/msys64/usr/bin/iconv.exe"
+      },
+      "environment": {
+        "MSYSTEM": "MINGW64",
+        "PATH": "C:/msys64/mingw64/bin${pathListSep}/usr/bin${pathListSep}$penv{PATH}"
+      }
+    },
+    {
       "name": "CMakeTools",
       "displayName": "CMakeTools Build",
       "inherits": "vs-common",
@@ -45,6 +61,14 @@
         "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic",
         "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
       }
+    },
+    {
+      "name": "msys2-debug",
+      "displayName": "Msys2 Debug Build",
+      "inherits": "msys2-common",
+      "environment": {
+        "BUILD_CONFIGURATION": "Debug"
+      }
     }
   ],
   "buildPresets": [
@@ -56,12 +80,21 @@
     {
       "name": "msys2",
       "configurePreset": "msys2"
+    },
+    {
+      "name": "msys2-debug",
+      "configurePreset": "msys2-debug"
     }
   ],
   "testPresets": [
     {
       "name": "msys2",
       "configurePreset": "msys2",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "msys2-debug",
+      "configurePreset": "msys2-debug",
       "output": { "outputOnFailure": true }
     }
   ]

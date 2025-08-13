@@ -13,11 +13,14 @@
 
 #include "config/system_constants.h"
 #include "version.h"
+#include "sakura_rc.h"
 #include "String_define.h"
 
+#include "env/DLLSHAREDATA.h"
 #include "util/window.h"
 #include "CDataProfile.h" // StringBufferW
-#include "uiparts/CMenuDrawer.h"
+
+#include "env/SMenuItem.hpp"
 
 UINT GetPrivateProfileIntW(
 	_In_ LPCWSTR lpAppName,
@@ -34,67 +37,8 @@ std::wstring GetPrivateProfileStringW(
 	std::optional<std::filesystem::path> iniPath = std::nullopt
 );
 
-struct SMenuItem {
-	int m_nLevel;
-	EFunctionCode m_eFuncCode;
-	wchar_t m_chAccessKey = '\0';
-
-	SMenuItem(
-		int nLevel,
-		int nFuncCode,
-		KEYCODE accessKey = '\0'
-	)
-		: m_nLevel( nLevel )
-		, m_eFuncCode(EFunctionCode(nFuncCode))
-		, m_chAccessKey(accessKey)
-	{
-	}
-
-	SMenuItem(
-		int nFuncCode,
-		KEYCODE accessKey = '\0'
-	)
-		: SMenuItem(0, nFuncCode, accessKey)
-	{
-	}
-
-	auto GetType() const noexcept
-	{
-		// セパレーター
-		if (1 == m_eFuncCode) return T_SEPARATOR;
-
-		// 特殊メニュー
-		if (29001 <= m_eFuncCode && m_eFuncCode <= 29006) return T_SPECIAL;
-
-		// 最上位ポップアップメニュー
-		if (34052 <= m_eFuncCode && m_eFuncCode <= 34059) return T_NODE;
-
-		// ポップアップメニュー
-		const std::set<int> popupFuncCodes{
-			32805,
-			34000,
-			34005,
-			34006,
-			34007,
-			34008,
-			34009,
-			34010,
-			34011,
-			34012,
-			34013,
-			34022,
-			34023,
-			34044,
-			34047,
-			34048,
-			34051,
-			34060,
-		};
-		if (const auto found = popupFuncCodes.find(m_eFuncCode); found != popupFuncCodes.cend()) return T_NODE;
-
-		return T_LEAF;
-	}
-};
+//! googletestの出力に機能IDを出力させる
+std::ostream& operator << (std::ostream& os, const EFunctionCode& eFuncCode);
 
 using SFuncCodeArray = std::array<EFunctionCode, 8>;
 
@@ -867,85 +811,13 @@ MATCHER(IsInitializedCommonSettingCustomMenu, "Checks if CommonSetting_CustomMen
 	constexpr int CUST_MENU = 1;
 	constexpr int TAB_RMENU = CUSTMENU_INDEX_FOR_TABWND;
 
-	const std::array<SMenuItem, 30> editRMenu = {{
-		{ F_UNDO, 'U' },
-		{ F_REDO, 'R' },
-		{ F_0 },
-		{ F_CUT, 'T' },
-		{ F_COPY, 'C' },
-		{ F_PASTE, 'P' },
-		{ F_DELETE, 'D' },
-		{ F_0 },
-		{ F_COPY_CRLF, 'L' },
-		{ F_COPY_ADDCRLF, 'H' },
-		{ F_PASTEBOX, 'X' },
-		{ F_0 },
-		{ F_SELECTALL, 'A' },
-		{ F_0 },
-		{ F_TAGJUMP, 'G' },
-		{ F_TAGJUMPBACK, 'B' },
-		{ F_0 },
-		{ F_COPYLINES, '@' },
-		{ F_COPYLINESASPASSAGE, '.' },
-		{ F_0 },
-		{ F_COPYFNAME, 'F' },
-		{ F_COPYPATH, '\\' },
-		{ F_COPYDIRPATH, 'O' },
-		{ F_0 },
-		{ F_OPEN_FOLDER_IN_EXPLORER, 'E' },
-		{ F_OPEN_COMMAND_PROMPT, 'W' },
-		{ F_OPEN_COMMAND_PROMPT_AS_ADMIN, 'w' },
-		{ F_OPEN_POWERSHELL, 'P' },
-		{ F_OPEN_POWERSHELL_AS_ADMIN, 'p' },
-		{ F_PROPERTY_FILE, 'F' },
-	}};
-
-	const std::array<SMenuItem, 7> custMenu = {{
-		{ F_FILEOPEN, 'O' },
-		{ F_FILESAVE, 'S' },
-		{ F_NEXTWINDOW, 'N' },
-		{ F_TOLOWER, 'L' },
-		{ F_TOUPPER, 'U' },
-		{ F_0 },
-		{ F_WINCLOSE, 'C' },
-	}};
-
-	const std::array<SMenuItem, 27> tabRMenu = {{
-		{ F_FILESAVE, 'S' },
-		{ F_FILESAVEAS_DIALOG, 'A' },
-		{ F_FILECLOSE, 'R' },
-		{ F_FILECLOSE_OPEN, 'L' },
-		{ F_WINCLOSE, 'C' },
-		{ F_FILE_REOPEN, 'W' },
-		{ F_0 },
-		{ F_COPYFNAME, 'F' },
-		{ F_COPYPATH },
-		{ F_COPYDIRPATH },
-		{ F_0 },
-		{ F_OPEN_FOLDER_IN_EXPLORER, 'F' },
-		{ F_OPEN_COMMAND_PROMPT, 'W' },
-		{ F_OPEN_COMMAND_PROMPT_AS_ADMIN, 'w' },
-		{ F_OPEN_POWERSHELL, 'P' },
-		{ F_OPEN_POWERSHELL_AS_ADMIN, 'p' },
-		{ F_0 },
-		{ F_GROUPCLOSE, 'G' },
-		{ F_TAB_CLOSEOTHER, 'O' },
-		{ F_TAB_CLOSELEFT, 'H' },
-		{ F_TAB_CLOSERIGHT, 'M' },
-		{ F_0 },
-		{ F_TAB_MOVERIGHT, '0' },
-		{ F_TAB_MOVELEFT, '1' },
-		{ F_TAB_SEPARATE, 'E' },
-		{ F_TAB_JOINTNEXT, 'X' },
-		{ F_TAB_JOINTPREV, 'V' },
-	}};
-
 	for (int i = 0; i < MAX_CUSTOM_MENU; ++i) {
 		EXPECT_THAT(sCustomMenu.m_szCustMenuNameArr[i], StrEq(L""));
 		EXPECT_THAT(sCustomMenu.m_bCustMenuPopupArr[i], IsTrue());
 	}
 
 	/* 右クリックメニュー */
+	const auto editRMenu = SMenuItem::LoadCustomMenuFromResource(F_MENU_RBUTTON);
 	EXPECT_THAT(sCustomMenu.m_nCustMenuItemNumArr[EDIT_RMENU], std::size(editRMenu));
 	for (size_t i = 0; i < std::size(editRMenu); ++i) {
 		EXPECT_THAT(sCustomMenu.m_nCustMenuItemFuncArr[EDIT_RMENU][i], editRMenu[i].m_eFuncCode);
@@ -953,6 +825,7 @@ MATCHER(IsInitializedCommonSettingCustomMenu, "Checks if CommonSetting_CustomMen
 	}
 
 	/* カスタムメニュー１ */
+	const auto custMenu = SMenuItem::LoadCustomMenuFromResource(F_CUSTMENU_1);
 	EXPECT_THAT(sCustomMenu.m_nCustMenuItemNumArr[CUST_MENU], std::size(custMenu));
 	for (size_t i = 0; i < std::size(custMenu); ++i) {
 		EXPECT_THAT(sCustomMenu.m_nCustMenuItemFuncArr[CUST_MENU][i], custMenu[i].m_eFuncCode);
@@ -960,6 +833,7 @@ MATCHER(IsInitializedCommonSettingCustomMenu, "Checks if CommonSetting_CustomMen
 	}
 
 	/* タブメニュー */
+	const auto tabRMenu = SMenuItem::LoadCustomMenuFromResource(F_CUSTMENU_24);
 	EXPECT_THAT(sCustomMenu.m_nCustMenuItemNumArr[TAB_RMENU], std::size(tabRMenu));
 	for (size_t i = 0; i < std::size(tabRMenu); ++i) {
 		EXPECT_THAT(sCustomMenu.m_nCustMenuItemFuncArr[TAB_RMENU][i], tabRMenu[i].m_eFuncCode);
@@ -973,48 +847,11 @@ MATCHER(IsInitializedCommonSettingCustomMenu, "Checks if CommonSetting_CustomMen
 MATCHER(IsInitializedCommonSettingToolBar, "Checks if CommonSetting_ToolBar is properly initialized") {
 	const CommonSetting_ToolBar& sToolBar = arg;
 
-	constexpr std::array<int, 25> DEFAULT_TOOL_FUNCS = {
-		F_FILENEW,				//新規作成
-		F_FILEOPEN_DROPDOWN,	//ファイルを開く(DropDown)
-		F_FILESAVE,				//上書き保存
-		F_FILESAVEAS_DIALOG,	//名前を付けて保存
-		F_SEPARATOR,
+	const auto defaultTools = CommonSetting_ToolBar::GetDefaultTools();
 
-		F_UNDO,					//元に戻す(Undo)
-		F_REDO,					//やり直し(Redo)
-		F_SEPARATOR,
-
-		F_JUMPHIST_PREV,		//移動履歴: 前へ
-		F_JUMPHIST_NEXT,		//移動履歴: 次へ
-		F_SEPARATOR,
-
-		F_SEARCH_DIALOG,		//検索
-		F_SEARCH_NEXT,			//次を検索
-		F_SEARCH_PREV,			//前を検索
-		F_REPLACE_DIALOG,		//置換
-		F_SEARCH_CLEARMARK,		//検索マークのクリア
-		F_GREP_DIALOG,			//Grep
-		F_SEPARATOR,
-
-		F_OUTLINE,				//アウトライン解析
-		F_SEPARATOR,
-
-		F_TYPE_LIST,			//タイプ別設定一覧
-		F_OPTION_TYPE,			//タイプ別設定
-		F_OPTION,				//共通設定
-		F_SEPARATOR,
-
-		F_MENU_ALLFUNC,			//コマンド一覧
-	};
-
-	CMenuDrawer cMenuDrawer;
-	EXPECT_THAT(sToolBar.m_nToolBarButtonNum, std::size(DEFAULT_TOOL_FUNCS));
-	for (size_t i = 0; i < std::size(DEFAULT_TOOL_FUNCS); ++i) {
-		int buttonId = 0;
-		if (const auto funcCode = DEFAULT_TOOL_FUNCS[i]; F_SEPARATOR != funcCode) {
-			buttonId = cMenuDrawer.FindToolbarNoFromCommandId(funcCode);
-		}
-		EXPECT_THAT(sToolBar.m_nToolBarButtonIdxArr[i], buttonId);
+	EXPECT_THAT(sToolBar.m_nToolBarButtonNum, std::size(defaultTools));
+	for (size_t i = 0; i < int(std::size(defaultTools)); ++i) {
+		EXPECT_THAT(sToolBar.m_nToolBarButtonIdxArr[i], defaultTools[i]);
 	}
 
 	EXPECT_THAT(sToolBar.m_bToolBarIsFlat, IsFalse());
@@ -1145,24 +982,16 @@ MATCHER(IsInitializedCommonSettingFileName, "Checks if CommonSetting_FileName is
 	EXPECT_THAT(sFileName.m_bTransformShortPath, IsTrue());
 	EXPECT_THAT(sFileName.m_nTransformShortMaxWidth, 100);
 
-	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
-		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
-		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
-		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
-		{ LR"(%TEMP%\)",              LS(STR_TRANSNAME_TEMP) },
-		{ LR"(%Common DeskTop%\)",    LS(STR_TRANSNAME_COMDESKTOP) },
-		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
-		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
-	}};
+	const auto defaultConversions = CommonSetting_FileName::GetDefaultConversion();
 
-	EXPECT_THAT(sFileName.m_nTransformFileNameArrNum, expectedPairs.size());
+	EXPECT_THAT(sFileName.m_nTransformFileNameArrNum, defaultConversions.size());
 
-	for (size_t i = 0; i < expectedPairs.size(); ++i) {
-		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(expectedPairs[i].first));
-		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(expectedPairs[i].second));
+	for (size_t i = 0; i < defaultConversions.size(); ++i) {
+		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(defaultConversions[i].first));
+		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(defaultConversions[i].second));
 	}
 
-	for (int i = expectedPairs.size(); i < MAX_TRANSFORM_FILENAME; ++i ){
+	for (size_t i = defaultConversions.size(); i < MAX_TRANSFORM_FILENAME; ++i) {
 		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(L""));
 		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(L""));
 	}
@@ -1220,352 +1049,15 @@ MATCHER(IsInitializedCommonSettingPlugin, "Checks if CommonSetting_Plugin is pro
 MATCHER(IsInitializedCommonSettingMainMenu, "Checks if CommonSetting_MainMenu is properly initialized") {
     const CommonSetting_MainMenu& sMainMenu = arg;
 
-	const std::array<SMenuItem, 336> mainMenuTable = {{
-		{ 0, 34052, 'F' },
-		{ 1, 30101, 'N' },
-		{ 1, 30110, 'M' },
-		{ 1, 30102, 'O' },
-		{ 1, 30103, 'S' },
-		{ 1, 30104, 'A' },
-		{ 1, 30120, 'Z' },
-		{ 1, 1 },
-		{ 1, 30109, 'E' },
-		{ 1, 31320, 'C' },
-		{ 1, 30105, 'R' },
-		{ 1, 30107, 'L' },
-		{ 1, 34005, 'W' },
-		{ 2, 30119, 'W' },
-		{ 2, 1 },
-		{ 2, 30111, 'S' },
-		{ 2, 30112, 'J' },
-		{ 2, 30113, 'E' },
-		{ 2, 30122, 'L' },
-		{ 2, 30114, 'U' },
-		{ 2, 30117, 'N' },
-		{ 2, 30115, '8' },
-		{ 2, 30118, 'C' },
-		{ 2, 30116, '7' },
-		{ 1, 1 },
-		{ 1, 30150, 'P' },
-		{ 1, 30151, 'V' },
-		{ 1, 30152, 'U' },
-		{ 1, 1 },
-		{ 1, 30190, 'T' },
-		{ 1, 30180, 'B' },
-		{ 1, 1 },
-		{ 1, 34006, 'F' },
-		{ 2, 29002 },
-		{ 1, 34007, 'D' },
-		{ 2, 29003 },
-		{ 1, 1 },
-		{ 1, 31380, 'G' },
-		{ 1, 30194, 'Q' },
-		{ 1, 30195, 'X' },
-		{ 0, 34053, 'E' },
-		{ 1, 30210, 'U' },
-		{ 1, 30211, 'R' },
-		{ 1, 1 },
-		{ 1, 30601, 'T' },
-		{ 1, 30602, 'C' },
-		{ 1, 30604, 'P' },
-		{ 1, 30221, 'D' },
-		{ 1, 30401, 'A' },
-		{ 1, 1 },
-		{ 1, 30285, 'R' },
-		{ 1, 1 },
-		{ 1, 30603, 'L' },
-		{ 1, 30608, 'H' },
-		{ 1, 30605, 'X' },
-		{ 1, 30222, 'B' },
-		{ 1, 1 },
-		{ 1, 34008, 'I' },
-		{ 2, 30790, 'D' },
-		{ 2, 30791, 'T' },
-		{ 2, 30792, 'C' },
-		{ 2, 30794, 'F' },
-		{ 2, 30795, 'O' },
-		{ 1, 34012, 'V' },
-		{ 2, 30230, 'L' },
-		{ 2, 30231, 'R' },
-		{ 2, 1 },
-		{ 2, 30400, 'W' },
-		{ 2, 30232, 'T' },
-		{ 2, 30233, 'D' },
-		{ 2, 1 },
-		{ 2, 30240, 'U' },
-		{ 2, 30241, 'K' },
-		{ 2, 1 },
-		{ 2, 30242, 'H' },
-		{ 2, 30243, 'E' },
-		{ 2, 1 },
-		{ 2, 30244, 'X' },
-		{ 2, 30245, 'Y' },
-		{ 2, 1 },
-		{ 2, 30250, '2' },
-		{ 2, 1 },
-		{ 2, 30260, 'A' },
-		{ 2, 30261, 'B' },
-		{ 2, 30262, 'S' },
-		{ 2, 30263, 'P' },
-		{ 2, 1 },
-		{ 2, 30610, '@' },
-		{ 2, 30611, '.' },
-		{ 2, 30612, ':' },
-		{ 2, 30613, 'C' },
-		{ 2, 30614, 'F' },
-		{ 2, 1 },
-		{ 2, 30622, '-' },
-		{ 2, 30620, '\\' },
-		{ 2, 30621, '^' },
-		{ 1, 34010, 'O' },
-		{ 2, 30315, 'Q' },
-		{ 2, 30316, 'K' },
-		{ 2, 30320, 'L' },
-		{ 2, 30321, 'R' },
-		{ 2, 30383, 'A' },
-		{ 2, 30382, 'Z' },
-		{ 2, 30332, 'H' },
-		{ 2, 30333, 'E' },
-		{ 2, 1 },
-		{ 2, 30342, 'U' },
-		{ 2, 30343, 'D' },
-		{ 2, 30350, 'T' },
-		{ 2, 30351, 'B' },
-		{ 2, 1 },
-		{ 2, 30360, 'C' },
-		{ 2, 1 },
-		{ 2, 30920, 'J' },
-		{ 2, 30909, 'I' },
-		{ 2, 1 },
-		{ 2, 30370, 'P' },
-		{ 2, 30371, 'N' },
-		{ 2, 30372, 'S' },
-		{ 2, 1 },
-		{ 2, 30988 },
-		{ 2, 30989 },
-		{ 2, 30393 },
-		{ 2, 30394 },
-		{ 1, 34011, 'S' },
-		{ 2, 30400, 'W' },
-		{ 2, 30401, 'A' },
-		{ 2, 30410, 'S' },
-		{ 2, 1 },
-		{ 2, 30415, 'Q' },
-		{ 2, 30416, 'K' },
-		{ 2, 30420, 'L' },
-		{ 2, 30421, 'R' },
-		{ 2, 30483, '2' },
-		{ 2, 30482, '8' },
-		{ 2, 30432, 'H' },
-		{ 2, 30433, 'T' },
-		{ 2, 1 },
-		{ 2, 30442, 'U' },
-		{ 2, 30443, 'D' },
-		{ 2, 30450, '1' },
-		{ 2, 30451, '9' },
-		{ 2, 1 },
-		{ 2, 30484 },
-		{ 2, 30485 },
-		{ 1, 34051, 'F' },
-		{ 2, 30510, 'S' },
-		{ 2, 1 },
-		{ 2, 30515, 'Q' },
-		{ 2, 30516, 'K' },
-		{ 2, 30520, 'L' },
-		{ 2, 30521, 'R' },
-		{ 2, 30530, 'A' },
-		{ 2, 30532, 'H' },
-		{ 2, 30533, 'T' },
-		{ 2, 1 },
-		{ 2, 30542, 'U' },
-		{ 2, 30543, 'D' },
-		{ 2, 30550, '1' },
-		{ 2, 30551, '9' },
-		{ 1, 34009, 'K' },
-		{ 2, 30280, 'L' },
-		{ 2, 30281, 'R' },
-		{ 2, 1 },
-		{ 2, 30282, 'A' },
-		{ 2, 30283, 'D' },
-		{ 2, 1 },
-		{ 2, 30284, 'U' },
-		{ 0, 34054, 'C' },
-		{ 1, 30800, 'L' },
-		{ 1, 30801, 'U' },
-		{ 1, 1 },
-		{ 1, 30810, 'F' },
-		{ 1, 30811, 'Z' },
-		{ 1, 30812, 'N' },
-		{ 1, 30816, 'A' },
-		{ 1, 30815, 'M' },
-		{ 1, 30817, 'J' },
-		{ 1, 30813, 'K' },
-		{ 1, 30814, 'H' },
-		{ 1, 1 },
-		{ 1, 30830, 'S' },
-		{ 1, 30831, 'T' },
-		{ 1, 34013, 'C' },
-		{ 2, 30850, 'A' },
-		{ 2, 30851, 'M' },
-		{ 2, 30852, 'W' },
-		{ 2, 30853, 'U' },
-		{ 2, 30856, 'N' },
-		{ 2, 30854, 'T' },
-		{ 2, 30855, 'F' },
-		{ 2, 1 },
-		{ 2, 30860, 'J' },
-		{ 2, 30861, 'E' },
-		{ 2, 30862, '8' },
-		{ 2, 30863, '7' },
-		{ 2, 1 },
-		{ 2, 30870, 'B' },
-		{ 2, 30880, 'D' },
-		{ 0, 34055, 'S' },
-		{ 1, 30901, 'F' },
-		{ 1, 30902, 'N' },
-		{ 1, 30903, 'P' },
-		{ 1, 30904, 'R' },
-		{ 1, 30905, 'C' },
-		{ 1, 30909, 'I' },
-		{ 1, 34048, 'S' },
-		{ 2, 30981, 'F' },
-		{ 2, 30982, 'B' },
-		{ 2, 30983, 'R' },
-		{ 2, 30984, 'X' },
-		{ 2, 30985, 'M' },
-		{ 2, 30986, 'N' },
-		{ 1, 1 },
-		{ 1, 34047, 'M' },
-		{ 2, 30970, 'S' },
-		{ 2, 30971, 'A' },
-		{ 2, 30972, 'Z' },
-		{ 2, 30973, 'X' },
-		{ 2, 30974, 'V' },
-		{ 1, 30910, 'G' },
-		{ 1, 30912 },
-		{ 1, 30920, 'J' },
-		{ 1, 30930, 'L' },
-		{ 1, 30990, 'E' },
-		{ 1, 30940, 'T' },
-		{ 1, 30941, 'B' },
-		{ 1, 30943 },
-		{ 1, 30944 },
-		{ 1, 30946 },
-		{ 1, 30162, 'C' },
-		{ 1, 1 },
-		{ 1, 30950, '@' },
-		{ 1, 30976, 'D' },
-		{ 1, 30978 },
-		{ 1, 30979 },
-		{ 1, 30980 },
-		{ 1, 1 },
-		{ 1, 30960, '[' },
-		{ 0, 34056, 'T' },
-		{ 1, 31250, 'R' },
-		{ 1, 31251, 'M' },
-		{ 1, 31252, 'A' },
-		{ 1, 31253, 'D' },
-		{ 1, 34022, 'B' },
-		{ 2, 29005 },
-		{ 1, 31254, 'E' },
-		{ 1, 1 },
-		{ 1, 31270, 'X' },
-		{ 1, 30170, 'P' },
-		{ 1, 30171, 'S' },
-		{ 1, 1 },
-		{ 1, 31430, '/' },
-		{ 1, 1 },
-		{ 1, 29006 },
-		{ 1, 1 },
-		{ 1, 34023, 'U' },
-		{ 2, 29004 },
-		{ 0, 34057, 'O' },
-		{ 1, 31100, 'T' },
-		{ 1, 31101, 'K' },
-		{ 1, 31103, 'M' },
-		{ 1, 31102, 'S' },
-		{ 1, 31104, 'N' },
-		{ 1, 1 },
-		{ 1, 31110, 'L' },
-		{ 1, 31111, 'Y' },
-		{ 1, 31112, 'C' },
-		{ 1, 31120, 'F' },
-		{ 1, 31113, 'O' },
-		{ 1, 1 },
-		{ 1, 32805, 'X' },
-		{ 2, 31141, 'X' },
-		{ 2, 31142, 'S' },
-		{ 2, 31143, 'W' },
-		{ 1, 31140, 'W' },
-		{ 1, 31144, 'B' },
-		{ 1, 1 },
-		{ 1, 31001, 'I' },
-		{ 1, 30185, 'R' },
-		{ 1, 31431, 'H' },
-		{ 1, 31010, 'A' },
-		{ 1, 34044, 'E' },
-		{ 2, 31081, 'C' },
-		{ 2, 31082, 'L' },
-		{ 2, 31083, 'R' },
-		{ 0, 34058, 'W' },
-		{ 1, 31310, '-' },
-		{ 1, 31311, 'I' },
-		{ 1, 31312, 'S' },
-		{ 1, 1 },
-		{ 1, 31320, 'C' },
-		{ 1, 31321, 'Q' },
-		{ 1, 31388, 'O' },
-		{ 1, 31340, 'N' },
-		{ 1, 31341, 'P' },
-		{ 1, 31336, 'W' },
-		{ 1, 1 },
-		{ 1, 31330, 'E' },
-		{ 1, 31331, 'H' },
-		{ 1, 31332, 'T' },
-		{ 1, 31334, 'F' },
-		{ 1, 34000, 'B' },
-		{ 2, 31333, 'B' },
-		{ 2, 31380, 'G' },
-		{ 2, 31389, 'H' },
-		{ 2, 31390, 'M' },
-		{ 2, 31381, 'N' },
-		{ 2, 31382, 'P' },
-		{ 2, 31383, 'R' },
-		{ 2, 31384, 'L' },
-		{ 2, 31385, 'E' },
-		{ 2, 31386, 'X' },
-		{ 2, 31387, 'V' },
-		{ 1, 1 },
-		{ 1, 31350, 'V' },
-		{ 1, 31352, 'Y' },
-		{ 1, 31351, 'M' },
-		{ 1, 1 },
-		{ 1, 31360, 'R' },
-		{ 1, 1 },
-		{ 1, 31370, 'U' },
-		{ 1, 31337, 'D' },
-		{ 1, 1 },
-		{ 1, 34060, 'A' },
-		{ 2, 29001 },
-		{ 0, 34059, 'H' },
-		{ 1, 31440, 'O' },
-		{ 1, 31441, 'S' },
-		{ 1, 1 },
-		{ 1, 31445, 'M' },
-		{ 1, 30630, 'Q' },
-		{ 1, 31450, 'E' },
-		{ 1, 31451, 'H' },
-		{ 1, 1 },
-		{ 1, 31455, 'A' },
-	}};
+	const auto mainMenuTable = SMenuItem::LoadMainMenuFromResource(IDR_MAINMENU);
 
 	EXPECT_THAT(sMainMenu.m_nVersion, 0);
 	EXPECT_THAT(sMainMenu.m_nMainMenuNum, std::size(mainMenuTable));
 	for (size_t i = 0; i < std::size(mainMenuTable); ++i) {
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nLevel,  mainMenuTable[i].m_nLevel);
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nType,   mainMenuTable[i].GetType());
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nFunc,   mainMenuTable[i].m_eFuncCode);
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sKey[0], mainMenuTable[i].m_chAccessKey);
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nLevel,  mainMenuTable[i].m_nLevel)      << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nType,   mainMenuTable[i].GetType())     << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nFunc,   mainMenuTable[i].m_eFuncCode)   << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sKey[0], mainMenuTable[i].m_chAccessKey) << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
 		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sName,   StrEq(L""));
 	}
 	for (size_t i = std::size(mainMenuTable); i < std::size(sMainMenu.m_cMainMenuTbl); ++i) {

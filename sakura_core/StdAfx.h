@@ -41,6 +41,7 @@
 #include <deque>
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
@@ -54,6 +55,8 @@
 #include <numeric>
 #include <optional>
 #include <regex>
+#include <set>
+#include <source_location>
 #include <sstream>
 #include <stdexcept>
 #include <string>

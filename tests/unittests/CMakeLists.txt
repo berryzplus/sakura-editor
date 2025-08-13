@@ -1,7 +1,18 @@
-cmake_minimum_required(VERSION 3.16)
+﻿cmake_minimum_required(VERSION 3.16)
 
 # Find GTest
 find_package(GTest CONFIG REQUIRED)
+
+if(MSVC)
+  # Find MS Detours(for MSVC)
+  find_path(DETOURS_INCLUDE_DIRS "detours/detours.h")
+  find_library(DETOURS_LIBRARY detours REQUIRED)
+endif(MSVC)
+
+if(MINGW)
+  # Find MinHook(for MinGW64)
+  find_package(minhook CONFIG REQUIRED)
+endif(MINGW)
 
 # Create a custom target for test_resource_zip generation
 add_custom_target(test_resource_zip ALL
@@ -19,11 +30,21 @@ set(PROJECT_NAME tests1)
 
 # define source files of tests1
 file(GLOB_RECURSE TESTS1_SOURCES
-  ${CMAKE_CURRENT_LIST_DIR}/test*.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/code*.cpp)
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/test*.cpp)
+
+if(MINGW)
+  # coverage.cppをリストから削除
+  list(REMOVE_ITEM TESTS1_SOURCES ${CMAKE_SOURCE_DIR}/src/test/resources/coverage.cpp)
+endif(MINGW)
 
 # define header files of tests1
 file(GLOB_RECURSE TESTS1_HEADERS
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.hpp
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.h
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.hpp
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.h
   ${CMAKE_CURRENT_LIST_DIR}/*.hpp
   ${CMAKE_CURRENT_LIST_DIR}/*.h)
 
@@ -75,7 +96,24 @@ target_link_libraries(${PROJECT_NAME}
     GTest::gtest
     GTest::gmock)
 
+if(MSVC)
+  # link with hooking library
+  target_include_directories(${PROJECT_NAME}
+    PRIVATE
+      ${DETOURS_INCLUDE_DIRS}
+  )
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      ${DETOURS_LIBRARY}
+  )
+endif(MSVC)
+
 if(MINGW)
+  # link with hooking library
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      minhook::minhook
+  )
   target_link_options(${PROJECT_NAME}
     PRIVATE
       -mconsole
