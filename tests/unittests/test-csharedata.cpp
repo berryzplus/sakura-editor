@@ -16,9 +16,9 @@
 #include "sakura_rc.h"
 #include "String_define.h"
 
+#include "env/DLLSHAREDATA.h"
 #include "util/window.h"
 #include "CDataProfile.h" // StringBufferW
-#include "uiparts/CMenuDrawer.h"
 
 #include "env/SMenuItem.hpp"
 
@@ -847,48 +847,11 @@ MATCHER(IsInitializedCommonSettingCustomMenu, "Checks if CommonSetting_CustomMen
 MATCHER(IsInitializedCommonSettingToolBar, "Checks if CommonSetting_ToolBar is properly initialized") {
 	const CommonSetting_ToolBar& sToolBar = arg;
 
-	constexpr std::array<int, 25> DEFAULT_TOOL_FUNCS = {
-		F_FILENEW,				//新規作成
-		F_FILEOPEN_DROPDOWN,	//ファイルを開く(DropDown)
-		F_FILESAVE,				//上書き保存
-		F_FILESAVEAS_DIALOG,	//名前を付けて保存
-		F_SEPARATOR,
+	const auto defaultTools = CommonSetting_ToolBar::GetDefaultTools();
 
-		F_UNDO,					//元に戻す(Undo)
-		F_REDO,					//やり直し(Redo)
-		F_SEPARATOR,
-
-		F_JUMPHIST_PREV,		//移動履歴: 前へ
-		F_JUMPHIST_NEXT,		//移動履歴: 次へ
-		F_SEPARATOR,
-
-		F_SEARCH_DIALOG,		//検索
-		F_SEARCH_NEXT,			//次を検索
-		F_SEARCH_PREV,			//前を検索
-		F_REPLACE_DIALOG,		//置換
-		F_SEARCH_CLEARMARK,		//検索マークのクリア
-		F_GREP_DIALOG,			//Grep
-		F_SEPARATOR,
-
-		F_OUTLINE,				//アウトライン解析
-		F_SEPARATOR,
-
-		F_TYPE_LIST,			//タイプ別設定一覧
-		F_OPTION_TYPE,			//タイプ別設定
-		F_OPTION,				//共通設定
-		F_SEPARATOR,
-
-		F_MENU_ALLFUNC,			//コマンド一覧
-	};
-
-	CMenuDrawer cMenuDrawer;
-	EXPECT_THAT(sToolBar.m_nToolBarButtonNum, std::size(DEFAULT_TOOL_FUNCS));
-	for (size_t i = 0; i < std::size(DEFAULT_TOOL_FUNCS); ++i) {
-		int buttonId = 0;
-		if (const auto funcCode = DEFAULT_TOOL_FUNCS[i]; F_SEPARATOR != funcCode) {
-			buttonId = cMenuDrawer.FindToolbarNoFromCommandId(funcCode);
-		}
-		EXPECT_THAT(sToolBar.m_nToolBarButtonIdxArr[i], buttonId);
+	EXPECT_THAT(sToolBar.m_nToolBarButtonNum, std::size(defaultTools));
+	for (size_t i = 0; i < int(std::size(defaultTools)); ++i) {
+		EXPECT_THAT(sToolBar.m_nToolBarButtonIdxArr[i], defaultTools[i]);
 	}
 
 	EXPECT_THAT(sToolBar.m_bToolBarIsFlat, IsFalse());
