@@ -180,6 +180,9 @@
     <ClCompile Include="test-codechecker.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\test\cpp\env\test-smenuitem.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\cpp\pch.h">

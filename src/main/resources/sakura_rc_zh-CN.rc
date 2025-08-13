@@ -2240,6 +2240,404 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "文件(&F)"
+    BEGIN
+        MENUITEM "新建(&N)",                                   F_FILENEW
+        MENUITEM "新建窗口(&M)",                               F_FILENEW_NEWWINDOW
+        MENUITEM "打开...(&O)",                                F_FILEOPEN
+        MENUITEM "保存(&S)",                                   F_FILESAVE
+        MENUITEM "另存为...(&A)",                              F_FILESAVEAS_DIALOG
+        MENUITEM "全部保存(&Z)",                               F_FILESAVEALL
+        MENUITEM SEPARATOR
+        MENUITEM "保存并关闭(&E)",                             F_FILESAVECLOSE
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "关闭未命名文件(&R)",                         F_FILECLOSE
+        MENUITEM "关闭并打开...(&L)",                          F_FILECLOSE_OPEN
+        POPUP "重新打开(指定编码)(&W)"
+        BEGIN
+            MENUITEM "重新打开(&W)",                           F_FILE_REOPEN
+            MENUITEM SEPARATOR
+            MENUITEM "以SJIS重新打开(&S)",                     F_FILE_REOPEN_SJIS
+            MENUITEM "以JIS重新打开(&J)",                      F_FILE_REOPEN_JIS
+            MENUITEM "以EUC重新打开(&E)",                      F_FILE_REOPEN_EUC
+            MENUITEM "以Latin1重新打开(&L)",                   F_FILE_REOPEN_LATIN1
+            MENUITEM "以UTF-16重新打开(&U)",                   F_FILE_REOPEN_UNICODE
+            MENUITEM "以UTF-16 BE重新打开(&N)",                F_FILE_REOPEN_UNICODEBE
+            MENUITEM "以UTF-8重新打开(&8)",                    F_FILE_REOPEN_UTF8
+            MENUITEM "以CESU-8重新打开(&C)",                   F_FILE_REOPEN_CESU8
+            MENUITEM "以UTF-7重新打开(&7)",                    F_FILE_REOPEN_UTF7
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "打印...(&P)",                                F_PRINT
+        MENUITEM "打印预览...(&V)",                            F_PRINT_PREVIEW
+        MENUITEM "页面设置...(&U)",                            F_PRINT_PAGESETUP
+        MENUITEM SEPARATOR
+        MENUITEM "文件属性(&T)",                               F_PROPERTY_FILE
+        MENUITEM "浏览(&B)",                                   F_BROWSE
+        MENUITEM SEPARATOR
+        POPUP "最近使用的文件(&F)"
+        BEGIN
+            MENUITEM "最近使用的文件",                         F_FILE_USED_RECENTLY
+        END
+        POPUP "最近使用的文件夹(&D)"
+        BEGIN
+            MENUITEM "最近使用的文件夹",                       F_FOLDER_USED_RECENTLY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "关闭组(&G)",                                 F_GROUPCLOSE
+        MENUITEM "退出所有编辑器(&Q)",                         F_EXITALLEDITORS
+        MENUITEM "完全退出Sakura(&X)",                         F_EXITALL
+    END
+    POPUP "编辑(&E)"
+    BEGIN
+        MENUITEM "撤销(&U)",                                   F_UNDO
+        MENUITEM "重做(&R)",                                   F_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "剪切(&T)",                                   F_CUT
+        MENUITEM "复制(&C)",                                   F_COPY
+        MENUITEM "粘贴(&P)",                                   F_PASTE
+        MENUITEM "删除(&D)",                                   F_DELETE
+        MENUITEM "全选(&A)",                                   F_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "重新转换(&R)",                               F_RECONVERT
+        MENUITEM SEPARATOR
+        MENUITEM "复制为CRLF格式(&L)",                         F_COPY_CRLF
+        MENUITEM "添加CRLF后复制(&H)",                         F_COPY_ADDCRLF
+        MENUITEM "框粘贴(&X)",                                 F_PASTEBOX
+        MENUITEM "向后删除(&B)",                               F_DELETE_BACK
+        MENUITEM SEPARATOR
+        POPUP "插入(&I)"
+        BEGIN
+            MENUITEM "插入日期(&D)",                           F_INS_DATE
+            MENUITEM "插入时间(&T)",                           F_INS_TIME
+            MENUITEM "控制码输入对话框(&C)",                   F_CTRL_CODE_DIALOG
+            MENUITEM "插入最近使用文件(&F)",                   F_INS_FILE_USED_RECENTLY
+            MENUITEM "插入最近使用文件夹(&O)",                 F_INS_FOLDER_USED_RECENTLY
+        END
+        POPUP "高级编辑(&V)"
+        BEGIN
+            MENUITEM "删除至词首(&L)",                         F_WordDeleteToStart
+            MENUITEM "删除至词尾(&R)",                         F_WordDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "选中光标处单词(&W)",                     F_SELECTWORD
+            MENUITEM "剪切整个单词(&T)",                       F_WordCut
+            MENUITEM "删除整个单词(&D)",                       F_WordDelete
+            MENUITEM SEPARATOR
+            MENUITEM "剪切至行首(&U)",                         F_LineCutToStart
+            MENUITEM "剪切至行尾(&K)",                         F_LineCutToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "删除至行首(&H)",                         F_LineDeleteToStart
+            MENUITEM "删除至行尾(&E)",                         F_LineDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "剪切整行(&X)",                           F_CUT_LINE
+            MENUITEM "删除整行(&Y)",                           F_DELETE_LINE
+            MENUITEM SEPARATOR
+            MENUITEM "复制行(&2)",                             F_DUPLICATELINE
+            MENUITEM SEPARATOR
+            MENUITEM "Tab缩进(&A)",                            F_INDENT_TAB
+            MENUITEM "反向Tab缩进(&B)",                        F_UNINDENT_TAB
+            MENUITEM "空格缩进(&S)",                           F_INDENT_SPACE
+            MENUITEM "反向空格缩进(&P)",                       F_UNINDENT_SPACE
+            MENUITEM SEPARATOR
+            MENUITEM "复制选中行(&@)",                         F_COPYLINES
+            MENUITEM "以段落形式复制选中内容(&.)",             F_COPYLINESASPASSAGE
+            MENUITEM "带行号复制选中行(&:)",                   F_COPYLINESWITHLINENUMBER
+            MENUITEM "带HTML标记复制选中内容(&C)",             F_COPY_COLOR_HTML
+            MENUITEM "带行号和HTML标记复制(&F)",               F_COPY_COLOR_HTML_LINENUMBER
+            MENUITEM SEPARATOR
+            MENUITEM "复制当前文件名(&-)",                     F_COPYFNAME
+            MENUITEM "复制当前文件路径(&\\)",                  F_COPYPATH
+            MENUITEM "复制文件路径及光标位置(&^)",             F_COPYTAG
+        END
+        POPUP "光标移动(&O)"
+        BEGIN
+            MENUITEM "光标上移2行(&Q)",                        F_UP2
+            MENUITEM "光标下移2行(&K)",                        F_DOWN2
+            MENUITEM "移至词首(&L)",                           F_WORDLEFT
+            MENUITEM "移至词尾(&R)",                           F_WORDRIGHT
+            MENUITEM "上一段落(&A)",                           F_GOPREVPARAGRAPH
+            MENUITEM "下一段落(&Z)",                           F_GONEXTPARAGRAPH
+            MENUITEM "移至行首(&H)",                           F_GOLINETOP
+            MENUITEM "移至行尾(&E)",                           F_GOLINEEND
+            MENUITEM SEPARATOR
+            MENUITEM "向上翻页(&U)",                           F_1PageUp
+            MENUITEM "向下翻页(&D)",                           F_1PageDown
+            MENUITEM "跳至文件首(&T)",                         F_GOFILETOP
+            MENUITEM "跳至文件尾(&B)",                         F_GOFILEEND
+            MENUITEM SEPARATOR
+            MENUITEM "当前行居中(&C)",                         F_CURLINECENTER
+            MENUITEM SEPARATOR
+            MENUITEM "跳转到行(&J)",                           F_JUMP_DIALOG
+            MENUITEM "跳转至初始搜索位置(&I)",                 F_JUMP_SRCHSTARTPOS
+            MENUITEM SEPARATOR
+            MENUITEM "跳转历史：上一位置(&P)",                 F_JUMPHIST_PREV
+            MENUITEM "跳转历史：下一位置(&N)",                 F_JUMPHIST_NEXT
+            MENUITEM "记录当前位置到跳转历史(&S)",             F_JUMPHIST_SET
+            MENUITEM SEPARATOR
+            MENUITEM "跳转至下一个函数标记",                   F_FUNCLIST_NEXT
+            MENUITEM "跳转至上一个函数标记",                   F_FUNCLIST_PREV
+            MENUITEM "下一修改行",                             F_MODIFYLINE_NEXT
+            MENUITEM "上一修改行",                             F_MODIFYLINE_PREV
+        END
+        POPUP "选择(&S)"
+        BEGIN
+            MENUITEM "选中光标处单词(&W)",                     F_SELECTWORD
+            MENUITEM "全选(&A)",                               F_SELECTALL
+            MENUITEM "开始选择(&S)",                           F_BEGIN_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "向上选择2行(&Q)",                        F_UP2_SEL
+            MENUITEM "向下选择2行(&K)",                        F_DOWN2_SEL
+            MENUITEM "选中至词首左侧(&L)",                     F_WORDLEFT_SEL
+            MENUITEM "选中至词尾右侧(&R)",                     F_WORDRIGHT_SEL
+            MENUITEM "选中上一段落(&2)",                       F_GOPREVPARAGRAPH_SEL
+            MENUITEM "选中下一段落(&8)",                       F_GONEXTPARAGRAPH_SEL
+            MENUITEM "选中至行首(&H)",                         F_GOLINETOP_SEL
+            MENUITEM "选中至行尾(&T)",                         F_GOLINEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "向上选择1页(&U)",                        F_1PageUp_Sel
+            MENUITEM "向下选择1页(&D)",                        F_1PageDown_Sel
+            MENUITEM "选中至文件首(&1)",                       F_GOFILETOP_SEL
+            MENUITEM "选中至文件尾(&9)",                       F_GOFILEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "选中下一修改行",                         F_MODIFYLINE_NEXT_SEL
+            MENUITEM "选中上一修改行",                         F_MODIFYLINE_PREV_SEL
+        END
+        POPUP "框选模式(&F)"
+        BEGIN
+            MENUITEM "开始框选(&S)",                           F_BEGIN_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(框选)向上2行(&Q)",                      F_UP2_BOX
+            MENUITEM "(框选)向下2行(&K)",                      F_DOWN2_BOX
+            MENUITEM "(框选)至词首左侧(&L)",                   F_WORDLEFT_BOX
+            MENUITEM "(框选)至词尾右侧(&R)",                   F_WORDRIGHT_BOX
+            MENUITEM "(框选)至逻辑行首(&A)",                   F_GOLOGICALLINETOP_BOX
+            MENUITEM "(框选)至行首左侧(&H)",                   F_GOLINETOP_BOX
+            MENUITEM "(框选)至行尾(&T)",                       F_GOLINEEND_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(框选)向上1页(&U)",                      F_1PageUp_BOX
+            MENUITEM "(框选)向下1页(&D)",                      F_1PageDown_BOX
+            MENUITEM "(框选)跳至文件首(&1)",                   F_GOFILETOP_BOX
+            MENUITEM "(框选)跳至文件尾(&9)",                   F_GOFILEEND_BOX
+        END
+        POPUP "格式整理(&K)"
+        BEGIN
+            MENUITEM "左端空白修剪(&L)",                       F_LTRIM
+            MENUITEM "右端空白修剪(&R)",                       F_RTRIM
+            MENUITEM SEPARATOR
+            MENUITEM "升序排列选中行(&A)",                     F_SORT_ASC
+            MENUITEM "降序排列选中行(&D)",                     F_SORT_DESC
+            MENUITEM SEPARATOR
+            MENUITEM "合并选中行(去重)(&U)",                   F_MERGE
+        END
+    END
+    POPUP "转换(&C)"
+    BEGIN
+        MENUITEM "转换为小写(&L)",                             F_TOLOWER
+        MENUITEM "转换为大写(&U)",                             F_TOUPPER
+        MENUITEM SEPARATOR
+        MENUITEM "全角转半角(&F)",                             F_TOHANKAKU
+        MENUITEM "半角字符+平假名→全角片假名(&Z)",            F_TOZENKAKUKATA
+        MENUITEM "半角字符+片假名→全角平假名(&N)",            F_TOZENKAKUHIRA
+        MENUITEM "全角字母→半角字母(&A)",                     F_TOHANEI
+        MENUITEM "半角字母→全角字母(&M)",                     F_TOZENEI
+        MENUITEM "全角片假名→半角片假名(&J)",                 F_TOHANKATA
+        MENUITEM "半角片假名→全角片假名(&K)",                 F_HANKATATOZENKATA
+        MENUITEM "半角片假名→全角平假名(&H)",                 F_HANKATATOZENHIRA
+        MENUITEM SEPARATOR
+        MENUITEM "TAB转为空格(&S)",                            F_TABTOSPACE
+        MENUITEM "空格转为TAB(&T)",                            F_SPACETOTAB
+        POPUP "更改编码(&C)"
+        BEGIN
+            MENUITEM "自动编码→SJIS编码(&A)",                 F_CODECNV_AUTO2SJIS
+            MENUITEM "邮件编码转换(JIS→SJIS)(&M)",            F_CODECNV_EMAIL
+            MENUITEM "EUC→SJIS编码(&W)",                      F_CODECNV_EUC2SJIS
+            MENUITEM "UTF-16→SJIS编码(&U)",                   F_CODECNV_UNICODE2SJIS
+            MENUITEM "UTF-16 BE→SJIS编码(&N)",                F_CODECNV_UNICODEBE2SJIS
+            MENUITEM "UTF-8→SJIS编码(&T)",                    F_CODECNV_UTF82SJIS
+            MENUITEM "UTF-7→SJIS编码(&F)",                    F_CODECNV_UTF72SJIS
+            MENUITEM SEPARATOR
+            MENUITEM "SJIS→JIS编码(&J)",                      F_CODECNV_SJIS2JIS
+            MENUITEM "SJIS→EUC编码(&E)",                      F_CODECNV_SJIS2EUC
+            MENUITEM "SJIS→UTF-8编码(&8)",                    F_CODECNV_SJIS2UTF8
+            MENUITEM "SJIS→UTF-7编码(&7)",                    F_CODECNV_SJIS2UTF7
+            MENUITEM SEPARATOR
+            MENUITEM "Base64解码并保存(&B)",                   F_BASE64DECODE
+            MENUITEM "UUDecode解码并保存(&D)",                 F_UUDECODE
+        END
+    END
+    POPUP "搜索(&S)"
+    BEGIN
+        MENUITEM "查找(&F)",                                   F_SEARCH_DIALOG
+        MENUITEM "查找下一个(&N)",                             F_SEARCH_NEXT
+        MENUITEM "查找上一个(&P)",                             F_SEARCH_PREV
+        MENUITEM "替换(&R)",                                   F_REPLACE_DIALOG
+        MENUITEM "清除搜索标记(&C)",                           F_SEARCH_CLEARMARK
+        MENUITEM "跳转至初始搜索位置(&I)",                     F_JUMP_SRCHSTARTPOS
+        POPUP "增量搜索(&S)"
+        BEGIN
+            MENUITEM "向前增量搜索(&F)",                       F_ISEARCH_NEXT
+            MENUITEM "向后增量搜索(&B)",                       F_ISEARCH_PREV
+            MENUITEM "正则表达式向前增量搜索(&R)",             F_ISEARCH_REGEXP_NEXT
+            MENUITEM "正则表达式向后增量搜索(&X)",             F_ISEARCH_REGEXP_PREV
+            MENUITEM "Migemo向前增量搜索(&M)",                 F_ISEARCH_MIGEMO_NEXT
+            MENUITEM "Migemo向后增量搜索(&N)",                 F_ISEARCH_MIGEMO_PREV
+        END
+        MENUITEM SEPARATOR
+        POPUP "书签管理(&M)"
+        BEGIN
+            MENUITEM "设置/删除书签(&S)",                      F_BOOKMARK_SET
+            MENUITEM "下一个书签(&A)",                         F_BOOKMARK_NEXT
+            MENUITEM "上一个书签(&Z)",                         F_BOOKMARK_PREV
+            MENUITEM "清除所有书签(&X)",                       F_BOOKMARK_RESET
+            MENUITEM "查看书签列表(&V)",                       F_BOOKMARK_VIEW
+        END
+        MENUITEM "grep全局搜索(&G)",                           F_GREP_DIALOG
+        MENUITEM "grep批量替换...",                            F_GREP_REPLACE_DLG
+        MENUITEM "跳转到行(&J)",                               F_JUMP_DIALOG
+        MENUITEM "大纲分析(&L)",                               F_OUTLINE
+        MENUITEM "文件树视图(&E)",                             F_FILETREE
+        MENUITEM "标签跳转(&T)",                               F_TAGJUMP
+        MENUITEM "返回标签跳转(&B)",                           F_TAGJUMPBACK
+        MENUITEM "生成标签文件...",                            F_TAGS_MAKE
+        MENUITEM "直接标签跳转",                               F_DIRECT_TAGJUMP
+        MENUITEM "设置关键字并跳转",                           F_TAGJUMP_KEYWORD
+        MENUITEM "打开同名C/C++头文件...(&C)",                 F_OPEN_HfromtoC
+        MENUITEM SEPARATOR
+        MENUITEM "文件对比(&@)",                               F_COMPARE
+        MENUITEM "差异对比(&D)",                               F_DIFF_DIALOG
+        MENUITEM "下一处差异",                                 F_DIFF_NEXT
+        MENUITEM "上一处差异",                                 F_DIFF_PREV
+        MENUITEM "重置所有差异标记",                           F_DIFF_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "匹配括号搜索(&[)",                           F_BRACKETPAIR
+    END
+    POPUP "工具(&T)"
+    BEGIN
+        MENUITEM "开始/停止录制键盘宏(&R)",                    F_RECKEYMACRO
+        MENUITEM "保存键盘宏(&M)",                             F_SAVEKEYMACRO
+        MENUITEM "加载键盘宏(&A)",                             F_LOADKEYMACRO
+        MENUITEM "运行键盘宏(&D)",                             F_EXECKEYMACRO
+        POPUP "已注册宏(&B)"
+        BEGIN
+            MENUITEM "已注册宏列表",                           F_USERMACRO_LIST
+        END
+        MENUITEM "运行已有宏(&E)",                             F_EXECEXTMACRO
+        MENUITEM SEPARATOR
+        MENUITEM "执行外部命令(&X)",                           F_EXECMD_DIALOG
+        MENUITEM "激活SQL*Plus(&P)",                           F_ACTIVATE_SQLPLUS
+        MENUITEM "在SQL*Plus上执行(&S)",                       F_PLSQL_COMPILE_ON_SQLPLUS
+        MENUITEM SEPARATOR
+        MENUITEM "补全输入(&/)",                               F_HOKAN
+        MENUITEM SEPARATOR
+        MENUITEM "插件命令列表",                               F_PLUGIN_LIST
+        MENUITEM SEPARATOR
+        POPUP "自定义菜单(&U)"
+        BEGIN
+            MENUITEM "自定义菜单列表",                         F_CUSTMENU_LIST
+        END
+    END
+    POPUP "选项(&O)"
+    BEGIN
+        MENUITEM "显示/隐藏工具栏(&T)",                        F_SHOWTOOLBAR
+        MENUITEM "显示/隐藏功能键(&K)",                        F_SHOWFUNCKEY
+        MENUITEM "显示/隐藏标签栏(&M)",                        F_SHOWTAB
+        MENUITEM "显示/隐藏状态栏(&S)",                        F_SHOWSTATUSBAR
+        MENUITEM "显示/隐藏缩略图(&N)",                        F_SHOWMINIMAP
+        MENUITEM SEPARATOR
+        MENUITEM "文件类型列表(&L)",                           F_TYPE_LIST
+        MENUITEM "文件类型设置(&Y)",                           F_OPTION_TYPE
+        MENUITEM "通用设置(&C)",                               F_OPTION
+        MENUITEM "字体设置(&F)",                               F_FONT
+        MENUITEM "历史记录管理(&O)",                           F_FAVORITE
+        MENUITEM SEPARATOR
+        POPUP "自动换行方式(&X)"
+        BEGIN
+            MENUITEM "不换行(&X)",                             F_TMPWRAPNOWRAP
+            MENUITEM "按设定换行(&S)",                         F_TMPWRAPSETTING
+            MENUITEM "按窗口右侧换行(&W)",                     F_TMPWRAPWINDOW
+        END
+        MENUITEM "自动换行宽度(&W)",                           F_WRAPWINDOWWIDTH
+        MENUITEM "统计字节数(&B)",                             F_SELECT_COUNT_MODE
+        MENUITEM SEPARATOR
+        MENUITEM "插入/覆盖模式切换(&I)",                      F_CHGMOD_INS
+        MENUITEM "查看模式(&R)",                               F_VIEWMODE
+        MENUITEM "切换关键字帮助(&H)",                         F_TOGGLE_KEY_SEARCH
+        MENUITEM "选择编码...(&A)",                            F_CHG_CHARSET
+        POPUP "换行符设置(&E)"
+        BEGIN
+            MENUITEM "换行符类型(CRLF)(&C)",                   F_CHGMOD_EOL_CRLF
+            MENUITEM "换行符类型(LF)(&L)",                     F_CHGMOD_EOL_LF
+            MENUITEM "换行符类型(CR)(&R)",                     F_CHGMOD_EOL_CR
+        END
+    END
+    POPUP "窗口(&W)"
+    BEGIN
+        MENUITEM "切换垂直分割(&-)",                           F_SPLIT_V
+        MENUITEM "切换水平分割(&I)",                           F_SPLIT_H
+        MENUITEM "切换四向分割(&S)",                           F_SPLIT_VH
+        MENUITEM SEPARATOR
+        MENUITEM "关闭窗口(&C)",                               F_WINCLOSE
+        MENUITEM "关闭所有窗口(&Q)",                           F_WIN_CLOSEALL
+        MENUITEM "关闭其他窗口或标签页(&O)",                   F_TAB_CLOSEOTHER
+        MENUITEM "下一窗口(&N)",                               F_NEXTWINDOW
+        MENUITEM "上一窗口(&P)",                               F_PREVWINDOW
+        MENUITEM "窗口列表(&W)",                               F_WINLIST
+        MENUITEM SEPARATOR
+        MENUITEM "层叠窗口(&E)",                               F_CASCADE
+        MENUITEM "垂直平铺(&H)",                               F_TILE_V
+        MENUITEM "水平平铺(&T)",                               F_TILE_H
+        MENUITEM "窗口置顶(&F)",                               F_TOPMOST
+        POPUP "标签页控制(&B)"
+        BEGIN
+            MENUITEM "窗口分组(&B)",                           F_BIND_WINDOW
+            MENUITEM "关闭组(&G)",                             F_GROUPCLOSE
+            MENUITEM "关闭左侧所有标签页(&H)",                 F_TAB_CLOSELEFT
+            MENUITEM "关闭右侧所有标签页(&M)",                 F_TAB_CLOSERIGHT
+            MENUITEM "下一组(&N)",                             F_NEXTGROUP
+            MENUITEM "上一组(&P)",                             F_PREVGROUP
+            MENUITEM "向右移动标签页(&R)",                     F_TAB_MOVERIGHT
+            MENUITEM "向左移动标签页(&L)",                     F_TAB_MOVELEFT
+            MENUITEM "新建标签组(&E)",                         F_TAB_SEPARATE
+            MENUITEM "合并到下一组(&X)",                       F_TAB_JOINTNEXT
+            MENUITEM "合并到上一组(&V)",                       F_TAB_JOINTPREV
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "垂直最大化(&V)",                             F_MAXIMIZE_V
+        MENUITEM "水平最大化(&Y)",                             F_MAXIMIZE_H
+        MENUITEM "最小化全部窗口(&M)",                         F_MINIMIZE_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "重绘界面(&R)",                               F_REDRAW
+        MENUITEM SEPARATOR
+        MENUITEM "显示输出窗口(&U)",                           F_WIN_OUTPUT
+        MENUITEM "窗口列表对话框...(&D)",                      F_DLGWINLIST
+        MENUITEM SEPARATOR
+        POPUP "窗口列表(&A)"
+        BEGIN
+            MENUITEM "窗口列表",                               F_WINDOW_LIST
+        END
+    END
+    POPUP "帮助(&H)"
+    BEGIN
+        MENUITEM "打开帮助目录(&O)",                           F_HELP_CONTENTS
+        MENUITEM "关键字搜索帮助(&S)",                         F_HELP_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "命令列表(&M)",                               F_MENU_ALLFUNC
+        MENUITEM "生成快捷键列表(&Q)",                         F_CREATEKEYBINDLIST
+        MENUITEM "外部帮助1(&E)",                              F_EXTHELP1
+        MENUITEM "外部HTML帮助(&H)",                           F_EXTHTMLHELP
+        MENUITEM SEPARATOR
+        MENUITEM "关于Sakura(&A)",                             F_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 

@@ -11,6 +11,7 @@
 
 #include "env/CShareData.h"
 #include "env/CShareData_IO.h"
+#include "env/SMenuItem.hpp"
 #include "CDataProfile.h"
 #include "util/window.h"
 
@@ -119,11 +120,26 @@ CommonSetting_View::CommonSetting_View() noexcept
 
 CommonSetting_MainMenu::CommonSetting_MainMenu() noexcept
 {
-	CDataProfile cProfile;
-	cProfile.SetReadingMode();
+	const auto menuItems = SMenuItem::LoadFromResource(IDR_MAINMENU);
 
-	std::vector<std::wstring> data;
-	cProfile.ReadProfileRes(MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data);
+	m_nMainMenuNum = int(std::size(menuItems));
+	for (size_t i = 0; i < m_nMainMenuNum; ++i) {
+		m_cMainMenuTbl[i].m_nLevel   = menuItems[i].m_nLevel;
+		m_cMainMenuTbl[i].m_nType    = menuItems[i].GetType();
+		m_cMainMenuTbl[i].m_nFunc    = menuItems[i].m_eFuncCode;
+		m_cMainMenuTbl[i].m_sKey[0]  = menuItems[i].m_chAccessKey;
+		m_cMainMenuTbl[i].m_sKey[1]  = L'\0';
+		m_cMainMenuTbl[i].m_sName[0] = L'\0';
+	}
 
-	CShareData_IO::IO_MainMenu(cProfile, &data, *this, false);
+	// m_nLevel==0の要素のインデックスをm_nMenuTopIdxに格納
+	size_t topIdxCount = 0;
+	for (size_t i = 0; i < menuItems.size() && topIdxCount < std::size(m_nMenuTopIdx); ++i) {
+		if (menuItems[i].m_nLevel == 0) {
+			m_nMenuTopIdx[topIdxCount++] = static_cast<int>(i);
+		}
+	}
+	for (size_t i = topIdxCount; i < std::size(m_nMenuTopIdx); ++i) {
+		m_nMenuTopIdx[i] = -1;
+	}
 }

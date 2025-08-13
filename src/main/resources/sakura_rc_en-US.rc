@@ -2248,6 +2248,404 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "File(&F)"
+    BEGIN
+        MENUITEM "New(&N)",                                       F_FILENEW
+        MENUITEM "Open New Window(&M)",                           F_FILENEW_NEWWINDOW
+        MENUITEM "Open...(&O)",                                   F_FILEOPEN
+        MENUITEM "Save(&S)",                                      F_FILESAVE
+        MENUITEM "Save As(&A)",                                   F_FILESAVEAS_DIALOG
+        MENUITEM "Save all(&Z)",                                  F_FILESAVEALL
+        MENUITEM SEPARATOR
+        MENUITEM "Save&&Close(&E)",                               F_FILESAVECLOSE
+        MENUITEM "Close(&C)",                                     F_WINCLOSE
+        MENUITEM "Close Untitled(&R)",                            F_FILECLOSE
+        MENUITEM "Close and Open...(&L)",                         F_FILECLOSE_OPEN
+        POPUP "Re-open With encoding(&W)"
+        BEGIN
+            MENUITEM "Re-Open(&W)",                               F_FILE_REOPEN
+            MENUITEM SEPARATOR
+            MENUITEM "Re-open as SJIS(&S)",                       F_FILE_REOPEN_SJIS
+            MENUITEM "Re-Open as JIS(&J)",                        F_FILE_REOPEN_JIS
+            MENUITEM "Re-Open as EUC(&E)",                        F_FILE_REOPEN_EUC
+            MENUITEM "Re-Open as Latin1(&L)",                     F_FILE_REOPEN_LATIN1
+            MENUITEM "Re-Open as UTF-16(&U)",                     F_FILE_REOPEN_UNICODE
+            MENUITEM "Re-Open as UTF-16 BE(&N)",                  F_FILE_REOPEN_UNICODEBE
+            MENUITEM "Re-Open as UTF-8(&8)",                      F_FILE_REOPEN_UTF8
+            MENUITEM "Re-Open as CESU-8(&C)",                     F_FILE_REOPEN_CESU8
+            MENUITEM "Re-Open as UTF-7(&7)",                      F_FILE_REOPEN_UTF7
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Print...(&P)",                                  F_PRINT
+        MENUITEM "Print PreView...(&V)",                          F_PRINT_PREVIEW
+        MENUITEM "Page SetUp...(&U)",                             F_PRINT_PAGESETUP
+        MENUITEM SEPARATOR
+        MENUITEM "File Property(&T)",                             F_PROPERTY_FILE
+        MENUITEM "Browse(&B)",                                    F_BROWSE
+        MENUITEM SEPARATOR
+        POPUP "Recently Used File(&F)"
+        BEGIN
+            MENUITEM "Recently Used File",                        F_FILE_USED_RECENTLY
+        END
+        POPUP "Recently Used Folder(&D)"
+        BEGIN
+            MENUITEM "Recently Used Folder",                      F_FOLDER_USED_RECENTLY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Group Close(&G)",                               F_GROUPCLOSE
+        MENUITEM "Quit All Editors(&Q)",                          F_EXITALLEDITORS
+        MENUITEM "Exit Sakura completely(&X)",                    F_EXITALL
+    END
+    POPUP "Edit(&E)"
+    BEGIN
+        MENUITEM "Undo(&U)",                                      F_UNDO
+        MENUITEM "Redo(&R)",                                      F_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cut(&T)",                                       F_CUT
+        MENUITEM "Copy(&C)",                                      F_COPY
+        MENUITEM "Paste(&P)",                                     F_PASTE
+        MENUITEM "Delete(&D)",                                    F_DELETE
+        MENUITEM "Select All(&A)",                                F_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Reconvert(&R)",                                 F_RECONVERT
+        MENUITEM SEPARATOR
+        MENUITEM "Copy using CRLF(&L)",                           F_COPY_CRLF
+        MENUITEM "Copy adding CRLF(&H)",                          F_COPY_ADDCRLF
+        MENUITEM "Paste Box(&X)",                                 F_PASTEBOX
+        MENUITEM "Delete Back(&B)",                               F_DELETE_BACK
+        MENUITEM SEPARATOR
+        POPUP "Insert(&I)"
+        BEGIN
+            MENUITEM "Ins. Date(&D)",                             F_INS_DATE
+            MENUITEM "Ins. Time(&T)",                             F_INS_TIME
+            MENUITEM "Control Code Input(&C)",                    F_CTRL_CODE_DIALOG
+            MENUITEM "Ins. Recently Used File(&F)",               F_INS_FILE_USED_RECENTLY
+            MENUITEM "Ins. Recently Used Folder(&O)",             F_INS_FOLDER_USED_RECENTLY
+        END
+        POPUP "High Level Editing(&V)"
+        BEGIN
+            MENUITEM "Delete to start of word(&L)",               F_WordDeleteToStart
+            MENUITEM "Delete to end of word(&R)",                 F_WordDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "Select Word at Cursor(&W)",                 F_SELECTWORD
+            MENUITEM "Cut entire word(&T)",                       F_WordCut
+            MENUITEM "Delete entire word(&D)",                    F_WordDelete
+            MENUITEM SEPARATOR
+            MENUITEM "Cut to start of line(&U)",                  F_LineCutToStart
+            MENUITEM "Cut to end of line(&K)",                    F_LineCutToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "Delete to start of line(&H)",               F_LineDeleteToStart
+            MENUITEM "Delete to End of line(&E)",                 F_LineDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "Cut entire line(&X)",                       F_CUT_LINE
+            MENUITEM "Delete entire line(&Y)",                    F_DELETE_LINE
+            MENUITEM SEPARATOR
+            MENUITEM "Duplicate line(&2)",                        F_DUPLICATELINE
+            MENUITEM SEPARATOR
+            MENUITEM "Tab Indent(&A)",                            F_INDENT_TAB
+            MENUITEM "Back-Tab Indent(&B)",                       F_UNINDENT_TAB
+            MENUITEM "Space Indent(&S)",                          F_INDENT_SPACE
+            MENUITEM "Reverse Space Indent(&P)",                  F_UNINDENT_SPACE
+            MENUITEM SEPARATOR
+            MENUITEM "Copy selected lines(&@)",                   F_COPYLINES
+            MENUITEM "Copy selected as passage(&.)",              F_COPYLINESASPASSAGE
+            MENUITEM "Copy selected with line nr(&:)",            F_COPYLINESWITHLINENUMBER
+            MENUITEM "Copy selected with HTML markup(&C)",        F_COPY_COLOR_HTML
+            MENUITEM "Copy selected with line nr && HTML(&F)",    F_COPY_COLOR_HTML_LINENUMBER
+            MENUITEM SEPARATOR
+            MENUITEM "Copy this file's name(&-)",                 F_COPYFNAME
+            MENUITEM "Copy this file's path(&\\)",                F_COPYPATH
+            MENUITEM "Copy file path and cursor location(&^)",    F_COPYTAG
+        END
+        POPUP "Cursor Movement(&O)"
+        BEGIN
+            MENUITEM "Move Cursor Up - 2 lines(&Q)",              F_UP2
+            MENUITEM "Move Cursor Down - 2 lines(&K)",            F_DOWN2
+            MENUITEM "Move Cursor to Left of word(&L)",           F_WORDLEFT
+            MENUITEM "Move Cursor to Right of word(&R)",          F_WORDRIGHT
+            MENUITEM "Prev Paragraph(&A)",                        F_GOPREVPARAGRAPH
+            MENUITEM "Next Paragraph(&Z)",                        F_GONEXTPARAGRAPH
+            MENUITEM "Move to start of line(&H)",                 F_GOLINETOP
+            MENUITEM "Move to End of line(&E)",                   F_GOLINEEND
+            MENUITEM SEPARATOR
+            MENUITEM "1 page Up(&U)",                             F_1PageUp
+            MENUITEM "1 page Down(&D)",                           F_1PageDown
+            MENUITEM "Start of file(&T)",                         F_GOFILETOP
+            MENUITEM "End of file(&B)",                           F_GOFILEEND
+            MENUITEM SEPARATOR
+            MENUITEM "Center Current Line(&C)",                   F_CURLINECENTER
+            MENUITEM SEPARATOR
+            MENUITEM "Jump to Line(&J)",                          F_JUMP_DIALOG
+            MENUITEM "Jump to Initial search start position(&I)", F_JUMP_SRCHSTARTPOS
+            MENUITEM SEPARATOR
+            MENUITEM "Jump History: Previous(&P)",                F_JUMPHIST_PREV
+            MENUITEM "Jump History: Next(&N)",                    F_JUMPHIST_NEXT
+            MENUITEM "Set current location in Jump History(&S)",  F_JUMPHIST_SET
+            MENUITEM SEPARATOR
+            MENUITEM "Next Function List Mark",                   F_FUNCLIST_NEXT
+            MENUITEM "Prev Function List Mark",                   F_FUNCLIST_PREV
+            MENUITEM "Next Modified Line",                        F_MODIFYLINE_NEXT
+            MENUITEM "Prev Modified Line",                        F_MODIFYLINE_PREV
+        END
+        POPUP "Selection(&S)"
+        BEGIN
+            MENUITEM "Select Word at Cursor(&W)",                 F_SELECTWORD
+            MENUITEM "Select All(&A)",                            F_SELECTALL
+            MENUITEM "Begin Selection(&S)",                       F_BEGIN_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "Select 2 lines above(&Q)",                  F_UP2_SEL
+            MENUITEM "Select 2 lines below(&K)",                  F_DOWN2_SEL
+            MENUITEM "Select to Left side of word(&L)",           F_WORDLEFT_SEL
+            MENUITEM "Select to Right side of word(&R)",          F_WORDRIGHT_SEL
+            MENUITEM "Select previous paragraph(&2)",             F_GOPREVPARAGRAPH_SEL
+            MENUITEM "Select next paragraph(&8)",                 F_GONEXTPARAGRAPH_SEL
+            MENUITEM "Select to start of line(&H)",               F_GOLINETOP_SEL
+            MENUITEM "Select to end of line(&T)",                 F_GOLINEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "Select 1 page Up(&U)",                      F_1PageUp_Sel
+            MENUITEM "Select 1 page Down(&D)",                    F_1PageDown_Sel
+            MENUITEM "Select to top of file(&1)",                 F_GOFILETOP_SEL
+            MENUITEM "Select to end of file(&9)",                 F_GOFILEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "Select Next Modified Line",                 F_MODIFYLINE_NEXT_SEL
+            MENUITEM "Select Prev Modified Line",                 F_MODIFYLINE_PREV_SEL
+        END
+        POPUP "Box Selection(&F)"
+        BEGIN
+            MENUITEM "Box select being(&S)",                      F_BEGIN_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(Box Sel.) 2 lines above(&Q)",              F_UP2_BOX
+            MENUITEM "(Box Sel.) 2 lines below(&K)",              F_DOWN2_BOX
+            MENUITEM "(Box Sel.)To Left side of word(&L)",        F_WORDLEFT_BOX
+            MENUITEM "(Box Sel.)To Right side of word(&R)",       F_WORDRIGHT_BOX
+            MENUITEM "(Box Sel.)To start of line(&A)",            F_GOLOGICALLINETOP_BOX
+            MENUITEM "(Box Sel.)To left side of line(&H)",        F_GOLINETOP_BOX
+            MENUITEM "(Box Sel.)To end of line(&T)",              F_GOLINEEND_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(Box Sel.) 1 page Up(&U)",                  F_1PageUp_BOX
+            MENUITEM "(Box Sel.) 1 page Down(&D)",                F_1PageDown_BOX
+            MENUITEM "(Box Sel.)To top of file(&1)",              F_GOFILETOP_BOX
+            MENUITEM "(Box Sel.)To end of file(&9)",              F_GOFILEEND_BOX
+        END
+        POPUP "Cosmetic(&K)"
+        BEGIN
+            MENUITEM "Left trim whitespace(&L)",                  F_LTRIM
+            MENUITEM "Right trim whitespace(&R)",                 F_RTRIM
+            MENUITEM SEPARATOR
+            MENUITEM "Ascending sort selected lines(&A)",         F_SORT_ASC
+            MENUITEM "Descending sort selected lines(&D)",        F_SORT_DESC
+            MENUITEM SEPARATOR
+            MENUITEM "Merge selected lines, Unique only(&U)",     F_MERGE
+        END
+    END
+    POPUP "Convert(&C)"
+    BEGIN
+        MENUITEM "Lower case(&L)",                                F_TOLOWER
+        MENUITEM "Upper case(&U)",                                F_TOUPPER
+        MENUITEM SEPARATOR
+        MENUITEM "Full Height → Half Height(&F)",                F_TOHANKAKU
+        MENUITEM "Half Height + Hiragana → Full/Katakana(&Z)",   F_TOZENKAKUKATA
+        MENUITEM "Half Height + Katakana → Full/Hiragana(&N)",   F_TOZENKAKUHIRA
+        MENUITEM "Full Alphabetic → Half Alphabetic(&A)",        F_TOHANEI
+        MENUITEM "Half Alphabetic → Full Alphabetic(&M)",        F_TOZENEI
+        MENUITEM "Full Katakana → Half Katakana(&J)",            F_TOHANKATA
+        MENUITEM "Half Height Katakana → Full Katakana(&K)",     F_HANKATATOZENKATA
+        MENUITEM "Half Katakana → Full Hiragana(&H)",            F_HANKATATOZENHIRA
+        MENUITEM SEPARATOR
+        MENUITEM "TAB→Spaces(&S)",                               F_TABTOSPACE
+        MENUITEM "Spaces→TAB(&T)",                               F_SPACETOTAB
+        POPUP "Change Encoding(&C)"
+        BEGIN
+            MENUITEM "Automatic → SJIS Code(&A)",                F_CODECNV_AUTO2SJIS
+            MENUITEM "E-Mail(JIS→SJIS) Code(&M)",                F_CODECNV_EMAIL
+            MENUITEM "EUC→SJIS Code(&W)",                        F_CODECNV_EUC2SJIS
+            MENUITEM "UTF-16→SJIS Code(&U)",                     F_CODECNV_UNICODE2SJIS
+            MENUITEM "UTF-16 BE→SJIS Code(&N)",                  F_CODECNV_UNICODEBE2SJIS
+            MENUITEM "UTF-8→SJIS Code(&T)",                      F_CODECNV_UTF82SJIS
+            MENUITEM "UTF-7→SJIS Code(&F)",                      F_CODECNV_UTF72SJIS
+            MENUITEM SEPARATOR
+            MENUITEM "SJIS→JIS Code(&J)",                        F_CODECNV_SJIS2JIS
+            MENUITEM "SJIS→EUC Code(&E)",                        F_CODECNV_SJIS2EUC
+            MENUITEM "SJIS→UTF-8 Code(&8)",                      F_CODECNV_SJIS2UTF8
+            MENUITEM "SJIS→UTF-7 Code(&7)",                      F_CODECNV_SJIS2UTF7
+            MENUITEM SEPARATOR
+            MENUITEM "Base64 Decode and save(&B)",                F_BASE64DECODE
+            MENUITEM "uudecode and save(&D)",                     F_UUDECODE
+        END
+    END
+    POPUP "Search(&S)"
+    BEGIN
+        MENUITEM "Find(&F)",                                      F_SEARCH_DIALOG
+        MENUITEM "Next(&N)",                                      F_SEARCH_NEXT
+        MENUITEM "Prev(&P)",                                      F_SEARCH_PREV
+        MENUITEM "Replace(&R)",                                   F_REPLACE_DIALOG
+        MENUITEM "Clear search marker(&C)",                       F_SEARCH_CLEARMARK
+        MENUITEM "Jump to Initial search start position(&I)",     F_JUMP_SRCHSTARTPOS
+        POPUP "Incremental Search(&S)"
+        BEGIN
+            MENUITEM "Next Incremental search(&F)",               F_ISEARCH_NEXT
+            MENUITEM "Prev Incremental search(&B)",               F_ISEARCH_PREV
+            MENUITEM "Regex Next Incremental search(&R)",         F_ISEARCH_REGEXP_NEXT
+            MENUITEM "Regex Prev Incremental search(&X)",         F_ISEARCH_REGEXP_PREV
+            MENUITEM "MIGEMO Next Incremental search(&M)",        F_ISEARCH_MIGEMO_NEXT
+            MENUITEM "MIGEMO Prev Incremental search(&N)",        F_ISEARCH_MIGEMO_PREV
+        END
+        MENUITEM SEPARATOR
+        POPUP "Bookmark(&M)"
+        BEGIN
+            MENUITEM "Set/Delete Bookmark(&S)",                   F_BOOKMARK_SET
+            MENUITEM "Next Bookmark(&A)",                         F_BOOKMARK_NEXT
+            MENUITEM "Prev Bookmark(&Z)",                         F_BOOKMARK_PREV
+            MENUITEM "Delete all bookmarks(&X)",                  F_BOOKMARK_RESET
+            MENUITEM "View Bookmark list(&V)",                    F_BOOKMARK_VIEW
+        END
+        MENUITEM "Grep(&G)",                                      F_GREP_DIALOG
+        MENUITEM "Grep Replace...",                               F_GREP_REPLACE_DLG
+        MENUITEM "Jump to Line(&J)",                              F_JUMP_DIALOG
+        MENUITEM "Outline analysis(&L)",                          F_OUTLINE
+        MENUITEM "File Tree(&E)",                                 F_FILETREE
+        MENUITEM "Tagjump(&T)",                                   F_TAGJUMP
+        MENUITEM "Tag Jump Back(&B)",                             F_TAGJUMPBACK
+        MENUITEM "Make Tag file...",                              F_TAGS_MAKE
+        MENUITEM "Direct Tag Jump",                               F_DIRECT_TAGJUMP
+        MENUITEM "Set keyword and jump to tag",                   F_TAGJUMP_KEYWORD
+        MENUITEM "Open C/C++ header with same name...(&C)",       F_OPEN_HfromtoC
+        MENUITEM SEPARATOR
+        MENUITEM "File Compare(&@)",                              F_COMPARE
+        MENUITEM "DIFF Differences(&D)",                          F_DIFF_DIALOG
+        MENUITEM "Next Difference",                               F_DIFF_NEXT
+        MENUITEM "Prev Difference",                               F_DIFF_PREV
+        MENUITEM "Reset all Differences",                         F_DIFF_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "Matching Bracket Search(&[)",                   F_BRACKETPAIR
+    END
+    POPUP "Tool(&T)"
+    BEGIN
+        MENUITEM "Start/Stop recording Key Macro(&R)",            F_RECKEYMACRO
+        MENUITEM "Save Key Macro(&M)",                            F_SAVEKEYMACRO
+        MENUITEM "Load Key Macro(&A)",                            F_LOADKEYMACRO
+        MENUITEM "Run Key Macro(&D)",                             F_EXECKEYMACRO
+        POPUP "Registered Macros(&B)"
+        BEGIN
+            MENUITEM "Registered Macros",                         F_USERMACRO_LIST
+        END
+        MENUITEM "Run an Existing macro(&E)",                     F_EXECEXTMACRO
+        MENUITEM SEPARATOR
+        MENUITEM "Execute an external command(&X)",               F_EXECMD_DIALOG
+        MENUITEM "Activate SQL*Plus(&P)",                         F_ACTIVATE_SQLPLUS
+        MENUITEM "Execute on SQL*Plus(&S)",                       F_PLSQL_COMPILE_ON_SQLPLUS
+        MENUITEM SEPARATOR
+        MENUITEM "Supplemental Input(&/)",                        F_HOKAN
+        MENUITEM SEPARATOR
+        MENUITEM "Plugin Commands",                               F_PLUGIN_LIST
+        MENUITEM SEPARATOR
+        POPUP "Custom Menu(&U)"
+        BEGIN
+            MENUITEM "Custom Menus",                              F_CUSTMENU_LIST
+        END
+    END
+    POPUP "Option(&O)"
+    BEGIN
+        MENUITEM "Hide/Show Tool Bar(&T)",                        F_SHOWTOOLBAR
+        MENUITEM "Hide/Show Function(&K)",                        F_SHOWFUNCKEY
+        MENUITEM "Hide/Show Tab Bar(&M)",                         F_SHOWTAB
+        MENUITEM "Hide/Show Status Bar(&S)",                      F_SHOWSTATUSBAR
+        MENUITEM "Hide/Show Mini Map(&N)",                        F_SHOWMINIMAP
+        MENUITEM SEPARATOR
+        MENUITEM "File type list(&L)",                            F_TYPE_LIST
+        MENUITEM "File type settings(&Y)",                        F_OPTION_TYPE
+        MENUITEM "Common Settings(&C)",                           F_OPTION
+        MENUITEM "Font settings(&F)",                             F_FONT
+        MENUITEM "Manage History(&O)",                            F_FAVORITE
+        MENUITEM SEPARATOR
+        POPUP "Line Wrap Method(&X)"
+        BEGIN
+            MENUITEM "Don't wrap(&X)",                            F_TMPWRAPNOWRAP
+            MENUITEM "Wrap at set line(&S)",                      F_TMPWRAPSETTING
+            MENUITEM "Wrap at right side of window(&W)",          F_TMPWRAPWINDOW
+        END
+        MENUITEM "Line Wrap Width(&W)",                           F_WRAPWINDOWWIDTH
+        MENUITEM "Count Byte Count(&B)",                          F_SELECT_COUNT_MODE
+        MENUITEM SEPARATOR
+        MENUITEM "Insert/Overwrite mode toggle(&I)",              F_CHGMOD_INS
+        MENUITEM "View Mode(&R)",                                 F_VIEWMODE
+        MENUITEM "Auto-display keyword help(&H)",                 F_TOGGLE_KEY_SEARCH
+        MENUITEM "Select Encoding...(&A)",                        F_CHG_CHARSET
+        POPUP "End of line setting(&E)"
+        BEGIN
+            MENUITEM "End of line type (CRLF)(&C)",               F_CHGMOD_EOL_CRLF
+            MENUITEM "End of line type (LF)(&L)",                 F_CHGMOD_EOL_LF
+            MENUITEM "End of line type (CR)(&R)",                 F_CHGMOD_EOL_CR
+        END
+    END
+    POPUP "Window(&W)"
+    BEGIN
+        MENUITEM "Toggle Horizontal split(&-)",                   F_SPLIT_V
+        MENUITEM "Toggle Vertical split(&I)",                     F_SPLIT_H
+        MENUITEM "Toggle 4-way split(&S)",                        F_SPLIT_VH
+        MENUITEM SEPARATOR
+        MENUITEM "Close(&C)",                                     F_WINCLOSE
+        MENUITEM "Close All(&Q)",                                 F_WIN_CLOSEALL
+        MENUITEM "Close all Other windows or tabs(&O)",           F_TAB_CLOSEOTHER
+        MENUITEM "Next window(&N)",                               F_NEXTWINDOW
+        MENUITEM "Prev window(&P)",                               F_PREVWINDOW
+        MENUITEM "Window list(&W)",                               F_WINLIST
+        MENUITEM SEPARATOR
+        MENUITEM "Cascade(&E)",                                   F_CASCADE
+        MENUITEM "Tile Vertically(&H)",                           F_TILE_V
+        MENUITEM "Tile Horizontally(&T)",                         F_TILE_H
+        MENUITEM "Always on top(&F)",                             F_TOPMOST
+        POPUP "Tab control(&B)"
+        BEGIN
+            MENUITEM "Group windows(&B)",                         F_BIND_WINDOW
+            MENUITEM "Group Close(&G)",                           F_GROUPCLOSE
+            MENUITEM "Close all tabs to the Left(&H)",            F_TAB_CLOSELEFT
+            MENUITEM "Close all tabs to the Right(&M)",           F_TAB_CLOSERIGHT
+            MENUITEM "Next group(&N)",                            F_NEXTGROUP
+            MENUITEM "Prev group(&P)",                            F_PREVGROUP
+            MENUITEM "Move tab Right(&R)",                        F_TAB_MOVERIGHT
+            MENUITEM "Move tab Left(&L)",                         F_TAB_MOVELEFT
+            MENUITEM "New Tab Group(&E)",                         F_TAB_SEPARATE
+            MENUITEM "Move to next group(&X)",                    F_TAB_JOINTNEXT
+            MENUITEM "Move to prev group(&V)",                    F_TAB_JOINTPREV
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Maximize Vertically(&V)",                       F_MAXIMIZE_V
+        MENUITEM "Maximize Horizontally(&Y)",                     F_MAXIMIZE_H
+        MENUITEM "Minimize all(&M)",                              F_MINIMIZE_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "Redraw(&R)",                                    F_REDRAW
+        MENUITEM SEPARATOR
+        MENUITEM "Show output window(&U)",                        F_WIN_OUTPUT
+        MENUITEM "Window List(Dlg)...(&D)",                       F_DLGWINLIST
+        MENUITEM SEPARATOR
+        POPUP "Window List(&A)"
+        BEGIN
+            MENUITEM "Window List",                               F_WINDOW_LIST
+        END
+    END
+    POPUP "Help(&H)"
+    BEGIN
+        MENUITEM "Open help contents(&O)",                        F_HELP_CONTENTS
+        MENUITEM "Search help by keyword(&S)",                    F_HELP_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "Command list(&M)",                              F_MENU_ALLFUNC
+        MENUITEM "Copy the Key Binding list(&Q)",                 F_CREATEKEYBINDLIST
+        MENUITEM "External Help1(&E)",                            F_EXTHELP1
+        MENUITEM "External HTML Help(&H)",                        F_EXTHTMLHELP
+        MENUITEM SEPARATOR
+        MENUITEM "About Sakura(&A)",                              F_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 

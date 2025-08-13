@@ -2192,6 +2192,404 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        MENUITEM "新規作成(&N)",                                       F_FILENEW
+        MENUITEM "新規ウインドウを開く(&M)",                           F_FILENEW_NEWWINDOW
+        MENUITEM "開く...(&O)",                                        F_FILEOPEN
+        MENUITEM "上書き保存(&S)",                                     F_FILESAVE
+        MENUITEM "名前を付けて保存...(&A)",                            F_FILESAVEAS_DIALOG
+        MENUITEM "すべて上書き保存(&Z)",                               F_FILESAVEALL
+        MENUITEM SEPARATOR
+        MENUITEM "保存して閉じる(&E)",                                 F_FILESAVECLOSE
+        MENUITEM "閉じる(&C)",                                         F_WINCLOSE
+        MENUITEM "閉じて(無題)(&R)",                                   F_FILECLOSE
+        MENUITEM "閉じて開く...(&L)",                                  F_FILECLOSE_OPEN
+        POPUP "開き直す(&W)"
+        BEGIN
+            MENUITEM "開き直す(&W)",                                   F_FILE_REOPEN
+            MENUITEM SEPARATOR
+            MENUITEM "SJISで開き直す(&S)",                             F_FILE_REOPEN_SJIS
+            MENUITEM "JISで開き直す(&J)",                              F_FILE_REOPEN_JIS
+            MENUITEM "EUCで開き直す(&E)",                              F_FILE_REOPEN_EUC
+            MENUITEM "Latin1で開き直す(&L)",                           F_FILE_REOPEN_LATIN1
+            MENUITEM "UTF-16で開き直す(&U)",                           F_FILE_REOPEN_UNICODE
+            MENUITEM "UTF-16BEで開き直す(&N)",                         F_FILE_REOPEN_UNICODEBE
+            MENUITEM "UTF-8で開き直す(&8)",                            F_FILE_REOPEN_UTF8
+            MENUITEM "CESU-8で開き直す(&C)",                           F_FILE_REOPEN_CESU8
+            MENUITEM "UTF-7で開き直す(&7)",                            F_FILE_REOPEN_UTF7
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "印刷...(&P)",                                        F_PRINT
+        MENUITEM "印刷プレビュー(&V)",                                 F_PRINT_PREVIEW
+        MENUITEM "印刷ページ設定...(&U)",                              F_PRINT_PAGESETUP
+        MENUITEM SEPARATOR
+        MENUITEM "ファイルのプロパティ(&T)",                           F_PROPERTY_FILE
+        MENUITEM "ブラウズ(&B)",                                       F_BROWSE
+        MENUITEM SEPARATOR
+        POPUP "最近使ったファイル(&F)"
+        BEGIN
+            MENUITEM "最近使ったファイル",                             F_FILE_USED_RECENTLY
+        END
+        POPUP "最近使ったフォルダー(&D)"
+        BEGIN
+            MENUITEM "最近使ったフォルダー",                           F_FOLDER_USED_RECENTLY
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "グループを閉じる(&G)",                               F_GROUPCLOSE
+        MENUITEM "編集の全終了(&Q)",                                   F_EXITALLEDITORS
+        MENUITEM "サクラエディタの全終了(&X)",                         F_EXITALL
+    END
+    POPUP "編集(&E)"
+    BEGIN
+        MENUITEM "元に戻す(&U)",                                       F_UNDO
+        MENUITEM "やり直し(&R)",                                       F_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "切り取り(&T)",                                       F_CUT
+        MENUITEM "コピー(&C)",                                         F_COPY
+        MENUITEM "貼り付け(&P)",                                       F_PASTE
+        MENUITEM "削除(&D)",                                           F_DELETE
+        MENUITEM "すべて選択(&A)",                                     F_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "再変換(&R)",                                         F_RECONVERT
+        MENUITEM SEPARATOR
+        MENUITEM "CRLF改行でコピー(&L)",                               F_COPY_CRLF
+        MENUITEM "折り返し位置に改行をつけてコピー(&H)",               F_COPY_ADDCRLF
+        MENUITEM "矩形貼り付け(&X)",                                   F_PASTEBOX
+        MENUITEM "カーソル前を削除(&B)",                               F_DELETE_BACK
+        MENUITEM SEPARATOR
+        POPUP "挿入(&I)"
+        BEGIN
+            MENUITEM "日付挿入(&D)",                                   F_INS_DATE
+            MENUITEM "時刻挿入(&T)",                                   F_INS_TIME
+            MENUITEM "コントロールコード入力...(&C)",                  F_CTRL_CODE_DIALOG
+            MENUITEM "最近使ったファイル挿入(&F)",                     F_INS_FILE_USED_RECENTLY
+            MENUITEM "最近使ったフォルダー挿入(&O)",                   F_INS_FOLDER_USED_RECENTLY
+        END
+        POPUP "高度な操作(&V)"
+        BEGIN
+            MENUITEM "単語の左端まで削除(&L)",                         F_WordDeleteToStart
+            MENUITEM "単語の右端まで削除(&R)",                         F_WordDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "現在位置の単語選択(&W)",                         F_SELECTWORD
+            MENUITEM "単語切り取り(&T)",                               F_WordCut
+            MENUITEM "単語削除(&D)",                                   F_WordDelete
+            MENUITEM SEPARATOR
+            MENUITEM "行頭まで切り取り(改行単位)(&U)",                 F_LineCutToStart
+            MENUITEM "行末まで切り取り(改行単位)(&K)",                 F_LineCutToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "行頭まで削除(改行単位)(&H)",                     F_LineDeleteToStart
+            MENUITEM "行末まで削除(改行単位)(&E)",                     F_LineDeleteToEnd
+            MENUITEM SEPARATOR
+            MENUITEM "行切り取り(折り返し単位)(&X)",                   F_CUT_LINE
+            MENUITEM "行削除(折り返し単位)(&Y)",                       F_DELETE_LINE
+            MENUITEM SEPARATOR
+            MENUITEM "行の二重化(折り返し単位)(&2)",                   F_DUPLICATELINE
+            MENUITEM SEPARATOR
+            MENUITEM "TABインデント(&A)",                              F_INDENT_TAB
+            MENUITEM "逆TABインデント(&B)",                            F_UNINDENT_TAB
+            MENUITEM "SPACEインデント(&S)",                            F_INDENT_SPACE
+            MENUITEM "逆SPACEインデント(&P)",                          F_UNINDENT_SPACE
+            MENUITEM SEPARATOR
+            MENUITEM "選択範囲内全行コピー(&@)",                       F_COPYLINES
+            MENUITEM "選択範囲内全行引用符付きコピー(&.)",             F_COPYLINESASPASSAGE
+            MENUITEM "選択範囲内全行行番号付きコピー(&:)",             F_COPYLINESWITHLINENUMBER
+            MENUITEM "選択範囲内色付きHTMLコピー(&C)",                 F_COPY_COLOR_HTML
+            MENUITEM "選択範囲内行番号色付きHTMLコピー(&F)",           F_COPY_COLOR_HTML_LINENUMBER
+            MENUITEM SEPARATOR
+            MENUITEM "このファイル名をコピー(&-)",                     F_COPYFNAME
+            MENUITEM "このファイルのパス名をコピー(&\\)",              F_COPYPATH
+            MENUITEM "このファイルのパス名とカーソル位置をコピー(&^)", F_COPYTAG
+        END
+        POPUP "移動(&O)"
+        BEGIN
+            MENUITEM "カーソル上移動(２行ごと)(&Q)",                   F_UP2
+            MENUITEM "カーソル下移動(２行ごと)(&K)",                   F_DOWN2
+            MENUITEM "単語の左端に移動(&L)",                           F_WORDLEFT
+            MENUITEM "単語の右端に移動(&R)",                           F_WORDRIGHT
+            MENUITEM "前の段落へ移動(&A)",                             F_GOPREVPARAGRAPH
+            MENUITEM "次の段落へ移動(&Z)",                             F_GONEXTPARAGRAPH
+            MENUITEM "行頭に移動(折り返し単位)(&H)",                   F_GOLINETOP
+            MENUITEM "行末に移動(折り返し単位)(&E)",                   F_GOLINEEND
+            MENUITEM SEPARATOR
+            MENUITEM "１ページアップ(&U)",                             F_1PageUp
+            MENUITEM "１ページダウン(&D)",                             F_1PageDown
+            MENUITEM "ファイルの先頭に移動(&T)",                       F_GOFILETOP
+            MENUITEM "ファイルの最後に移動(&B)",                       F_GOFILEEND
+            MENUITEM SEPARATOR
+            MENUITEM "カーソル行をウィンドウ中央へ(&C)",               F_CURLINECENTER
+            MENUITEM SEPARATOR
+            MENUITEM "指定行へジャンプ...(&J)",                        F_JUMP_DIALOG
+            MENUITEM "検索開始位置へ戻る(&I)",                         F_JUMP_SRCHSTARTPOS
+            MENUITEM SEPARATOR
+            MENUITEM "移動履歴: 前へ(&P)",                             F_JUMPHIST_PREV
+            MENUITEM "移動履歴: 次へ(&N)",                             F_JUMPHIST_NEXT
+            MENUITEM "現在位置を移動履歴に登録(&S)",                   F_JUMPHIST_SET
+            MENUITEM SEPARATOR
+            MENUITEM "次の関数リストマーク",                           F_FUNCLIST_NEXT
+            MENUITEM "前の関数リストマーク",                           F_FUNCLIST_PREV
+            MENUITEM "次の変更行へ",                                   F_MODIFYLINE_NEXT
+            MENUITEM "前の変更行へ",                                   F_MODIFYLINE_PREV
+        END
+        POPUP "選択(&S)"
+        BEGIN
+            MENUITEM "現在位置の単語選択(&W)",                        F_SELECTWORD
+            MENUITEM "すべて選択(&A)",                                F_SELECTALL
+            MENUITEM "範囲選択開始(&S)",                              F_BEGIN_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "(選択)カーソル上移動(２行ごと)(&Q)",            F_UP2_SEL
+            MENUITEM "(選択)カーソル下移動(２行ごと)(&K)",            F_DOWN2_SEL
+            MENUITEM "(選択)単語の左端に移動(&L)",                    F_WORDLEFT_SEL
+            MENUITEM "(選択)単語の右端に移動(&R)",                    F_WORDRIGHT_SEL
+            MENUITEM "(選択)前の段落へ移動(&2)",                      F_GOPREVPARAGRAPH_SEL
+            MENUITEM "(選択)次の段落へ移動(&8)",                      F_GONEXTPARAGRAPH_SEL
+            MENUITEM "(選択)行頭に移動(折り返し単位)(&H)",            F_GOLINETOP_SEL
+            MENUITEM "(選択)行末に移動(折り返し単位)(&T)",            F_GOLINEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "(選択)１ページアップ(&U)",                      F_1PageUp_Sel
+            MENUITEM "(選択)１ページダウン(&D)",                      F_1PageDown_Sel
+            MENUITEM "(選択)ファイルの先頭に移動(&1)",                F_GOFILETOP_SEL
+            MENUITEM "(選択)ファイルの最後に移動(&9)",                F_GOFILEEND_SEL
+            MENUITEM SEPARATOR
+            MENUITEM "(選択)次の変更行へ",                            F_MODIFYLINE_NEXT_SEL
+            MENUITEM "(選択)前の変更行へ",                            F_MODIFYLINE_PREV_SEL
+        END
+        POPUP "矩形選択(&F)"
+        BEGIN
+            MENUITEM "矩形範囲選択開始(&S)",                          F_BEGIN_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(矩形選択)カーソル上移動(２行ごと)(&Q)",        F_UP2_BOX
+            MENUITEM "(矩形選択)カーソル下移動(２行ごと)(&K)",        F_DOWN2_BOX
+            MENUITEM "(矩形選択)単語の左端に移動(&L)",                F_WORDLEFT_BOX
+            MENUITEM "(矩形選択)単語の右端に移動(&R)",                F_WORDRIGHT_BOX
+            MENUITEM "(矩形選択)行頭に移動(改行単位)(&A)",            F_GOLOGICALLINETOP_BOX
+            MENUITEM "(矩形選択)行頭に移動(折り返し単位)(&H)",        F_GOLINETOP_BOX
+            MENUITEM "(矩形選択)行末に移動(折り返し単位)(&T)",        F_GOLINEEND_BOX
+            MENUITEM SEPARATOR
+            MENUITEM "(矩形選択)１ページアップ(&U)",                  F_1PageUp_BOX
+            MENUITEM "(矩形選択)１ページダウン(&D)",                  F_1PageDown_BOX
+            MENUITEM "(矩形選択)ファイルの先頭に移動(&1)",            F_GOFILETOP_BOX
+            MENUITEM "(矩形選択)ファイルの最後に移動(&9)",            F_GOFILEEND_BOX
+        END
+        POPUP "整形(&K)"
+        BEGIN
+            MENUITEM "左(先頭)の空白を削除(&L)",                      F_LTRIM
+            MENUITEM "右(末尾)の空白を削除(&R)",                      F_RTRIM
+            MENUITEM SEPARATOR
+            MENUITEM "選択行の昇順ソート(&A)",                        F_SORT_ASC
+            MENUITEM "選択行の降順ソート(&D)",                        F_SORT_DESC
+            MENUITEM SEPARATOR
+            MENUITEM "連続した重複行の削除(uniq)(&U)",                F_MERGE
+        END
+    END
+    POPUP "変換(&C)"
+    BEGIN
+        MENUITEM "小文字(&L)",                                        F_TOLOWER
+        MENUITEM "大文字(&U)",                                        F_TOUPPER
+        MENUITEM SEPARATOR
+        MENUITEM "全角→半角(&F)",                                    F_TOHANKAKU
+        MENUITEM "半角＋全ひら→全角・カタカナ(&Z)",                  F_TOZENKAKUKATA
+        MENUITEM "半角＋全カタ→全角・ひらがな(&N)",                  F_TOZENKAKUHIRA
+        MENUITEM "全角英数→半角英数(&A)",                            F_TOHANEI
+        MENUITEM "半角英数→全角英数(&M)",                            F_TOZENEI
+        MENUITEM "全角カタカナ→半角カタカナ(&J)",                    F_TOHANKATA
+        MENUITEM "半角カタカナ→全角カタカナ(&K)",                    F_HANKATATOZENKATA
+        MENUITEM "半角カタカナ→全角ひらがな(&H)",                    F_HANKATATOZENHIRA
+        MENUITEM SEPARATOR
+        MENUITEM "TAB→空白(&S)",                                     F_TABTOSPACE
+        MENUITEM "空白→TAB(&T)",                                     F_SPACETOTAB
+        POPUP "文字コード変換(&C)"
+        BEGIN
+            MENUITEM "自動判別→SJISコード変換(&A)",                  F_CODECNV_AUTO2SJIS
+            MENUITEM "E-Mail(JIS→SJIS)コード変換(&M)",               F_CODECNV_EMAIL
+            MENUITEM "EUC→SJISコード変換(&W)",                       F_CODECNV_EUC2SJIS
+            MENUITEM "UTF-16→SJISコード変換(&U)",                    F_CODECNV_UNICODE2SJIS
+            MENUITEM "UTF-16BE→SJISコード変換(&N)",                  F_CODECNV_UNICODEBE2SJIS
+            MENUITEM "UTF-8→SJISコード変換(&T)",                     F_CODECNV_UTF82SJIS
+            MENUITEM "UTF-7→SJISコード変換(&F)",                     F_CODECNV_UTF72SJIS
+            MENUITEM SEPARATOR
+            MENUITEM "SJIS→JISコード変換(&J)",                       F_CODECNV_SJIS2JIS
+            MENUITEM "SJIS→EUCコード変換(&E)",                       F_CODECNV_SJIS2EUC
+            MENUITEM "SJIS→UTF-8コード変換(&8)",                     F_CODECNV_SJIS2UTF8
+            MENUITEM "SJIS→UTF-7コード変換(&7)",                     F_CODECNV_SJIS2UTF7
+            MENUITEM SEPARATOR
+            MENUITEM "Base64デコードして保存(&B)",                    F_BASE64DECODE
+            MENUITEM "uudecodeして保存(&D)",                          F_UUDECODE
+        END
+    END
+    POPUP "検索(&S)"
+    BEGIN
+        MENUITEM "検索...(&F)",                                      F_SEARCH_DIALOG
+        MENUITEM "次を検索(&N)",                                     F_SEARCH_NEXT
+        MENUITEM "前を検索(&P)",                                     F_SEARCH_PREV
+        MENUITEM "置換...(&R)",                                      F_REPLACE_DIALOG
+        MENUITEM "検索マークの切替え(&C)",                           F_SEARCH_CLEARMARK
+        MENUITEM "検索開始位置へ戻る(&I)",                           F_JUMP_SRCHSTARTPOS
+        POPUP "インクリメンタルサーチ(&S)"
+        BEGIN
+            MENUITEM "前方インクリメンタルサーチ(&F)",               F_ISEARCH_NEXT
+            MENUITEM "後方インクリメンタルサーチ(&B)",               F_ISEARCH_PREV
+            MENUITEM "正規表現前方インクリメンタルサーチ(&R)",       F_ISEARCH_REGEXP_NEXT
+            MENUITEM "正規表現後方インクリメンタルサーチ(&X)",       F_ISEARCH_REGEXP_PREV
+            MENUITEM "MIGEMO前方インクリメンタルサーチ(&M)",         F_ISEARCH_MIGEMO_NEXT
+            MENUITEM "MIGEMO後方インクリメンタルサーチ(&N)",         F_ISEARCH_MIGEMO_PREV
+        END
+        MENUITEM SEPARATOR
+        POPUP "ブックマーク(&M)"
+        BEGIN
+            MENUITEM "ブックマーク設定・解除(&S)",                   F_BOOKMARK_SET
+            MENUITEM "次のブックマークへ(&A)",                       F_BOOKMARK_NEXT
+            MENUITEM "前のブックマークへ(&Z)",                       F_BOOKMARK_PREV
+            MENUITEM "ブックマークの全解除(&X)",                     F_BOOKMARK_RESET
+            MENUITEM "ブックマークの一覧...(&V)",                    F_BOOKMARK_VIEW
+        END
+        MENUITEM "Grep...(&G)",                                      F_GREP_DIALOG
+        MENUITEM "Grep置換...",                                      F_GREP_REPLACE_DLG
+        MENUITEM "指定行へジャンプ...(&J)",                          F_JUMP_DIALOG
+        MENUITEM "アウトライン解析...(&L)",                          F_OUTLINE
+        MENUITEM "ファイルツリー(&E)",                               F_FILETREE
+        MENUITEM "タグジャンプ(&T)",                                 F_TAGJUMP
+        MENUITEM "タグジャンプバック(&B)",                           F_TAGJUMPBACK
+        MENUITEM "タグファイルの作成...",                            F_TAGS_MAKE
+        MENUITEM "ダイレクトタグジャンプ",                           F_DIRECT_TAGJUMP
+        MENUITEM "キーワードを指定してタグジャンプ...",              F_TAGJUMP_KEYWORD
+        MENUITEM "同名のC/C++ヘッダー(ソース)を開く(&C)",            F_OPEN_HfromtoC
+        MENUITEM SEPARATOR
+        MENUITEM "ファイル内容比較...(&@)",                          F_COMPARE
+        MENUITEM "DIFF差分表示...(&D)",                              F_DIFF_DIALOG
+        MENUITEM "次の差分へ",                                       F_DIFF_NEXT
+        MENUITEM "前の差分へ",                                       F_DIFF_PREV
+        MENUITEM "差分表示の全解除",                                 F_DIFF_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "対括弧の検索(&[)",                                 F_BRACKETPAIR
+    END
+    POPUP "ツール(&T)"
+    BEGIN
+        MENUITEM "キーマクロの記録開始／終了(&R)",                   F_RECKEYMACRO
+        MENUITEM "キーマクロの保存(&M)",                             F_SAVEKEYMACRO
+        MENUITEM "キーマクロの読み込み(&A)",                         F_LOADKEYMACRO
+        MENUITEM "キーマクロの実行(&D)",                             F_EXECKEYMACRO
+        POPUP "登録済みマクロ(&B)"
+        BEGIN
+            MENUITEM "登録済みマクロリスト",                         F_USERMACRO_LIST
+        END
+        MENUITEM "名前を指定してマクロ実行...(&E)",                  F_EXECEXTMACRO
+        MENUITEM SEPARATOR
+        MENUITEM "外部コマンド実行...(&X)",                          F_EXECMD_DIALOG
+        MENUITEM "SQL*Plusをアクティブ表示(&P)",                     F_ACTIVATE_SQLPLUS
+        MENUITEM "SQL*Plusで実行(&S)",                               F_PLSQL_COMPILE_ON_SQLPLUS
+        MENUITEM SEPARATOR
+        MENUITEM "入力補完(&/)",                                     F_HOKAN
+        MENUITEM SEPARATOR
+        MENUITEM "プラグインコマンドリスト",                         F_PLUGIN_LIST
+        MENUITEM SEPARATOR
+        POPUP "カスタムメニュー(&U)"
+        BEGIN
+            MENUITEM "カスタムメニューリスト",                       F_CUSTMENU_LIST
+        END
+    END
+    POPUP "設定(&O)"
+    BEGIN
+        MENUITEM "ツールバーの表示／非表示(&T)",                     F_SHOWTOOLBAR
+        MENUITEM "ファンクションキーの表示／非表示(&K)",             F_SHOWFUNCKEY
+        MENUITEM "タブバーの表示／非表示(&M)",                       F_SHOWTAB
+        MENUITEM "ステータスバーの表示／非表示(&S)",                 F_SHOWSTATUSBAR
+        MENUITEM "ミニマップの表示／非表示(&N)",                     F_SHOWMINIMAP
+        MENUITEM SEPARATOR
+        MENUITEM "タイプ別設定一覧...(&L)",                          F_TYPE_LIST
+        MENUITEM "タイプ別設定...(&Y)",                              F_OPTION_TYPE
+        MENUITEM "共通設定...(&C)",                                  F_OPTION
+        MENUITEM "フォント設定...(&F)",                              F_FONT
+        MENUITEM "履歴の管理...(&O)",                                F_FAVORITE
+        MENUITEM SEPARATOR
+        POPUP "折り返し方法(&X)"
+        BEGIN
+            MENUITEM "折り返さない(&X)",                             F_TMPWRAPNOWRAP
+            MENUITEM "指定桁で折り返す(&S)",                         F_TMPWRAPSETTING
+            MENUITEM "右端で折り返す(&W)",                           F_TMPWRAPWINDOW
+        END
+        MENUITEM "折り返し桁数(&W)",                                 F_WRAPWINDOWWIDTH
+        MENUITEM "文字カウント方法(&B)",                             F_SELECT_COUNT_MODE
+        MENUITEM SEPARATOR
+        MENUITEM "挿入／上書きモード切り替え(&I)",                   F_CHGMOD_INS
+        MENUITEM "ビューモード(&R)",                                 F_VIEWMODE
+        MENUITEM "キーワードヘルプ自動表示(&H)",                     F_TOGGLE_KEY_SEARCH
+        MENUITEM "文字コードセット指定...(&A)",                      F_CHG_CHARSET
+        POPUP "入力改行コード指定(&E)"
+        BEGIN
+            MENUITEM "入力改行コード指定(CRLF)(&C)",                 F_CHGMOD_EOL_CRLF
+            MENUITEM "入力改行コード指定(LF)(&L)",                   F_CHGMOD_EOL_LF
+            MENUITEM "入力改行コード指定(CR)(&R)",                   F_CHGMOD_EOL_CR
+        END
+    END
+    POPUP "ウィンドウ(&W)"
+    BEGIN
+        MENUITEM "上下に分割／分割解除(&-)",                         F_SPLIT_V
+        MENUITEM "左右に分割／分割解除(&I)",                         F_SPLIT_H
+        MENUITEM "縦横に分割／分割解除(&S)",                         F_SPLIT_VH
+        MENUITEM SEPARATOR
+        MENUITEM "閉じる(&C)",                                       F_WINCLOSE
+        MENUITEM "すべて閉じる(&Q)",                                 F_WIN_CLOSEALL
+        MENUITEM "このタブ／ウィンドウ以外を閉じる(&O)",             F_TAB_CLOSEOTHER
+        MENUITEM "次のウィンドウ(&N)",                               F_NEXTWINDOW
+        MENUITEM "前のウィンドウ(&P)",                               F_PREVWINDOW
+        MENUITEM "ウィンドウ一覧...(&W)",                            F_WINLIST
+        MENUITEM SEPARATOR
+        MENUITEM "重ねて表示(&E)",                                   F_CASCADE
+        MENUITEM "上下に並べて表示(&H)",                             F_TILE_V
+        MENUITEM "左右に並べて表示(&T)",                             F_TILE_H
+        MENUITEM "常に手前に表示(&F)",                               F_TOPMOST
+        POPUP "タブの操作(&B)"
+        BEGIN
+            MENUITEM "グループ化(&B)",                               F_BIND_WINDOW
+            MENUITEM "グループを閉じる(&G)",                         F_GROUPCLOSE
+            MENUITEM "左をすべて閉じる(&H)",                         F_TAB_CLOSELEFT
+            MENUITEM "右をすべて閉じる(&M)",                         F_TAB_CLOSERIGHT
+            MENUITEM "次のグループ(&N)",                             F_NEXTGROUP
+            MENUITEM "前のグループ(&P)",                             F_PREVGROUP
+            MENUITEM "タブを右に移動(&R)",                           F_TAB_MOVERIGHT
+            MENUITEM "タブを左に移動(&L)",                           F_TAB_MOVELEFT
+            MENUITEM "新規グループ(&E)",                             F_TAB_SEPARATE
+            MENUITEM "次のグループに移動(&X)",                       F_TAB_JOINTNEXT
+            MENUITEM "前のグループに移動(&V)",                       F_TAB_JOINTPREV
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "縦方向に最大化(&V)",                               F_MAXIMIZE_V
+        MENUITEM "横方向に最大化(&Y)",                               F_MAXIMIZE_H
+        MENUITEM "すべて最小化(&M)",                                 F_MINIMIZE_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "再描画(&R)",                                       F_REDRAW
+        MENUITEM SEPARATOR
+        MENUITEM "アウトプット(&U)",                                 F_WIN_OUTPUT
+        MENUITEM "ウィンドウ一覧表示...(&D)",                        F_DLGWINLIST
+        MENUITEM SEPARATOR
+        POPUP "ウィンドウ一覧(&A)"
+        BEGIN
+            MENUITEM "ウィンドウリスト",                             F_WINDOW_LIST
+        END
+    END
+    POPUP "ヘルプ(&H)"
+    BEGIN
+        MENUITEM "ヘルプ目次(&O)",                                   F_HELP_CONTENTS
+        MENUITEM "ヘルプキーワード検索(&S)",                         F_HELP_SEARCH
+        MENUITEM SEPARATOR
+        MENUITEM "コマンド一覧(&M)",                                 F_MENU_ALLFUNC
+        MENUITEM "キー割り当て一覧をコピー(&Q)",                     F_CREATEKEYBINDLIST
+        MENUITEM "外部ヘルプ１(&E)",                                 F_EXTHELP1
+        MENUITEM "外部HTMLヘルプ(&H)",                               F_EXTHTMLHELP
+        MENUITEM SEPARATOR
+        MENUITEM "バージョン情報(&A)",                               F_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 

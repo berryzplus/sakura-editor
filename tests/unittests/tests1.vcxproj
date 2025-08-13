@@ -142,6 +142,7 @@
     <Link Include="$(IntDir)..\sakura_core\*.res" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\test\cpp\env\test-smenuitem.cpp" />
     <ClCompile Include="..\..\src\test\cpp\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

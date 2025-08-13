@@ -195,6 +195,9 @@ if(MSVC)
 endif(MSVC)
 
 if(MINGW)
+  # Set RC flags for MinGW (windres uses decimal)
+  set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} -c 65001 -l 1041 --use-temp-file")
+
   target_link_options(sakura_core
     PUBLIC
       -municode

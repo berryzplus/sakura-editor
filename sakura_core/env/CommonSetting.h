@@ -698,11 +698,11 @@ public:
 
 struct CommonSetting_MainMenu
 {
-	int				m_nVersion = 0;							//!< メインメニューバージョン
-	int				m_nMenuTopIdx[MAX_MAINMENU_TOP];	//!< メインメニュートップレベル
-	int 			m_nMainMenuNum = 336;						//!< メインメニューデータの数
-	CMainMenu		m_cMainMenuTbl[MAX_MAINMENU];		//!< メインメニューデータ
-	bool 			m_bMainMenuKeyParentheses = true;			//!< アクセスキーを( )付で表示
+	int				m_nVersion = 0;						//!< メインメニューバージョン
+	int				m_nMenuTopIdx[MAX_MAINMENU_TOP]{};	//!< メインメニュートップレベル
+	int 			m_nMainMenuNum = 336;				//!< メインメニューデータの数
+	CMainMenu		m_cMainMenuTbl[MAX_MAINMENU]{};		//!< メインメニューデータ
+	bool 			m_bMainMenuKeyParentheses = true;	//!< アクセスキーを( )付で表示
 
 	CommonSetting_MainMenu() noexcept;
 };

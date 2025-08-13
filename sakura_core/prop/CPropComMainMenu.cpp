@@ -451,12 +451,8 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					}
 					// 初期状態に戻す
 					{
-						CDataProfile	cProfile;
-						std::vector<std::wstring> data;
-						cProfile.SetReadingMode();
-						cProfile.ReadProfileRes( MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data );
-
-						CShareData_IO::IO_MainMenu( cProfile, &data, m_Common.m_sMainMenu, false );
+						// 配置newでデフォルト状態を復元する
+						new(&m_Common.m_sMainMenu) CommonSetting_MainMenu();
 						
 						SetData( hwndDlg ); 
 					}

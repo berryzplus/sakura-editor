@@ -48,10 +48,72 @@ END
 //
 // 101
 //
-IDR_ZIPRES1               101                     "resources.ja-JP.zip"
+
+IDR_ZIPRES1             101                     "resources.ja-JP.zip"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_BAD_MAINMENU1 MENU
+BEGIN
+    POPUP "不明な項目(&X)"
+    BEGIN
+        MENUITEM "ダミー項目(&D)",                  IDM_DUMMY1
+    END
+END
+
+IDR_BAD_MAINMENU2 MENU
+BEGIN
+    POPUP "ファイル"
+    BEGIN
+        MENUITEM "アクセスキーがない(&D)",                  IDM_DUMMY1
+    END
+END
+
+IDR_BAD_MAINMENU3 MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        POPUP "不明な項目(&X)"
+        BEGIN
+            MENUITEM "ダミー項目(&D)",                IDM_DUMMY1
+        END
+    END
+END
+
+IDR_BAD_MAINMENU4 MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        POPUP "開き直す"
+        BEGIN
+            MENUITEM "ダミー項目(&D)",                IDM_DUMMY1
+        END
+    END
+END
+
+IDR_BAD_MAINMENU5 MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        MENUITEM "ダミー項目(&D)",                    IDM_DUMMY1
+    END
+END
+
+IDR_BAD_MAINMENU6 MENU
+BEGIN
+    POPUP "ファイル(&F)"
+    BEGIN
+        MENUITEM "ダミー項目",                        IDM_DUMMY1
+    END
+END
 
 #endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
+
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
