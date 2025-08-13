@@ -1126,6 +1126,9 @@
     <ClInclude Include="..\src\main\cpp\env\SMenuItem.hpp">
       <Filter>Cpp Source Files\env</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\main\cpp\cxx_util\wcstombs_s.hpp">
+      <Filter>Cpp Source Files\cxx_util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -1180,9 +1183,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\resource\cursor_tab_separate.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\resource\MainMenu.ini">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\src\main\resources\sakura_rc.rc2">
@@ -2325,6 +2325,9 @@
     </ClCompile>
     <ClCompile Include="..\src\main\cpp\env\SMenuItem.cpp">
       <Filter>Cpp Source Files\env</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\cpp\cxx_util\wcstombs_s.cpp">
+      <Filter>Cpp Source Files\cxx_util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

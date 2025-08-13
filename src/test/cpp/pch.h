@@ -26,3 +26,4 @@ using ::testing::StrCaseEq;
 using ::testing::StrCaseNe;
 using ::testing::StrEq;
 using ::testing::StrNe;
+using ::testing::ThrowsMessage;

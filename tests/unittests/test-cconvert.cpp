@@ -24,10 +24,28 @@
 #include "convert/CConvert_ZeneisuToHaneisu.h"
 #include "convert/CConvert_ZenkataToHankata.h"
 
+#include "cxx_util/wcstombs_s.hpp"
+
 #include "Funccode_enum.h"
 
 //! googletestの出力に機能IDを出力させる
 std::ostream& operator << (std::ostream& os, const EFunctionCode& eFuncCode);
+
+namespace cxx_util {
+
+TEST(wcstombs_s, test001)
+{
+	// 現在のコードページ（日本語）で表現できる文字は変換できる
+	EXPECT_THAT(cxx_util::wcstombs_s(L"てすと"sv), StrEq("てすと"));
+}
+
+TEST(wcstombs_s, test101)
+{
+	// 現在のコードページ（日本語）で表現できない文字を渡すと例外が発生する
+	EXPECT_THAT([] { cxx_util::wcstombs_s(L"\U0001F6B9"sv); }, ThrowsMessage<std::invalid_argument>(StrEq("Invalid wide character sequence.")));
+}
+
+} // namespace cxx_util
 
 TEST(CConvert, ZenkataToHankata)
 {

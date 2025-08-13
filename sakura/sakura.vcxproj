@@ -333,6 +333,7 @@
     <ClInclude Include="..\sakura_core\extmodule\CIcu4cI18n.h" />
     <ClInclude Include="..\sakura_core\extmodule\CMigemo.h" />
     <ClInclude Include="..\sakura_core\extmodule\CUchardet.h" />
+    <ClInclude Include="..\src\main\cpp\cxx_util\wcstombs_s.hpp" />
     <ClInclude Include="..\src\main\cpp\env\SMenuItem.hpp" />
     <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_define.h" />
     <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_enum.h" />
@@ -904,6 +905,7 @@
     <ClCompile Include="..\sakura_core\_main\WinMain.cpp" />
     <ClCompile Include="..\sakura_core\_os\CClipboard.cpp" />
     <ClCompile Include="..\sakura_core\_os\CDropTarget.cpp" />
+    <ClCompile Include="..\src\main\cpp\cxx_util\wcstombs_s.cpp" />
     <ClCompile Include="..\src\main\cpp\env\SMenuItem.cpp" />
   </ItemGroup>
   <ItemGroup>

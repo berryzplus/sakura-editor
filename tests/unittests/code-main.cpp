@@ -80,16 +80,13 @@ int wmain(int argc, wchar_t **argv) {
 	// コマンドラインに -PROF 指定がある場合、wWinMainを起動して終了する。
 	InvokeWinMainIfNeeded(::GetCommandLineW());
 
-	// LCIDからロケール名を取得（"ja-JP"が取れる）
-	StaticString<LOCALE_NAME_MAX_LENGTH> szLocaleName;
-	LCIDToLocaleName(lcid, szLocaleName, szLocaleName.Length(), 0);
-
-	// Cロケールも変更
-	_wsetlocale(LC_ALL, szLocaleName);
-
 	// WinMainを起動しない場合、標準のgmock_main同様の処理を実行する。
 	// InitGoogleMock は Google Test の初期化も行うため、InitGoogleTest を別に呼ぶ必要はない。
 	printf("Running main() from %s\n", __FILE__);
 	testing::InitGoogleMock(&argc, argv);
+
+	// Cロケールを日本語に固定
+	std::setlocale(LC_ALL, "Japanese_Japan.932");
+
 	return RUN_ALL_TESTS();
 }
