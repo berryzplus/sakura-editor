@@ -30,10 +30,5 @@ struct SMenuItem {
 		char accessKey = '\0'
 	) noexcept;
 
-	SMenuItem(
-		int nFuncCode,
-		char accessKey = '\0'
-	) noexcept;
-
 	EMainMenuType GetType() const noexcept;
 };

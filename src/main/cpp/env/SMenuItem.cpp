@@ -264,17 +264,6 @@ SMenuItem::SMenuItem(
 {
 }
 
-/*!
- * カスタムメニュー用コンストラクタ
- */
-SMenuItem::SMenuItem(
-	int nFuncCode,
-	char accessKey
-) noexcept
-	: SMenuItem(0, nFuncCode, accessKey)
-{
-}
-
 EMainMenuType SMenuItem::GetType() const noexcept
 {
 	// セパレーター
