@@ -35,20 +35,16 @@
 // メニューの選択色を淡くする
 #define DRAW_MENU_SELECTION_LIGHT
 
+// 加算演算子（仮定義）
+constexpr EFunctionCode operator + (EFunctionCode a, int b) {
+	return EFunctionCode(WORD(a) + b);
+}
+
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CMenuDrawer::CMenuDrawer()
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
-
-	m_hInstance = nullptr;
-	m_hWndOwner = nullptr;
-	m_nMenuHeight = 0;
-	m_nMenuFontHeight = 0;
-	m_hFontMenu = nullptr;
-	m_pcIcons = nullptr;
-	m_hCompBitmap = nullptr;
-	m_hCompDC = nullptr;
 
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。	/* ツールバーのボタン TBBUTTON構造体 */
 	/* ツールバーのボタン TBBUTTON構造体 */
@@ -105,7 +101,8 @@ CMenuDrawer::CMenuDrawer()
 //	注4. ユーザー用に確保された場所は特にないので各段の空いている後ろの方を使ってください。
 //	注5. アイコンビットマップの有効段数は、CImageListMgr の MAX_Y です。
 
-	static const int tbd[] = {
+	constexpr std::array tbd = {
+/*  0 */		F_SEPARATOR,
 /* ファイル操作系(1段目32個: 1-32) */
 /*  1 */		F_FILENEW					/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//新規作成
 /*  2 */		F_FILEOPEN					/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//開く
@@ -625,90 +622,67 @@ CMenuDrawer::CMenuDrawer()
 /* 477 */		F_DISABLE			/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 478 */		F_DISABLE			/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 479 */		F_DISABLE			/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-/* 480 */		F_DISABLE			/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-
-/* 481 */		F_DISABLE			/*, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */	//最終行用ダミー(Jepro note: 最終行末にはカンマを付けないこと)
 	};
-	int tbd_num = _countof( tbd );
 
-	// m_tbMyButton[0]にはセパレータが入っているため、アイコン番号とボタン番号は１つずれる
-	const int INDEX_GAP = 1;
-	const int myButtonEnd = tbd_num + INDEX_GAP;
-	// 定数の整合性確認
 	// アイコン番号
-	assert_warning( tbd[TOOLBAR_ICON_MACRO_INTERNAL      - INDEX_GAP] == F_MACRO_EXTRA );
-	assert_warning( tbd[TOOLBAR_ICON_PLUGCOMMAND_DEFAULT - INDEX_GAP] == F_PLUGCOMMAND );
+	assert_warning(tbd[TOOLBAR_ICON_MACRO_INTERNAL] == F_MACRO_EXTRA);
+	assert_warning(tbd[TOOLBAR_ICON_PLUGCOMMAND_DEFAULT] == F_PLUGCOMMAND);
+
 	// コマンド番号
-	assert_warning( tbd[TOOLBAR_BUTTON_F_TOOLBARWRAP     - INDEX_GAP] == F_TOOLBARWRAP );
-	m_tbMyButton.resize( tbd_num + INDEX_GAP );
-	SetTBBUTTONVal( &m_tbMyButton[0], -1, F_SEPARATOR, 0, TBSTYLE_SEP, 0, 0 );	//セパレータ	// 2007.11.02 ryoji アイコンの未定義化(-1)
+	assert_warning(tbd[TOOLBAR_BUTTON_F_TOOLBARWRAP] == F_TOOLBARWRAP);
 
-	// 2010.06.23 Moca ループインデックスの基準をm_tbMyButtonに変更
-	for( int i = INDEX_GAP; i < myButtonEnd; i++ ){
-		const int funcCode = tbd[i-INDEX_GAP];
-		const int imageIndex = i - INDEX_GAP;
+	m_tbMyButton.reserve(std::size(tbd));
 
-		if( funcCode == F_TOOLBARWRAP ){
-			// ツールバー改行用の仮想ボタン（実際は表示されない） // 20050809 aroka
-			//	2007.10.12 genta 折り返しボタンが最後のデータと重なっているが，
-			//	インデックスを変更するとsakura.iniが引き継げなくなるので
-			//	重複を承知でそのままにする
-			//	2010.06.23 アイコン位置は外部マクロのデフォルトアイコンとして利用中
-			//	m_tbMyButton[384]自体は、ツールバーの折り返し用
-			SetTBBUTTONVal(
-				&m_tbMyButton[i],
-				-1,						// 2007.11.02 ryoji アイコンの未定義化(-1)
-				F_MENU_NOT_USED_FIRST,
-				TBSTATE_ENABLED|TBSTATE_WRAP,
-				TBSTYLE_SEP, 0, 0
-			);
-			continue;
-		}
+	for (size_t i = 0; i < std::size(tbd); ++i ) {
+		auto funcCode = int(tbd[i]);
+		auto iBitmap = int(i);
 
-		BYTE	style;	//@@@ 2002.06.15 MIK
-		switch( funcCode )	//@@@ 2002.06.15 MIK
+		BYTE fsState = 0;
+		BYTE fsStyle = TBSTYLE_BUTTON;
+
+		switch (funcCode)
 		{
+		case F_TOOLBARWRAP:	// ツールバー改行用の仮想ボタン（実際は表示されない）
+			funcCode = F_MENU_NOT_USED_FIRST;
+			fsState = TBSTATE_WRAP;
+			[[fallthrough]];
+
+		case F_SEPARATOR:	//セパレーター
+			fsStyle = TBSTYLE_SEP;
+			break;
+
 		case F_FILEOPEN_DROPDOWN:
-			style = TBSTYLE_DROPDOWN;	//ドロップダウン
+			fsStyle = TBSTYLE_DROPDOWN;	//ドロップダウン
 			break;
 
 		case F_SEARCH_BOX:
-			style = TBSTYLE_COMBOBOX;	//コンボボックス
+			fsStyle = TBSTYLE_COMBOBOX;	//コンボボックス
 			break;
 
 		default:
-			style = TBSTYLE_BUTTON;	//ボタン
 			break;
 		}
 
-		SetTBBUTTONVal(
-			&m_tbMyButton[i],
-			(F_DUMMY_MAX_CODE < funcCode)? imageIndex : -1,	// 2007.11.02 ryoji アイコンの未定義化(-1)
-			funcCode,
-			(tbd[i] == F_DISABLE)? 0 : TBSTATE_ENABLED,	// F_DISABLE なら DISABLEに	2010/7/11 Uchi
-			style, 0, 0
+		// ダミーコードのアイコンは未定義とする
+		if (funcCode <= F_DUMMY_MAX_CODE) {
+			iBitmap = -1;
+		}
+
+		// 割当のないボタンは無効にする
+		if (F_0 == tbd[i]) {
+			fsState += TBSTATE_ENABLED;
+		}
+
+		m_tbMyButton.emplace_back(
+			iBitmap,	// iBitmap
+			funcCode,	// idCommand
+			fsState,	// fsState
+			fsStyle		// fsStyle
 		);
 	}
 
-	m_nMyButtonFixSize = m_tbMyButton.size();
-	
-	// 2010.06.25 Moca 専用アイコンのない外部マクロがあれば、同じアイコンを共有して登録
-	if( MAX_CUSTMACRO_ICO < MAX_CUSTMACRO ){
-		const int nAddFuncs = MAX_CUSTMACRO - MAX_CUSTMACRO_ICO;
-		const int nBaseIndex = m_tbMyButton.size();
-		m_tbMyButton.resize( m_tbMyButton.size() + nAddFuncs );
-		for( int k = 0; k < nAddFuncs; k++ ){
-			const int macroFuncCode = F_USERMACRO_0 + MAX_CUSTMACRO_ICO + k;
-			SetTBBUTTONVal(
-				&m_tbMyButton[k + nBaseIndex],
-				TOOLBAR_ICON_MACRO_INTERNAL - INDEX_GAP,
-				macroFuncCode, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0
-			);
-		}
-	}
-	
-	m_nMyButtonNum = m_tbMyButton.size();
-	return;
+	m_nMyButtonFixSize = int(m_tbMyButton.size());
+	m_nMyButtonNum = int(m_tbMyButton.size());
 }
 
 CMenuDrawer::~CMenuDrawer()
