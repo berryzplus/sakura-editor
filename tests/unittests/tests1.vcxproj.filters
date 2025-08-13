@@ -141,7 +141,7 @@
     <ClCompile Include="test-printECodeType.cpp">
       <Filter>Other Files</Filter>
     </ClCompile>
-    <ClCompile Include="test-printEFunctionCode.cpp">
+    <ClCompile Include="..\..\src\test\resources\printEFunctionCode.cpp">
       <Filter>Other Files</Filter>
     </ClCompile>
     <ClCompile Include="test-cdocline.cpp">

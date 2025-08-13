@@ -155,7 +155,7 @@
     <ClCompile Include="test-csharedata.cpp" />
     <ClCompile Include="test-czipfile.cpp" />
     <ClCompile Include="test-extmodules.cpp" />
-    <ClCompile Include="test-printEFunctionCode.cpp" />
+    <ClCompile Include="..\..\src\test\resources\printEFunctionCode.cpp" />
     <ClCompile Include="test-cclipboard.cpp" />
     <ClCompile Include="test-ccodebase.cpp" />
     <ClCompile Include="test-ccommandline.cpp" />

@@ -24,6 +24,11 @@
 #include "convert/CConvert_ZeneisuToHaneisu.h"
 #include "convert/CConvert_ZenkataToHankata.h"
 
+#include "Funccode_enum.h"
+
+//! googletestの出力に機能IDを出力させる
+std::ostream& operator << (std::ostream& os, const EFunctionCode& eFuncCode);
+
 TEST(CConvert, ZenkataToHankata)
 {
 	CNativeW actual;
@@ -372,9 +377,6 @@ TEST(CConvert, Trim)
 	EXPECT_TRUE(CConvert_Trim(true, false).DoConvert(&actual));
 	EXPECT_EQ(actual, expected);
 }
-
-//! googletestの出力に機能IDを出力させる
-std::ostream& operator << (std::ostream& os, const EFunctionCode& eFuncCode);
 
 //!変換テストのためのテストパラメータ型
 using ConvTestParamType = std::tuple<EFunctionCode, std::wstring_view, std::wstring_view>;

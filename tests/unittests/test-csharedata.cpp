@@ -36,6 +36,9 @@ std::wstring GetPrivateProfileStringW(
 	std::optional<std::filesystem::path> iniPath = std::nullopt
 );
 
+//! googletestの出力に機能IDを出力させる
+std::ostream& operator << (std::ostream& os, const EFunctionCode& eFuncCode);
+
 using SFuncCodeArray = std::array<EFunctionCode, 8>;
 
 struct KEYDATAINIT {
@@ -1502,10 +1505,10 @@ MATCHER(IsInitializedCommonSettingMainMenu, "Checks if CommonSetting_MainMenu is
 	EXPECT_THAT(sMainMenu.m_nVersion, 0);
 	EXPECT_THAT(sMainMenu.m_nMainMenuNum, std::size(mainMenuTable));
 	for (size_t i = 0; i < std::size(mainMenuTable); ++i) {
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nLevel,  mainMenuTable[i].m_nLevel);
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nType,   mainMenuTable[i].GetType());
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nFunc,   mainMenuTable[i].m_eFuncCode);
-		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sKey[0], mainMenuTable[i].m_chAccessKey);
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nLevel,  mainMenuTable[i].m_nLevel)      << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nType,   mainMenuTable[i].GetType())     << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_nFunc,   mainMenuTable[i].m_eFuncCode)   << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
+		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sKey[0], mainMenuTable[i].m_chAccessKey) << L"Unexpected value at index " << i << L", funccode " << mainMenuTable[i].m_eFuncCode << L"("  << int(mainMenuTable[i].m_eFuncCode) << L")";
 		EXPECT_THAT(sMainMenu.m_cMainMenuTbl[i].m_sName,   StrEq(L""));
 	}
 	for (size_t i = std::size(mainMenuTable); i < std::size(sMainMenu.m_cMainMenuTbl); ++i) {

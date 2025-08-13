@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+﻿cmake_minimum_required(VERSION 3.16)
 
 # Find GTest
 find_package(GTest CONFIG REQUIRED)
@@ -19,11 +19,22 @@ set(PROJECT_NAME tests1)
 
 # define source files of tests1
 file(GLOB_RECURSE TESTS1_SOURCES
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.cpp
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.cpp
   ${CMAKE_CURRENT_LIST_DIR}/test*.cpp
   ${CMAKE_CURRENT_LIST_DIR}/code*.cpp)
 
+if(MINGW)
+  # coverage.cppをリストから削除
+  list(REMOVE_ITEM TESTS1_SOURCES ${CMAKE_SOURCE_DIR}/src/test/resources/coverage.cpp)
+endif(MINGW)
+
 # define header files of tests1
 file(GLOB_RECURSE TESTS1_HEADERS
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.hpp
+  ${CMAKE_SOURCE_DIR}/src/test/cpp/*.h
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.hpp
+  ${CMAKE_SOURCE_DIR}/src/test/resources/*.h
   ${CMAKE_CURRENT_LIST_DIR}/*.hpp
   ${CMAKE_CURRENT_LIST_DIR}/*.h)
 
