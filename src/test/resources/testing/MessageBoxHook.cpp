@@ -49,7 +49,8 @@ MessageBoxHook::MessageBoxHook(int returnValue)
 {
 	std::lock_guard lock(gm_mtx);
 
-	push(returnValue);
+	gm_returnValues.push_back(returnValue);
+	gm_logs.clear();
 
 	HOOK_ATTACH(&MessageBoxExW, &MessageBoxExWStub);
 }

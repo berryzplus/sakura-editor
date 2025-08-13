@@ -3,14 +3,12 @@
 	Copyright (C) 2021-2022, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
-*/
+ */
+
 #include "pch.h"
-
-#include <tchar.h>
-#include <Windows.h>
-#include <Shlwapi.h>
-
 #include "util/StaticType.h"
+
+#include "testing/MessageBoxHook.hpp"
 
 /*!
 	@brief StaticVectorのテスト
@@ -36,7 +34,11 @@ TEST(StaticVector, push_back)
 
 #ifdef _DEBUG
 	// デバッグビルドでは、正常にクラッシュする
-	EXPECT_DEATH({ vec.push_back(0xffffff); }, "");
+	EXPECT_DEATH({
+		testing::MessageBoxHook hook;
+		vec.push_back(0xffffff);
+		//呼出先でクラッシュするので、メッセージは評価できない。");
+	}, "");
 #else
 	// リリースビルドでもクラッシュする
 	EXPECT_THROW({ vec.push_back(0xffffff); }, std::out_of_range);
