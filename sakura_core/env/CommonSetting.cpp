@@ -25,24 +25,28 @@ CommonSetting::CommonSetting(
 {
 }
 
-CommonSetting_FileName::CommonSetting_FileName() noexcept
+CommonSetting_Window::CommonSetting_Window() noexcept
 {
-	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
-		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
-		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
-		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
-		{ LR"(%TEMP%\)",              LS(STR_TRANSNAME_TEMP) },
-		{ LR"(%Common DeskTop%\)",    LS(STR_TRANSNAME_COMDESKTOP) },
-		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
-		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
-	}};
+	// L"${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} - $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>"
+	wcscpy_s(m_szWindowCaptionActive, LS(STR_ERR_CSHAREDATA17));
+	// L"${w?$h$:アウトプット$:$f$n$}${U?(更新)$} - $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>"
+	wcscpy_s(m_szWindowCaptionInactive, LS(STR_ERR_CSHAREDATA18));
+}
 
-	m_nTransformFileNameArrNum = int(std::size(expectedPairs));
+CommonSetting_TabBar::CommonSetting_TabBar() noexcept
+{
+	auto& lfIconTitle = m_lf;
+	auto& nIconPointSize = m_nPointSize;
+	SystemParametersInfoW(
+		SPI_GETICONTITLELOGFONT,
+		sizeof(LOGFONT),
+		&lfIconTitle,
+		0UL
+	);
+	nIconPointSize = lfIconTitle.lfHeight >= 0 ? lfIconTitle.lfHeight : DpiPixelsToPoints(-lfIconTitle.lfHeight, 10);
 
-	for (size_t i = 0; i < expectedPairs.size(); ++i) {
-		wcscpy_s(m_szTransformFileNameFrom[i], expectedPairs[i].first.c_str());
-		wcscpy_s(m_szTransformFileNameTo[i], expectedPairs[i].second.c_str());
-	}
+	// L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
+	wcscpy_s(m_szTabWndCaption, LS(STR_ERR_CSHAREDATA10));
 }
 
 CommonSetting_Format::CommonSetting_Format() noexcept
@@ -73,31 +77,24 @@ CommonSetting_Macro::CommonSetting_Macro(
 {
 }
 
-CommonSetting_MainMenu::CommonSetting_MainMenu() noexcept
+CommonSetting_FileName::CommonSetting_FileName() noexcept
 {
-	CDataProfile cProfile;
-	cProfile.SetReadingMode();
+	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
+		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
+		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
+		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
+		{ LR"(%TEMP%\)",              LS(STR_TRANSNAME_TEMP) },
+		{ LR"(%Common DeskTop%\)",    LS(STR_TRANSNAME_COMDESKTOP) },
+		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
+		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
+	}};
 
-	std::vector<std::wstring> data;
-	cProfile.ReadProfileRes(MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data);
+	m_nTransformFileNameArrNum = int(std::size(expectedPairs));
 
-	CShareData_IO::IO_MainMenu(cProfile, &data, *this, false);
-}
-
-CommonSetting_TabBar::CommonSetting_TabBar() noexcept
-{
-	auto& lfIconTitle = m_lf;
-	auto& nIconPointSize = m_nPointSize;
-	SystemParametersInfoW(
-		SPI_GETICONTITLELOGFONT,
-		sizeof(LOGFONT),
-		&lfIconTitle,
-		0UL
-	);
-	nIconPointSize = lfIconTitle.lfHeight >= 0 ? lfIconTitle.lfHeight : DpiPixelsToPoints(-lfIconTitle.lfHeight, 10);
-
-	// L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
-	wcscpy_s(m_szTabWndCaption, LS(STR_ERR_CSHAREDATA10));
+	for (size_t i = 0; i < expectedPairs.size(); ++i) {
+		wcscpy_s(m_szTransformFileNameFrom[i], expectedPairs[i].first.c_str());
+		wcscpy_s(m_szTransformFileNameTo[i], expectedPairs[i].second.c_str());
+	}
 }
 
 CommonSetting_View::CommonSetting_View() noexcept
@@ -120,10 +117,13 @@ CommonSetting_View::CommonSetting_View() noexcept
 	StringBufferW(lf.lfFaceName) = L"ＭＳ ゴシック";
 }
 
-CommonSetting_Window::CommonSetting_Window() noexcept
+CommonSetting_MainMenu::CommonSetting_MainMenu() noexcept
 {
-	// L"${w?$h$:アウトプット$:${I?$f$n$:$N$n$}$}${U?(更新)$} - $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>"
-	wcscpy_s(m_szWindowCaptionActive, LS(STR_ERR_CSHAREDATA17));
-	// L"${w?$h$:アウトプット$:$f$n$}${U?(更新)$} - $A $V ${R?(ビューモード)$:(上書き禁止)$}${M?  【キーマクロの記録中】$} $<profile>"
-	wcscpy_s(m_szWindowCaptionInactive, LS(STR_ERR_CSHAREDATA18));
+	CDataProfile cProfile;
+	cProfile.SetReadingMode();
+
+	std::vector<std::wstring> data;
+	cProfile.ReadProfileRes(MAKEINTRESOURCE(IDR_MENU1), MAKEINTRESOURCE(ID_RC_TYPE_INI), &data);
+
+	CShareData_IO::IO_MainMenu(cProfile, &data, *this, false);
 }
