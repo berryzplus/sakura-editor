@@ -10,22 +10,11 @@
 // LMP: Start -----------------------------------------------------
 
 // 33,000 - 39,999 Resource strings
-#define F_TAB_MANIP_SUBMENU				34000
 #define F_TAB_GROUPIZE					34001
 #define F_TAB_GROUPDEL					34002
 
 #define F_TOPMOST_REL					34003
 #define F_TOPMOST_SET					34004
-
-#define F_FILE_REOPEN_SUBMENU			34005
-#define F_FILE_RCNTFILE_SUBMENU			34006
-#define F_FILE_RCNTFLDR_SUBMENU			34007
-#define F_EDIT_INS_SUBMENU				34008
-#define F_EDIT_COS_SUBMENU				34009
-#define F_EDIT_MOV_SUBMENU				34010
-#define F_EDIT_SEL_SUBMENU				34011
-#define F_EDIT_HLV_SUBMENU				34012
-#define F_CONV_ENCODE_SUBMENU			34013
 
 #define F_RECKEYMACRO_REC				34014
 #define F_SAVEKEYMACRO_REC				34015
@@ -36,9 +25,6 @@
 #define F_SAVEKEYMACRO_APPE				34019
 #define F_LOADKEYMACRO_APPE				34020
 #define F_EXECKEYMACRO_APPE				34021
-
-#define F_EXECKEYMACRO_REGD				34022
-#define F_TOOL_CUSTOM_SUBMENU			34023
 
 #define F_SHOWTOOLBAR_ON				34024
 #define F_SHOWFUNCKEY_ON				34025
@@ -53,11 +39,6 @@
 #define F_TEXTWRAPMETHOD_OFF			34032
 #define F_TEXTWRAPMETHOD_ON				34033
 
-#define F_WRAPWINDOWWIDTH_NONE			34034
-#define F_WRAPWINDOWWIDTH_MAX			34035
-#define F_WRAPWINDOWWIDTH_LEFT			34036
-#define F_WRAPWINDOWWIDTH_SET			34037
-
 #define F_TOGGLE_KEY_SEARCH_OFF			34038
 #define F_TOGGLE_KEY_SEARCH_ON			34039
 
@@ -67,47 +48,11 @@
 #define F_SPLIT_H_ON					34042
 #define F_SPLIT_H_OFF					34043
 
-#define F_CHGMOD_EOL_SUBMENU			34044
-
 #define F_SPLIT_VH_ON					34045
 #define F_SPLIT_VH_OFF					34046
 
-#define F_BOOKMARK_SUBMENU				34047
-#define F_ISEARCH_SUBMENU				34048
 #define F_TAB_CLOSEOTHER_TAB			34049
 #define F_TAB_CLOSEOTHER_WINDOW			34050
-
-#define F_EDIT_BOX_SEL_SUBMENU			34051
-
-#define F_FILE_TOPMENU					34052
-#define F_EDIT_TOPMENU					34053
-#define F_CONVERT_TOPMENU				34054
-#define F_SEARCH_TOPMENU				34055
-#define F_TOOL_TOPMENU					34056
-#define F_OPTION_TOPMENU				34057
-#define F_WINDOW_TOPMENU				34058
-#define F_HELP_TOPMENU					34059
-
-#define F_WINDOW_LIST_SUBMENU			34060
-// #define F_RESERVED						34061
-// #define F_RESERVED						34062
-// #define F_RESERVED						34063
-// #define F_RESERVED						34064
-// #define F_RESERVED						34065
-// #define F_RESERVED						34066
-// #define F_RESERVED						34067
-// #define F_RESERVED						34068
-// #define F_RESERVED						34069
-// #define F_RESERVED						34070
-// #define F_RESERVED						34071
-// #define F_RESERVED						34072
-// #define F_RESERVED						34073
-// #define F_RESERVED						34074
-// #define F_RESERVED						34075
-// #define F_RESERVED						34076
-// #define F_RESERVED						34077
-// #define F_RESERVED						34078
-// #define F_RESERVED						34079
 
 // Select Language
 #define STR_SELLANG_NAME				34080
@@ -1307,5 +1252,3 @@
 #define STR_FILEDIALOG_OPENFOLDER		35041
 #define STR_GSTR_APPNAME				35047
 #define STR_REGEX_COMPILE_ERR_PREAMBLE	35048
-
-// Now using max number 35048 by STR_REGEX_COMPILE_ERR_PREAMBLE

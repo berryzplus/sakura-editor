@@ -5,7 +5,6 @@
 */
 #include "pch.h"
 #include "Funccode_enum.h"
-#include "String_define.h"
 
 #include <ostream>
 
