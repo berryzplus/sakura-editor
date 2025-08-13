@@ -13,6 +13,24 @@
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
 
+#include "testing/MessageBoxHook.hpp"
+
+namespace message_box {
+
+/*!
+	MessageBoxHookのテスト 
+ */
+TEST(MessageBoxHook, test001)
+{
+	testing::MessageBoxHook hook;
+
+	MessageBoxExW(nullptr, L"2行をマージしました。", L"caption", MB_OK, 1041);
+
+	EXPECT_THAT(hook.back().text, StrEq(L"2行をマージしました。"));
+	EXPECT_THAT(hook.back().caption, StrEq(L"caption"));
+	EXPECT_THAT(hook.back().uType, MB_OK);
+}
+
 /*!
 	MessageBoxFのテスト 
  */
@@ -68,3 +86,5 @@ TEST(MessageBoxF, customMessageBoxFunctions)
 	//作者に教えて欲しいエラー
 	EXPECT_ERROUT(PleaseReportToAuthor(hWnd, L"%d行をマージしました。", 2), L"2行をマージしました。");
 }
+
+} // namespace message_box

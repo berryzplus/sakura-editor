@@ -19,6 +19,9 @@
     <Filter Include="Other Files\testing">
       <UniqueIdentifier>{d37419a0-0151-41ee-a41f-4bedae3fd69e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Other Files\hooking">
+      <UniqueIdentifier>{cc5900a1-8d31-4c3b-bd14-c635ff234f4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt">
@@ -189,6 +192,9 @@
     <ClCompile Include="..\..\src\test\resources\testing\StartEditorProcess.cpp">
       <Filter>Other Files\testing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\test\resources\testing\MessageBoxHook.cpp">
+      <Filter>Other Files\testing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\cpp\pch.h">
@@ -202,6 +208,12 @@
     </ClInclude>
     <ClInclude Include="TExtModule.hpp">
       <Filter>Other Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\test\resources\testing\MessageBoxHook.hpp">
+      <Filter>Other Files\testing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\test\resources\hooking\HookingLibrary.hpp">
+      <Filter>Other Files\hooking</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

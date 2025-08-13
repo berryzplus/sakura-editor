@@ -146,6 +146,7 @@
     <ClCompile Include="..\..\src\test\cpp\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\src\test\resources\testing\MessageBoxHook.cpp" />
     <ClCompile Include="..\..\src\test\resources\code-main.cpp" />
     <ClCompile Include="..\..\src\test\resources\testing\StartEditorProcess.cpp" />
     <ClCompile Include="test-cdocline.cpp" />
@@ -201,6 +202,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\test\cpp\pch.h" />
+    <ClInclude Include="..\..\src\test\resources\hooking\HookingLibrary.hpp" />
+    <ClInclude Include="..\..\src\test\resources\testing\MessageBoxHook.hpp" />
     <ClInclude Include="..\..\src\test\resources\testing\StartEditorProcess.hpp" />
     <ClInclude Include="eval_outputs.hpp" />
     <ClInclude Include="TExtModule.hpp" />

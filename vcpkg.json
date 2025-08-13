@@ -5,6 +5,14 @@
       "host": true
     },
     {
+      "name": "detours",
+      "platform": "!mingw & static"
+    },
+    {
+      "name": "minhook",
+      "platform": "mingw & static"
+    },
+    {
       "name": "gtest",
       "platform": "static"
     }

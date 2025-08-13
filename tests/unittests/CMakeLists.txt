@@ -3,6 +3,17 @@
 # Find GTest
 find_package(GTest CONFIG REQUIRED)
 
+if(MSVC)
+  # Find MS Detours(for MSVC)
+  find_path(DETOURS_INCLUDE_DIRS "detours/detours.h")
+  find_library(DETOURS_LIBRARY detours REQUIRED)
+endif(MSVC)
+
+if(MINGW)
+  # Find MinHook(for MinGW64)
+  find_package(minhook CONFIG REQUIRED)
+endif(MINGW)
+
 # Create a custom target for test_resource_zip generation
 add_custom_target(test_resource_zip ALL
   COMMAND ${7ZIP_EXECUTABLE}
@@ -85,7 +96,24 @@ target_link_libraries(${PROJECT_NAME}
     GTest::gtest
     GTest::gmock)
 
+if(MSVC)
+  # link with hooking library
+  target_include_directories(${PROJECT_NAME}
+    PRIVATE
+      ${DETOURS_INCLUDE_DIRS}
+  )
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      ${DETOURS_LIBRARY}
+  )
+endif(MSVC)
+
 if(MINGW)
+  # link with hooking library
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      minhook::minhook
+  )
   target_link_options(${PROJECT_NAME}
     PRIVATE
       -mconsole
