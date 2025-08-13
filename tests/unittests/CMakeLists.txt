@@ -21,8 +21,7 @@ set(PROJECT_NAME tests1)
 file(GLOB_RECURSE TESTS1_SOURCES
   ${CMAKE_SOURCE_DIR}/src/test/cpp/*.cpp
   ${CMAKE_SOURCE_DIR}/src/test/resources/*.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/test*.cpp
-  ${CMAKE_CURRENT_LIST_DIR}/code*.cpp)
+  ${CMAKE_CURRENT_LIST_DIR}/test*.cpp)
 
 if(MINGW)
   # coverage.cppをリストから削除

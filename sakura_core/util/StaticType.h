@@ -65,14 +65,11 @@ public:
 	}
 
 	/*!
-	 * 暗黙変換用コンストラクタ
-	 *
-	 * 配列拡張型からの暗黙変換を許容する。
+	 * 配列拡張型ラップ用コンストラクタ
 	 */
 	template <size_t N>
 	explicit TCharBuffer(SString<N, char_type>& buffer) noexcept
-		: m_Data(buffer)
-		, m_Size(std::size(buffer))
+		: TCharBuffer(buffer, std::size(buffer))
 	{
 	}
 
@@ -81,8 +78,7 @@ public:
 	 */
 	template <size_t N>
 	explicit TCharBuffer(char_type (&buffer)[N]) noexcept
-		: m_Data(buffer)
-		, m_Size(std::size(buffer))
+		: TCharBuffer(buffer, std::size(buffer))
 	{
 	}
 
