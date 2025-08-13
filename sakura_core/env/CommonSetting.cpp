@@ -194,9 +194,9 @@ CommonSetting_Macro::CommonSetting_Macro(
 {
 }
 
-CommonSetting_FileName::CommonSetting_FileName() noexcept
+/* static */ std::vector<std::pair<std::wstring, std::wstring>> CommonSetting_FileName::GetDefaultConversion() noexcept
 {
-	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
+	return {{
 		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
 		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
 		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
@@ -205,12 +205,17 @@ CommonSetting_FileName::CommonSetting_FileName() noexcept
 		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
 		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
 	}};
+}
 
-	m_nTransformFileNameArrNum = int(std::size(expectedPairs));
+CommonSetting_FileName::CommonSetting_FileName() noexcept
+{
+	const auto defaultConversions = GetDefaultConversion();
 
-	for (size_t i = 0; i < expectedPairs.size(); ++i) {
-		wcscpy_s(m_szTransformFileNameFrom[i], expectedPairs[i].first.c_str());
-		wcscpy_s(m_szTransformFileNameTo[i], expectedPairs[i].second.c_str());
+	m_nTransformFileNameArrNum = int(std::size(defaultConversions));
+
+	for (size_t i = 0; i < defaultConversions.size(); ++i) {
+		wcscpy_s(m_szTransformFileNameFrom[i], defaultConversions[i].first.c_str());
+		wcscpy_s(m_szTransformFileNameTo[i], defaultConversions[i].second.c_str());
 	}
 }
 

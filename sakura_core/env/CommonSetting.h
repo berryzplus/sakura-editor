@@ -516,6 +516,8 @@ struct CommonSetting_Macro
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 struct CommonSetting_FileName
 {
+	static std::vector<std::pair<std::wstring, std::wstring>> GetDefaultConversion() noexcept;
+
 	bool		m_bTransformShortPath = true;									//!< ファイル名の省略表記
 	int			m_nTransformShortMaxWidth = 100;								//!< ファイル名の省略表記の最大長
 	int			m_nTransformFileNameArrNum = 7;									//!< ファイル名の簡易表示登録数
