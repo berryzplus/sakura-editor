@@ -2,9 +2,7 @@
 // Microsoft Visual C++ で生成されたインクルード ファイル。
 // sakura_rc.rc で使用
 //
-#define ID_RC_TYPE_INI                  100
 #define IDR_MAINMENU                    101
-#define IDR_MENU1                       102
 #define IDR_TRAYMENU_L                  103
 #define IDD_FIND                        110
 #define IDD_ABOUT                       111

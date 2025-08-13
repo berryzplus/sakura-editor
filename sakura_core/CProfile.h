@@ -47,7 +47,6 @@ public:
 	void SetReadingMode( void ) { m_bRead = true; }
 	void SetWritingMode( void ) { m_bRead = false; }
 	bool ReadProfile( const WCHAR* );
-	bool ReadProfileRes( const WCHAR*, const WCHAR*, std::vector<std::wstring>* = nullptr );				// 200/5/19 Uchi
 	bool WriteProfile( const WCHAR*, const WCHAR* pszComment);
 	bool GetProfileData(std::wstring_view sectionName, std::wstring_view entryKey, std::wstring& strEntryValue) const;
 	void SetProfileData(std::wstring_view sectionName, std::wstring_view entryKey, std::wstring_view entryValue);

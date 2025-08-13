@@ -521,7 +521,6 @@
     <None Include="..\resource\cursor_rvarrow.cur" />
     <None Include="..\resource\cursor_tab_join.cur" />
     <None Include="..\resource\cursor_tab_separate.cur" />
-    <None Include="..\resource\MainMenu.ini" />
     <None Include="..\src\main\resources\sakura_rc.rc2" />
   </ItemGroup>
   <ItemGroup>
