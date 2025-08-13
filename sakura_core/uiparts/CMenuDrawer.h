@@ -20,12 +20,11 @@
 #define SAKURA_CMENUDRAWER_F2B94603_89D1_4064_A93E_3634A0A6FAD4_H_
 #pragma once
 
-#include "Funccode_enum.h"
 #include "mem/CNativeW.h"
+#include "uiparts/CImageListMgr.h"
 
 class CMenuDrawer;
 
-class CImageListMgr;// 2002/2/10 aroka
 struct DLLSHAREDATA;
 
 //#define MAX_MENUPOS	10

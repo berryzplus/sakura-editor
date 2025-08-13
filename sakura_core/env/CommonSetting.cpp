@@ -7,12 +7,14 @@
 */
 
 #include "StdAfx.h"
-#include "CommonSetting.h"
+#include "env/CommonSetting.h"
 
 #include "env/CShareData.h"
 #include "env/CShareData_IO.h"
 #include "env/SMenuItem.hpp"
 #include "CDataProfile.h"
+#include "uiparts/CImageListMgr.h"
+#include "util/os.h"
 #include "util/window.h"
 
 #include "CSelectLang.h"
@@ -105,6 +107,71 @@ CommonSetting_CustomMenu::CommonSetting_CustomMenu() noexcept
 		m_nCustMenuItemKeyArr [TAB_RMENU][i] = tabMenuItems[i].m_chAccessKey;
 	}
 	m_nCustMenuItemNumArr[TAB_RMENU] = int(std::size(tabMenuItems));
+}
+
+/*static*/ std::vector<int> CommonSetting_ToolBar::GetDefaultTools() noexcept
+{
+	constexpr std::array defaultToolFuncCodes = {
+		F_FILENEW,				//新規作成
+		F_FILEOPEN_DROPDOWN,	//ファイルを開く(DropDown)
+		F_FILESAVE,				//上書き保存
+		F_FILESAVEAS_DIALOG,	//名前を付けて保存
+		F_SEPARATOR,
+		F_UNDO,					//元に戻す(Undo)
+		F_REDO,					//やり直し(Redo)
+		F_SEPARATOR,
+		F_JUMPHIST_PREV,		//移動履歴: 前へ
+		F_JUMPHIST_NEXT,		//移動履歴: 次へ
+		F_SEPARATOR,
+		F_SEARCH_DIALOG,		//検索
+		F_SEARCH_NEXT,			//次を検索
+		F_SEARCH_PREV,			//前を検索
+		F_REPLACE_DIALOG,		//置換
+		F_SEARCH_CLEARMARK,		//検索マークのクリア
+		F_GREP_DIALOG,			//Grep
+		F_SEPARATOR,
+		F_OUTLINE,				//アウトライン解析
+		F_SEPARATOR,
+		F_TYPE_LIST,			//タイプ別設定一覧
+		F_OPTION_TYPE,			//タイプ別設定
+		F_OPTION,				//共通設定
+		F_SEPARATOR,
+		F_MENU_ALLFUNC,			//コマンド一覧
+	};
+
+	const auto buttonIds = CImageListMgr::GetFuncIcons();
+
+	std::vector<int> defaultTools;
+	std::ranges::transform(
+		defaultToolFuncCodes,
+		std::back_inserter(defaultTools),
+		[&buttonIds](const auto funcCode) {
+			return buttonIds.at(funcCode);
+		}
+	);
+
+	return defaultTools;
+}
+
+/*!
+ * @brief 共有メモリ初期化/ツールバー
+ *
+ *	ツールバー関連の初期化処理
+ *
+ *	@author genta
+ *	@date 2005.01.30 genta CShareData::Init()から分離．
+ *		一つずつ設定しないで一気にデータ転送するように．
+ */
+CommonSetting_ToolBar::CommonSetting_ToolBar() noexcept
+{
+	// デフォルトの定義を読み込む
+	const auto defaultTools = GetDefaultTools();
+
+	// ツールバーの設定
+	m_nToolBarButtonNum = int(std::size(defaultTools));
+	std::ranges::copy(defaultTools, m_nToolBarButtonIdxArr);
+
+	m_bToolBarIsFlat = !IsVisualStyle();
 }
 
 CommonSetting_Helper::CommonSetting_Helper() noexcept
