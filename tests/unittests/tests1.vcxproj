@@ -205,7 +205,7 @@
     <ClInclude Include="..\..\src\test\resources\hooking\HookingLibrary.hpp" />
     <ClInclude Include="..\..\src\test\resources\testing\MessageBoxHook.hpp" />
     <ClInclude Include="..\..\src\test\resources\testing\StartEditorProcess.hpp" />
-    <ClInclude Include="eval_outputs.hpp" />
+
     <ClInclude Include="TExtModule.hpp" />
     <ClInclude Include="..\..\src\test\resources\tests1_rc.h" />
   </ItemGroup>
