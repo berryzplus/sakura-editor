@@ -982,24 +982,16 @@ MATCHER(IsInitializedCommonSettingFileName, "Checks if CommonSetting_FileName is
 	EXPECT_THAT(sFileName.m_bTransformShortPath, IsTrue());
 	EXPECT_THAT(sFileName.m_nTransformShortMaxWidth, 100);
 
-	const std::array<std::pair<std::wstring, std::wstring>, 7> expectedPairs = {{
-		{ LR"(%DeskTop%\)",           LS(STR_TRANSNAME_DESKTOP) },
-		{ LR"(%Personal%\)",          LS(STR_TRANSNAME_MYDOC) },
-		{ LR"(%Cache%\Content.IE5\)", LS(STR_TRANSNAME_IE) },
-		{ LR"(%TEMP%\)",              LS(STR_TRANSNAME_TEMP) },
-		{ LR"(%Common DeskTop%\)",    LS(STR_TRANSNAME_COMDESKTOP) },
-		{ LR"(%Common Documents%\)",  LS(STR_TRANSNAME_COMDOC) },
-		{ LR"(%AppData%\)",           LS(STR_TRANSNAME_APPDATA) }
-	}};
+	const auto defaultConversions = CommonSetting_FileName::GetDefaultConversion();
 
-	EXPECT_THAT(sFileName.m_nTransformFileNameArrNum, expectedPairs.size());
+	EXPECT_THAT(sFileName.m_nTransformFileNameArrNum, defaultConversions.size());
 
-	for (size_t i = 0; i < expectedPairs.size(); ++i) {
-		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(expectedPairs[i].first));
-		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(expectedPairs[i].second));
+	for (size_t i = 0; i < defaultConversions.size(); ++i) {
+		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(defaultConversions[i].first));
+		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(defaultConversions[i].second));
 	}
 
-	for (int i = expectedPairs.size(); i < MAX_TRANSFORM_FILENAME; ++i ){
+	for (size_t i = defaultConversions.size(); i < MAX_TRANSFORM_FILENAME; ++i) {
 		EXPECT_THAT(sFileName.m_szTransformFileNameFrom[i], StrEq(L""));
 		EXPECT_THAT(sFileName.m_szTransformFileNameTo[i], StrEq(L""));
 	}
