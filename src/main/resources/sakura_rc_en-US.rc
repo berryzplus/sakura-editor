@@ -1,6 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "sakura_rc.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -11,6 +10,7 @@
 #include <Windows.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
+#include "sakura_rc.h"
 #include "Funccode_define.h"
 #include "String_define.h"
 #include "version.h"
@@ -32,7 +32,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "..\\sakura_core\\sakura_rc.h\0"
+    "\0"
 END
 
 2 TEXTINCLUDE 
@@ -41,6 +41,7 @@ BEGIN
     "#include <Windows.h>\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "\r\n"
+    "#include ""sakura_rc.h""\r\n"
     "#include ""Funccode_define.h""\r\n"
     "#include ""String_define.h""\r\n"
     "#include ""version.h""\r\n"
@@ -93,7 +94,7 @@ CAPTION "Jump to Line"
 FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
     LTEXT           "Line &Number",IDC_STATIC,5,6,34,8
-    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12, ES_NUMBER
+    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12,ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_LINENUM,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,82,4,9,12
     CONTROL         "Use Layout(&R)",IDC_RADIO_LINENUM_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,94,5,97,10
     CONTROL         "Use CRLF(&W)",IDC_RADIO_LINENUM_CRLF,"Button",BS_AUTORADIOBUTTON,94,20,87,10
@@ -880,7 +881,8 @@ BEGIN
     CONTROL         "When Undo, separate from editing(&U)",IDC_CHECK_INDENTCPPUNDO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,146,10
     GROUPBOX        "C/C++　Indent Settings",IDC_STATIC,3,159,295,40,WS_GROUP
-    CONTROL         "Detect an indentation style when a file is loaded(&T)",IDC_CHECK_DETECT_INDENTATION_STYLE_ON_FILE_LOAD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,205,240,10
+    CONTROL         "Detect an indentation style when a file is loaded(&T)",IDC_CHECK_DETECT_INDENTATION_STYLE_ON_FILE_LOAD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,205,240,10
 END
 
 IDD_PROP_REGEX DIALOGEX 0, 0, 302, 244
@@ -2656,10 +2658,37 @@ END
 
 STRINGTABLE
 BEGIN
+    F_TAB_MANIP_SUBMENU     "Tab control"
+    F_CHGMOD_EOL_SUBMENU    "End of line setting"
+    F_BOOKMARK_SUBMENU      "Bookmark"
     F_ISEARCH_SUBMENU       "Incremental Search"
+    F_WINDOW_LIST_SUBMENU   "Window List"
+END
+
+STRINGTABLE
+BEGIN
     F_TAB_CLOSEOTHER_TAB    "Close all Other tabs"
     F_TAB_CLOSEOTHER_WINDOW "Close all Other windows"
+END
+
+STRINGTABLE
+BEGIN
+    F_FILE_REOPEN_SUBMENU   "Re-open With encoding"
+    F_FILE_RCNTFILE_SUBMENU "Recently Used File"
+    F_FILE_RCNTFLDR_SUBMENU "Recently Used Folder"
+    F_EDIT_INS_SUBMENU      "Insert"
+    F_EDIT_COS_SUBMENU      "Cosmetic"
+    F_EDIT_MOV_SUBMENU      "Cursor Movement"
+    F_EDIT_SEL_SUBMENU      "Selection"
     F_EDIT_BOX_SEL_SUBMENU  "Box Selection"
+    F_EDIT_HLV_SUBMENU      "High Level Editing"
+    F_CONV_ENCODE_SUBMENU   "Change Encoding"
+    F_EXECKEYMACRO_REGD     "Registered Macros"
+    F_TOOL_CUSTOM_SUBMENU   "Custom Menu"
+END
+
+STRINGTABLE
+BEGIN
     F_FILE_TOPMENU          "File"
     F_EDIT_TOPMENU          "Edit"
     F_CONVERT_TOPMENU       "Convert"
@@ -2668,7 +2697,6 @@ BEGIN
     F_OPTION_TOPMENU        "Option"
     F_WINDOW_TOPMENU        "Window"
     F_HELP_TOPMENU          "Help"
-    F_WINDOW_LIST_SUBMENU   "Window List"
 END
 
 STRINGTABLE
@@ -2687,20 +2715,10 @@ END
 
 STRINGTABLE
 BEGIN
-    F_TAB_MANIP_SUBMENU     "Tab control"
     F_TAB_GROUPIZE          "Create Tab group"
     F_TAB_GROUPDEL          "Tab group delete"
     F_TOPMOST_REL           "Release Always on top"
     F_TOPMOST_SET           "Set Always on top"
-    F_FILE_REOPEN_SUBMENU   "Re-open With encoding"
-    F_FILE_RCNTFILE_SUBMENU "Recently Used File"
-    F_FILE_RCNTFLDR_SUBMENU "Recently Used Folder"
-    F_EDIT_INS_SUBMENU      "Insert"
-    F_EDIT_COS_SUBMENU      "Cosmetic"
-    F_EDIT_MOV_SUBMENU      "Cursor Movement"
-    F_EDIT_SEL_SUBMENU      "Selection"
-    F_EDIT_HLV_SUBMENU      "High Level Editing"
-    F_CONV_ENCODE_SUBMENU   "Change Encoding"
     F_RECKEYMACRO_REC       "Start Recording Macro"
     F_SAVEKEYMACRO_REC      "Save the macro"
 END
@@ -2747,7 +2765,7 @@ BEGIN
     F_EXITALL               "Exit Sakura completely"
     F_OPEN_FOLDER_IN_EXPLORER "Open Containing Folder"
     F_OPEN_COMMAND_PROMPT   "Open Command Prompt"
-	F_OPEN_COMMAND_PROMPT_AS_ADMIN "Open Command Prompt As Admin"
+    F_OPEN_COMMAND_PROMPT_AS_ADMIN "Open Command Prompt As Admin"
     F_WCHAR                 "Character Input"
     F_IME_CHAR              "Hlf-Width Character Input"
 END
@@ -3084,10 +3102,8 @@ BEGIN
     F_SPLIT_V_OFF           "Stop Split document Vertically"
     F_SPLIT_H_ON            "Split document Horizontally"
     F_SPLIT_H_OFF           "Stop Split document Horizontally"
-    F_CHGMOD_EOL_SUBMENU    "End of line setting"
     F_SPLIT_VH_ON           "Split four ways"
     F_SPLIT_VH_OFF          "Stop Split four ways"
-    F_BOOKMARK_SUBMENU      "Bookmark"
 END
 
 STRINGTABLE
@@ -3151,8 +3167,6 @@ BEGIN
     F_SAVEKEYMACRO_APPE     "Stop && Save the macro"
     F_LOADKEYMACRO_APPE     "Stop && Load the macro"
     F_EXECKEYMACRO_APPE     "Stop && Run the macro"
-    F_EXECKEYMACRO_REGD     "Registered Macros"
-    F_TOOL_CUSTOM_SUBMENU   "Custom Menu"
     F_SHOWTOOLBAR_ON        "Show Tool bar"
     F_SHOWFUNCKEY_ON        "Show Function Keys"
     F_SHOWTAB_ON            "Show Multi-Tabs"
@@ -3597,7 +3611,6 @@ BEGIN
     STR_DLGFNCLST_UNIFY     "現在の画面のドッキング配置情報をすべての共通設定・タイプ別設定にコピーして統一します。\n（現在開いている他画面の状態も統一します。）\n"
     STR_BREGONIG_ERROR      "Failed to load bregonig.dll."
     STR_BREGONIG_TITLE      "Regular Expression Error"
-    STR_REGEX_COMPILE_ERR_PREAMBLE "The given regular expression is incorrect.\nDetails: "
     STR_ERR_CWSH09          "Aborted execute macro."
     STR_ERR_DLGMACRO03_1    "Line Break Code is not defined."
     STR_ERR_DLGMACRO16      "Number is not defined."
@@ -3610,10 +3623,21 @@ END
 
 STRINGTABLE
 BEGIN
+    STR_FILEDIALOG_MRU      "Recent &File:"
+    STR_FILEDIALOG_OPENFOLDER "Recent Fol&der:"
+    STR_IMPEXP_REGEX4       "keyword truncated because too long."
+    STR_STATUS_FONTZOOM_0   "%4.0f %%"
+    STR_STATUS_FONTZOOM_1   "%4.1f %%"
+    STR_DLGGREP_THISDOC     "(Current document)"
+    STR_REGEX_COMPILE_ERR_PREAMBLE 
+                            "The given regular expression is incorrect.\nDetails: "
+END
+
+STRINGTABLE
+BEGIN
     STR_DLGGREP4            "Please define the target search folder."
     STR_DLGGREP5            "Target folder is not correct."
     STR_DLGGREP6            "Target folder is too long"
-    STR_DLGGREP_THISDOC     "(Current document)"
     STR_DLGJUMP1            "Please input correct line number"
     STR_DLGJUMP_PSLQL       "%d Ln  %s  Package Specification"
     STR_DLGOPNFL1           "as is"
@@ -3887,15 +3911,6 @@ BEGIN
     STR_GREP_SUBFOLDER_YES  "    (search sub-folders = Yes)\r\n"
     STR_GREP_SUBFOLDER_NO   "    (search sub-folders = No)\r\n"
     STR_GREP_COMPLETE_WORD  "    (Match Whole Word)\r\n"
-END
-
-STRINGTABLE
-BEGIN
-    STR_FILEDIALOG_MRU      "Recent &File:"
-    STR_FILEDIALOG_OPENFOLDER "Recent Fol&der:"
-    STR_IMPEXP_REGEX4       "keyword truncated because too long."
-    STR_STATUS_FONTZOOM_0   "%4.0f %%"
-    STR_STATUS_FONTZOOM_1   "%4.1f %%"
 END
 
 STRINGTABLE
