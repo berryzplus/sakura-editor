@@ -41,6 +41,7 @@
 #include <deque>
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
