@@ -36,7 +36,6 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "config/system_constants.h"
-#include "String_define.h"
 
 #define UICHECK_INTERVAL_MILLISEC 100	// UI確認の時間間隔
 #define ADDTAIL_INTERVAL_MILLISEC 50	// 結果出力の時間間隔
@@ -279,7 +278,7 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 	hWndTarget = nullptr;	//out引数をクリアする
 
 	constexpr auto& szTargetPrefix = L":HWND:";
-	constexpr auto cchTargetPrefix = _countof(szTargetPrefix) - 1;
+	constexpr auto cchTargetPrefix = int(std::size(szTargetPrefix)) - 1;
 	if( 0 != wcsncmp(pszFile, szTargetPrefix, cchTargetPrefix) ){
 		return 0; // ハンドルGrepではない
 	}
@@ -302,9 +301,9 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 		if( editInfo->m_bIsGrep ){
 			// Grepは検索キーとタグがぶつかることがあるので単に(Grep)と表示
 			pszTagName = szGrep;
-			wcsncpy_s(pszTagName, _countof(szGrep), L"(Grep)", _TRUNCATE);
+			wcsncpy_s(pszTagName, std::size(szGrep), L"(Grep)", _TRUNCATE);
 		}
-		CFileNameManager::getInstance()->GetMenuFullLabel_WinListNoEscape(szTitle, _countof(szTitle), editInfo, node->m_nId, -1, nullptr );
+		CFileNameManager::getInstance()->GetMenuFullLabel_WinListNoEscape(szTitle, int(std::size(szTitle)), editInfo, node->m_nId, -1, nullptr );
 #ifdef _WIN64
 		auto_sprintf(pszWindowName, L":HWND:[%016I64x]%s", hWndTarget, pszTagName);
 #else
@@ -464,13 +463,13 @@ DWORD CGrepAgent::DoGrep(
 	hwndCancel = cDlgCancel.DoModeless( G_AppInstance(), pcViewDst->m_hwndParent, IDD_GREPRUNNING );
 
 	::SetDlgItemInt( hwndCancel, IDC_STATIC_HITCOUNT, 0, FALSE );
-	::DlgItem_SetText( hwndCancel, IDC_STATIC_CURFILE, L" " );	// 2002/09/09 Moca add
+	ApiWrap::DlgItem_SetText( hwndCancel, IDC_STATIC_CURFILE, L" " );	// 2002/09/09 Moca add
 	::CheckDlgButton( hwndCancel, IDC_CHECK_REALTIMEVIEW, GetDllShareData().m_Common.m_sSearch.m_bGrepRealTimeView );	// 2003.06.23 Moca
 
 	//	2008.12.13 genta パターンが長すぎる場合は登録しない
 	//	(正規表現が途中で途切れると困るので)
 	//	2011.12.10 Moca 表示の際に...に切り捨てられるので登録するように
-	wcsncpy_s( CAppMode::getInstance()->m_szGrepKey, _countof(CAppMode::getInstance()->m_szGrepKey), pcmGrepKey->GetStringPtr(), _TRUNCATE );
+	wcsncpy_s( CAppMode::getInstance()->m_szGrepKey, int(std::size(CAppMode::getInstance()->m_szGrepKey)), pcmGrepKey->GetStringPtr(), _TRUNCATE );
 	this->m_bGrepMode = true;
 
 	//	2007.07.22 genta
@@ -726,7 +725,7 @@ DWORD CGrepAgent::DoGrep(
 			bool bOutputBaseFolder = false;
 			bool bOutputFolderName = false;
 			// 複数ウィンドウループ予約
-			auto nPathLen = wcsnlen_s(szWindowPath, _countof(szWindowPath));
+			auto nPathLen = wcsnlen_s(szWindowPath, std::size(szWindowPath));
 			std::wstring currentFile = szWindowPath;
 			if( currentFile.size() ){
 				currentFile += L'\\';
@@ -927,7 +926,7 @@ int CGrepAgent::DoGrepTree(
 		// 定期的に grep 中のファイル名表示を更新
 		if( dwNow - m_dwTickUIFileName > UIFILENAME_INTERVAL_MILLISEC ){
 			m_dwTickUIFileName = dwNow;
-			::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, lpFileName );
+			ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, lpFileName );
 		}
 
 		std::wstring currentFile = pszPath;
@@ -1068,11 +1067,11 @@ int CGrepAgent::DoGrepTree(
 			if( -1 == nGrepTreeResult ){
 				goto cancel_return;
 			}
-			::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURPATH, pszPath );	//@@@ 2002.01.10 add サブフォルダーから戻ってきたら...
+			ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURPATH, pszPath );	//@@@ 2002.01.10 add サブフォルダーから戻ってきたら...
 		}
 	}
 
-	::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, LTEXT(" ") );	// 2002/09/09 Moca add
+	ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, L" " );	// 2002/09/09 Moca add
 
 	return 0;
 
@@ -1497,13 +1496,13 @@ int CGrepAgent::DoGrepFile(
 							::auto_sprintf( szWork, L" (%3d%%)", nPercent );
 							std::wstring str;
 							str = str + pszFile + szWork;
-							::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );
+							ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );
 						}
 					}else{
-						::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, pszFile );
+						ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, pszFile );
 					}
 					::SetDlgItemInt( pcDlgCancel->GetHwnd(), IDC_STATIC_HITCOUNT, *pnHitCount, FALSE );
-					::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURPATH, pszFolder );
+					ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURPATH, pszFolder );
 				}
 			}
 			int nHitOldLine = nHitCount;
@@ -1936,7 +1935,7 @@ int CGrepAgent::DoGrepReplaceFile(
 						::auto_sprintf( szWork, L" (%3d%%)", nPercent );
 						std::wstring str;
 						str = str + pszFile + szWork;
-						::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );
+						ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );
 					}
 				}
 			}

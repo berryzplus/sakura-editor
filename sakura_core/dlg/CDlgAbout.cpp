@@ -34,7 +34,6 @@
 #include "CSelectLang.h"
 #include "sakura.hh"
 #include "config/system_constants.h"
-#include "String_define.h"
 
 // バージョン情報 CDlgAbout.cpp	//@@@ 2002.01.07 add start MIK
 const DWORD p_helpids[] = {	//12900
@@ -148,7 +147,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	WCHAR			szFile[_MAX_PATH];
 
 	/* この実行ファイルの情報 */
-	::GetModuleFileName( nullptr, szFile, _countof( szFile ) );
+	::GetModuleFileName( nullptr, szFile, int(std::size(szFile)) );
 	
 	/* バージョン情報 */
 	//	Nov. 6, 2000 genta	Unofficial Releaseのバージョンとして設定
@@ -214,12 +213,12 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 #ifdef SKR_PATCH_INFO
 	cmemMsg.AppendString( L"      " );
 	const WCHAR szPatchInfo[] = SKR_PATCH_INFO;
-	size_t patchInfoLen = _countof(szPatchInfo) - 1;
+	constexpr auto patchInfoLen = std::size(szPatchInfo) - 1;
 	cmemMsg.AppendString( szPatchInfo, t_min(80, patchInfoLen) );
 #endif
 	cmemMsg.AppendString( L"\r\n");
 
-	::DlgItem_SetText( GetHwnd(), IDC_EDIT_VER, cmemMsg.GetStringPtr() );
+	ApiWrap::DlgItem_SetText( GetHwnd(), IDC_EDIT_VER, cmemMsg.GetStringPtr() );
 
 	//	From Here Jun. 8, 2001 genta
 	//	Edit Boxにメッセージを追加する．
@@ -227,9 +226,9 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	LPCWSTR pszDesc = LS( IDS_ABOUT_DESCRIPTION );
 	WCHAR szMsg[2048];
 	if( pszDesc[0] != '\0' ) {
-		wcsncpy( szMsg, pszDesc, _countof(szMsg) - 1 );
-		szMsg[_countof(szMsg) - 1] = 0;
-		::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
+		wcsncpy( szMsg, pszDesc, int(std::size(szMsg)) - 1 );
+		szMsg[std::size(szMsg) - 1] = 0;
+		ApiWrap::DlgItem_SetText( GetHwnd(), IDC_EDIT_ABOUT, szMsg );
 	}
 	//	To Here Jun. 8, 2001 genta
 
@@ -239,7 +238,7 @@ BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	HWND hIconWnd = GetItemHwnd( IDC_STATIC_MYICON );
 	
 	if( hIconWnd != nullptr && hIcon != nullptr ){
-		StCtl_SetIcon( hIconWnd, hIcon );
+		ApiWrap::StCtl_SetIcon( hIconWnd, hIcon );
 	}
 	//	To Here Dec. 2, 2002 genta
 
@@ -280,9 +279,9 @@ BOOL CDlgAbout::OnBnClicked( int wID )
 	case IDC_BUTTON_COPY:
 		{
 			HWND hwndEditVer = GetItemHwnd( IDC_EDIT_VER );
-	 		EditCtl_SetSel( hwndEditVer, 0, -1); 
+			ApiWrap::EditCtl_SetSel( hwndEditVer, 0, -1); 
 	 		SendMessage( hwndEditVer, WM_COPY, 0, 0 );
-	 		EditCtl_SetSel( hwndEditVer, -1, 0); 
+	 		ApiWrap::EditCtl_SetSel( hwndEditVer, -1, 0); 
  		}
 		return TRUE;
 	}
@@ -299,7 +298,7 @@ BOOL CDlgAbout::OnStnClicked( int wID )
 		//	Web Browserの起動
 		{
 			WCHAR buf[512];
-			::GetWindowText( GetItemHwnd( wID ), buf, _countof(buf) );
+			::GetWindowText( GetItemHwnd( wID ), buf, int(std::size(buf)) );
 			::ShellExecute( GetHwnd(), nullptr, buf, nullptr, nullptr, SW_SHOWNORMAL );
 			return TRUE;
 		}
@@ -438,7 +437,7 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 		// 現在のクライアント矩形、テキスト、フォントを取得する
 		GetClientRect( hWnd, &rc );
-		GetWindowText( hWnd, szText, _countof(szText) );
+		GetWindowText( hWnd, szText, int(std::size(szText)) );
 		hFont = (HFONT)SendMessageAny( hWnd, WM_GETFONT, (WPARAM)0, (LPARAM)0 );
 
 		// テキスト描画

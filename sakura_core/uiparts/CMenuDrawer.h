@@ -20,11 +20,12 @@
 #define SAKURA_CMENUDRAWER_F2B94603_89D1_4064_A93E_3634A0A6FAD4_H_
 #pragma once
 
+#include "Funccode_enum.h"
 #include "mem/CNativeW.h"
-#include "uiparts/CImageListMgr.h"
 
 class CMenuDrawer;
 
+class CImageListMgr;// 2002/2/10 aroka
 struct DLLSHAREDATA;
 
 //#define MAX_MENUPOS	10
@@ -97,8 +98,8 @@ private:
 private:
 	DLLSHAREDATA*	m_pShareData;
 
-	HINSTANCE		m_hInstance = nullptr;
-	HWND			m_hWndOwner = nullptr;
+	HINSTANCE		m_hInstance;
+	HWND			m_hWndOwner;
 
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
 //2009.11.14 syat プラグインコマンド動的追加のためvector化
@@ -113,19 +114,19 @@ private:
 		CNativeW		m_cmemLabel;
 	};
 	std::vector<MyMenuItemInfo> m_menuItems;
-	int				m_nMenuHeight = 0;
-	int				m_nMenuFontHeight = 0;
-	HFONT			m_hFontMenu = nullptr;
-	HBITMAP			m_hCompBitmap = nullptr;
-	HBITMAP			m_hCompBitmapOld = nullptr;
-	HDC				m_hCompDC = nullptr;
-	int				m_nCompBitmapHeight = 0;
-	int				m_nCompBitmapWidth = 0;
+	int				m_nMenuHeight;
+	int				m_nMenuFontHeight;
+	HFONT			m_hFontMenu;
+	HBITMAP			m_hCompBitmap;
+	HBITMAP			m_hCompBitmapOld;
+	HDC				m_hCompDC;
+	int				m_nCompBitmapHeight;
+	int				m_nCompBitmapWidth;
 
 public:
 	// 2010.01.30 syat アイコンイメージリストをprivate->public
 	//	Oct. 16, 2000 genta
-	CImageListMgr	*m_pcIcons = nullptr;	//	Image List
+	CImageListMgr	*m_pcIcons;	//	Image List
 
 protected:
 

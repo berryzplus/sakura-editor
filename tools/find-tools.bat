@@ -119,6 +119,8 @@ exit /b
         set ARG_VSVERSION=16
     ) else if "%ARG_VSVERSION%" == "2022" (
         set ARG_VSVERSION=17
+    ) else if "%ARG_VSVERSION%" == "2026" (
+        set ARG_VSVERSION=18
     ) else if "%ARG_VSVERSION%" == "latest" (
         call :get_latest_installed_vsversion
     )
@@ -173,14 +175,6 @@ for /f "usebackq delims=" %%a in (`where $PATH2:hhc.exe`) do (
 exit /b
 
 :iscc
-set APPDIR=Inno Setup 5
-set PATH2=%PATH%;%ProgramFiles%\%APPDIR%\;%ProgramFiles(x86)%\%APPDIR%\;%ProgramW6432%\%APPDIR%\;
-for /f "usebackq delims=" %%a in (`where $PATH2:ISCC.exe`) do ( 
-    set "CMD_ISCC=%%a"
-    exit /b
-)
-if exist "%CMD_ISCC%" exit /b
-
 set APPDIR=Inno Setup 6
 set PATH2=%PATH%;%ProgramFiles%\%APPDIR%\;%ProgramFiles(x86)%\%APPDIR%\;%ProgramW6432%\%APPDIR%\;
 for /f "usebackq delims=" %%a in (`where $PATH2:ISCC.exe`) do ( 

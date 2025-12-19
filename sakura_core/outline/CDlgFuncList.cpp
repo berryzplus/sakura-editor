@@ -54,7 +54,6 @@
 #include "sakura.hh"
 #include "config/system_constants.h"
 #include "config/app_constants.h"
-#include "String_define.h"
 
 // 画面ドッキング用の定義	// 2010.06.05 ryoji
 #define DEFINE_SYNCCOLOR
@@ -203,7 +202,7 @@ HINSTANCE CDlgFuncList::m_lastRcInstance = nullptr;
 CDlgFuncList::CDlgFuncList() : CDialog(true)
 {
 	/* サイズ変更時に位置を制御するコントロール数 */
-	static_assert( _countof(anchorList) == _countof(m_rcItems) );
+	static_assert( int(std::size(anchorList)) == int(std::size(m_rcItems)) );
 
 	m_pcFuncInfoArr = nullptr;		/* 関数情報配列 */
 	m_nCurLine = CLayoutInt(0);				/* 現在行 */
@@ -680,7 +679,7 @@ void CDlgFuncList::SetData()
 	/* アウトライン ■位置とサイズを記憶する */ // 20060201 aroka
 	::CheckDlgButton( GetHwnd(), IDC_BUTTON_WINSIZE, m_pShareData->m_Common.m_sOutline.m_bRememberOutlineWindowPos );
 	// ボタンが押されているかはっきりさせる 2008/6/5 Uchi
-	::DlgItem_SetText( GetHwnd(), IDC_BUTTON_WINSIZE, 
+	ApiWrap::DlgItem_SetText( GetHwnd(), IDC_BUTTON_WINSIZE,
 		m_pShareData->m_Common.m_sOutline.m_bRememberOutlineWindowPos ? L"■" : L"□" );
 
 	/* ダイアログを自動的に閉じるならフォーカス移動オプションは関係ない */
@@ -719,12 +718,12 @@ void CDlgFuncList::SetData()
 			::EnableWindow( hWnd_Combo_Sort , TRUE );
 		}
 		::ShowWindow( hWnd_Combo_Sort , SW_SHOW );
-		Combo_ResetContent( hWnd_Combo_Sort ); // 2002.11.10 Moca 追加
-		Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE1));	// SORTTYPE_DEFAULT
-		Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE1_2));	// SORTTYPE_DEFAULT_DESC
-		Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE2));    // SORTTYPE_ATOZ
-		Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE2_2));  // SORTTYPE_ZTOA
-		Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
+		ApiWrap::Combo_ResetContent( hWnd_Combo_Sort ); // 2002.11.10 Moca 追加
+		ApiWrap::Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE1));	// SORTTYPE_DEFAULT
+		ApiWrap::Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE1_2));	// SORTTYPE_DEFAULT_DESC
+		ApiWrap::Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE2));    // SORTTYPE_ATOZ
+		ApiWrap::Combo_AddString( hWnd_Combo_Sort , LS(STR_DLGFNCLST_SORTTYPE2_2));  // SORTTYPE_ZTOA
+		ApiWrap::Combo_SetCurSel( hWnd_Combo_Sort , m_nSortType );
 		::ShowWindow( GetItemHwnd( IDC_STATIC_nSortType ), SW_SHOW );
 		if (m_nSortType != SORTTYPE_DEFAULT && m_nSortType != SORTTYPE_DEFAULT_DESC)
 			SortTree(hwndTree, TVI_ROOT);
@@ -766,7 +765,7 @@ bool CDlgFuncList::GetTreeFileFullName(HWND hwndTree, HTREEITEM target, std::wst
 		WCHAR szFileName[_MAX_PATH];
 		tvItem.mask = TVIF_HANDLE | TVIF_TEXT;
 		tvItem.pszText = szFileName;
-		tvItem.cchTextMax = _countof(szFileName);
+		tvItem.cchTextMax = int(std::size(szFileName));
 		tvItem.hItem = target;
 		TreeView_GetItem( hwndTree, &tvItem );
 		if( ((-tvItem.lParam) % 10) == 3 ){
@@ -1027,7 +1026,7 @@ void CDlgFuncList::SetTreeJava( HWND hwndDlg, HTREEITEM hInsertAfter, BOOL bAddC
 					tvi.hItem = htiClass;
 
 					std::vector<WCHAR> vecStr;
-					if( TreeView_GetItemTextVector(hwndTree, tvi, vecStr) ){
+					if( ApiWrap::TreeView_GetItemTextVector(hwndTree, tvi, vecStr) ){
 						const WCHAR* pszLabel = &vecStr[0];
 						if( 0 == wcsncmp(vStrClasses[k].c_str(), pszLabel, nClassNameLen) ){
 							if( bAddClass ){
@@ -1238,9 +1237,9 @@ void CDlgFuncList::SetListVB (void)
 
 		// 2001/06/23 N.Nakatani for Visual Basic
 		//	Jun. 26, 2001 genta 半角かな→全角に
-		wmemset(szText, L'\0', _countof(szText));
-		wmemset(szType, L'\0', _countof(szType));
-		wmemset(szOption, L'\0', _countof(szOption));
+		wmemset(szText, L'\0', int(std::size(szText)));
+		wmemset(szType, L'\0', int(std::size(szType)));
+		wmemset(szOption, L'\0', int(std::size(szOption)));
 		if( 1 == ((pcFuncInfo->m_nInfo >> 8) & 0x01) ){
 			// スタティック宣言(Static)
 			// 2006.12.12 Moca 末尾にスペース追加
@@ -1248,15 +1247,15 @@ void CDlgFuncList::SetListVB (void)
 		}
 		switch ((pcFuncInfo->m_nInfo >> 4) & 0x0f) {
 			case 2  :	// プライベート(Private)
-				wcsncat(szOption, LS(STR_DLGFNCLST_VB_PRIVATE), _countof(szOption) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
+				wcsncat(szOption, LS(STR_DLGFNCLST_VB_PRIVATE), int(std::size(szOption)) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
 				break;
 
 			case 3  :	// フレンド(Friend)
-				wcsncat(szOption, LS(STR_DLGFNCLST_VB_FRIEND), _countof(szOption) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
+				wcsncat(szOption, LS(STR_DLGFNCLST_VB_FRIEND), int(std::size(szOption)) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
 				break;
 
 			default :	// パブリック(Public)
-				wcsncat(szOption, LS(STR_DLGFNCLST_VB_PUBLIC), _countof(szOption) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
+				wcsncat(szOption, LS(STR_DLGFNCLST_VB_PUBLIC), int(std::size(szOption)) - wcslen(szOption)); //	2006.12.17 genta サイズ誤り修正
 		}
 		int nInfo = pcFuncInfo->m_nInfo;
 		switch (nInfo & 0x0f) {
@@ -1302,7 +1301,7 @@ void CDlgFuncList::SetListVB (void)
 		}
 		if ( 2 == ((nInfo >> 8) & 0x02) ) {
 			// 宣言(Declareなど)
-			wcsncat(szType, LS(STR_DLGFNCLST_VB_DECL), _countof(szType) - wcslen(szType));
+			wcsncat(szType, LS(STR_DLGFNCLST_VB_DECL), int(std::size(szType)) - wcslen(szType));
 		}
 
 		WCHAR szTypeOption[256]; // 2006.12.12 Moca auto_sprintfの入出力で同一変数を使わないための作業領域追加
@@ -1538,18 +1537,18 @@ void CDlgFuncList::SetTreeFile()
 		WCHAR szPath2[_MAX_PATH];
 		const SFileTreeItem& item = m_fileTreeSetting.m_aItems[i];
 		// item.m_szTargetPath => szPath メタ文字の展開
-		if( !CFileNameManager::ExpandMetaToFolder(item.m_szTargetPath, szPath, _countof(szPath)) ){
-			wcscpy_s(szPath, _countof(szPath), L"<Error:Long Path>");
+		if( !CFileNameManager::ExpandMetaToFolder(item.m_szTargetPath, szPath, int(std::size(szPath))) ){
+			wcscpy_s(szPath, std::size(szPath), L"<Error:Long Path>");
 		}
 		// szPath => szPath2 <iniroot>展開
 		const WCHAR* pszFrom = szPath;
 		if( m_fileTreeSetting.m_szLoadProjectIni[0] != L'\0'){
 			CNativeW strTemp(pszFrom);
 			strTemp.Replace(L"<iniroot>", IniDirPath.c_str());
-			if( _countof(szPath2) <= strTemp.GetStringLength() ){
-				wcscpy_s(szPath2, _countof(szPath), L"<Error:Long Path>");
+			if( int(std::size(szPath2)) <= strTemp.GetStringLength() ){
+				wcscpy_s(szPath2, std::size(szPath), L"<Error:Long Path>");
 			}else{
-				wcscpy_s(szPath2, _countof(szPath), strTemp.GetStringPtr());
+				wcscpy_s(szPath2, std::size(szPath), strTemp.GetStringPtr());
 			}
 		}else{
 			wcscpy(szPath2, pszFrom);
@@ -1823,7 +1822,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			);
 
 		// ツールチップをマルチライン可能にする（SHRT_MAX: Win95でINT_MAXだと表示されない）
-		Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
+		ApiWrap::Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
 
 		// アウトラインにツールチップを追加する
 		TOOLINFO	ti;
@@ -1837,7 +1836,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		ti.rect.top    = 0;
 		ti.rect.right  = 0;
 		ti.rect.bottom = 0;
-		Tooltip_AddTool( m_hwndToolTip, &ti );
+		ApiWrap::Tooltip_AddTool( m_hwndToolTip, &ti );
 
 		// 不要なコントロールを隠す
 		HWND hwndPrev;
@@ -1867,7 +1866,7 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	m_ptDefaultSizeClient.x = rc.right;
 	m_ptDefaultSizeClient.y = rc.bottom;
 
-	for( int i = 0; i < _countof(anchorList); i++ ){
+	for( int i = 0; i < int(std::size(anchorList)); i++ ){
 		GetItemClientRect( anchorList[i].id, m_rcItems[i] );
 		// ドッキング中はウィンドウ幅いっぱいまで伸ばす
 		if( IsDocking() ){
@@ -1921,7 +1920,7 @@ BOOL CDlgFuncList::OnBnClicked( int wID )
 			m_pShareData->m_Common.m_sOutline.m_bRememberOutlineWindowPos = ::IsDlgButtonChecked( GetHwnd(), IDC_BUTTON_WINSIZE );
 		}
 		// ボタンが押されているかはっきりさせる 2008/6/5 Uchi
-		::DlgItem_SetText( GetHwnd(), IDC_BUTTON_WINSIZE,
+		ApiWrap::DlgItem_SetText( GetHwnd(), IDC_BUTTON_WINSIZE,
 			m_pShareData->m_Common.m_sOutline.m_bRememberOutlineWindowPos ? L"■" : L"□" );
 		return TRUE;
 	//2002.02.08 オプション切替後List/Treeにフォーカス移動
@@ -2200,7 +2199,7 @@ BOOL CDlgFuncList::OnSize( WPARAM wParam, LPARAM lParam )
 	ptNew.x = rcDlg.right - rcDlg.left;
 	ptNew.y = rcDlg.bottom - rcDlg.top;
 
-	for( int i = 0 ; i < _countof(anchorList); i++ ){
+	for( int i = 0 ; i < int(std::size(anchorList)); i++ ){
 		HWND hwndCtrl = GetItemHwnd(anchorList[i].id);
 		ResizeItem( hwndCtrl, m_ptDefaultSizeClient, ptNew, m_rcItems[i], anchorList[i].anchor, (anchorList[i].anchor != ANCHOR_ALL));
 //	2013.2.6 aroka ちらつき防止用の試行錯誤
@@ -2330,7 +2329,7 @@ BOOL CDlgFuncList::OnDestroy( void )
 */
 BOOL CDlgFuncList::OnCbnSelEndOk( HWND hwndCtl, int wID )
 {
-	int nSelect = Combo_GetCurSel( hwndCtl );
+	int nSelect = ApiWrap::Combo_GetCurSel( hwndCtl );
 	switch(wID)
 	{
 	case IDC_COMBO_nSortType:
@@ -2360,7 +2359,7 @@ static void SortTree_Sub(HWND hWndTree,HTREEITEM htiParent, STreeViewSortData& d
 			item.mask = TVIF_HANDLE | TVIF_TEXT | TVIF_PARAM;
 			item.hItem = htiItem;
 			std::vector<WCHAR> vecStr;
-			if( TreeView_GetItemTextVector(hWndTree, item, vecStr) ){
+			if( ApiWrap::TreeView_GetItemTextVector(hWndTree, item, vecStr) ){
 				data.m_vecText[item.lParam].assign(&vecStr[0]);
 			}
 		}
@@ -2827,11 +2826,11 @@ BOOL CDlgFuncList::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 	}else if( wParam == 3 ){
 		::KillTimer(hwnd, 3);
 		HWND hwndTree = ::GetDlgItem(hwnd, IDC_TREE_FL);
-		TreeView_ExpandAll(hwndTree, true, 64);
+		ApiWrap::TreeView_ExpandAll(hwndTree, true, 64);
 	}else  if( wParam == 4 ){
 		::KillTimer(hwnd, 4);
 		HWND hwndTree = ::GetDlgItem(hwnd, IDC_TREE_FL);
-		TreeView_ExpandAll(hwndTree, false, 64);
+		ApiWrap::TreeView_ExpandAll(hwndTree, false, 64);
 	}
 
 	if( !IsDocking() )
@@ -2897,7 +2896,7 @@ INT_PTR CDlgFuncList::OnNcMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 		case 2: ti.lpszText = const_cast<WCHAR*>(LS(STR_DLGFNCLST_TIP_UPDATE)); break;
 		default: ti.lpszText = nullptr;	// 消す
 		}
-		Tooltip_UpdateTipText( m_hwndToolTip, &ti );
+		ApiWrap::Tooltip_UpdateTipText( m_hwndToolTip, &ti );
 	}
 
 	return 0L;
@@ -3777,7 +3776,7 @@ BOOL CDlgFuncList::Track( POINT ptDrag )
 			}
 			if( bDragging ){	// ドラッグ中
 				// ドロップ先矩形を描画する
-				EDockSide eDockSide = GetDropRect( ptDrag, pt, &rc, GetKeyState_Control() );
+				EDockSide eDockSide = GetDropRect( ptDrag, pt, &rc, ApiWrap::GetKeyState_Control() );
 				SIZE sizeNew = (eDockSide <= DOCKSIDE_FLOAT)? sizeFull: sizeHalf;
 				CGraphics::DrawDropRect( &rc, sizeNew, bStart? nullptr: &rcDragLast, sizeLast );
 				rcDragLast = rc;
@@ -3791,7 +3790,7 @@ BOOL CDlgFuncList::Track( POINT ptDrag )
 			::ReleaseCapture();
 			if( bDragging ){
 				// ドッキング配置を変更する
-				EDockSide eDockSide = GetDropRect( ptDrag, pt, &rc, GetKeyState_Control() );
+				EDockSide eDockSide = GetDropRect( ptDrag, pt, &rc, ApiWrap::GetKeyState_Control() );
 				CGraphics::DrawDropRect( nullptr, sizeClear, &rcDragLast, sizeLast );
 
 				bool bType = (ProfDockSet() != 0);

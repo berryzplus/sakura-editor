@@ -8,9 +8,6 @@
 
 #include "StdAfx.h"
 #include "DLLSHAREDATA.h"
-
-#include "env/CShareData.h"
-
 #include "_main/CMutex.h"
 #include "dlg/CDlgCancel.h"
 #include "uiparts/CWaitCursor.h"
@@ -20,50 +17,23 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "config/system_constants.h"
-#include "version.h"
-#include "String_define.h"
-
-//GetDllShareData用グローバル変数
-DLLSHAREDATA* g_theDLLSHAREDATA = nullptr;
 
 static CMutex g_cKeywordMutex( FALSE, GSTR_MUTEX_SAKURA_KEYWORD );
 
 /*!
- * コンストラクタ
+ * 共有データの参照を取得する
+ *
+ * @throw CShareDataが初期化されていない
+ * 
+ * @date 2007/10/30 kobake どこからでもアクセスできる、共有データアクセサ。
  */
-DLLSHAREDATA::DLLSHAREDATA(
-	const std::filesystem::path& iniPath,
-	const std::filesystem::path& privateIniPath,
-	const std::filesystem::path& iniFolder,
-	std::vector<STypeConfig*>& types
-) noexcept
-	: m_szIniFile(iniPath)
-	, m_szPrivateIniFile(privateIniPath)
-	, m_Common(iniFolder)
-	, m_sHistory(iniFolder)
+DLLSHAREDATA& GetDllShareData()
 {
-	std::fill(std::begin(m_dwCustColors), std::end(m_dwCustColors), RGB(255, 255, 255));
-
-	/* m_PrintSettingArr[0]を設定して、残りの1～7にコピーする。
-		必要になるまで遅らせるために、CPrintに、CShareDataを操作する権限を与える。
-		YAZAKI.
-	 */
-	SString<64> szSettingName;
-	szSettingName = strprintf(L"%s %d", LS(STR_PRINT_SET_NAME), 1);	// L"印刷設定 1"
-	CPrint::SettingInitialize(m_PrintSettingArr[0], szSettingName );
-
-	InitTypeConfigs(types);
-
-	for (int i = 1; i < MAX_PRINTSETTINGARR; ++i) {
-		m_PrintSettingArr[i] = m_PrintSettingArr[0];
-		swprintf_s(m_PrintSettingArr[i].m_szPrintSettingName, L"%s %d", LS(STR_PRINT_SET_NAME), i + 1);
+	auto pShareData = GetDllShareDataPtr();
+	if (!pShareData) {
+		throw std::domain_error("DLLSHAREDATA is not initialized");
 	}
-}
-
-SShare_Version::SShare_Version() noexcept
-{
-	m_dwProductVersionMS = MAKELONG(VER_B, VER_A);
-	m_dwProductVersionLS = MAKELONG(VER_D, VER_C);
+	return *pShareData;
 }
 
 CShareDataLockCounter::CShareDataLockCounter(){
@@ -108,7 +78,7 @@ public:
 			// スタイル変更+メッセージでないと機能しない
 			LONG_PTR style = ::GetWindowLongPtr(hwndProgress, GWL_STYLE);
 			::SetWindowLongPtr(hwndProgress, GWL_STYLE, style | PBS_MARQUEE);
-			Progress_SetMarquee(hwndProgress, TRUE, 100);
+			ApiWrap::Progress_SetMarquee(hwndProgress, TRUE, 100);
 		}else{
 			HWND hwndProgress = ::GetDlgItem(hwndCancel, IDC_PROGRESS);
 			::ShowWindow(hwndProgress, SW_HIDE);

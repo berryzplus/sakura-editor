@@ -21,7 +21,7 @@ struct EditNode {
 	int				m_nGroup;					//!< グループID								//@@@ 2007.06.20 ryoji
 	HWND			m_hWnd;
 	int				m_nId;						//!< 無題Id
-	WCHAR			m_szTabCaption[_MAX_PATH];	//!< タブウインドウ用：キャプション名		//@@@ 2003.05.31 MIK
+	WCHAR			m_szTabCaption[_MAX_PATH]{}; //!< タブウインドウ用：キャプション名		//@@@ 2003.05.31 MIK
 	SFilePath		m_szFilePath;				//!< タブウインドウ用：ファイル名			//@@@ 2006.01.28 ryoji
 	bool			m_bIsGrep;					//!< Grepのウィンドウか						//@@@ 2006.01.28 ryoji
 	UINT			m_showCmdRestore;			//!< 元のサイズに戻すときのサイズ種別		//@@@ 2007.06.20 ryoji
@@ -45,11 +45,11 @@ struct EditNodeEx{
 
 //! 共有メモリ内構造体
 struct SShare_Nodes{
-	int					m_nEditArrNum = 0;	//short->intに修正	//@@@ 2003.05.31 MIK
+	int					m_nEditArrNum;	//short->intに修正	//@@@ 2003.05.31 MIK
 	EditNode			m_pEditArr[MAX_EDITWINDOWS];	//最大値修正	@@@ 2003.05.31 MIK
-	LONG				m_nSequences = 0;			/* ウィンドウ連番 */
-	LONG				m_nNonameSequences = 0;		/* 無題連番 */
-	LONG				m_nGroupSequences = 0;		// タブグループ連番	// 2007.06.20 ryoji
+	LONG				m_nSequences;	/* ウィンドウ連番 */
+	LONG				m_nNonameSequences;	/* 無題連番 */
+	LONG				m_nGroupSequences;	// タブグループ連番	// 2007.06.20 ryoji
 };
 
 //! ノードアクセサ

@@ -22,7 +22,6 @@
 #include "CCommandLine.h"
 #include "mem/CMemory.h"
 #include <tchar.h>
-#include <io.h>
 #include <string.h>
 #include "debug/CRunningTimer.h"
 #include "charset/charcode.h"  // 2006.06.28 rastiv
@@ -32,7 +31,6 @@
 #include "env/CSakuraEnvironment.h"
 #include "CSelectLang.h"
 #include "util/string_ex.h"
-#include "String_define.h"
 
 /* コマンドラインオプション用定数 */
 #define CMDLINEOPT_R			1002 //!< ビューモード
@@ -251,7 +249,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 	int		nPos;
 	int		i = 0;
 	if( pszCmdLineSrc[0] != L'-' ){
-		for( i = 0; i < _countof( szPath ); ++i ){
+		for( i = 0; i < int(std::size(szPath)); ++i ){
 			if( pszCmdLineSrc[i] == L' ' || pszCmdLineSrc[i] == L'\0' ){
 				/* ファイルの存在をチェック */
 				szPath[i] = L'\0';	// 終端文字

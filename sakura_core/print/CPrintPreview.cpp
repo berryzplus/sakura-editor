@@ -37,7 +37,6 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "config/system_constants.h"
-#include "String_define.h"
 
 #define MIN_PREVIEW_ZOOM 10
 #define MAX_PREVIEW_ZOOM 400
@@ -145,7 +144,7 @@ LRESULT CPrintPreview::OnPaint(
 
 	// プリンター情報の表示 -> IDD_PRINTPREVIEWBAR右上のSTATICへ
 	WCHAR	szText[1024];
-	::DlgItem_SetText(
+	ApiWrap::DlgItem_SetText(
 		m_hwndPrintPreviewBar,
 		IDC_STATIC_PRNDEV,
 		m_pPrintSetting->m_mdmDevMode.m_szPrinterDeviceName
@@ -160,7 +159,7 @@ LRESULT CPrintPreview::OnPaint(
 		szPaperName,
 		(m_pPrintSetting->m_mdmDevMode.dmOrientation & DMORIENT_LANDSCAPE) ? LS(STR_ERR_DLGPRNPRVW1) : LS(STR_ERR_DLGPRNPRVW2)
 	);
-	::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_PAPER, szText );
+	ApiWrap::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_PAPER, szText );
 
 	// バックグラウンド モードを変更
 	::SetBkMode( hdc, TRANSPARENT );
@@ -874,7 +873,7 @@ void CPrintPreview::OnPreviewGoDirectPage( void )
 		m_hwndPrintPreviewBar, 
 		LS(STR_ERR_DLGPRNPRVW5),
 		szMessage,
-		_countof(szPageNum) - 1,
+		int(std::size(szPageNum)) - 1,
 		szPageNum
 	);
 	if( FALSE != bDlgInputPageResult ){
@@ -930,10 +929,10 @@ void CPrintPreview::OnPreviewGoPage( int nPage )
 	}
 	wchar_t	szEdit[1024];
 	auto_sprintf( szEdit, LS(STR_ERR_DLGPRNPRVW6), m_nCurPageNum + 1, m_nAllPageNum );
-	::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_PAGENUM, szEdit );
+	ApiWrap::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_PAGENUM, szEdit );
 
 	auto_sprintf( szEdit, L"%d %%", m_nPreview_Zoom );
-	::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_ZOOM, szEdit );
+	ApiWrap::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_ZOOM, szEdit );
 
 	::InvalidateRect( m_pParentWnd->GetHwnd(), nullptr, TRUE );
 	return;
@@ -982,7 +981,7 @@ void CPrintPreview::OnPreviewZoom( BOOL bZoomUp )
 
 	wchar_t	szEdit[1024];
 	auto_sprintf( szEdit, L"%d %%", m_nPreview_Zoom );
-	::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_ZOOM, szEdit );
+	ApiWrap::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_ZOOM, szEdit );
 
 	/* WM_SIZE 処理 */
 	RECT		rc1;
@@ -1034,7 +1033,7 @@ void CPrintPreview::OnPrint( void )
 		WCHAR	szFileName[_MAX_FNAME];
 		WCHAR	szExt[_MAX_EXT];
 		_wsplitpath( m_pParentWnd->GetDocument()->m_cDocFile.GetFilePath(), nullptr, nullptr, szFileName, szExt );
-		auto_snprintf_s( szJobName, _countof(szJobName), L"%s%s", szFileName, szExt );
+		auto_snprintf_s(szJobName, std::size(szJobName), L"%s%s", szFileName, szExt );
 	}
 
 	/* 印刷範囲を指定できるプリンターダイアログを作成 */
@@ -1085,8 +1084,8 @@ void CPrintPreview::OnPrint( void )
 	/* 印刷過程を表示して、キャンセルするためのダイアログを作成 */
 	CDlgCancel	cDlgPrinting;
 	cDlgPrinting.DoModeless( CEditApp::getInstance()->GetAppInstance(), m_pParentWnd->GetHwnd(), IDD_PRINTING );
-	::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_JOBNAME, szJobName );
-	::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_PROGRESS, L"" );	// XPS対応 2013/5/8 Uchi
+	ApiWrap::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_JOBNAME, szJobName );
+	ApiWrap::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_PROGRESS, L"" );	// XPS対応 2013/5/8 Uchi
 
 	/* 親ウィンドウを無効化 */
 	::EnableWindow( m_pParentWnd->GetHwnd(), FALSE );
@@ -1125,7 +1124,7 @@ void CPrintPreview::OnPrint( void )
 		/* 印刷過程を表示 */
 		//	Jun. 18, 2001 genta ページ番号表示の計算ミス修正
 		auto_sprintf( szProgress, L"%d/%d", i + 1, nNum );
-		::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_PROGRESS, szProgress );
+		ApiWrap::DlgItem_SetText( cDlgPrinting.GetHwnd(), IDC_STATIC_PROGRESS, szProgress );
 
 		/* 印刷 ページ開始 */
 		m_cPrint.PrintStartPage( hdc );

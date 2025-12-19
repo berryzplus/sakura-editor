@@ -46,7 +46,6 @@
 
 CNormalProcess::CNormalProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 : CProcess( hInstance, lpCmdLine )
-, m_pcEditApp( nullptr )
 {
 }
 
@@ -94,7 +93,6 @@ bool CNormalProcess::InitializeProcess()
 	bool			bDebugMode;
 	bool			bGrepMode;
 	bool			bGrepDlg;
-	GrepInfo		gi;
 	EditInfo		fi;
 	
 	/* コマンドラインで受け取ったファイルが開かれている場合は */
@@ -199,6 +197,7 @@ bool CNormalProcess::InitializeProcess()
 			::GetClientRect( hEditWnd, &rc );
 			::SendMessageAny( hEditWnd, WM_SIZE, ::IsZoomed( hEditWnd )? SIZE_MAXIMIZED: SIZE_RESTORED, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ) );
 		}
+		GrepInfo gi;
 		CCommandLine::getInstance()->GetGrepInfo(&gi); // 2002/2/8 aroka ここに移動
 		if( !bGrepDlg ){
 			// Grepでは対象パス解析に現在のカレントディレクトリを必要とする
@@ -248,7 +247,7 @@ bool CNormalProcess::InitializeProcess()
 				// 2013.05.21 指定なしの場合はカレントフォルダーにする
 				if( cmemGrepFolder.GetStringLength() == 0 ){
 					WCHAR szCurDir[_MAX_PATH];
-					::GetCurrentDirectory( _countof(szCurDir), szCurDir );
+					::GetCurrentDirectory( int(std::size(szCurDir)), szCurDir );
 					cmemGrepFolder.SetString( szCurDir );
 				}
 			}
@@ -268,10 +267,10 @@ bool CNormalProcess::InitializeProcess()
 			//	引数の設定がBOXに反映されない
 			pEditWnd->m_cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();		/* 検索文字列 */
 			pEditWnd->m_cDlgGrep.m_bSetText = true;
-			int nSize = _countof2(pEditWnd->m_cDlgGrep.m_szFile);
+			int nSize = std::size(pEditWnd->m_cDlgGrep.m_szFile);
 			wcsncpy( pEditWnd->m_cDlgGrep.m_szFile, gi.cmGrepFile.GetStringPtr(), nSize );	/* 検索ファイル */
 			pEditWnd->m_cDlgGrep.m_szFile[nSize-1] = L'\0';
-			nSize = _countof2(pEditWnd->m_cDlgGrep.m_szFolder);
+			nSize = std::size(pEditWnd->m_cDlgGrep.m_szFolder);
 			wcsncpy( pEditWnd->m_cDlgGrep.m_szFolder, cmemGrepFolder.GetStringPtr(), nSize );	/* 検索フォルダー */
 			pEditWnd->m_cDlgGrep.m_szFolder[nSize-1] = L'\0';
 

@@ -1,5 +1,6 @@
 ﻿<!-- TOC -->
 
+- [インストーラ作成に必要なもの](#インストーラ作成に必要なもの)
 - [インストーラ作成手順](#インストーラ作成手順)
   - [すべて一括でビルドする場合](#すべて一括でビルドする場合)
     - [具体例 (全構成をビルドする場合)](#具体例-全構成をビルドする場合)
@@ -15,6 +16,10 @@
   - [英語版インストーラーの動作確認について](#英語版インストーラーの動作確認について)
 
 <!-- /TOC -->
+
+## インストーラ作成に必要なもの
+
+[こちら](../tools/build.md#必要なもの) を参照
 
 ## インストーラ作成手順
 
@@ -105,13 +110,13 @@ Inno Setup の設定ファイルは拡張子が iss のファイルです。
 
 ### Win32
 
-"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" installer\sakura-Win32.iss
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\sakura-Win32.iss
 
 → installer\Output-Win32\ にインストーラが生成されます。
 
 ### x64
 
-"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" installer\sakura-x64.iss
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\sakura-x64.iss
 
 → installer\Output-x64\ にインストーラが生成されます。
 

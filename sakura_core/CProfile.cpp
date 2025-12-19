@@ -41,7 +41,7 @@ void EnsureDirectoryExist( const std::wstring& strProfileName )
 
 		// フォルダーが存在しなければ作成する
 		if( !IsDirectory( szProfileFolder ) ){
-			MakeSureDirectoryPathExistsW( szProfileFolder );
+			ApiWrap::MakeSureDirectoryPathExistsW( szProfileFolder );
 		}
 	}
 }
@@ -133,6 +133,75 @@ bool CProfile::ReadProfile( const WCHAR* pszProfileName )
 	return true;
 }
 
+/*! Profileをリソースから読み出す
+	
+	@param pName [in] リソース名
+	@param pType [in] リソースタイプ
+
+	@retval true  成功
+	@retval false 失敗
+
+	@date 2010/5/19 MainMenu用に作成
+
+	1行300文字までに制限
+*/
+bool CProfile::ReadProfileRes( const WCHAR* pName, const WCHAR* pType, std::vector<std::wstring>* pData )
+{
+	static const BYTE UTF8_BOM[]={0xEF,0xBB,0xBF};
+	HRSRC		hRsrc;
+	HGLOBAL		hGlobal;
+	size_t		nSize;
+	char*		psMMres;
+	char*		p;
+	char		sLine[300+1];
+	char*		pn;
+	size_t		lnsz;
+	std::wstring line;
+	CMemory cmLine;
+	CNativeW cmLineW;
+	m_strProfileName = L"-Res-";
+
+	if (( hRsrc = ::FindResource( nullptr, pName, pType )) != nullptr
+	 && ( hGlobal = ::LoadResource( nullptr, hRsrc )) != nullptr
+	 && ( psMMres = (char *)::LockResource(hGlobal)) != nullptr
+	 && ( nSize = (size_t)::SizeofResource( nullptr, hRsrc )) != 0) {
+		p    = psMMres;
+		if (nSize >= sizeof(UTF8_BOM) && memcmp( p, UTF8_BOM, sizeof(UTF8_BOM) )==0) {
+			// Skip BOM
+			p += sizeof(UTF8_BOM);
+		}
+		for (; p < psMMres + nSize ; p = pn) {
+			// 1行切り取り（長すぎた場合切捨て）
+			pn = strpbrk(p, "\n");
+			if (pn == nullptr) {
+				// 最終行
+				pn = psMMres + nSize;
+			}
+			else {
+				pn++;
+			}
+			lnsz = (pn-p)<=300 ? (pn-p) : 300;
+			memcpy(sLine, p, lnsz);
+			sLine[lnsz] = '\0';
+			if (sLine[lnsz-1] == '\n')	sLine[--lnsz] = '\0';
+			if (sLine[lnsz-1] == '\r')	sLine[--lnsz] = '\0';
+			
+			// UTF-8 -> UNICODE
+			cmLine.SetRawDataHoldBuffer( sLine, lnsz );
+			CUtf8::UTF8ToUnicode( cmLine, &cmLineW );
+			line = cmLineW.GetStringPtr();
+
+			if( pData ){
+				pData->push_back(line);
+			}else{
+				//解析
+				ReadOneline(line);
+			}
+		}
+	}
+	return true;
+}
+
 /*! Profileをファイルへ書き出す
 	
 	@param pszProfileName [in] ファイル名(NULL=最後に読み書きしたファイル)
@@ -161,12 +230,12 @@ bool CProfile::WriteProfile(
 		vecLine.emplace_back( L";" + std::wstring( pszComment ) );		// //->;	2008/5/24 Uchi
 		vecLine.push_back( LTEXT("") );
 	}
-	for(auto iter = m_ProfileData.cbegin(); iter != m_ProfileData.cend(); iter++ ) {
+	for(const auto& iter : m_ProfileData) {
 		//セクション名を書き込む
-		vecLine.push_back( LTEXT("[") + iter->strSectionName + LTEXT("]") );
-		for(auto mapiter = iter->mapEntries.cbegin(); mapiter != iter->mapEntries.cend(); mapiter++ ) {
+		vecLine.emplace_back( L"[" + iter.strSectionName + L"]" );
+		for(const auto& mapiter : iter.mapEntries) {
 			//エントリを書き込む
-			vecLine.push_back( mapiter->first + LTEXT("=") + mapiter->second );
+			vecLine.emplace_back( mapiter.first + L"=" + mapiter.second );
 		}
 		vecLine.push_back( LTEXT("") );
 	}
@@ -176,9 +245,9 @@ bool CProfile::WriteProfile(
 	szMirrorFile[0] = L'\0';
 	WCHAR szPath[_MAX_PATH];
 	LPWSTR lpszName;
-	DWORD nLen = ::GetFullPathName(m_strProfileName.c_str(), _countof(szPath), szPath, &lpszName);
-	if( 0 < nLen && nLen < _countof(szPath)
-		&& (lpszName - szPath + 11) < _countof(szMirrorFile) )	// path\preuuuu.TMP
+	DWORD nLen = ::GetFullPathName(m_strProfileName.c_str(), int(std::size(szPath)), szPath, &lpszName);
+	if( 0 < nLen && nLen < int(std::size(szPath))
+		&& (lpszName - szPath + 11) < int(std::size(szMirrorFile)) )	// path\preuuuu.TMP
 	{
 		*lpszName = L'\0';
 		::GetTempFileName(szPath, L"sak", 0, szMirrorFile);
@@ -285,10 +354,10 @@ void CProfile::DUMP( void )
 #ifdef _DEBUG
 	//	2006.02.20 ryoji: MAP_STR_STR_ITER削除時の修正漏れによるコンパイルエラー修正
 	MYTRACE( L"\n\nCProfile::DUMP()======================" );
-	for(auto iter = m_ProfileData.cbegin(); iter != m_ProfileData.cend(); iter++ ) {
-		MYTRACE( L"\n■strSectionName=%ls", iter->strSectionName.c_str() );
-		for(auto mapiter = iter->mapEntries.cbegin(); mapiter != iter->mapEntries.cend(); mapiter++ ) {
-			MYTRACE( L"\"%ls\" = \"%ls\"\n", mapiter->first.c_str(), mapiter->second.c_str() );
+	for(const auto& iter : m_ProfileData) {
+		MYTRACE( L"\n■strSectionName=%ls", iter.strSectionName.c_str() );
+		for(const auto& mapiter : iter.mapEntries) {
+			MYTRACE( L"\"%ls\" = \"%ls\"\n", mapiter.first.c_str(), mapiter.second.c_str() );
 		}
 	}
 	MYTRACE( L"========================================\n" );

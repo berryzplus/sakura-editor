@@ -1,4 +1,18 @@
 # version.cmake - Generate version.h at build time
+#
+# arguments(required):
+#   ${SOURCE_DIR}
+#   ${GIT_EXECUTABLE}
+#
+# Environment variables (optional):
+#   $ENV{GITHUB_ACTIONS}
+#   $ENV{GITHUB_SERVER_URL}
+#   $ENV{GITHUB_REPOSITORY}
+#   $ENV{GITHUB_SHA}
+#   $ENV{GITHUB_RUN_NUMBER}
+#   $ENV{GITHUB_RUN_ID}
+#   $ENV{GITHUB_REF_NAME}
+#   $ENV{GITHUB_REF_TYPE}
 
 # Function to generate simple conditional define
 function(generate_simple_define var_name define_name)
@@ -35,50 +49,75 @@ function(generate_url_define var_name define_name)
   endif()
 endfunction()
 
-# Find Git with additional search paths
-find_program(GIT_EXECUTABLE git
-  PATHS
-    "$ENV{ProgramFiles}/Git"
-  PATH_SUFFIXES
-    cmd
-    bin
-)
-
-# Debug: Print Git executable path
-if(GIT_EXECUTABLE)
-  message(STATUS "Found Git: ${GIT_EXECUTABLE}")
-else()
-  message(STATUS "Git not found")
-endif()
-
 # Initialize variables with default values
+set(SAKURA_MAJOR_VERSION "2") # メジャーバージョン(2固定)
+set(SAKURA_MINOR_VERSION "4") # マイナーバージョン(4以降はGitHub版)
+set(SAKURA_PATCH_VERSION "3") # 連番(マージの通し番号)
 set(BUILD_VERSION "0")
 
-# Get git information if Git is available
-if(GIT_EXECUTABLE AND EXISTS "${SOURCE_DIR}/.git")
-  message(STATUS "Git repository detected, extracting version information...")
-  
-  # Get remote origin URL
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} config --get remote.origin.url
-    WORKING_DIRECTORY ${SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_REMOTE_ORIGIN_URL
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-  )
-  
-  # Get full commit hash
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} show -s --format=%H
-    WORKING_DIRECTORY ${SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-  )
-  
-  # Get short commit hash
-  string(SUBSTRING "${GIT_COMMIT_HASH}" 0 8 GIT_SHORT_COMMIT_HASH)
-  
+# CIのビルドページURL(ENVで指定する)
+if(DEFINED ENV{CI_BUILD_URL})
+  set(CI_BUILD_URL "$ENV{CI_BUILD_URL}")
+endif()
+
+# CIのビルド番号(ENVで指定する)
+if(DEFINED ENV{CI_BUILD_NUMBER})
+  set(CI_BUILD_NUMBER "$ENV{GITHUB_RUN_NUMBER}")
+endif()
+
+# GitHub Actionsで実行されてる場合の処理
+if("$ENV{GITHUB_ACTIONS}" STREQUAL "true")
+  set(BUILD_ENV_NAME "GHA")
+
+  if ("$ENV{GITHUB_EVENT_NAME}" STREQUAL "pull_request")
+    set(GITHUB_PR_NUMBER "$ENV{GITHUB_PR_NUMBER}")
+    set(GITHUB_PR_HEAD_URL "$ENV{GITHUB_PR_HEAD_URL}")
+    set(GITHUB_PR_HEAD_COMMIT "$ENV{GITHUB_PR_HEAD_COMMIT}")
+    set(GITHUB_PR_HEAD_SHORT_COMMIT "$ENV{GITHUB_PR_HEAD_SHORT_COMMIT}")
+  elseif("$ENV{GITHUB_REF_TYPE}" STREQUAL "tag")
+    set(GITHUB_TAG_NAME "$ENV{GITHUB_REF_NAME}")
+  endif()
+
+  set(GIT_REMOTE_ORIGIN_URL "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}")
+  set(GIT_COMMIT_HASH "$ENV{GITHUB_SHA}")
+  set(GITHUB_COMMIT_URL "$ENV{GITHUB_COMMIT_URL}")
+
+else()
+  set(BUILD_ENV_NAME "Local")
+
+  # Get git information if Git is available
+  if(IS_DIRECTORY "${SOURCE_DIR}/.git")
+    message(STATUS "Git repository detected, extracting version information...")
+    
+    # Get remote origin URL
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} config --get remote.origin.url
+      WORKING_DIRECTORY "${SOURCE_DIR}"
+      OUTPUT_VARIABLE GIT_REMOTE_ORIGIN_URL
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+    if(GIT_REMOTE_ORIGIN_URL MATCHES "^git@github.com:.+")
+      string(REGEX REPLACE "^git@github.com:(.+)(\\.git)" "https://github.com/\\1" GIT_REMOTE_ORIGIN_URL "${GIT_REMOTE_ORIGIN_URL}")
+    endif()
+
+    # Get full commit hash
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} show -s --format=%H
+      WORKING_DIRECTORY "${SOURCE_DIR}"
+      OUTPUT_VARIABLE GIT_COMMIT_HASH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+  else()
+    message(STATUS "Git repository not detected.")
+  endif()
+endif()
+
+# Get short commit hash
+string(SUBSTRING "${GIT_COMMIT_HASH}" 0 8 GIT_SHORT_COMMIT_HASH)
+
+if(IS_DIRECTORY "${SOURCE_DIR}/.git")
   # Get commit count (build version)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-list --count --no-merges @
@@ -87,9 +126,6 @@ if(GIT_EXECUTABLE AND EXISTS "${SOURCE_DIR}/.git")
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET
   )
-  
-else()
-  message(STATUS "NOTE: No .git directory found")
 endif()
 
 # If BUILD_VERSION is empty, set it to 0
@@ -97,56 +133,35 @@ if("${BUILD_VERSION}" STREQUAL "")
   set(BUILD_VERSION "0")
 endif()
 
-if(DEFINED ENV{GITHUB_ACTIONS} AND "$ENV{GITHUB_ACTIONS}" STREQUAL "true")
-  set(BUILD_ENV_NAME "GHA")
-
-  set(CI_BUILD_NUMBER "$ENV{GITHUB_RUN_NUMBER}")
-  set(CI_BUILD_URL "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}/actions/runs/$ENV{GITHUB_RUN_ID}")
-  set(GITHUB_COMMIT_URL "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}/commit/$ENV{GITHUB_SHA}")
-
-  if ("$ENV{GITHUB_EVENT_NAME}" STREQUAL "pull_request")
-    string(REGEX REPLACE "^([0-9]+)/merge$" "\\1" GITHUB_PR_NUMBER "$ENV{GITHUB_REF_NAME}")
-    set(GITHUB_PR_HEAD_COMMIT "$ENV{GITHUB_SHA}")
-    string(SUBSTRING "${GITHUB_PR_HEAD_COMMIT}" 0 8 GITHUB_PR_HEAD_SHORT_COMMIT)
-    set(GITHUB_PR_HEAD_URL "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}/pull/${GITHUB_PR_NUMBER}/commits/${GITHUB_PR_HEAD_COMMIT}")
-  endif()
-
-  if("$ENV{GITHUB_REF_NAME}" STREQUAL "tag")
-    set(GITHUB_TAG_NAME "$ENV{GITHUB_REF_NAME}")
-  endif()
-else()
-  set(BUILD_ENV_NAME "Local")
-endif()
-
 # Generate conditional defines for version.h.in
-generate_simple_define(GIT_SHORT_COMMIT_HASH GIT_SHORT_COMMIT_HASH)
-generate_simple_define(GIT_COMMIT_HASH GIT_COMMIT_HASH)
-generate_simple_define(GIT_REMOTE_ORIGIN_URL GIT_REMOTE_ORIGIN_URL)
-generate_simple_define(GIT_TAG_NAME GIT_TAG_NAME)
+generate_simple_define(GIT_SHORT_COMMIT_HASH    GIT_SHORT_COMMIT_HASH)
+generate_simple_define(GIT_COMMIT_HASH          GIT_COMMIT_HASH)
+generate_simple_define(GIT_REMOTE_ORIGIN_URL    GIT_REMOTE_ORIGIN_URL)
+generate_simple_define(GIT_TAG_NAME             GIT_TAG_NAME)
 
-generate_build_number_define(CI_BUILD_NUMBER CI_BUILD_NUMBER "Build")
-generate_build_number_define(GITHUB_PR_NUMBER GITHUB_PR_NUMBER "PR")
+generate_build_number_define(CI_BUILD_NUMBER    CI_BUILD_NUMBER "Build")
+generate_build_number_define(GITHUB_PR_NUMBER   GITHUB_PR_NUMBER "PR")
 
-generate_url_define(GITHUB_COMMIT_URL GITHUB_COMMIT_URL)
-generate_url_define(GITHUB_PR_HEAD_URL GITHUB_PR_HEAD_URL)
-generate_url_define(GITHUB_PR_HEAD_COMMIT GITHUB_PR_HEAD_COMMIT)
+generate_url_define(GITHUB_COMMIT_URL           GITHUB_COMMIT_URL)
+generate_url_define(GITHUB_PR_HEAD_URL          GITHUB_PR_HEAD_URL)
+generate_url_define(GITHUB_PR_HEAD_COMMIT       GITHUB_PR_HEAD_COMMIT)
 generate_url_define(GITHUB_PR_HEAD_SHORT_COMMIT GITHUB_PR_HEAD_SHORT_COMMIT)
-generate_url_define(CI_BUILD_URL CI_BUILD_URL)
+generate_url_define(CI_BUILD_URL                CI_BUILD_URL)
 
 # Configure the version.h file
 configure_file(
   ${SOURCE_DIR}/src/main/cmake/version.h.in
-  ${BINARY_DIR}/version.h
+  ${CMAKE_BINARY_DIR}/version.h
   @ONLY
 )
 
 # Print information (like the original batch file)
-message(STATUS "GIT_REMOTE_ORIGIN_URL : ${GIT_REMOTE_ORIGIN_URL}")
-message(STATUS "GIT_COMMIT_HASH       : ${GIT_COMMIT_HASH}")
-message(STATUS "GIT_SHORT_COMMIT_HASH : ${GIT_SHORT_COMMIT_HASH}")
+message(STATUS "BUILD_ENV_NAME              : ${BUILD_ENV_NAME}")
 message(STATUS "")
-message(STATUS "BUILD_ENV_NAME        : ${BUILD_ENV_NAME}")
-message(STATUS "BUILD_VERSION         : ${BUILD_VERSION}")
+message(STATUS "GIT_REMOTE_ORIGIN_URL       : ${GIT_REMOTE_ORIGIN_URL}")
+message(STATUS "GIT_COMMIT_HASH             : ${GIT_COMMIT_HASH}")
+message(STATUS "GIT_SHORT_COMMIT_HASH       : ${GIT_SHORT_COMMIT_HASH}")
+message(STATUS "BUILD_VERSION               : ${BUILD_VERSION}")
 message(STATUS "")
 message(STATUS "GITHUB_COMMIT_URL           : ${GITHUB_COMMIT_URL}")
 message(STATUS "CI_BUILD_NUMBER             : ${CI_BUILD_NUMBER}")
@@ -156,6 +171,6 @@ message(STATUS "GITHUB_PR_NUMBER            : ${GITHUB_PR_NUMBER}")
 message(STATUS "GITHUB_PR_HEAD_COMMIT       : ${GITHUB_PR_HEAD_COMMIT}")
 message(STATUS "GITHUB_PR_HEAD_SHORT_COMMIT : ${GITHUB_PR_HEAD_SHORT_COMMIT}")
 message(STATUS "")
-message(STATUS "GIT_TAG_NAME          : ${GIT_TAG_NAME}")
+message(STATUS "GIT_TAG_NAME                : ${GIT_TAG_NAME}")
 message(STATUS "")
-message(STATUS "version.h was updated.")
+message(STATUS "version.h has been generated.")

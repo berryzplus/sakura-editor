@@ -33,7 +33,6 @@
 #include "window/CEditWnd.h"
 #include "CSelectLang.h"
 #include "apiwrap/CommonControl.h"
-#include "String_define.h"
 
 #define SCROLLMARGIN_LEFT 4
 #define SCROLLMARGIN_RIGHT 4
@@ -779,7 +778,7 @@ void CCaret::ShowCaretPosInfo()
 				}
 			}
 			else{
-				wcscpy_s(szCaretChar, _countof(szCaretChar), pcLayout->GetLayoutEol().GetName());
+				wcscpy_s(szCaretChar, std::size(szCaretChar), pcLayout->GetLayoutEol().GetName());
 			}
 		}
 	}
@@ -854,9 +853,9 @@ void CCaret::ShowCaretPosInfo()
 
 		WCHAR szFontSize[16];
 		if( const double nZoomPercentage = GetEditWnd().GetFontZoom() * 100.0; nZoomPercentage < 5.0 ){
-			auto_snprintf_s( szFontSize, _countof(szFontSize), LS( STR_STATUS_FONTZOOM_1 ), nZoomPercentage );
+			auto_snprintf_s(szFontSize, std::size(szFontSize), LS( STR_STATUS_FONTZOOM_1 ), nZoomPercentage );
 		}else{
-			auto_snprintf_s( szFontSize, _countof(szFontSize), LS( STR_STATUS_FONTZOOM_0 ), nZoomPercentage );
+			auto_snprintf_s(szFontSize, std::size(szFontSize), LS( STR_STATUS_FONTZOOM_0 ), nZoomPercentage );
 		}
 
 		auto& statusBar = GetEditWnd().m_cStatusBar;
@@ -868,7 +867,7 @@ void CCaret::ShowCaretPosInfo()
 			bool ret = statusBar.SetStatusText(nIndex, nOption, pszText);
 			if (ret) {
 				RECT partRect;
-				StatusBar_GetRect(hWnd, nIndex, &partRect);
+				ApiWrap::StatusBar_GetRect(hWnd, nIndex, &partRect);
 				::UnionRect(&updatedRect, &updatedRect, &partRect);
 			}
 		};

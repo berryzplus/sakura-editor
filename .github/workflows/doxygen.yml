@@ -1,0 +1,54 @@
+name: Doxygen
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+      - '.editorconfig'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+      - '.editorconfig'
+  workflow_dispatch:
+
+jobs:
+  doxygen:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        BuildPlatform: [Win32]
+        Configuration: [Release]
+    env:
+      BuildPlatform: ${{ matrix.BuildPlatform }}
+      Configuration: ${{ matrix.Configuration }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            doxygen
+
+      - name: Show environment variables for debug
+        run: set
+        shell: cmd
+
+      - name: Run doxygen
+        run: ./run-doxygen.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
+        shell: msys2 {0}
+
+      - name: Zip files for artifacts
+        run: zipArtifacts.bat ${{ env.BuildPlatform }} ${{ env.Configuration }}
+        shell: cmd
+
+      - name: Upload doxygen artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: doxygen_${{ env.BuildPlatform }}_${{ env.Configuration }}
+          path: '**Dev.zip'

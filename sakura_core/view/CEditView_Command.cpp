@@ -61,7 +61,7 @@ bool CEditView::TagJumpSub(
 	WCHAR	szJumpToFile[1024];
 	HWND hwndTarget = nullptr;
 	constexpr auto& szTargetPrefix = L":HWND:[";
-	constexpr auto cchTargetPrefix = _countof(szTargetPrefix) - 1;
+	constexpr auto cchTargetPrefix = int(std::size(szTargetPrefix)) - 1;
 	if( 0 == wcsncmp(pszFileName, szTargetPrefix, cchTargetPrefix) ){
 		if( 0 >= ::swscanf_s(pszFileName + cchTargetPrefix, L"%x", (size_t*)&hwndTarget) || !IsSakuraMainWindow(hwndTarget) ){
 			return false;
@@ -468,8 +468,8 @@ HWND CEditView::StartProgress()
 	HWND hwndProgress = GetEditWnd().m_cStatusBar.GetProgressHwnd();
 	if( nullptr != hwndProgress ){
 		::ShowWindow( hwndProgress, SW_SHOW );
-		Progress_SetRange( hwndProgress, 0, 101 );
-		Progress_SetPos( hwndProgress, 0 );
+		ApiWrap::Progress_SetRange( hwndProgress, 0, 101 );
+		ApiWrap::Progress_SetPos( hwndProgress, 0 );
 	}
 	return hwndProgress;
 }

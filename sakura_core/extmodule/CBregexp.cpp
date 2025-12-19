@@ -31,7 +31,6 @@
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "apiwrap/StdControl.h"
-#include "String_define.h"
 
 // Compile時、行頭置換(len=0)の時にダミー文字列(１つに統一) by かろと
 const wchar_t CBregexp::m_tmpBuf[2] = L"\0";
@@ -618,12 +617,12 @@ bool CheckRegexpVersion(
 
 	if( !InitRegexp( hWnd, cRegexp, bShowMessage ) ){
 		if( hWnd != nullptr ){
-			::DlgItem_SetText( hWnd, nCmpId, L" ");
+			ApiWrap::DlgItem_SetText( hWnd, nCmpId, L" ");
 		}
 		return false;
 	}
 	if( hWnd != nullptr ){
-		::DlgItem_SetText( hWnd, nCmpId, cRegexp.GetVersionW() );
+		ApiWrap::DlgItem_SetText( hWnd, nCmpId, cRegexp.GetVersionW() );
 	}
 	return true;
 }

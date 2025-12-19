@@ -19,7 +19,22 @@
  *
  * 読み書き可能なWCHARバッファとサイズを指定して構築する
  */
-using StringBufferW = basis::TCharBuffer<WCHAR>;
+class StringBufferW {
+	WCHAR*		pszData_;
+	size_t		cchDataSize_;
+
+public:
+	explicit StringBufferW(WCHAR* pData, size_t maxCount);
+
+	template <size_t N>
+	explicit StringBufferW(WCHAR (&buffer)[N])
+		: StringBufferW(buffer, N) {}
+
+	[[nodiscard]] const WCHAR* c_str() const noexcept { return pszData_; }
+	[[nodiscard]] size_t capacity() const noexcept { return cchDataSize_; }
+
+	StringBufferW& operator = (std::wstring_view rhs);
+};
 
 /*!
  * プロファイル用データ変換
@@ -205,7 +220,7 @@ namespace profile_data {
 	template<>
 	[[nodiscard]] inline bool TryParse<StringBufferW>(std::wstring_view profile, StringBufferW& value) noexcept
 	{
-		if (profile.length() < std::size(value)) {
+		if (profile.length() < value.capacity()) {
 			value = profile;
 			return true;
 		}

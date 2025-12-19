@@ -21,7 +21,6 @@
 #include "util/file.h"
 #include "util/window.h"
 #include "CSelectLang.h"
-#include "String_define.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      ファイル名管理                         //
@@ -232,11 +231,11 @@ bool CFileNameManager::ExpandMetaToFolder( LPCWSTR pszSrc, LPWSTR pszDes, int nD
 				szPath[0] = L'\0';
 				bFolderPath = ReadRegistry( HKEY_CURRENT_USER,
 					L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
-					szMeta, szPath, _countof( szPath ) );
+					szMeta, szPath, int(std::size(szPath)) );
 				if( false == bFolderPath || L'\0' == szPath[0] ){
 					bFolderPath = ReadRegistry( HKEY_LOCAL_MACHINE,
 						L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
-						szMeta, szPath, _countof( szPath ) );
+						szMeta, szPath, int(std::size(szPath)) );
 				}
 				if( false == bFolderPath || L'\0' == szPath[0] ){
 					pStr = _wgetenv( szMeta );

@@ -47,6 +47,11 @@ call build-installer.bat %PLATFORM% %CONFIGURATION% || (echo error build-install
 @echo ---- end   build-installer.bat ----
 @echo.
 
+@echo ---- start zipArtifacts.bat ----
+call zipArtifacts.bat    %PLATFORM% %CONFIGURATION% || (echo error zipArtifacts.bat    && exit /b 1)
+@echo ---- end   zipArtifacts.bat ----
+@echo.
+
 exit /b 0
 
 @rem ------------------------------------------------------------------------------

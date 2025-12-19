@@ -25,7 +25,6 @@
 #include "dlg/CDlgProfileMgr.h"
 #include "debug/CRunningTimer.h"
 #include "util/os.h"
-#include <io.h>
 #include <tchar.h>
 #include "CSelectLang.h"
 #include "config/system_constants.h"
@@ -51,7 +50,6 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	CSelectLang::InitializeLanguageEnvironment();
 
 	if( !ProfileSelect( hInstance, lpCmdLine ) ){
-		CSelectLang::UninitializeLanguageEnvironment();
 		return nullptr;
 	}
 
@@ -90,7 +88,7 @@ bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	//	May 30, 2000 genta
 	//	実行ファイル名をもとに漢字コードを固定する．
 	WCHAR szExeFileName[MAX_PATH];
-	const int cchExeFileName = ::GetModuleFileName(nullptr, szExeFileName, _countof(szExeFileName));
+	const int cchExeFileName = ::GetModuleFileName(nullptr, szExeFileName, int(std::size(szExeFileName)));
 	CCommandLine::getInstance()->ParseKanjiCodeFromFileName(szExeFileName, cchExeFileName);
 
 	CCommandLine::getInstance()->ParseCommandLine(lpCmdLine);
@@ -188,7 +186,7 @@ bool CProcessFactory::StartControlProcess()
 	WCHAR szCmdLineBuf[1024];	//	コマンドライン
 	WCHAR szEXE[MAX_PATH + 1];	//	アプリケーションパス名
 
-	::GetModuleFileName( nullptr, szEXE, _countof( szEXE ));
+	::GetModuleFileName( nullptr, szEXE, int(std::size(szEXE)));
 	if( CCommandLine::getInstance()->IsSetProfile() ){
 		::auto_sprintf( szCmdLineBuf, L"\"%s\" -NOWIN -PROF=\"%ls\"",
 			szEXE, CCommandLine::getInstance()->GetProfileName() );

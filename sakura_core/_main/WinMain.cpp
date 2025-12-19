@@ -58,15 +58,12 @@ int WINAPI wWinMain(
 #endif
 
 	MY_RUNNINGTIMER(cRunningTimer, L"WinMain" );
-
-	// Cロケールを日本語に固定
-	std::setlocale(LC_ALL, "Japanese_Japan.932");
-
 	{
 		// 2014.04.24 DLLの検索パスからカレントディレクトリを削除する
 		::SetDllDirectory( L"" );
 		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
 
+		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
 		::OleInitialize( nullptr );	// 2009.01.07 ryoji 追加
 	}
 	

@@ -24,7 +24,7 @@
 CClipboard::CClipboard(HWND hwnd)
 {
 	m_hwnd = hwnd;
-	m_bOpenResult = ::OpenClipboard(hwnd);
+	m_bOpenResult = OpenClipboardWithRetry(hwnd);
 }
 
 CClipboard::~CClipboard()
@@ -47,6 +47,23 @@ void CClipboard::Close()
 		::CloseClipboard();
 		m_bOpenResult=FALSE;
 	}
+}
+
+BOOL CClipboard::OpenClipboardWithRetry(HWND hwnd)
+{
+	for (int attempt = 0; attempt < CLIPBOARD_RETRY_COUNT; ++attempt) {
+		BOOL result = ::OpenClipboard(hwnd);
+		if (result) {
+			return result;
+		}
+		
+		// If this is not the last attempt, sleep briefly before retrying
+		if (attempt < CLIPBOARD_RETRY_COUNT - 1) {
+			::Sleep(CLIPBOARD_RETRY_DELAY_MS);
+		}
+	}
+	
+	return FALSE;
 }
 
 bool CClipboard::SetText(
@@ -261,7 +278,7 @@ bool CClipboard::GetText(IWBuffer* cmemBuf, bool* pbColumnSelect, bool* pbLineSe
 		while( ( uFormat = EnumClipboardFormats( uFormat ) ) != 0 ){
 			// Jul. 2, 2005 genta : check return value of GetClipboardFormatName
 			WCHAR szFormatName[128];
-			if( ::GetClipboardFormatName( uFormat, szFormatName, _countof(szFormatName) - 1 ) ){
+			if( ::GetClipboardFormatName( uFormat, szFormatName, int(std::size(szFormatName)) - 1 ) ){
 				if( nullptr != pbColumnSelect && 0 == lstrcmpi( L"MSDEVColumnSelect", szFormatName ) ){
 					*pbColumnSelect = true;
 					break;
@@ -301,7 +318,9 @@ bool CClipboard::GetText(IWBuffer* cmemBuf, bool* pbColumnSelect, bool* pbLineSe
 	}
 	if( hUnicode != nullptr ){
 		wchar_t* szData = static_cast<wchar_t*>(::GlobalLock(hUnicode));
-		cmemBuf->Append( szData, GlobalSize(hUnicode) / 2 - 1);
+		if (szData) {
+			cmemBuf->Append( szData, wcsnlen(szData, GlobalSize(hUnicode) / 2) );
+		}
 		::GlobalUnlock(hUnicode);
 		return true;
 	}
@@ -336,7 +355,7 @@ bool CClipboard::GetText(IWBuffer* cmemBuf, bool* pbColumnSelect, bool* pbLineSe
 			const int nMaxCnt = DragQueryFile(hDrop, 0xFFFFFFFF, nullptr, 0);
 
 			for(int nLoop = 0; nLoop < nMaxCnt; nLoop++){
-				DragQueryFile(hDrop, nLoop, sTmpPath, _countof(sTmpPath) - 1);
+				DragQueryFile(hDrop, nLoop, sTmpPath, int(std::size(sTmpPath)) - 1);
 				// 2012.10.05 Moca ANSI版に合わせて最終行にも改行コードをつける
 				cmemBuf->Append(sTmpPath, wcslen(sTmpPath));
 				if(nMaxCnt > 1){
@@ -394,7 +413,7 @@ static CLIPFORMAT GetClipFormat(const wchar_t* pFormatName)
 	if( pFormatName[0] == L'\0' ){
 		return uFormat;
 	}
-	for(int i = 0; i < _countof(sClipFormatNames); i++){
+	for(int i = 0; i < int(std::size(sClipFormatNames)); i++){
 		if( 0 == _wcsicmp(pFormatName, sClipFormatNames[i].m_pszName) ){
 			uFormat = sClipFormatNames[i].m_nClipFormat;
 		}
@@ -519,7 +538,7 @@ bool CClipboard::SetClipboardByFormat(const CStringRef& cstr, const wchar_t* pFo
 	return true;
 }
 
-static int GetLengthByMode(HGLOBAL hClipData, const BYTE* pData, int nMode, int nEndMode)
+static size_t GetLengthByMode(HGLOBAL hClipData, const BYTE* pData, int nMode, int nEndMode)
 {
 	size_t nMemLength = ::GlobalSize(hClipData);
 	nEndMode = GetEndModeByMode(nMode, nEndMode);
