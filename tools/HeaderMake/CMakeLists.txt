@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.7)
+﻿cmake_minimum_required(VERSION 3.10)
 
 # define a project
 project (HeaderMake)
@@ -11,7 +11,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC _CONSOLE UNICODE _UNICODE)
 
 # add install target
 install(
-    TARGETS ${PROJECT_NAME}
-    EXPORT ${PROJECT_NAME}-targets
-    RUNTIME DESTINATION bin
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}-targets
+  RUNTIME DESTINATION bin
 )

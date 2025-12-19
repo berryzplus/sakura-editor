@@ -16,7 +16,7 @@
 | Git for Windows    | CMD_GIT      | Git\Cmd            | git.exe      |
 | 7-Zip              | CMD_7Z       | 7-Zip              | 7z           |
 | HTML Help Workshop | CMD_HHC      | HTML Help Workshop | hhc.exe      |
-| Inno Setup 5       | CMD_ISCC     | Inno Setup 5       | ISCC.exe     |
+| Inno Setup         | CMD_ISCC     | Inno Setup 6       | ISCC.exe     |
 | Cppcheck           | CMD_CPPCHECK | cppcheck           | cppcheck.exe |
 | Doxygen            | CMD_DOXYGEN  | doxygen\bin        | doxygen.exe  |
 | Visual Studio Locator | CMD_VSWHERE | Microsoft Visual Studio\Installer | vswhere.exe |
@@ -46,8 +46,10 @@ MSBuild以外の探索手順は同一であり、7-Zipを例に説明する。
 | NUM_VSVERSION  | 使用される Visual Studio のバージョン  |
 | -------------- | -------------------------------------- |
 | （未定義）     | インストールされている最新のバージョン |
+| 15             | Visual Studio 2017                     |
 | 16             | Visual Studio 2019                     |
 | 17             | Visual Studio 2022                     |
+| 18             | Visual Studio 2026                     |
 
 ### 検索ロジック
 
@@ -79,3 +81,8 @@ Python インタープリタはビルド要件ではないので、 Python を�
 
 1. Python Launcher (py.exe) が存在し、 `py.exe --version` でバージョンが取れたら、それを使う。
 1. パスが通っているpython.exeで`python.exe --version`してバージョンが取れたら、それを使う。
+
+## zipの処理に7zではなくPowerShellを強制する
+
+事前に環境変数の`FORCE_POWERSHELL_ZIP`を1にセットすることで、7zの検索をスキップできます。
+[PowerShellによるzipの処理](./zip/readme.md)が正しく行われるかを7zがインストール済みの環境で検証する際に活用できます。[build.md](./build.md#powershell-によるzipファイルの圧縮解凍内容確認の強制)も参照してください。

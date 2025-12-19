@@ -6,7 +6,6 @@
 	SPDX-License-Identifier: Zlib
 */
 #include "StdAfx.h"
-#include <io.h>	// _access
 #include "CReadManager.h"
 #include "CEditApp.h"	// CAppExitException
 #include "window/CEditWnd.h"
@@ -14,7 +13,6 @@
 #include "io/CFileLoad.h"
 #include "util/window.h"
 #include "CSelectLang.h"
-#include "String_define.h"
 #include <atomic>
 #include <future>
 

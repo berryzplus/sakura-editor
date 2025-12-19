@@ -25,13 +25,11 @@
 #include "extmodule/CBregexp.h"
 #include "config/maxdata.h" //MAX_REGEX_KEYWORD
 
-#include "view/colors/EColorIndexType.h"
-
 struct STypeConfig;
 
 //@@@ 2001.11.17 add start MIK
 struct RegexKeywordInfo {
-	int	m_nColorIndex = COLORIDX_REGEX1;		//色指定番号
+	int	m_nColorIndex;		//色指定番号
 };
 //@@@ 2001.11.17 add end MIK
 
@@ -76,12 +74,12 @@ protected:
 	BOOL RegexKeyInit( void );
 
 public:
-	int				m_nTypeIndex;				//!< 現在のタイプ設定番号
+	int				m_nTypeIndex = -1;			//!< 現在のタイプ設定番号
 	bool			m_bUseRegexKeyword;			//!< 正規表現キーワードを使用する・しない
 
 private:
-	const STypeConfig*	m_pTypes;				//!< タイプ設定へのポインタ(呼び出し側が持っているもの)
-	int				m_nTypeId;					//!< タイプ設定ID
+	const STypeConfig*	m_pTypes = nullptr;		//!< タイプ設定へのポインタ(呼び出し側が持っているもの)
+	int				m_nTypeId = -1;				//!< タイプ設定ID
 	DWORD			m_nCompiledMagicNumber;		//!< コンパイル済みか？
 	int				m_nRegexKeyCount;			//!< 現在のキーワード数
 	REGEX_INFO		m_sInfo[MAX_REGEX_KEYWORD];	//!< キーワード一覧(BREGEXPコンパイル対象)

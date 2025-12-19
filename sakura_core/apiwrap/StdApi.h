@@ -18,12 +18,6 @@ namespace ApiWrap
 	BOOL MakeSureDirectoryPathExistsW(LPCWSTR pszDirPath);
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//                    描画API 不具合ラップ                     //
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//VistaでSetPixelが動かないため、代替関数を用意。
-	void SetPixelSurely(HDC hdc,int x,int y,COLORREF c);
-
-	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      よく使う引数値                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
@@ -73,5 +67,4 @@ namespace ApiWrap
 	//WM_COMMAND系の PostMessage は PostMessageCmd に差し替えておく。
 	#define PostMessageCmd PostMessage
 }
-using namespace ApiWrap;
 #endif /* SAKURA_STDAPI_29C8A971_234C_46ED_96DB_A2D479992ABE_H_ */

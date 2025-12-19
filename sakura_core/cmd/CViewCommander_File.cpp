@@ -46,7 +46,6 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "config/app_constants.h"
-#include "String_define.h"
 
 /* 新規作成 */
 void CViewCommander::Command_FILENEW( void )
@@ -312,7 +311,7 @@ BOOL CViewCommander::Command_OPEN_HHPP( BOOL bCheckOnly, BOOL bBeepWhenMiss )
 	static const WCHAR* header_ext[] = { L"h", L"hpp", L"hxx", L"hh", L"hp", L"h++" };
 	return m_pCommanderView->OPEN_ExtFromtoExt(
 		bCheckOnly, bBeepWhenMiss, source_ext, header_ext,
-		_countof(source_ext), _countof(header_ext),
+		int(std::size(source_ext)), int(std::size(header_ext)),
 		LS(STR_ERR_CEDITVIEW_CMD08) );
 }
 
@@ -325,7 +324,7 @@ BOOL CViewCommander::Command_OPEN_CCPP( BOOL bCheckOnly, BOOL bBeepWhenMiss )
 	static const WCHAR* header_ext[] = { L"h", L"hpp", L"hxx", L"hh", L"hp", L"h++" };
 	return m_pCommanderView->OPEN_ExtFromtoExt(
 		bCheckOnly, bBeepWhenMiss, header_ext, source_ext,
-		_countof(header_ext), _countof(source_ext),
+		int(std::size(header_ext)), int(std::size(source_ext)),
 		LS(STR_ERR_CEDITVIEW_CMD09));
 }
 
@@ -572,7 +571,7 @@ void CViewCommander::Command_OPEN_COMMAND_PROMPT(BOOL isAdmin)
 
 	/* 環境変数 COMSPEC から cmd.exe のパスを取得する */
 	WCHAR szCmdExePathBuf[MAX_PATH];
-	if (::GetEnvironmentVariableW(L"COMSPEC", szCmdExePathBuf, _countof(szCmdExePathBuf)) == 0) {
+	if (::GetEnvironmentVariableW(L"COMSPEC", szCmdExePathBuf, int(std::size(szCmdExePathBuf))) == 0) {
 		ErrorBeep();
 		return;
 	}
@@ -849,8 +848,8 @@ BOOL CViewCommander::Command_INSFILE( LPCWSTR filename, ECodeType nCharCode, int
 			pcDlgCancel = new CDlgCancel;
 			if( nullptr != ( hwndCancel = pcDlgCancel->DoModeless( ::GetModuleHandle( nullptr ), nullptr, IDD_OPERATIONRUNNING ) ) ){
 				hwndProgress = ::GetDlgItem( hwndCancel, IDC_PROGRESS );
-				Progress_SetRange( hwndProgress, 0, 101 );
-				Progress_SetPos( hwndProgress, 0);
+				ApiWrap::Progress_SetRange( hwndProgress, 0, 101 );
+				ApiWrap::Progress_SetPos( hwndProgress, 0);
 			}
 		}
 
@@ -879,8 +878,8 @@ BOOL CViewCommander::Command_INSFILE( LPCWSTR filename, ECodeType nCharCode, int
 			}
 			if( 0 == ( nLineNum & 0xFF ) ){
 				if( nOldPercent != cfl.GetPercent() ){
-					Progress_SetPos( hwndProgress, cfl.GetPercent() + 1 );
-					Progress_SetPos( hwndProgress, cfl.GetPercent() );
+					ApiWrap::Progress_SetPos( hwndProgress, cfl.GetPercent() + 1 );
+					ApiWrap::Progress_SetPos( hwndProgress, cfl.GetPercent() );
 					nOldPercent = cfl.GetPercent();
 				}
 				m_pCommanderView->Redraw();

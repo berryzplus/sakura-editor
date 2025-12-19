@@ -55,7 +55,6 @@
 #include "sakura_rc.h"
 #include "config/system_constants.h"
 #include "config/app_constants.h"
-#include "String_define.h"
 
 #define ID_HOTKEY_TRAYMENU	0x1234
 
@@ -195,18 +194,9 @@ static LRESULT CALLBACK CControlTrayWndProc(
 // CControlTray
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CControlTray::CControlTray()
-//	Apr. 24, 2001 genta
-: m_pcPropertyManager(nullptr)
-, m_hInstance( nullptr )
-, m_hWnd( nullptr )
-, m_bCreatedTrayIcon( FALSE )	//トレイにアイコンを作った
-, m_nCurSearchKeySequence(-1)
-, m_uCreateTaskBarMsg( ::RegisterWindowMessage( TEXT("TaskbarCreated") ) )
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
-
-	m_bUseTrayMenu = false;
 
 	return;
 }
@@ -313,7 +303,7 @@ bool CControlTray::CreateTrayIcon( HWND hWnd )
 			profname = L" ";
 			profname += CCommandLine::getInstance()->GetProfileName();
 		}
-		auto_snprintf_s( pszTips, _countof(pszTips), L"%s %d.%d.%d.%d%ls",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
+		auto_snprintf_s(pszTips, std::size(pszTips), L"%s %d.%d.%d.%d%ls",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
 			GSTR_APPNAME,
 			HIWORD( dwVersionMS ),
 			LOWORD( dwVersionMS ),
@@ -358,7 +348,7 @@ BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIco
 	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
 	tnd.hIcon				= hIcon;
 	if( pszTip ){
-		lstrcpyn( tnd.szTip, pszTip, _countof( tnd.szTip ) );
+		lstrcpyn( tnd.szTip, pszTip, int(std::size(tnd.szTip)) );
 	}else{
 		tnd.szTip[0] = L'\0';
 	}
@@ -378,6 +368,8 @@ LRESULT CControlTray::DispatchEvent(
 	LPARAM	lParam 	// second message parameter
 )
 {
+	const auto hWnd = hwnd;
+
 	int				nId;
 	HWND			hwndWork;
 	LPHELPINFO		lphi;
@@ -435,8 +427,8 @@ LRESULT CControlTray::DispatchEvent(
 
 			hwndWork = ::GetForegroundWindow();
 			szClassName[0] = L'\0';
-			::GetClassName( hwndWork, szClassName, _countof( szClassName ) - 1 );
-			::GetWindowText( hwndWork, szText, _countof( szText ) - 1 );
+			::GetClassName( hwndWork, szClassName, int(std::size(szClassName)) - 1 );
+			::GetWindowText( hwndWork, szText, int(std::size(szText)) - 1 );
 			if( 0 == wcscmp( szText, LS(STR_PROPCOMMON) ) ){
 				return -1;
 			}
@@ -1039,18 +1031,18 @@ LRESULT CControlTray::DispatchEvent(
 	case MYWM_ALLOWACTIVATE:
 		::AllowSetForegroundWindow(wParam);
 		return 0L;
+
 	default:
-// << 20010412 by aroka
-//	Apr. 24, 2001 genta RegisterWindowMessageを使うように修正
-		if( uMsg == m_uCreateTaskBarMsg ){
-			/* TaskTray Iconの再登録を要求するメッセージ．
-				Explorerが再起動したときに送出される．*/
-			CreateTrayIcon( GetTrayHwnd() ) ;
+		// タスクバーが再作成されたときは、トレイアイコンを再登録する
+		if (gm_uMsgTaskbarCreated == uMsg) {
+			CreateTrayIcon(hWnd);
+			break;	//あとはデフォルトに任せる
 		}
 		break;	/* default */
-// >> by aroka
 	}
-	return DefWindowProc( hwnd, uMsg, wParam, lParam );
+
+	//あとはデフォルトに任せる
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 /* WM_COMMANDメッセージ処理 */
@@ -1121,7 +1113,7 @@ bool CControlTray::OpenNewEditor(
 
 	//アプリケーションパス
 	WCHAR szEXE[MAX_PATH + 1];
-	::GetModuleFileName( nullptr, szEXE, _countof( szEXE ) );
+	::GetModuleFileName( nullptr, szEXE, int(std::size(szEXE)) );
 	cCmdLineBuf.AppendF( L"\"%s\"", szEXE );
 
 	// ファイル名
@@ -1225,7 +1217,7 @@ bool CControlTray::OpenNewEditor(
 #ifdef _DEBUG
 //	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
 #endif
-	WCHAR szCmdLine[1024]; wcscpy_s(szCmdLine, _countof(szCmdLine), cCmdLineBuf.c_str());
+	WCHAR szCmdLine[1024]; wcscpy_s(szCmdLine, std::size(szCmdLine), cCmdLineBuf.c_str());
 	BOOL bCreateResult = CreateProcess(
 		szEXE,					// 実行可能モジュールの名前
 		szCmdLine,				// コマンドラインの文字列
@@ -1571,7 +1563,7 @@ int	CControlTray::CreatePopUpMenu_L( void )
 				pfi = (EditInfo*)&m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
 
 				// メニューラベル。1からアクセスキーを振る
-				CFileNameManager::getInstance()->GetMenuFullLabel_WinList( szMenu, _countof(szMenu), pfi, m_pShareData->m_sNodes.m_pEditArr[i].m_nId, i, dcFont.GetHDC() );
+				CFileNameManager::getInstance()->GetMenuFullLabel_WinList( szMenu, int(std::size(szMenu)), pfi, m_pShareData->m_sNodes.m_pEditArr[i].m_nId, i, dcFont.GetHDC() );
 				m_cMenuDrawer.MyAppendMenu( hMenu, MF_BYPOSITION | MF_STRING, IDM_SELWINDOW + i, szMenu, L"", FALSE );
 				++j;
 			}

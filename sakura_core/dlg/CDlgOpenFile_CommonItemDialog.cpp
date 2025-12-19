@@ -34,7 +34,6 @@
 #include "util/module.h"
 #include "CFileExt.h"
 #include "env/DLLSHAREDATA.h"
-#include "String_define.h"
 
 struct CDlgOpenFile_CommonItemDialog final
 	:
@@ -412,7 +411,7 @@ CDlgOpenFile_CommonItemDialog::CDlgOpenFile_CommonItemDialog()
 	WCHAR	szDir[_MAX_DIR];
 	::GetModuleFileName(
 		nullptr,
-		szFile, _countof( szFile )
+		szFile, int(std::size(szFile))
 	);
 	_wsplitpath( szFile, szDrive, szDir, nullptr, nullptr );
 	wcscpy( m_szInitialDir, szDrive );

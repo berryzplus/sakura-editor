@@ -18,13 +18,12 @@
 #include "StdAfx.h"
 #include "_main/global.h"
 
+#include "_main/CCommandLine.h"
 #include "_main/CNormalProcess.h"
 #include "basis/CErrorInfo.h"
 #include "config/app_constants.h"
 #include "window/CEditWnd.h"
 #include "version.h"
-
-#include "String_define.h"
 
 #ifdef DEV_VERSION
 #pragma message("-------------------------------------------------------------------------------------")
@@ -34,32 +33,36 @@
 
 /*!
 	アプリ名を取得します。
+	プロセスの生成前にアプリ名を取得することはできません。
 
 	@date 2007/09/21 kobake 整理
  */
 LPCWSTR GetAppName( void )
 {
-	return LS(STR_GSTR_APPNAME);
+	const auto pcProcess = CProcess::getInstance();
+	if( !pcProcess )
+	{
+		::_com_raise_error(E_FAIL, MakeMsgError(L"Any process has been instantiated."));
+	}
+	return pcProcess->GetAppName();
 }
 
 /*! 選択領域描画用パラメータ */
 const COLORREF	SELECTEDAREA_RGB = RGB( 255, 255, 255 );
 const int		SELECTEDAREA_ROP2 = R2_XORPEN;
 
-/*!
- * アプリのインスタンスハンドルを取得する。
- *
- * @return アプリのインスタンスハンドル。wWinMainの第1引数と同じ。
- */
 HINSTANCE G_AppInstance()
 {
-	// CProcessのインスタンスが存在する場合は、そこからインスタンスハンドルを取得する
-	if (const auto process = CProcess::getInstance()) {
-		return process->GetProcessInstance();
-	}
+	return CProcess::getInstance()->GetProcessInstance();
+}
 
-	// CProcessのインスタンスが存在しない場合は、API経由でPEBのプロセスインスタンスハンドルを取得する
-	return GetModuleHandleW(nullptr);
+/*!
+ * 起動時に指定されたプロファイル名を取得する
+ */
+LPCWSTR GetProfileName() noexcept
+{
+	const auto cmdline = CCommandLine::getInstance();
+	return cmdline ? cmdline->GetProfileName() : L"";
 }
 
 /*!

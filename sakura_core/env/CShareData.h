@@ -33,7 +33,6 @@
 #define SAKURA_CSHAREDATA_B25C0FA2_B810_4327_8EC6_0AF46D49593A_H_
 #pragma once
 
-#include <filesystem>
 #include <string>
 #include "CSelectLang.h"		// 2011.04.10 nasukoji
 #include "charset/charset.h"
@@ -46,12 +45,6 @@ class CMutex;
 struct DLLSHAREDATA;
 struct SFileTree;
 struct STypeConfig;
-
-//! マルチユーザー設定
-struct SMultiUserSettings {
-	UINT         userRootFolder = 0;
-	std::wstring userSubFolder = L"sakura";
-};
 
 /*!	@brief 共有データの管理
 
@@ -70,16 +63,7 @@ struct SMultiUserSettings {
 class CShareData : public TSingleInstance<CShareData>
 {
 public:
-	static std::optional<SMultiUserSettings> LoadMultiUserSettings(
-		const std::filesystem::path& exeIniPath
-	);
-	static std::filesystem::path BuildPrivateIniFileName(
-		const std::filesystem::path& iniPath,
-		_In_opt_z_ LPCWSTR pszProfileName,
-		const std::optional<SMultiUserSettings>& multiUserSettings = std::nullopt
-	);
-
-	explicit CShareData(_In_opt_z_ LPCWSTR pszProfileName = nullptr) noexcept;
+	CShareData();
 	~CShareData() override;
 
 	/*
@@ -112,14 +96,25 @@ public:
 
 	static CMutex& GetMutexShareWork();
 
+	DLLSHAREDATA*	GetDllShareDataPtr() noexcept { return m_pShareData; }
+
+protected:
 	/*
 	||  実装ヘルパ関数
 	*/
 
+	//	Jan. 30, 2005 genta 初期化関数の分割
+	void InitKeyword(DLLSHAREDATA* pShareData);
+	bool InitKeyAssign(DLLSHAREDATA* pShareData); // 2007.11.04 genta 起動中止のため値を返す
 	void RefreshKeyAssignString(DLLSHAREDATA* pShareData);
+	void InitToolButtons(DLLSHAREDATA* pShareData);
+	void InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConfig*>& types);
+	void InitPopupMenu(DLLSHAREDATA* pShareData);
+
+public:
+	static void InitFileTree(SFileTree*);
 
 private:
-	LPCWSTR         m_pszProfileName = nullptr;	//!< プロファイル名
 	CSelectLang m_cSelectLang;			// メッセージリソースDLL読み込み用（プロセスに1個）		// 2011.04.10 nasukoji
 	HANDLE			m_hFileMap = nullptr;
 	DLLSHAREDATA*	m_pShareData = nullptr;

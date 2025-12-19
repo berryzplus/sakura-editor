@@ -47,7 +47,6 @@
 #include "config/system_constants.h"
 
 #include "CSelectLang.h"
-#include "String_define.h"
 
 LRESULT CALLBACK EditViewWndProc( HWND, UINT, WPARAM, LPARAM );
 VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
@@ -120,23 +119,10 @@ VOID CALLBACK EditViewTimerProc(
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CEditView::CEditView( void )
 : CViewCalc(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
-, m_pcTextArea(nullptr)
-, m_pcCaret(nullptr)
-, m_pcRuler(nullptr)
 , m_cViewSelect(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cParser(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cTextDrawer(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cCommander(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
-, m_hwndVScrollBar(nullptr)
-, m_hwndHScrollBar(nullptr)
-, m_pcDropTarget(nullptr)
-, m_bActivateByMouse( FALSE )	// 2007.10.02 nasukoji
-, m_nWheelDelta(0)
-, m_eWheelScroll(F_0)
-, m_nMousePause(0)
-, m_nAutoScrollMode(0)
-, m_cHistory(nullptr)
-, m_cRegexKeyword(nullptr)
 {
 }
 
@@ -694,7 +680,7 @@ LRESULT CEditView::DispatchEvent(
 			auto Scroll = OnVScroll(LOWORD(wParam), HIWORD(wParam) * m_nVScrollRate);
 
 			//	シフトキーが押されていないときだけ同期スクロール
-			if(!GetKeyState_Shift()){
+			if(!ApiWrap::GetKeyState_Shift()){
 				SyncScrollV( Scroll );
 			}
 		}
@@ -709,7 +695,7 @@ LRESULT CEditView::DispatchEvent(
 			auto Scroll = OnHScroll(LOWORD(wParam), HIWORD(wParam));
 
 			//	シフトキーが押されていないときだけ同期スクロール
-			if(!GetKeyState_Shift()){
+			if(!ApiWrap::GetKeyState_Shift()){
 				SyncScrollH( Scroll );
 			}
 		}
@@ -1579,7 +1565,7 @@ int	CEditView::CreatePopUpMenuSub( HMENU hMenu, int nMenuIdx, int* pParentMenus,
 			}
 			if( !bMenuLoop ){
 				WCHAR buf[ MAX_CUSTOM_MENU_NAME_LEN + 1 ];
-				LPCWSTR p = GetDocument()->m_cFuncLookup.Custmenu2Name( nCustIdx, buf, _countof(buf) );
+				LPCWSTR p = GetDocument()->m_cFuncLookup.Custmenu2Name( nCustIdx, buf, int(std::size(buf)) );
 				wchar_t keys[2];
 				keys[0] = GetDllShareData().m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nMenuIdx][i];
 				keys[1] = 0;
@@ -2141,7 +2127,7 @@ int CEditView::IsCurrentPositionSelected(
 		++rcSel.bottom;
 		po = ptCaretPos;
 		if( IsDragSource() ){
-			if( GetKeyState_Control() ){ /* Ctrlキーが押されていたか */
+			if( ApiWrap::GetKeyState_Control() ){ /* Ctrlキーが押されていたか */
 				++rcSel.left;
 			}else{
 				++rcSel.right;
@@ -2171,7 +2157,7 @@ int CEditView::IsCurrentPositionSelected(
 		}
 		if( GetSelectionInfo().m_sSelect.GetFrom().y == ptCaretPos.y ){
 			if( IsDragSource() ){
-				if( GetKeyState_Control() ){	/* Ctrlキーが押されていたか */
+				if( ApiWrap::GetKeyState_Control() ){	/* Ctrlキーが押されていたか */
 					if( GetSelectionInfo().m_sSelect.GetFrom().x >= ptCaretPos.x ){
 						return -1;
 					}
@@ -2187,7 +2173,7 @@ int CEditView::IsCurrentPositionSelected(
 		}
 		if( GetSelectionInfo().m_sSelect.GetTo().y == ptCaretPos.y ){
 			if( IsDragSource() ){
-				if( GetKeyState_Control() ){	/* Ctrlキーが押されていたか */
+				if( ApiWrap::GetKeyState_Control() ){	/* Ctrlキーが押されていたか */
 					if( GetSelectionInfo().m_sSelect.GetTo().x <= ptCaretPos.x ){
 						return 1;
 					}

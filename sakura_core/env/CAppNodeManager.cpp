@@ -23,7 +23,6 @@
 #include "_main/CMutex.h"
 #include "config/system_constants.h"
 #include "config/app_constants.h"
-#include "String_define.h"
 
 // GetOpenedWindowArr用静的変数／構造体
 static BOOL s_bSort;	// ソート指定
@@ -343,7 +342,7 @@ int CAppNodeGroupHandle::GetEditorWindowsNum( bool bExcludeClosing/* = true */ )
 	j = 0;
 	for( i = 0; i < pShare->m_sNodes.m_nEditArrNum; ++i ){
 		if( IsSakuraMainWindow( pShare->m_sNodes.m_pEditArr[i].m_hWnd ) ){
-			if( m_nGroup != 0 && m_nGroup != CAppNodeManager::getInstance()->GetEditNode( pShare->m_sNodes.m_pEditArr[i].m_hWnd )->GetGroup().m_nGroup )
+			if( m_nGroup != 0 && m_nGroup != (int)CAppNodeManager::getInstance()->GetEditNode( pShare->m_sNodes.m_pEditArr[i].m_hWnd )->GetGroup() )
 				continue;
 			if( bExcludeClosing && pShare->m_sNodes.m_pEditArr[i].m_bClosing )
 				continue;

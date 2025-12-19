@@ -58,40 +58,6 @@ F_SPECIAL_LAST				= F_PLUGIN_LIST,
 
 F_MENU_FIRST				= 30000,
 
-
-// 最上位トップメニュー
-// 
-F_FILE_TOPMENU			= 30000,		// 最上位トップメニュー「ファイル」
-F_EDIT_TOPMENU			= 30001,		// 最上位トップメニュー「編集」
-F_CONVERT_TOPMENU		= 30002,		// 最上位トップメニュー「変換」
-F_SEARCH_TOPMENU		= 30003,		// 最上位トップメニュー「検索」
-F_TOOL_TOPMENU			= 30004,		// 最上位トップメニュー「ツール」
-F_OPTION_TOPMENU		= 30005,		// 最上位トップメニュー「設定」
-F_WINDOW_TOPMENU		= 30006,		// 最上位トップメニュー「ウィンドウ」
-F_HELP_TOPMENU			= 30007,		// 最上位トップメニュー「ヘルプ」
-
-
-// ポップアップメニュー
-// 
-F_FILE_REOPEN_SUBMENU	= 30020,		// ポップアップメニュー
-F_FILE_RCNTFILE_SUBMENU	= 30021,		// ポップアップメニュー
-F_FILE_RCNTFLDR_SUBMENU	= 30022,		// ポップアップメニュー
-F_EDIT_INS_SUBMENU		= 30023,		// ポップアップメニュー
-F_EDIT_COS_SUBMENU		= 30024,		// ポップアップメニュー
-F_EDIT_MOV_SUBMENU		= 30025,		// ポップアップメニュー
-F_EDIT_SEL_SUBMENU		= 30026,		// ポップアップメニュー
-F_EDIT_BOX_SEL_SUBMENU	= 30027,		// ポップアップメニュー
-F_EDIT_HLV_SUBMENU		= 30028,		// ポップアップメニュー
-F_CONV_ENCODE_SUBMENU	= 30029,		// ポップアップメニュー
-F_EXECKEYMACRO_REGD		= 30030,		// ポップアップメニュー
-F_TOOL_CUSTOM_SUBMENU	= 30031,		// ポップアップメニュー
-F_TAB_MANIP_SUBMENU		= 30032,		// ポップアップメニュー
-F_CHGMOD_EOL_SUBMENU	= 30033,		// ポップアップメニュー
-F_BOOKMARK_SUBMENU		= 30034,		// ポップアップメニュー
-F_ISEARCH_SUBMENU		= 30035,		// ポップアップメニュー
-F_WINDOW_LIST_SUBMENU	= 30036,		// ポップアップメニュー
-
-
 // ファイル操作系
 //											[意味]								[引数]
 F_FILENEW					= 30101,	//新規作成							なし
@@ -554,6 +520,7 @@ F_APPENDUNDOBUFFERCURSOR	= 32816,	// OpeBlK にカーソル位置を追加
 F_CLIPBOARDEMPTY		= 32817,		// クリップボードクリア
 F_SETVIEWTOP			= 32818,		// ビューの上の行数を設定					CLayoutYInt nLineNumber
 F_SETVIEWLEFT			= 32819,		// ビューの左端の桁数を設定					CLayoutXInt nColumnIndex
+
 
 F_FUNCTION_FIRST	= 40000,	// 2003-02-21 鬼 これ以上だと関数
 

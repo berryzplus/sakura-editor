@@ -1,4 +1,4 @@
-@echo on
+@echo off
 set platform=%1
 set configuration=%2
 
@@ -25,19 +25,6 @@ if not defined CMD_MSBUILD (
 	exit /b 1
 )
 
-if not exist %~dp0tools\vcpkg\bootstrap-vcpkg.bat (
-	"%CMD_GIT%" submodule update --init
-)
-
-if errorlevel 1 (
-	echo ERROR submodule update %errorlevel%
-	exit /b 1
-)
-
-if not exist %~dp0tools\vcpkg\vcpkg.exe (
-	call %~dp0tools\vcpkg\bootstrap-vcpkg.bat
-)
-
 set SLN_FILE=sakura.sln
 
 @rem https://www.appveyor.com/docs/environment-variables/
@@ -47,8 +34,8 @@ set LOG_FILE=msbuild-%platform%-%configuration%.log
 @rem https://msdn.microsoft.com/ja-jp/library/ms171470.aspx
 set LOG_OPTION=/flp:logfile=%LOG_FILE%
 
-@echo "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
-		"%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
+	@echo "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
+	      "%CMD_MSBUILD%" %SLN_FILE% /p:Platform=%platform% /p:Configuration=%configuration%  /t:"Build" %EXTRA_CMD% %LOG_OPTION%
 
 if errorlevel 1 (
 	echo ERROR in msbuild.exe errorlevel %errorlevel%
