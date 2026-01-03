@@ -14,7 +14,7 @@
 #include "charset/CCodeFactory.h"
 #include "charset/CShiftJis.h"
 #include "charset/CUtf8.h"
-#include "CEol.h"
+#include "basis/CEol.h"
 #include "mem/CNativeA.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -149,7 +149,7 @@ bool CClipboard::SetText(
 	// 矩形選択を示すダミーデータ
 	HGLOBAL hgClipMSDEVColumn = nullptr;
 	if( bColumnSelect ){
-		UINT uFormat = ::RegisterClipboardFormat( L"MSDEVColumnSelect" );
+		uFormat = ::RegisterClipboardFormatW(L"MSDEVColumnSelect");
 		if( 0 != uFormat ){
 			hgClipMSDEVColumn = GlobalAlloc(
 				GMEM_MOVEABLE | GMEM_DDESHARE,
@@ -167,7 +167,7 @@ bool CClipboard::SetText(
 	/* 行選択を示すダミーデータ */
 	HGLOBAL hgClipMSDEVLine = nullptr;		// VS2008 以前の形式
 	if( bLineSelect ){
-		UINT uFormat = ::RegisterClipboardFormat( L"MSDEVLineSelect" );
+		uFormat = ::RegisterClipboardFormatW(L"MSDEVLineSelect");
 		if( 0 != uFormat ){
 			hgClipMSDEVLine = GlobalAlloc(
 				GMEM_MOVEABLE | GMEM_DDESHARE,
@@ -183,7 +183,7 @@ bool CClipboard::SetText(
 	}
 	HGLOBAL hgClipMSDEVLine2 = nullptr;	// VS2010 形式
 	if( bLineSelect ){
-		UINT uFormat = ::RegisterClipboardFormat( L"VisualStudioEditorOperationsLineCutCopyClipboardTag" );
+		uFormat = ::RegisterClipboardFormatW(L"VisualStudioEditorOperationsLineCutCopyClipboardTag");
 		if( 0 != uFormat ){
 			hgClipMSDEVLine2 = GlobalAlloc(
 				GMEM_MOVEABLE | GMEM_DDESHARE,
@@ -426,9 +426,9 @@ static CLIPFORMAT GetClipFormat(const wchar_t* pFormatName)
 			}
 		}
 		if( bNumber ){
-			uFormat = _wtoi(pFormatName);
+			uFormat = (CLIPFORMAT)::_wtoi(pFormatName);
 		}else{
-			uFormat = ::RegisterClipboardFormat( pFormatName );
+			uFormat = (CLIPFORMAT)::RegisterClipboardFormatW(pFormatName);
 		}
 	}
 	return uFormat;

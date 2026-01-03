@@ -85,11 +85,14 @@
 #include <climits>
 #include <clocale>
 #include <cmath>
+#include <concepts>
 #include <condition_variable>
 #include <cstdarg>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <cwchar>
 #include <cwctype>
@@ -103,6 +106,7 @@
 #include <iterator>
 #include <limits>
 #include <list>
+#include <locale>
 #include <map>
 #include <memory>
 #include <memory_resource>
@@ -120,6 +124,7 @@
 #include <string>
 #include <string_view>
 #include <thread>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -161,6 +166,7 @@
 #include <windowsx.h>
 
 // その他のWindows SDK ヘッダー（ファイル名は最新に合わせる。追加するときは昇順で。）
+#include <comdef.h>
 #include <CommCtrl.h>
 #include <HtmlHelp.h>
 #include <imm.h>
@@ -170,6 +176,29 @@
 #include <Uxtheme.h>
 #include <vsstyle.h>
 #include <wrl.h>
+#include <wrl/client.h>
+
+/*!
+ * NORETURNマクロ
+ *
+ * 関数の制御が戻らないことを示す。
+ */
+#if defined(_MSC_VER)
+#  define NORETURN __declspec(noreturn)
+#elif defined(__GNUC__)
+#  define NORETURN __attribute__((noreturn))
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define NORETURN _Noreturn
+#else
+#  define NORETURN
+#endif
+
+#ifdef __MINGW32__
+#ifdef UNREFERENCED_PARAMETER
+#undef UNREFERENCED_PARAMETER
+#endif
+#define UNREFERENCED_PARAMETER(P) (void)(P)
+#endif
 
 // プロジェクト内のファイルだがプリコンパイル対象とする。
 // プリコンパイルの有無がビルドパフォーマンスに大きく影響するため。

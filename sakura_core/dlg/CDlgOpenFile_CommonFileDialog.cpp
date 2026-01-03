@@ -25,12 +25,12 @@
 #include "dlg/CDlgOpenFile.h"
 #include "dlg/CDialog.h"
 #include "func/Funccode.h"	//Stonee, 2001/05/18
-#include "CFileExt.h"
+#include "basis/CFileExt.h"
 #include "env/CDocTypeManager.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "CEditApp.h"
-#include "CEol.h"
+#include "basis/CEol.h"
 #include "charset/CCodePage.h"
 #include "doc/CDocListener.h"
 #include "util/window.h"
@@ -90,8 +90,8 @@ struct CDlgOpenFile_CommonFileDialog final : public IDlgOpenFile
 	//! リトライ機能付き GetOpenFileName
 	bool GetSaveFileNameRecover( OPENFILENAME* ofn );
 
-	HINSTANCE		m_hInstance;	/* アプリケーションインスタンスのハンドル */
-	HWND			m_hwndParent;	/* オーナーウィンドウのハンドル */
+	HINSTANCE		m_hInstance = nullptr;	/* アプリケーションインスタンスのハンドル */
+	HWND			m_hwndParent = nullptr;	/* オーナーウィンドウのハンドル */
 
 	DLLSHAREDATA*	m_pShareData;
 
@@ -645,9 +645,6 @@ int AddComboCodePages(HWND hdlg, HWND combo, int nSelCode, bool& bInit)
 */
 CDlgOpenFile_CommonFileDialog::CDlgOpenFile_CommonFileDialog()
 {
-	m_hInstance = nullptr;		/* アプリケーションインスタンスのハンドル */
-	m_hwndParent = nullptr;	/* オーナーウィンドウのハンドル */
-
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
 
@@ -722,10 +719,11 @@ bool CDlgOpenFile_CommonFileDialog::DoModal_GetOpenFileName( WCHAR* pszPath, EFi
 		cFileExt.AppendExtRaw( LS(STR_DLGOPNFL_EXTNAME2), L"*.txt" );
 		break;
 	case EFITER_MACRO:
-		cFileExt.AppendExtRaw( L"Macros", L"*.js;*.vbs;*.ppa;*.mac" );
+		cFileExt.AppendExtRaw( L"Macros", L"*.js;*.vbs;*.ppa;*.py;*.mac" );
 		cFileExt.AppendExtRaw( L"JScript", L"*.js" );
 		cFileExt.AppendExtRaw( L"VBScript", L"*.vbs" );
 		cFileExt.AppendExtRaw( L"Pascal", L"*.ppa" );
+		cFileExt.AppendExtRaw( L"Python", L"*.py" );
 		cFileExt.AppendExtRaw( L"Key Macro", L"*.mac" );
 		break;
 	case EFITER_NONE:

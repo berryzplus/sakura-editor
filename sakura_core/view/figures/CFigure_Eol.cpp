@@ -184,8 +184,7 @@ void _DispWrap(CGraphics& gr, DispPos* pDispPos, const CEditView* pcView, CLayou
 			pDispPos->GetDrawPos().y + nHeightMargin,
 			ApiWrap::ExtTextOutOption() & ~(bTrans? ETO_OPAQUE: 0),
 			&rcClip2,
-			szText,
-			wcslen(szText),
+			PSZ_ARGS(szText),
 			nDx
 		);
 		if( bChangeColor ){
@@ -216,10 +215,6 @@ void _DispEOF(
 		return;
 	CTypeSupport cTextType(pcView,COLORIDX_TEXT);
 	bool bTrans = pcView->IsBkBitmap() && cEofType.GetBackColor() == cTextType.GetBackColor();
-
-	//必要なインターフェースを取得
-	const CTextMetrics* pMetrics=&pcView->GetTextMetrics();
-	const CTextArea* pArea=&pcView->GetTextArea();
 
 	//定数
 	static const wchar_t	szEof[] = L"[EOF]";

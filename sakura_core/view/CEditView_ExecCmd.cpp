@@ -179,7 +179,6 @@ bool CEditView::ExecCmd( const WCHAR* pszCmd, int nFlgOpt, const WCHAR* pszCurDi
 	if(bSendStdin){	/* 現在編集中のファイルを子プロセスの標準入力へ */
 		WCHAR		szPathName[MAX_PATH];
 		WCHAR		szTempFileName[MAX_PATH];
-		int			nFlgOpt;
 
 		GetTempPath( MAX_PATH, szPathName );
 		GetTempFileName( szPathName, TEXT("skr_"), 0, szTempFileName );
@@ -236,7 +235,7 @@ bool CEditView::ExecCmd( const WCHAR* pszCmd, int nFlgOpt, const WCHAR* pszCurDi
 
 	//コマンドライン実行
 	WCHAR	cmdline[1024];
-	wcscpy( cmdline, pszCmd );
+	wcscpy_s( cmdline, pszCmd );
 	if( CreateProcess( nullptr, cmdline, nullptr, nullptr, TRUE,
 				CREATE_NEW_CONSOLE, nullptr, bCurDir ? pszCurDir : nullptr, &sui, &pi ) == FALSE ) {
 		//実行に失敗した場合、コマンドラインベースのアプリケーションと判断して
@@ -481,7 +480,7 @@ bool CEditView::ExecCmd( const WCHAR* pszCmd, int nFlgOpt, const WCHAR* pszCurDi
 							checklen = CheckUtf8Char2(work + j , read_cnt - j, &echarset, true, 0);
 							if( echarset == CHARSET_BINARY2 ){
 								break;
-							}else if( read_cnt - 1 == j && work[j] == _T2(PIPE_CHAR,'\r') ){
+							}else if( int(read_cnt - 1) == j && work[j] == _T2(PIPE_CHAR,'\r') ){
 								// CRLFの一部ではない改行が末尾にある
 								// 次の読み込みで、CRLFの一部になる可能性がある
 								break;

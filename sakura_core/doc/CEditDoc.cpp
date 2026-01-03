@@ -24,11 +24,10 @@
 */
 
 #include "StdAfx.h"
-#include <OleCtl.h>
 #include <wincodec.h>
-#pragma comment(lib, "windowscodecs.lib")
-#include <wrl.h>
 #include "doc/CEditDoc.h"
+
+#include "cxx/com_pointer.hpp"
 #include "doc/logic/CDocLine.h" /// 2002/2/3 aroka
 #include "doc/layout/CLayout.h"	// 2007.08.22 ryoji 追加
 #include "docplus/CModifyManager.h"
@@ -38,9 +37,9 @@
 #include "_main/CNormalProcess.h"
 #include "window/CEditWnd.h"
 #include "_os/CClipboard.h"
-#include "CCodeChecker.h"
+#include "env/CCodeChecker.h"
 #include "CEditApp.h"
-#include "CGrepAgent.h"
+#include "agent/CGrepAgent.h"
 #include "print/CPrintPreview.h"
 #include "uiparts/CVisualProgress.h"
 #include "charset/CCodeMediator.h"
@@ -60,6 +59,8 @@
 #include "util/window.h"
 #include "sakura_rc.h"
 #include "config/app_constants.h"
+
+#pragma comment(lib, "windowscodecs.lib")
 
 #define IDT_ROLLMOUSE	1
 
@@ -172,6 +173,7 @@ CEditDoc::CEditDoc(CEditApp* pcApp)
 , m_cDocType(this)					// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocOutline(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 {
+	UNREFERENCED_PARAMETER(pcApp);
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditDoc::CEditDoc" );
 
 	// レイアウト管理情報の初期化
@@ -317,16 +319,15 @@ void CEditDoc::SetBackgroundImage()
 		path = fullPath;
 	}
 
-	using namespace Microsoft::WRL;
-	ComPtr<IWICImagingFactory> pIWICFactory;
+	cxx::com_pointer<IWICImagingFactory> pIWICFactory;
 	HRESULT hr;
-	hr = CoCreateInstance(
+	hr = pIWICFactory.CreateInstance(
 		CLSID_WICImagingFactory,
 		nullptr,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(&pIWICFactory));
+		CLSCTX_INPROC_SERVER
+	);
 	if( FAILED(hr) ) return;
-	ComPtr<IWICBitmapDecoder> pDecoder;
+	cxx::com_pointer<IWICBitmapDecoder> pDecoder;
 	hr = pIWICFactory->CreateDecoderFromFilename(
 		path.c_str(),
 		nullptr,
@@ -334,17 +335,17 @@ void CEditDoc::SetBackgroundImage()
 		WICDecodeMetadataCacheOnLoad,
 		&pDecoder);
 	if( FAILED(hr) ) return;
-	ComPtr<IWICBitmapFrameDecode> pFrame;
+	cxx::com_pointer<IWICBitmapFrameDecode> pFrame;
 	hr = pDecoder->GetFrame(0, &pFrame);
 	if( FAILED(hr) ) return;
 	//WICPixelFormatGUID pixelFormat;
 	//hr = pFrame->GetPixelFormat(&pixelFormat);
 	//if( FAILED(hr) ) return;
-	ComPtr<IWICFormatConverter> pConverter;
+	cxx::com_pointer<IWICFormatConverter> pConverter;
 	pIWICFactory->CreateFormatConverter(&pConverter);
 	if( FAILED(hr) ) return;
 	hr = pConverter->Initialize(
-		pFrame.Get(),
+		pFrame,
 		GUID_WICPixelFormat32bppPBGRA,
 		WICBitmapDitherTypeNone,
 		nullptr,

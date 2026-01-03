@@ -117,6 +117,9 @@ LRESULT CPrintPreview::OnPaint(
 	LPARAM			lParam 	// second message parameter
 )
 {
+	UNREFERENCED_PARAMETER(lParam);
+	UNREFERENCED_PARAMETER(uMsg);
+	UNREFERENCED_PARAMETER(wParam);
 	PAINTSTRUCT		ps;
 	HDC				hdcOld = ::BeginPaint( hwnd, &ps );
 	HDC				hdc = m_hdcCompatDC;	//	親ウィンドウのComatibleDCに描く
@@ -569,6 +572,7 @@ LRESULT CPrintPreview::OnHScroll( WPARAM wParam, LPARAM lParam )
 
 LRESULT CPrintPreview::OnMouseMove( WPARAM wParam, LPARAM lParam )
 {
+	UNREFERENCED_PARAMETER(wParam);
 	/* 手カーソル */
 	SetHandCursor();		// Hand Cursorを設定 2013/1/29 Uchi
 	if( !m_pParentWnd->GetDragMode() ){
@@ -646,6 +650,7 @@ LRESULT CPrintPreview::OnMouseMove( WPARAM wParam, LPARAM lParam )
 
 LRESULT CPrintPreview::OnMouseWheel( WPARAM wParam, LPARAM lParam )
 {
+	UNREFERENCED_PARAMETER(lParam);
 //	WORD	fwKeys = LOWORD(wParam);			// key flags
 	short	zDelta = (short) HIWORD(wParam);	// wheel rotation
 //	short	xPos = (short) LOWORD(lParam);		// horizontal position of pointer
@@ -878,7 +883,7 @@ void CPrintPreview::OnPreviewGoDirectPage( void )
 	);
 	if( FALSE != bDlgInputPageResult ){
 		int i;
-		int nPageNumLen = wcslen( szPageNum );
+		auto nPageNumLen = int(wcslen(szPageNum));
 		for( i = 0; i < nPageNumLen;  i++ ){
 			if( !(L'0' <= szPageNum[i] &&  szPageNum[i] <= L'9') ){
 				return;
@@ -1254,8 +1259,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 			nY,
 			0,
 			nullptr,
-			szWork,
-			wcslen( szWork ),
+			PSZ_ARGS(szWork),
 			nullptr
 		);
 
@@ -1265,7 +1269,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 			szWork, nWorkLen);
 		Tab2Space( szWork );
 		SIZE	Size;
-		nLen = wcslen(szWork);
+		nLen = (int)wcslen(szWork);
 		::GetTextExtentPoint32W( hdc, szWork, nLen, &Size);		//テキスト幅
 		::ExtTextOut(
 			hdc,
@@ -1283,7 +1287,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 			bHeader ? m_pPrintSetting->m_szHeaderForm[POS_RIGHT] : m_pPrintSetting->m_szFooterForm[POS_RIGHT],
 			szWork, nWorkLen);
 		Tab2Space( szWork );
-		nLen = wcslen(szWork);
+		nLen = (int)wcslen(szWork);
 		::GetTextExtentPoint32W( hdc, szWork, nLen, &Size);		//テキスト幅
 		::ExtTextOut(
 			hdc,
@@ -1313,7 +1317,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 		CSakuraEnvironment::ExpandParameter(
 			bHeader ? m_pPrintSetting->m_szHeaderForm[POS_LEFT] : m_pPrintSetting->m_szFooterForm[POS_LEFT],
 			szWork, nWorkLen);
-		nLen = wcslen( szWork );
+		nLen = (int)wcslen( szWork );
 		Print_DrawLine(
 			hdc,
 			CMyPoint(
@@ -1331,7 +1335,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 		CSakuraEnvironment::ExpandParameter(
 			bHeader ? m_pPrintSetting->m_szHeaderForm[POS_CENTER] : m_pPrintSetting->m_szFooterForm[POS_CENTER],
 			szWork, nWorkLen);
-		nLen = wcslen( szWork );
+		nLen = (int)wcslen( szWork );
 		std::vector<int> vDxArray;
 		nTextWidth = CTextMetrics::CalcTextWidth2(szWork, nLen, nDx, spaceing, vDxArray); //テキスト幅
 		Print_DrawLine(
@@ -1351,7 +1355,7 @@ void CPrintPreview::DrawHeaderFooter( HDC hdc, const CMyRect& rect, bool bHeader
 		CSakuraEnvironment::ExpandParameter(
 			bHeader ? m_pPrintSetting->m_szHeaderForm[POS_RIGHT] : m_pPrintSetting->m_szFooterForm[POS_RIGHT],
 			szWork, nWorkLen);
-		nLen = wcslen( szWork );
+		nLen = (int)wcslen( szWork );
 		nTextWidth = CTextMetrics::CalcTextWidth2(szWork, nLen, nDx, spaceing, vDxArray); //テキスト幅
 		Print_DrawLine(
 			hdc,
@@ -1494,7 +1498,7 @@ CColorStrategy* CPrintPreview::DrawPageText(
 				}
 
 				//文字列長
-				const int nLineCols = wcslen( szLineNum );
+				const auto nLineCols = int(wcslen(szLineNum));
 
 				//文字間隔配列を生成
 				std::vector<int> vDxArray;
@@ -1659,7 +1663,6 @@ CColorStrategy* CPrintPreview::Print_DrawLine(
 	CLayoutXInt nTabSpace = m_pLayoutMgr_Print->GetTabSpace();	// docから自分のLayoutMgrに変更
 
 	CLayoutInt tabPadding = CLayoutInt(m_pLayoutMgr_Print->GetWidthPerKeta() - 1); //LayoutInt == 1描画単位
-	const int charWidth = 1; // 1 LayoutIntあたりの幅
 
 	//文字間隔配列を生成
 	std::vector<int> vDxArray;
@@ -1795,6 +1798,7 @@ void CPrintPreview::Print_DrawBlock(
 	const int*		pDxArray
 )
 {
+	UNREFERENCED_PARAMETER(nDx);
 	if (nKind == 2 && pcLayout == nullptr) {
 		// TABはカラーで無ければ印字不要
 		return;
@@ -1908,6 +1912,8 @@ int CALLBACK CPrintPreview::MyEnumFontFamProc(
 	LPARAM			lParam 		// address of application-defined data
 )
 {
+	UNREFERENCED_PARAMETER(nFontType);
+	UNREFERENCED_PARAMETER(pntm);
 	CPrintPreview* pCPrintPreview = reinterpret_cast<CPrintPreview*>(lParam);
 	if( 0 == wcscmp( pelf->elfLogFont.lfFaceName, pCPrintPreview->m_pPrintSetting->m_szPrintFontFaceHan ) ){
 		pCPrintPreview->SetPreviewFontHan(&pelf->elfLogFont);
@@ -2085,6 +2091,7 @@ INT_PTR CPrintPreview::DispatchEvent_PPB(
 	LPARAM				lParam 		// second message parameter
 )
 {
+	UNREFERENCED_PARAMETER(lParam);
 	WORD				wNotifyCode;
 	WORD				wID;
 

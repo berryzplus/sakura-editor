@@ -21,7 +21,7 @@
 #include <memory>
 #include "CPropTypes.h"
 #include "env/CShareData.h"
-#include "CRegexKeyword.h"
+#include "env/CRegexKeyword.h"
 #include "typeprop/CImpExpManager.h"	// 2010/4/23 Uchi
 #include "util/shell.h"
 #include "view/colors/EColorIndexType.h"
@@ -701,11 +701,7 @@ bool CPropTypesRegex::CheckKeywordList(HWND hwndDlg, const WCHAR* szNewKeyWord, 
 				return false;
 			}
 			// 長さには\0も含む
-			nKeywordLen += wcsnlen(szKeyWord, int(std::size(szKeyWord))) + 1;
-			if( int(std::size(m_Types.m_RegexKeywordList)) - 1 < int(std::size(szKeyWord)) ){
-				ErrorMessage( hwndDlg, LS(STR_PROPTYPEREGEX_FULL) );
-				return false;
-			}
+			nKeywordLen += int(wcsnlen(szKeyWord, int(std::size(szKeyWord))) + 1);
 		}
 	}
 	return true;

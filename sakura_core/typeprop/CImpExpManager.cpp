@@ -195,6 +195,11 @@ bool CImpExpManager::ExportUI( HINSTANCE hInstance, HWND hwndParent )
 // インポート確認
 bool CImpExpManager::ImportAscertain( HINSTANCE hInstance, HWND hwndParent, const std::wstring& sFileName, std::wstring& sErrMsg )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+	UNREFERENCED_PARAMETER(hwndParent);
+	UNREFERENCED_PARAMETER(sFileName);
+	UNREFERENCED_PARAMETER(sErrMsg);
+
 	return true;
 }
 
@@ -378,7 +383,7 @@ bool CImpExpType::Import( const std::wstring& sFileName, std::wstring& sErrMsg )
 	//  アウトライン解析方法
 	CommonSetting_Plugin& plugin = common.m_sPlugin;
 	if (m_cProfile.IOProfileData(szSecTypeEx, szKeyPluginOutlineId, StringBufferW(szKeyData))) {
-		nDataLen = wcslen( szKeyData );
+		nDataLen = (int)wcslen( szKeyData );
 		pSlashPos = wcschr( szKeyData, L'/' );
 		nIdx = -1;
 		for (i = 0; i < MAX_PLUGIN; i++) {
@@ -399,7 +404,7 @@ bool CImpExpType::Import( const std::wstring& sFileName, std::wstring& sErrMsg )
 	}
 	//  スマートインデント
 	if (m_cProfile.IOProfileData(szSecTypeEx, szKeyPluginSmartIndentId, StringBufferW(szKeyData))) {
-		nDataLen = wcslen( szKeyData );
+		nDataLen = (int)wcslen( szKeyData );
 		pSlashPos = wcschr( szKeyData, L'/' );
 		nIdx = -1;
 		for (i = 0; i < MAX_PLUGIN; i++) {
@@ -743,10 +748,10 @@ bool CImpExpKeyHelp::Import( const std::wstring& sFileName, std::wstring& sErrMs
 			continue;
 		}
 
-		WCHAR *p1, *p2, *p3;
-		p1 = &buff[9];
-		p3 = p1;					//結果確認用に初期化
-		if( p2 = wcschr(p1, L',') ){
+		auto p1 = &buff[9];
+		auto p2 = wcschr(p1, L',');
+		auto p3 = p1;					//結果確認用に初期化
+		if (p2) {
 			*p2 = LTEXT('\0');
 			p2 += 1;				//カンマの次が、次の要素
 			if( nullptr != (p3=wcschr(p2,LTEXT(','))) ){
@@ -1274,6 +1279,7 @@ bool CImpExpMainMenu::Export( const std::wstring& sFileName, std::wstring& sErrM
 // インポート
 bool CImpExpFileTree::Import( const std::wstring& sFileName, std::wstring& sErrMsg )
 {
+	UNREFERENCED_PARAMETER(sErrMsg);
 	const auto& strPath = sFileName;
 
 	CDataProfile cProfile;

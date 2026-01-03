@@ -63,7 +63,7 @@ bool CEditView::TagJumpSub(
 	constexpr auto& szTargetPrefix = L":HWND:[";
 	constexpr auto cchTargetPrefix = int(std::size(szTargetPrefix)) - 1;
 	if( 0 == wcsncmp(pszFileName, szTargetPrefix, cchTargetPrefix) ){
-		if( 0 >= ::swscanf_s(pszFileName + cchTargetPrefix, L"%x", (size_t*)&hwndTarget) || !IsSakuraMainWindow(hwndTarget) ){
+		if( 0 >= ::swscanf_s(pszFileName + cchTargetPrefix, L"%zx", (size_t*)&hwndTarget) || !IsSakuraMainWindow(hwndTarget) ){
 			return false;
 		}
 	}else{
@@ -180,6 +180,7 @@ BOOL CEditView::OPEN_ExtFromtoExt(
 	const WCHAR*	errmes			//!< [in] ファイルを開けなかった場合に表示するエラーメッセージ
 )
 {
+	UNREFERENCED_PARAMETER(errmes);
 //From Here Feb. 7, 2001 JEPRO 追加
 	int		i;
 //To Here Feb. 7, 2001

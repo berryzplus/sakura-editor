@@ -19,7 +19,7 @@
 #include "dlg/CDlgInput1.h"
 #include "env/CDocTypeManager.h"
 #include "typeprop/CImpExpManager.h"
-#include "CDataProfile.h"
+#include "env/CDataProfile.h"
 #include "util/shell.h"
 #include "util/window.h"
 #include "util/os.h"
@@ -155,19 +155,20 @@ void CDlgFileTree::SetData()
 	return;
 }
 
-void CDlgFileTree::SetDataItem(int nItemIndex)
+void CDlgFileTree::SetDataItem(LPARAM nItemIndex)
 {
 	HWND hwndDlg = GetHwnd();
 	bool bDummy = false;
-	if( nItemIndex < 0 || (int)m_fileTreeSetting.m_aItems.size() <= nItemIndex ){
+	if (nItemIndex < 0 || std::ssize(m_fileTreeSetting.m_aItems) <= nItemIndex) {
 		bDummy = true;
 	}
 	SFileTreeItem itemDummy;
 	const SFileTreeItem& item = (bDummy ? itemDummy : m_fileTreeSetting.m_aItems[nItemIndex]);
 	itemDummy.m_szTargetFile = L"*.*";
 	int nIDs[] ={IDC_RADIO_GREP, IDC_RADIO_FILE, IDC_RADIO_FOLDER};
-	int nID1;
-	int nID2, nID3;
+	int nID1 = 0;
+	int nID2 = 0;
+	int nID3 = 0;
 	switch( item.m_eFileTreeItemType ){
 	case EFileTreeItemType_Grep:   nID1 = 0; nID2 = 1; nID3 = 2; break;
 	case EFileTreeItemType_File:   nID1 = 1; nID2 = 0; nID3 = 2; break;
@@ -388,7 +389,7 @@ HTREEITEM CDlgFileTree::InsertTreeItem(SFileTreeItem& item, HTREEITEM htiParent,
 {
 	int nlParam;
 	if( m_aItemRemoveList.empty() ){
-		nlParam = m_fileTreeSetting.m_aItems.size();
+		nlParam = (int)m_fileTreeSetting.m_aItems.size();
 		m_fileTreeSetting.m_aItems.push_back(item);
 	}else{
 		// 削除リストから復活させる
@@ -925,7 +926,6 @@ BOOL CDlgFileTree::OnBnClicked( int wID )
 
 BOOL CDlgFileTree::OnNotify(NMHDR* pNMHDR)
 {
-	TV_DISPINFO* ptdi = (TV_DISPINFO*)pNMHDR;
 	HWND hwndTree = GetItemHwnd(IDC_TREE_FL);
 	HTREEITEM htiItem;
 
@@ -940,7 +940,7 @@ BOOL CDlgFileTree::OnNotify(NMHDR* pNMHDR)
 			tvi.hItem = htiItem;
 			if( TreeView_GetItem( hwndTree, &tvi) ){
 				// リストから削除する代わりに番号を覚えて後で再利用
-				m_aItemRemoveList.push_back(tvi.lParam);
+				m_aItemRemoveList.push_back((int)tvi.lParam);
 			}
 		}
 		break;

@@ -20,7 +20,7 @@
 #include "env/DLLSHAREDATA.h"
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
-#include "CDataProfile.h"
+#include "env/CDataProfile.h"
 #include "util/file.h"
 
 /*!
@@ -376,8 +376,6 @@ TEST(file, Deprecated_GetInidir)
 	GetInidir(szBuf, filename);
 	ASSERT_STREQ(iniBasePath.c_str(), szBuf);
 }
-
-void EnsureDirectoryExist(const std::wstring& strProfileName);
 
 /*!
  * @brief INIファイルまたはEXEファイルのあるディレクトリ，または指定されたファイル名のフルパスを返す（INIを優先）
