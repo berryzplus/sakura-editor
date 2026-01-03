@@ -17,10 +17,9 @@
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
-#include <shellapi.h>
 #include "dlg/CDlgGrep.h"
-#include "CGrepAgent.h"
-#include "CGrepEnumKeys.h"
+#include "agent/CGrepAgent.h"
+#include "grep/CGrepEnumKeys.h"
 #include "func/Funccode.h"		// Stonee, 2001/03/12
 #include "charset/CCodePage.h"
 #include "util/module.h"
@@ -142,9 +141,8 @@ static LPCWSTR GetEscapePattern(const std::wstring& pattern)
 static void AppendExcludeFolderPatterns(CNativeW& cFilePattern, const CNativeW& cmWorkExcludeFolder)
 {
 	auto patterns = CGrepEnumKeys::SplitPattern(cmWorkExcludeFolder.GetStringPtr());
-	for (auto iter = patterns.cbegin(); iter != patterns.cend(); ++iter)
+	for (const auto& pattern : patterns)
 	{
-		const auto & pattern = (*iter);
 		LPCWSTR escapeStr = GetEscapePattern(pattern);
 		cFilePattern.AppendStringF(L";%s#%s%s", escapeStr, pattern.c_str(), escapeStr);
 	}
@@ -159,9 +157,8 @@ static void AppendExcludeFolderPatterns(CNativeW& cFilePattern, const CNativeW& 
 static void AppendExcludeFilePatterns(CNativeW& cFilePattern, const CNativeW& cmWorkExcludeFile)
 {
 	auto patterns = CGrepEnumKeys::SplitPattern(cmWorkExcludeFile.GetStringPtr());
-	for (auto iter = patterns.cbegin(); iter != patterns.cend(); ++iter)
+	for (const auto& pattern : patterns)
 	{
-		const auto & pattern = (*iter);
 		LPCWSTR escapeStr = GetEscapePattern(pattern);
 		cFilePattern.AppendStringF(L";%s!%s%s", escapeStr, pattern.c_str(), escapeStr);
 	}
@@ -902,7 +899,7 @@ int CDlgGrep::GetData( void )
 				::GetCurrentDirectory( nMaxPath, szFolderItem + 1 );
 				wcscat(szFolderItem, L"\"");
 			}
-			int nFolderItemLen = wcslen( szFolderItem );
+			auto nFolderItemLen = int(wcslen(szFolderItem));
 			if( nMaxPath < nFolderLen + nFolderItemLen + 1 ){
 				WarningMessage(	GetHwnd(), LS(STR_DLGGREP6) );
 				return FALSE;
@@ -911,7 +908,7 @@ int CDlgGrep::GetData( void )
 				wcscat( szFolder, L";" );
 			}
 			wcscat( szFolder, szFolderItem );
-			nFolderLen = wcslen( szFolder );
+			nFolderLen = (int)wcslen( szFolder );
 		}
 		wcscpy( m_szFolder, szFolder );
 	}

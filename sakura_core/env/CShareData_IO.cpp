@@ -539,10 +539,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	if( !cProfile.IsReadingMode() ){
 		int	nDummy;
 		int	nCharChars;
-		nDummy = wcslen( common.m_sBackup.m_szBackUpFolder );
+		nDummy = (int)wcslen( common.m_sBackup.m_szBackUpFolder );
 		/* フォルダーの最後が「半角かつ'\\'」でない場合は、付加する */
-		nCharChars = &common.m_sBackup.m_szBackUpFolder[nDummy]
-			- CNativeW::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] );
+		nCharChars = int(&common.m_sBackup.m_szBackUpFolder[nDummy] - CNativeW::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] ));
 		if( 1 == nCharChars && common.m_sBackup.m_szBackUpFolder[nDummy - 1] == '\\' ){
 		}else{
 			wcscat( common.m_sBackup.m_szBackUpFolder, L"\\" );
@@ -552,10 +551,9 @@ void CShareData_IO::ShareData_IO_Common( CDataProfile& cProfile )
 	if( cProfile.IsReadingMode() ){
 		int	nDummy;
 		int	nCharChars;
-		nDummy = wcslen( common.m_sBackup.m_szBackUpFolder );
+		nDummy = (int)wcslen( common.m_sBackup.m_szBackUpFolder );
 		/* フォルダーの最後が「半角かつ'\\'」でない場合は、付加する */
-		nCharChars = &common.m_sBackup.m_szBackUpFolder[nDummy]
-			- CNativeW::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] );
+		nCharChars = int(&common.m_sBackup.m_szBackUpFolder[nDummy] - CNativeW::GetCharPrev( common.m_sBackup.m_szBackUpFolder, nDummy, &common.m_sBackup.m_szBackUpFolder[nDummy] ) );
 		if( 1 == nCharChars && common.m_sBackup.m_szBackUpFolder[nDummy - 1] == '\\' ){
 		}else{
 			wcscat( common.m_sBackup.m_szBackUpFolder, L"\\" );
@@ -1706,7 +1704,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 							types.m_RegexKeywordArr[j].m_nColorIndex = COLORIDX_REGEX1;
 						}
 						if( pKeyword[nPos] ){
-							nPos += wcslen(&pKeyword[nPos]) + 1;
+							nPos += int(wcslen(&pKeyword[nPos]) + 1);
 						}
 					}
 				}else{
@@ -1721,7 +1719,7 @@ void CShareData_IO::ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& 
 					GetColorNameByIndex( types.m_RegexKeywordArr[j].m_nColorIndex ),
 					&pKeyword[nPos]);
 				cProfile.IOProfileData(pszSecName, szKeyName, StringBufferW(szKeyData));
-				nPos += wcslen(&pKeyword[nPos]) + 1;
+				nPos += (int)wcslen(&pKeyword[nPos]) + 1;
 			}
 		}
 		if( cProfile.IsReadingMode() ){
@@ -1906,6 +1904,7 @@ void CShareData_IO::ShareData_IO_Macro( CDataProfile& cProfile )
 	cProfile.IOProfileData( pszSecName, LTEXT("nMacroOnTypeChanged"), pShare->m_Common.m_sMacro.m_nMacroOnTypeChanged );	/* タイプ変更後自動実行マクロ番号 */	//@@@ 2006.09.01 ryoji
 	cProfile.IOProfileData( pszSecName, LTEXT("nMacroOnSave"), pShare->m_Common.m_sMacro.m_nMacroOnSave );	/* 保存前自動実行マクロ番号 */	//@@@ 2006.09.01 ryoji
 	cProfile.IOProfileData( pszSecName, LTEXT("nMacroCancelTimer"), pShare->m_Common.m_sMacro.m_nMacroCancelTimer );	// マクロ停止ダイアログ表示待ち時間	// 2011.08.04 syat
+	cProfile.IOProfileData(pszSecName, LTEXT("nMacroPythonDirectory"), pShare->m_Common.m_sMacro.m_szPythonDirectory);
 }
 
 /*!

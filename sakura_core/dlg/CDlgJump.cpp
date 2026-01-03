@@ -64,7 +64,7 @@ int CDlgJump::DoModal(
 	LPARAM		lParam
 )
 {
-	return CDialog::DoModal( hInstance, hwndParent, IDD_JUMP, lParam );
+	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_JUMP, lParam );
 }
 
 // From Here Oct. 6, 2000 JEPRO added 行番号入力ボックスにスピンコントロールを付けるため
@@ -114,6 +114,8 @@ BOOL CDlgJump::OnNotify(NMHDR* pNMHDR)
 
 BOOL CDlgJump::OnCbnSelChange( HWND hwndCtl, int wID )
 {
+	UNREFERENCED_PARAMETER(hwndCtl);
+
 	int	nIndex;
 	int	nWorkLine;
 	switch( wID ){

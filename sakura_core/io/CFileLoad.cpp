@@ -20,7 +20,7 @@
 #include <algorithm>
 #include "_main/global.h"
 #include "mem/CMemory.h"
-#include "CEol.h"
+#include "basis/CEol.h"
 #include "io/CFileLoad.h"
 #include "charset/charcode.h"
 #include "io/CIoBridge.h"
@@ -458,7 +458,7 @@ const char* CFileLoad::GetNextLineCharCode(
 	size_t*		pnEolLen	//!< [out]	EOLのバイト数 (Unicodeで困らないように)
 ){
 	const size_t nbgn = *pnBgn;
-	size_t i;
+	size_t i = 0;
 
 	pcEol->SetType( EEolType::none );
 

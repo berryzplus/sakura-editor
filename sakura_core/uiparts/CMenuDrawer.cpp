@@ -41,15 +41,6 @@ CMenuDrawer::CMenuDrawer()
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
 
-	m_hInstance = nullptr;
-	m_hWndOwner = nullptr;
-	m_nMenuHeight = 0;
-	m_nMenuFontHeight = 0;
-	m_hFontMenu = nullptr;
-	m_pcIcons = nullptr;
-	m_hCompBitmap = nullptr;
-	m_hCompDC = nullptr;
-
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。	/* ツールバーのボタン TBBUTTON構造体 */
 	/* ツールバーのボタン TBBUTTON構造体 */
 	/*
@@ -634,12 +625,16 @@ CMenuDrawer::CMenuDrawer()
 	// m_tbMyButton[0]にはセパレータが入っているため、アイコン番号とボタン番号は１つずれる
 	const int INDEX_GAP = 1;
 	const int myButtonEnd = tbd_num + INDEX_GAP;
+
 	// 定数の整合性確認
 	// アイコン番号
 	assert_warning( tbd[TOOLBAR_ICON_MACRO_INTERNAL      - INDEX_GAP] == F_MACRO_EXTRA );
 	assert_warning( tbd[TOOLBAR_ICON_PLUGCOMMAND_DEFAULT - INDEX_GAP] == F_PLUGCOMMAND );
 	// コマンド番号
 	assert_warning( tbd[TOOLBAR_BUTTON_F_TOOLBARWRAP     - INDEX_GAP] == F_TOOLBARWRAP );
+
+	static_assert(MAX_CUSTMACRO <= MAX_CUSTMACRO_ICO);
+
 	m_tbMyButton.resize( tbd_num + INDEX_GAP );
 	SetTBBUTTONVal( &m_tbMyButton[0], -1, F_SEPARATOR, 0, TBSTYLE_SEP, 0, 0 );	//セパレータ	// 2007.11.02 ryoji アイコンの未定義化(-1)
 
@@ -690,15 +685,15 @@ CMenuDrawer::CMenuDrawer()
 		);
 	}
 
-	m_nMyButtonFixSize = m_tbMyButton.size();
+	m_nMyButtonFixSize = (int)m_tbMyButton.size();
 	
 	// 2010.06.25 Moca 専用アイコンのない外部マクロがあれば、同じアイコンを共有して登録
-	if( MAX_CUSTMACRO_ICO < MAX_CUSTMACRO ){
-		const int nAddFuncs = MAX_CUSTMACRO - MAX_CUSTMACRO_ICO;
-		const int nBaseIndex = m_tbMyButton.size();
+	{
+		const auto nAddFuncs = int(MAX_CUSTMACRO - (int)MAX_CUSTMACRO_ICO);
+		const auto nBaseIndex = (int)m_tbMyButton.size();
 		m_tbMyButton.resize( m_tbMyButton.size() + nAddFuncs );
 		for( int k = 0; k < nAddFuncs; k++ ){
-			const int macroFuncCode = F_USERMACRO_0 + MAX_CUSTMACRO_ICO + k;
+			const int macroFuncCode = F_USERMACRO_0 + (int)MAX_CUSTMACRO_ICO + k;
 			SetTBBUTTONVal(
 				&m_tbMyButton[k + nBaseIndex],
 				TOOLBAR_ICON_MACRO_INTERNAL - INDEX_GAP,
@@ -707,7 +702,7 @@ CMenuDrawer::CMenuDrawer()
 		}
 	}
 	
-	m_nMyButtonNum = m_tbMyButton.size();
+	m_nMyButtonNum = (int)m_tbMyButton.size();
 	return;
 }
 
@@ -787,7 +782,7 @@ void CMenuDrawer::MyAppendMenu(
 	WCHAR		szKey[10];
 	int			nFlagAdd = 0;
 
-	if( nForceIconId == -1 ) nForceIconId = nFuncId;	//お気に入り	//@@@ 2003.04.08 MIK
+	if( nForceIconId == -1 ) nForceIconId = int(nFuncId);	//お気に入り	//@@@ 2003.04.08 MIK
 
 	szLabel[0] = L'\0';
 	if( nullptr != pszLabel ){
@@ -801,7 +796,7 @@ void CMenuDrawer::MyAppendMenu(
 			m_hInstance,
 			m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
 			m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr,
-			nFuncId,
+			int(nFuncId),
 			szLabel,
 			szKey,
 			bAddKeyStr,
@@ -812,7 +807,7 @@ void CMenuDrawer::MyAppendMenu(
 		{
 			MyMenuItemInfo item;
 			item.m_nBitmapIdx = -1;
-			item.m_nFuncId = nFuncId;
+			item.m_nFuncId = int(nFuncId);
 			item.m_cmemLabel.SetString( szLabel );
 			// メニュー項目をオーナー描画にして、アイコンを表示する
 			// 2010.03.29 アクセスキーの分を詰めるためいつもオーナードローにする。ただしVista未満限定
@@ -850,7 +845,7 @@ void CMenuDrawer::MyAppendMenu(
 	if( MF_GRAYED		& ( nFlag | nFlagAdd ) ) mii.fState |= MFS_GRAYED;
 	if( MF_CHECKED		& ( nFlag | nFlagAdd ) ) mii.fState |= MFS_CHECKED;
 
-	mii.wID = nFuncId;
+	mii.wID = UINT(nFuncId);
 	mii.hSubMenu = (nFlag&MF_POPUP)?((HMENU)nFuncId):nullptr;
 	mii.hbmpChecked = nullptr;
 	mii.hbmpUnchecked = nullptr;
@@ -900,11 +895,8 @@ int CMenuDrawer::MeasureItem( int nFuncID, int* pnItemHeight )
 {
 	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
-	const int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
 	const int cxEdge = ::GetSystemMetrics(SM_CXEDGE);
 	const int cyEdge = ::GetSystemMetrics(SM_CYEDGE);
-	const int cxFrame = ::GetSystemMetrics(SM_CXFRAME);
-	const int cyFrame = ::GetSystemMetrics(SM_CYFRAME);
 	const int cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
 	const int cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
 
@@ -960,11 +952,8 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 {
 	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
-	const int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
 	const int cxEdge = ::GetSystemMetrics(SM_CXEDGE);
 	const int cyEdge = ::GetSystemMetrics(SM_CYEDGE);
-	const int cxFrame = ::GetSystemMetrics(SM_CXFRAME);
-	const int cyFrame = ::GetSystemMetrics(SM_CYFRAME);
 	const int cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
 	const int cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
 
@@ -1439,6 +1428,8 @@ struct WorkData{
 /*! メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
 LRESULT CMenuDrawer::OnMenuChar( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+	UNREFERENCED_PARAMETER(hwnd);
+	UNREFERENCED_PARAMETER(uMsg);
 	WCHAR				chUser;
 	HMENU				hmenu;
 	int i;
@@ -1555,7 +1546,7 @@ void CMenuDrawer::AddToolButton( int iBitmap, int iCommand )
 				// このウィンドウで未登録
 				// 空きを詰め込む
 				SetTBBUTTONVal( &tbb,TOOLBAR_ICON_PLUGCOMMAND_DEFAULT-1, 0, 0, TBSTYLE_BUTTON, 0, 0 );
-				for (i = m_tbMyButton.size(); i < m_pShareData->m_PlugCmdIcon[iCmdNo]; i++) {
+				for (i = (int)m_tbMyButton.size(); i < m_pShareData->m_PlugCmdIcon[iCmdNo]; i++) {
 					m_tbMyButton.push_back( tbb );
 					m_nMyButtonNum++;
 				}
@@ -1577,7 +1568,7 @@ void CMenuDrawer::AddToolButton( int iBitmap, int iCommand )
 			if (m_tbMyButton.size() < (size_t)m_pShareData->m_maxTBNum) {
 				// 空きを詰め込む
 				SetTBBUTTONVal( &tbb, TOOLBAR_ICON_PLUGCOMMAND_DEFAULT-1, 0, 0, TBSTYLE_BUTTON, 0, 0 );
-				for (i = m_tbMyButton.size(); i < m_pShareData->m_maxTBNum; i++) {
+				for (i = (int)m_tbMyButton.size(); i < m_pShareData->m_maxTBNum; i++) {
 					m_tbMyButton.push_back( tbb );
 					m_nMyButtonNum++;
 				}

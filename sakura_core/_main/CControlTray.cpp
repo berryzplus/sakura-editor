@@ -28,7 +28,7 @@
 #include "StdAfx.h"
 #include <HtmlHelp.h>
 #include "CControlTray.h"
-#include "CPropertyManager.h"
+#include "env/CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
@@ -50,7 +50,7 @@
 #include "recent/CMRUFile.h"
 #include "recent/CMRUFolder.h"
 #include "_main/CCommandLine.h"
-#include "CGrepEnumKeys.h"
+#include "grep/CGrepEnumKeys.h"
 #include "apiwrap/StdApi.h"
 #include "sakura_rc.h"
 #include "config/system_constants.h"
@@ -284,6 +284,7 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 //! タスクトレイにアイコンを登録する
 bool CControlTray::CreateTrayIcon( HWND hWnd )
 {
+	UNREFERENCED_PARAMETER(hWnd);
 	// タスクトレイのアイコンを作る
 	if( m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray ){	/* タスクトレイのアイコンを使う */
 		//	Dec. 02, 2002 genta
@@ -1029,7 +1030,7 @@ LRESULT CControlTray::DispatchEvent(
 		::PostQuitMessage( 0 );
 		return 0L;
 	case MYWM_ALLOWACTIVATE:
-		::AllowSetForegroundWindow(wParam);
+		::AllowSetForegroundWindow(DWORD(wParam));
 		return 0L;
 
 	default:
@@ -1048,6 +1049,9 @@ LRESULT CControlTray::DispatchEvent(
 /* WM_COMMANDメッセージ処理 */
 void CControlTray::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
 {
+	UNREFERENCED_PARAMETER(wID);
+	UNREFERENCED_PARAMETER(hwndCtl);
+
 	switch( wNotifyCode ){
 	/* メニューからのメッセージ */
 	case 0:
@@ -1099,6 +1103,8 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
 
@@ -1285,7 +1291,7 @@ bool CControlTray::OpenNewEditor(
 			DWORD dwExitCode;
 			if( ::PeekMessage( &msg, nullptr, MYWM_FIRST_IDLE, MYWM_FIRST_IDLE, PM_REMOVE ) ){
 				if( msg.message == WM_QUIT ){	// 指定範囲外でも WM_QUIT は取り出される
-					::PostQuitMessage( msg.wParam );
+					::PostQuitMessage( int(msg.wParam) );
 					break;
 				}
 				// 監視対象プロセスからのメッセージなら抜ける
@@ -1742,6 +1748,9 @@ INT_PTR CALLBACK CControlTray::ExitingDlgProc(
 	LPARAM	lParam		// second message parameter
 )
 {
+	UNREFERENCED_PARAMETER(hwndDlg);
+	UNREFERENCED_PARAMETER(lParam);
+	UNREFERENCED_PARAMETER(wParam);
 	switch( uMsg ){
 	case WM_INITDIALOG:
 		return TRUE;

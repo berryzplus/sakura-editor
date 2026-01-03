@@ -31,7 +31,7 @@
 #include "print/CPrintPreview.h"
 #include "io/CBinaryStream.h"
 #include "io/CFileLoad.h"
-#include "CWriteManager.h"
+#include "env/CWriteManager.h"
 #include "CEditApp.h"
 #include "recent/CMRUFile.h"
 #include "util/shell.h"
@@ -405,7 +405,7 @@ void CViewCommander::Command_PLSQL_COMPILE_ON_SQLPLUS( void )
 
 		/* Oracle SQL*Plusにペーストのコマンドを送る */
 		DWORD_PTR	dwResult;
-		bResult = ::SendMessageTimeout(
+		bResult = (BOOL)::SendMessageTimeoutW(
 			hwndSQLPLUS,
 			WM_COMMAND,
 			MAKELONG( 201, 0 ),
@@ -795,6 +795,7 @@ BOOL CViewCommander::Command_PUTFILE(
 */
 BOOL CViewCommander::Command_INSFILE( LPCWSTR filename, ECodeType nCharCode, int nFlgOpt )
 {
+	UNREFERENCED_PARAMETER(nFlgOpt);
 	CFileLoad	cfl(m_pCommanderView->m_pTypeData->m_encoding);
 	CEol cEol;
 	int			nLineNum = 0;

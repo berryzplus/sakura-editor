@@ -17,7 +17,7 @@
 
 #include "StdAfx.h"
 #include "dlg/CDlgTagJumpList.h"
-#include "CSortedTagJumpList.h"
+#include "env/CSortedTagJumpList.h"
 #include "func/Funccode.h"
 #include "env/DLLSHAREDATA.h"
 #include "util/container.h"
@@ -634,6 +634,11 @@ BOOL CDlgTagJumpList::OnNotify(NMHDR* pNMHDR)
 */
 BOOL CDlgTagJumpList::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+	UNREFERENCED_PARAMETER(lParam);
+	UNREFERENCED_PARAMETER(uMsg);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(hwnd);
+
 	StopTimer();
 
 	FindNext( true );

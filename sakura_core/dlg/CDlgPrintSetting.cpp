@@ -86,6 +86,8 @@ int CALLBACK SetData_EnumFontFamProc(
 	LPARAM			lParam 	// address of application-defined data
 )
 {
+	UNREFERENCED_PARAMETER(nFontType);
+	UNREFERENCED_PARAMETER(pntm);
 	CDlgPrintSetting*	pCDlgPrintSetting;
 	HWND				hwndComboFontHan;
 	HWND				hwndComboFontZen;
@@ -194,6 +196,8 @@ BOOL CDlgPrintSetting::OnNotify(NMHDR* pNMHDR)
 
 BOOL CDlgPrintSetting::OnCbnSelChange( HWND hwndCtl, int wID )
 {
+	UNREFERENCED_PARAMETER(hwndCtl);
+
 //	if( GetItemHwnd( IDC_COMBO_SETTINGNAME ) == hwndCtl ){
 	switch( wID ){
 	case IDC_COMBO_SETTINGNAME:
@@ -645,7 +649,7 @@ void CDlgPrintSetting::OnChangeSettingType( BOOL bGetData )
 	if( CB_ERR == nIdx1 ){
 		return;
 	}
-	m_nCurrentPrintSetting = ApiWrap::Combo_GetItemData( hwndComboSettingName, nIdx1 );
+	m_nCurrentPrintSetting = (int)ApiWrap::Combo_GetItemData( hwndComboSettingName, nIdx1 );
 
 	/* フォント一覧 */
 	hwndCtrl = GetItemHwnd( IDC_COMBO_FONT_HAN );
@@ -666,7 +670,7 @@ void CDlgPrintSetting::OnChangeSettingType( BOOL bGetData )
 	hwndCtrl = GetItemHwnd( IDC_COMBO_PAPER );
 	nItemNum = ApiWrap::Combo_GetCount( hwndCtrl );
 	for( i = 0; i < nItemNum; ++i ){
-		nItemData = ApiWrap::Combo_GetItemData( hwndCtrl, i );
+		nItemData = (int)ApiWrap::Combo_GetItemData( hwndCtrl, i );
 		if( m_PrintSettingArr[m_nCurrentPrintSetting].m_nPrintPaperSize == nItemData ){
 			ApiWrap::Combo_SetCurSel( hwndCtrl, i );
 			break;

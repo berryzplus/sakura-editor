@@ -285,7 +285,7 @@ void CDocOutline::MakeFuncList_Java( CFuncInfoArr* pcFuncInfoArr )
 						nNestLevel2Arr.pop_back();
 						nClassNestArrNum--;
 						int k;
-						for( k = wcslen( szClass ) - 1; k >= 0; k-- ){
+						for( k = int(wcslen( szClass ) - 1); k >= 0; k-- ){
 							if( L'\\' == szClass[k] ){
 								break;
 							}
@@ -446,12 +446,14 @@ const wchar_t* g_ppszKeywordsJAVA[] = {
 	L"catch",
 	L"char",
 	L"class",
-	L"const",
 	L"continue",
+	L"const",
 	L"default",
 	L"do",
 	L"double",
 	L"else",
+	L"enum",
+	L"exports",
 	L"extends",
 	L"final",
 	L"finally",
@@ -465,12 +467,14 @@ const wchar_t* g_ppszKeywordsJAVA[] = {
 	L"int",
 	L"interface",
 	L"long",
+	L"module",
 	L"native",
 	L"new",
 	L"package",
 	L"private",
 	L"protected",
 	L"public",
+	L"requires",
 	L"return",
 	L"short",
 	L"static",
@@ -483,6 +487,7 @@ const wchar_t* g_ppszKeywordsJAVA[] = {
 	L"throws",
 	L"transient",
 	L"try",
+	L"var",
 	L"void",
 	L"volatile",
 	L"while"

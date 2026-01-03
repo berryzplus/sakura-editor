@@ -447,14 +447,13 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 		{
 			//	描画
 			// コマンド番号（pnmh->dwItemSpec）からアイコン番号を取得する	// 2007.11.02 ryoji
-			int nIconId = ApiWrap::Toolbar_GetBitmap( pnmh->hdr.hwndFrom, (WPARAM)pnmh->dwItemSpec );
+			int nIconId = ApiWrap::Toolbar_GetBitmap( pnmh->hdr.hwndFrom, (int)pnmh->dwItemSpec );
 
 			// アイテム矩形からの画像のオフセット	// 2007.03.25 ryoji
 			CMyRect rc( pnmh->rc );
 			int offset = ( rc.Height() - m_pcIcons->cy() ) / 2;
 
 			const int cxEdge = DpiScaleX( 1 );
-			const int cyEdge = DpiScaleY( 1 );
 			const int cxSmIcon = DpiScaleX( 16 );
 			const int cySmIcon = DpiScaleY( 16 );
 
@@ -571,7 +570,7 @@ void CMainToolBar::AcceptSharedSearchKey()
 	}
 }
 
-int CMainToolBar::GetSearchKey(std::wstring& strText)
+size_t CMainToolBar::GetSearchKey(std::wstring& strText)
 {
 	if( m_hwndSearchBox ){
 		ApiWrap::Wnd_GetText( m_hwndSearchBox, strText );
