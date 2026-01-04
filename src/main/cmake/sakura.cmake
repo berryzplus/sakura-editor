@@ -133,6 +133,7 @@ message(STATUS "Found Git: ${GIT_EXECUTABLE}")
 find_program(PATCH_EXECUTABLE patch
   PATHS
     "$ENV{ProgramFiles}/Git/usr/bin"
+    "$ENV{LOCALAPPDATA}/Programs/Git/usr/bin"
   NO_DEFAULT_PATH
   DOC "patch.exe command from Git"
 )
@@ -463,6 +464,7 @@ add_dependencies(sakura_core
   generate_version_header
   generate_funccode_define
   generate_funccode_enum
+  generate_bregonig
   generate_cmigemo
 )
 

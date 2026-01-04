@@ -113,9 +113,6 @@
     <Filter Include="Cpp Source Files\plugin">
       <UniqueIdentifier>{5669a386-521c-49b4-abed-446bcd75e07c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Cpp Source Files\mfclike">
-      <UniqueIdentifier>{a1320010-ea0f-4363-9aa9-070bef1d67b3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Cpp Source Files\cmd">
       <UniqueIdentifier>{0595cd15-40b1-4098-a613-dd41df2e4d6b}</UniqueIdentifier>
     </Filter>
@@ -1027,9 +1024,6 @@
     <ClInclude Include="..\sakura_core\plugin\CWSHPlugin.h">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\mfclike\CMyWnd.h">
-      <Filter>Cpp Source Files\mfclike</Filter>
-    </ClInclude>
     <ClInclude Include="..\sakura_core\cmd\CViewCommander.h">
       <Filter>Cpp Source Files\cmd</Filter>
     </ClInclude>
@@ -1039,7 +1033,7 @@
     <ClInclude Include="..\sakura_core\extmodule\CBregexp.h">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClInclude>
-    <ClInclude Include="..\sakura_core\extmodule\CBregexpDll2.h">
+    <ClInclude Include="..\src\main\cpp\extmodule\CBregOnig.hpp">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClInclude>
     <ClInclude Include="..\sakura_core\extmodule\CDllHandler.h">
@@ -2188,9 +2182,6 @@
     <ClCompile Include="..\sakura_core\plugin\CWSHPlugin.cpp">
       <Filter>Cpp Source Files\plugin</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\mfclike\CMyWnd.cpp">
-      <Filter>Cpp Source Files\mfclike</Filter>
-    </ClCompile>
     <ClCompile Include="..\sakura_core\cmd\CViewCommander.cpp">
       <Filter>Cpp Source Files\cmd</Filter>
     </ClCompile>
@@ -2260,7 +2251,7 @@
     <ClCompile Include="..\sakura_core\extmodule\CBregexp.cpp">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClCompile>
-    <ClCompile Include="..\sakura_core\extmodule\CBregexpDll2.cpp">
+    <ClCompile Include="..\src\main\cpp\extmodule\CBregOnig.cpp">
       <Filter>Cpp Source Files\extmodule</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\extmodule\CDllHandler.cpp">
