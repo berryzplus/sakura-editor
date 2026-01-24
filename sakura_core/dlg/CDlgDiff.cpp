@@ -88,7 +88,7 @@ CDlgDiff::CDlgDiff()
 	: CDialog(true)
 {
 	/* サイズ変更時に位置を制御するコントロール数 */
-	static_assert( int(std::size(anchorList)) == int(std::size(m_rcItems)) );
+	static_assert( std::size(anchorList) == std::extent_v<decltype(m_rcItems)>);
 
 	return;
 }
@@ -101,7 +101,7 @@ int CDlgDiff::DoModal(
 	const WCHAR*		pszPath		//自ファイル
 )
 {
-	wcscpy(m_szFile1, pszPath);
+	::wcsncpy_s(m_szFile1, pszPath, _TRUNCATE);
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_DIFF, lParam );
 }
@@ -119,7 +119,7 @@ BOOL CDlgDiff::OnBnClicked( int wID )
 		{
 			CDlgOpenFile	cDlgOpenFile;
 			WCHAR			szPath[_MAX_PATH];
-			wcscpy( szPath, m_szFile2 );
+			::wcsncpy_s(szPath, m_szFile2, _TRUNCATE);
 			/* ファイルオープンダイアログの初期化 */
 			cDlgOpenFile.Create(
 				m_hInstance,
@@ -129,7 +129,7 @@ BOOL CDlgDiff::OnBnClicked( int wID )
 			);
 			if( cDlgOpenFile.DoModal_GetOpenFileName( szPath ) )
 			{
-				wcscpy( m_szFile2, szPath );
+				::wcsncpy_s(m_szFile2, szPath, _TRUNCATE);
 				ApiWrap::DlgItem_SetText( GetHwnd(), IDC_EDIT_DIFF_DST, m_szFile2 );
 				//外部ファイルを選択状態に
 				::CheckDlgButton( GetHwnd(), IDC_RADIO_DIFF_DST1, TRUE );
@@ -186,6 +186,8 @@ BOOL CDlgDiff::OnBnClicked( int wID )
 	case IDC_RADIO_DIFF_FILE2:
 		::CheckDlgButton( GetHwnd(), IDC_RADIO_DIFF_FILE1, FALSE );
 		return TRUE;
+	default:
+		break;
 	}
 
 	/* 基底クラスメンバ */
@@ -322,7 +324,6 @@ void CDlgDiff::SetData( void )
 			::CheckDlgButton( GetHwnd(), IDC_RADIO_DIFF_DST1, FALSE );
 			::CheckDlgButton( GetHwnd(), IDC_RADIO_DIFF_DST2, TRUE );
 			//	ListBoxが選択されていなかったら，先頭のファイルを選択する．
-			HWND hwndList = GetItemHwnd( IDC_LIST_DIFF_FILES );
 			if( ApiWrap::List_GetCurSel( hwndList ) == LB_ERR )
 			{
 			    ApiWrap::List_SetCurSel( hwndList, selIndex );
@@ -383,7 +384,7 @@ int CDlgDiff::GetData( void )
 			::SendMessageAny( m_hWnd_Dst, MYWM_GETFILEINFO, 0, 0 );
 			pFileInfo = (EditInfo*)&m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
 
-			wcscpy( m_szFile2, pFileInfo->m_szPath );
+			::wcsncpy_s(m_szFile2, pFileInfo->m_szPath, _TRUNCATE);
 			m_bIsModifiedDst = pFileInfo->m_bIsModified;
 			m_nCodeTypeDst = pFileInfo->m_nCharCode;
 			m_bBomDst = pFileInfo->m_bBom;
@@ -551,9 +552,8 @@ BOOL CDlgDiff::OnMinMaxInfo( LPARAM lParam )
 	return 0;
 }
 
-BOOL CDlgDiff::OnLbnDblclk( int wID )
+BOOL CDlgDiff::OnLbnDblclk( [[maybe_unused]] int wID )
 {
-	UNREFERENCED_PARAMETER(wID);
 	HWND hwndList = GetItemHwnd( IDC_LIST_DIFF_FILES );
 	if( ApiWrap::List_GetCurSel( hwndList ) == LB_ERR ) return FALSE;
 	return OnBnClicked(IDOK);

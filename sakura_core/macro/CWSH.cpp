@@ -71,9 +71,8 @@ public:
 	}
 
 	HRESULT STDMETHODCALLTYPE GetLCID(
-	    /* [out] */ LCID *plcid) override
+	    /* [out] */ [[maybe_unused]] LCID *plcid) override
 	{ 
-		UNREFERENCED_PARAMETER(plcid);
 #ifdef TEST
 		cout << "GetLCID" << endl;
 #endif
@@ -112,9 +111,8 @@ public:
 	}
 
 	HRESULT STDMETHODCALLTYPE GetDocVersionString(
-	    /* [out] */ BSTR *pbstrVersion) override
+	    /* [out] */ [[maybe_unused]] BSTR *pbstrVersion) override
 	{ 
-		UNREFERENCED_PARAMETER(pbstrVersion);
 #ifdef TEST
 		cout << "GetDocVersionString" << endl;
 #endif
@@ -122,11 +120,9 @@ public:
 	}
 
 	HRESULT STDMETHODCALLTYPE OnScriptTerminate(
-	    /* [in] */ const VARIANT *pvarResult,
-	    /* [in] */ const EXCEPINFO *pexcepinfo) override
+	    /* [in] */ [[maybe_unused]] const VARIANT *pvarResult,
+	    /* [in] */ [[maybe_unused]] const EXCEPINFO *pexcepinfo) override
 	{ 
-		UNREFERENCED_PARAMETER(pexcepinfo);
-		UNREFERENCED_PARAMETER(pvarResult);
 #ifdef TEST
 		cout << "OnScriptTerminate" << endl;
 #endif
@@ -134,9 +130,8 @@ public:
 	}
 
 	HRESULT STDMETHODCALLTYPE OnStateChange(
-	    /* [in] */ SCRIPTSTATE ssScriptState) override
+	    /* [in] */ [[maybe_unused]] SCRIPTSTATE ssScriptState) override
 	{ 
-		UNREFERENCED_PARAMETER(ssScriptState);
 #ifdef TEST
 		cout << "OnStateChange" << endl;
 #endif
@@ -159,10 +154,11 @@ public:
 			}
 			if(pscripterror->GetSourcePosition(&Context, &Line, &Pos) == S_OK)
 			{
-				wchar_t *Message = new wchar_t[SysStringLen(Info.bstrDescription) + 128];
+				const auto cchMsg = SysStringLen(Info.bstrDescription) + 128;
+				auto Message = new wchar_t[cchMsg];
 				//	Nov. 10, 2003 FILE Win9Xでは、[wsprintfW]が無効のため、[auto_sprintf]に修正
 				const wchar_t* szDesc=Info.bstrDescription;
-				auto_sprintf(Message, L"[Line %d] %ls", Line + 1, szDesc);
+				auto_snprintf_s(Message, cchMsg, _TRUNCATE, L"[Line %d] %ls", Line + 1, szDesc);
 				SysReAllocString(&Info.bstrDescription, Message);
 				delete[] Message;
 			}
@@ -198,9 +194,8 @@ public:
 
 	//	Sep. 15, 2005 FILE IActiveScriptSiteWindow実装
 	HRESULT STDMETHODCALLTYPE EnableModeless(
-	    /* [in] */ BOOL fEnable) override
+	    /* [in] */ [[maybe_unused]] BOOL fEnable) override
 	{
-		UNREFERENCED_PARAMETER(fEnable);
 		return S_OK;
 	}
 };
@@ -225,7 +220,7 @@ CWSHClient::CWSHClient(
 	else
 	{
 #ifdef USE_JSCRIPT9
-		if( 0 == wcscmp( AEngine, LTEXT("JScript") ) ){
+		if( 0 == wcscmp( AEngine, L"JScript" ) ){
 			ClassID = CLSID_JSScript9;
 		}
 #endif

@@ -72,18 +72,15 @@ INT_PTR CALLBACK CPropKeybind::DlgProc_page(
 
 /* From Here Oct. 13, 2000 Studio CでMr.コーヒー氏に教わったやり方ですがうまくいってません */
 // ウィンドウプロシージャの中で・・・
-LRESULT CALLBACK CPropComKeybindWndProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK CPropComKeybindWndProc( [[maybe_unused]] HWND hwndDlg, UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
-	UNREFERENCED_PARAMETER(lParam);
-	UNREFERENCED_PARAMETER(wParam);
 	switch( uMsg ) {
 	// WM_CTLCOLORSTATIC メッセージに対して
 	case WM_CTLCOLORSTATIC:
 	// 白色のブラシハンドルを返す
 		return (LRESULT)GetStockObject(WHITE_BRUSH);
-//	default:
-//		break;
+	default:
+		break;
 	}
 	return 0;
 }
@@ -181,6 +178,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 				}
 			}
 			return TRUE;
+		default:
+			break;
 		}
 		break;
 
@@ -243,8 +242,12 @@ INT_PTR CPropKeybind::DispatchEvent(
 				::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_LIST_KEY, LBN_SELCHANGE ), (LPARAM)hwndKeyList );
 				::SendMessageCmd( hwndDlg, WM_COMMAND, MAKELONG( IDC_LIST_FUNC, LBN_SELCHANGE ), (LPARAM)hwndFuncList );
 				return TRUE;
+			default:
+				break;
 			}
 			break;	/* BN_CLICKED */
+		default:
+			break;
 		}
 		if( hwndCheckShift == hwndCtl
 		 || hwndCheckCtrl == hwndCtl
@@ -255,6 +258,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 				ChangeKeyList( hwndDlg );
 
 				return TRUE;
+			default:
+				break;
 			}
 		}else
 		if( hwndKeyList == hwndCtl ){
@@ -275,13 +280,14 @@ INT_PTR CPropKeybind::DispatchEvent(
 				// Oct. 2, 2001 genta
 				// 2007.11.02 ryoji F_DISABLEなら未割当
 				if( nFuncCode == F_DISABLE ){
-					wcsncpy( pszLabel, LS(STR_PROPCOMKEYBIND_UNASSIGN), int(std::size(pszLabel)) - 1 );
-					pszLabel[std::size(pszLabel) - 1] = L'\0';
+					::wcsncpy_s(pszLabel, LS(STR_PROPCOMKEYBIND_UNASSIGN), _TRUNCATE);
 				}else{
 					m_cLookup.Funccode2Name( nFuncCode, pszLabel, 255 );
 				}
 				ApiWrap::Wnd_SetText( hwndEDIT_KEYSFUNC, pszLabel );
 				return TRUE;
+			default:
+				break;
 			}
 		}else
 		if( hwndFuncList == hwndCtl ){
@@ -310,6 +316,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 					delete [] ppcAssignedKeyList;
 				}
 				return TRUE;
+			default:
+				break;
 			}
 		}else
 		if( hwndCombo == hwndCtl){
@@ -319,6 +327,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 				/* 機能一覧に文字列をセット（リストボックス）*/
 				m_cLookup.SetListItem( hwndFuncList, nIndex2 );	//	Oct. 2, 2001 genta
 				return TRUE;
+			default:
+				break;
 			}
 
 //@@@ 2001.11.08 add start MIK
@@ -374,6 +384,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 					}
 					return TRUE;
 				}
+			default:
+				break;
 			}
 //@@@ 2001.11.08 add end MIK
 		}
@@ -409,6 +421,8 @@ INT_PTR CPropKeybind::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.11.07 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -437,9 +451,8 @@ void CPropKeybind::SetData( HWND hwndDlg )
 }
 
 /* ダイアログデータの取得 Keybind */
-int CPropKeybind::GetData( HWND hwndDlg )
+int CPropKeybind::GetData( [[maybe_unused]] HWND hwndDlg )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
 	return TRUE;
 }
 	
@@ -458,22 +471,22 @@ void CPropKeybind::ChangeKeyList( HWND hwndDlg){
 	i = 0;
 	if( ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_SHIFT ) ){
 		i |= _SHIFT;
-		wcscat( szKeyState, L"Shift+" );
+		::wcsncat_s(szKeyState, L"Shift+", _TRUNCATE);
 	}
 	if( ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_CTRL ) ){
 		i |= _CTRL;
-		wcscat( szKeyState, L"Ctrl+" );
+		::wcsncat_s(szKeyState, L"Ctrl+", _TRUNCATE);
 	}
 	if( ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_ALT ) ){
 		i |= _ALT;
-		wcscat( szKeyState, L"Alt+" );
+		::wcsncat_s(szKeyState, L"Alt+", _TRUNCATE);
 	}
 	::SendMessage( hwndKeyList, WM_SETREDRAW, FALSE, 0 );
 	/* キー一覧に文字列をセット（リストボックス）*/
 	ApiWrap::List_ResetContent( hwndKeyList );
 	for( i = 0; i < m_Common.m_sKeyBind.m_nKeyNameArrNum; ++i ){
 		WCHAR	pszLabel[256];
-		auto_sprintf( pszLabel, L"%ls%s", szKeyState, m_Common.m_sKeyBind.m_pKeyNameArr[i].m_szKeyName );
+		auto_snprintf_s(pszLabel, _TRUNCATE, L"%ls%s", szKeyState, m_Common.m_sKeyBind.m_pKeyNameArr[i].m_szKeyName);
 		ApiWrap::List_AddString( hwndKeyList, pszLabel );
 	}
 	ApiWrap::List_SetCurSel( hwndKeyList, nIndex );

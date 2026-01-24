@@ -37,18 +37,13 @@
 */
 void CEditView::TranslateCommand_isearch(
 	EFunctionCode&	nCommand,
-	bool&			bRedraw,
+	[[maybe_unused]] bool&			bRedraw,
 	LPARAM&			lparam1,
-	LPARAM&			lparam2,
-	LPARAM&			lparam3,
-	LPARAM&			lparam4
+	[[maybe_unused]] LPARAM&			lparam2,
+	[[maybe_unused]] LPARAM&			lparam3,
+	[[maybe_unused]] LPARAM&			lparam4
 )
 {
-	UNREFERENCED_PARAMETER(bRedraw);
-	UNREFERENCED_PARAMETER(lparam2);
-	UNREFERENCED_PARAMETER(lparam3);
-	UNREFERENCED_PARAMETER(lparam4);
-
 	if (m_nISearchMode <= SEARCH_NONE )
 		return;
 
@@ -98,18 +93,13 @@ void CEditView::TranslateCommand_isearch(
 */
 bool CEditView::ProcessCommand_isearch(
 	int	nCommand,
-	bool	bRedraw,
+	[[maybe_unused]] bool	bRedraw,
 	LPARAM	lparam1,
-	LPARAM	lparam2,
-	LPARAM	lparam3,
-	LPARAM	lparam4
+	[[maybe_unused]] LPARAM	lparam2,
+	[[maybe_unused]] LPARAM	lparam3,
+	[[maybe_unused]] LPARAM	lparam4
 )
 {
-	UNREFERENCED_PARAMETER(lparam2);
-	UNREFERENCED_PARAMETER(lparam3);
-	UNREFERENCED_PARAMETER(lparam4);
-	UNREFERENCED_PARAMETER(bRedraw);
-
 	switch( nCommand ){
 		//	検索文字列の変更操作
 		case F_ISEARCH_ADD_CHAR:
@@ -143,6 +133,8 @@ bool CEditView::ProcessCommand_isearch(
 		case F_ISEARCH_MIGEMO_PREV:
 			ISearchEnter(SEARCH_MIGEMO, SEARCH_BACKWARD);	//後方MIGEMOインクリメンタルサーチ    //2004.10.13 isearch
 			return true;
+		default:
+			break;
 	}
 	return false;
 }
@@ -299,6 +291,8 @@ void CEditView::ISearchExec(DWORD wChar)
 			return;
 		//case '\t':
 		//	break;
+		default:
+			break;
 	}
 	
 	if (m_bISearchFirst){
@@ -397,6 +391,8 @@ void CEditView::ISearchExec(bool bNext)
 				//選択範囲の後ろから
 				nLine = GetSelectionInfo().m_sSelect.GetTo().GetY2();
 				nIdx1 = GetSelectionInfo().m_sSelect.GetTo().GetX2();
+				break;
+			default:
 				break;
 		}
 	}else{
@@ -597,6 +593,8 @@ bool CEditView::IsISearchEnabled(int nCommand) const
 		return (m_nISearchMode == SEARCH_MIGEMO) && (m_nISearchDirection == SEARCH_FORWARD);
 	case F_ISEARCH_MIGEMO_PREV:
 		return (m_nISearchMode == SEARCH_MIGEMO) && (m_nISearchDirection == SEARCH_BACKWARD);
+	default:
+		break;
 	}
 	return false;
 }

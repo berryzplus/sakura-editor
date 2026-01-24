@@ -1,6 +1,6 @@
 ﻿/*! @file */
 /*
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -22,6 +22,10 @@
 #include "_main/CControlProcess.h"
 #include "env/CDataProfile.h"
 #include "util/file.h"
+
+std::filesystem::path GetIniFileNameForIO(bool bWrite);
+
+namespace path_util {
 
 /*!
  * @brief パスがファイル名に使えない文字を含んでいるかチェックする
@@ -122,9 +126,6 @@ TEST(file, Deprecated_GetExedir)
 
 	// 戻り値取得用のバッファ
 	WCHAR szBuf[_MAX_PATH];
-
-	// 戻り値取得用のバッファを指定しない場合、何も起きない
-	GetExedir(nullptr);
 
 	// exeフォルダーの取得
 	GetExedir(szBuf);
@@ -361,9 +362,6 @@ TEST(file, Deprecated_GetInidir)
 	// 戻り値取得用のバッファ
 	WCHAR szBuf[_MAX_PATH];
 
-	// 戻り値取得用のバッファを指定しない場合、何も起きない
-	GetInidir(nullptr);
-
 	// iniフォルダーの取得
 	GetInidir(szBuf);
 	::wcscat_s(szBuf, filename);
@@ -392,9 +390,6 @@ TEST(file, GetInidirOrExedir)
 
 	std::wstring buf(_MAX_PATH, L'\0');
 
-	GetInidirOrExedir(buf.data(), L"", true);
-	ASSERT_STREQ(GetExeFileName().replace_filename(L"").c_str(), buf.data());
-
 	constexpr auto filename = L"test.txt";
 	auto exeBasePath = GetExeFileName().parent_path().append(filename);
 	auto iniBasePath = GetIniFileName().parent_path().append(filename);
@@ -406,7 +401,7 @@ TEST(file, GetInidirOrExedir)
 	CProfile().WriteProfile(iniBasePath.c_str(), L"file, GetInidirOrExedirのテスト");
 
 	// 両方あるときはINI基準のパスが変える
-	GetInidirOrExedir(buf.data(), filename, true);
+	GetInidirOrExedir(buf, filename);
 	ASSERT_STREQ(iniBasePath.c_str(), buf.data());
 
 	// INI基準パスのファイルを削除する
@@ -414,7 +409,7 @@ TEST(file, GetInidirOrExedir)
 	ASSERT_FALSE(fexist(iniBasePath.c_str()));
 
 	// EXE基準のみ存在するときはEXE基準のパスが変える
-	GetInidirOrExedir(buf.data(), filename, true);
+	GetInidirOrExedir(buf, filename);
 	ASSERT_STREQ(exeBasePath.c_str(), buf.data());
 
 	// EXE基準パスのファイルを削除する
@@ -422,11 +417,9 @@ TEST(file, GetInidirOrExedir)
 	ASSERT_FALSE(fexist(exeBasePath.c_str()));
 
 	// 両方ないときはINI基準のパスが変える
-	GetInidirOrExedir(buf.data(), filename, true);
+	GetInidirOrExedir(buf, filename);
 	ASSERT_STREQ(iniBasePath.c_str(), buf.data());
 }
-
-std::filesystem::path GetIniFileNameForIO(bool bWrite);
 
 /*!
  * @brief 入出力に使うiniファイルの判定
@@ -641,3 +634,35 @@ TEST(CFileNameManager, GetFilePathFormat)
 	strBuf = std::wstring(50, L'x');
 	ASSERT_STREQ(LR"(C:\テンポラリ\test.txt)", CFileNameManager::GetFilePathFormat(LR"(C:\%Temp%\test.txt)", strBuf.data(), strBuf.size() + 1, L"%Temp%", std::wstring_view(L"テンポラリってる", 5)));
 }
+
+TEST(CFilePath, GetDirPath001)
+{
+	CFilePath path(LR"(C:\Temp\test.txt)");
+	EXPECT_THAT(path.GetDirPath(), StrEq(LR"(C:\Temp\)"));
+}
+
+TEST(CFilePath, GetDirPath002)
+{
+	CFilePath path(LR"(C:\Temp\)");	//ファイル名がない
+	EXPECT_THAT(path.GetDirPath(), StrEq(LR"(C:\Temp\)"));
+}
+
+TEST(CFilePath, GetDirPath003)
+{
+	CFilePath path(LR"(C:\Temp)");	//末尾 \ がない
+	EXPECT_THAT(path.GetDirPath(), StrEq(LR"(C:\)"));
+}
+
+TEST(CFilePath, GetDirPath101)
+{
+	CFilePath path(L"");	//パスが空
+	EXPECT_THAT(path.GetDirPath(), StrEq(L""));
+}
+
+TEST(CFilePath, GetDirPath102)
+{
+	CFilePath path(L"test.txt");	//ディレクトリがない
+	EXPECT_THAT(path.GetDirPath(), StrEq(L""));
+}
+
+} // namespace path_util

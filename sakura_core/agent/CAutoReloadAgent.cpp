@@ -27,19 +27,15 @@ CAutoReloadAgent::CAutoReloadAgent()
 //                        セーブ前後                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CAutoReloadAgent::OnBeforeSave(const SSaveInfo& sSaveInfo)
+void CAutoReloadAgent::OnBeforeSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 {
-	UNREFERENCED_PARAMETER(sSaveInfo);
-
 	//	Sep. 7, 2003 genta
 	//	保存が完了するまではファイル更新の通知を抑制する
 	PauseWatching();
 }
 
-void CAutoReloadAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
+void CAutoReloadAgent::OnAfterSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 {
-	UNREFERENCED_PARAMETER(sSaveInfo);
-
 	//	Sep. 7, 2003 genta
 	//	ファイル更新の通知を元に戻す
 	ResumeWatching();
@@ -54,10 +50,8 @@ void CAutoReloadAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
 //                        ロード前後                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CAutoReloadAgent::OnAfterLoad(const SLoadInfo& sLoadInfo)
+void CAutoReloadAgent::OnAfterLoad([[maybe_unused]] const SLoadInfo& sLoadInfo)
 {
-	UNREFERENCED_PARAMETER(sLoadInfo);
-
 	//pcDoc->m_cDocFile.m_sFileInfo.cFileTime.SetFILETIME(ftime); //#####既に設定済みのはず
 }
 
@@ -120,7 +114,7 @@ void CAutoReloadAgent::CheckFileTimeStamp()
 			//ファイル更新のお知らせ -> ステータスバー
 			WCHAR szText[40];
 			const CFileTime& ctime = pcDoc->m_cDocFile.GetFileTime();
-			auto_sprintf( szText, LS(STR_AUTORELOAD_NOFITY), ctime->wHour, ctime->wMinute, ctime->wSecond );
+			auto_snprintf_s(szText, _TRUNCATE, LS(STR_AUTORELOAD_NOFITY), ctime->wHour, ctime->wMinute, ctime->wSecond);
 			GetEditWnd().SendStatusMessage( szText );
 		}
 		break;

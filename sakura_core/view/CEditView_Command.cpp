@@ -71,14 +71,14 @@ bool CEditView::TagJumpSub(
 			GetInidirOrExedir( szJumpToFile, pszFileName );
 		}
 		else {
-			wcscpy( szJumpToFile, pszFileName );
+			::wcsncpy_s(szJumpToFile, pszFileName, _TRUNCATE);
 		}
 
 		/* ロングファイル名を取得する */
 		WCHAR	szWork[1024];
 		if( FALSE != ::GetLongFileName( szJumpToFile, szWork ) )
 		{
-			wcscpy( szJumpToFile, szWork );
+			::wcsncpy_s(szJumpToFile, szWork, _TRUNCATE);
 		}
 	}
 
@@ -130,7 +130,7 @@ bool CEditView::TagJumpSub(
 		EditInfo	inf;
 		bool		bSuccess;
 
-		wcscpy( inf.m_szPath, szJumpToFile );
+		::wcsncpy_s(inf.m_szPath, szJumpToFile, _TRUNCATE);
 		inf.m_ptCursor.Set(CLogicInt(ptJumpTo.x - 1), CLogicInt(ptJumpTo.y - 1));
 		inf.m_nViewLeftCol = CLayoutInt(-1);
 		inf.m_nViewTopLine = CLayoutInt(-1);
@@ -177,10 +177,9 @@ BOOL CEditView::OPEN_ExtFromtoExt(
 	const WCHAR*	open_ext[],		//!< [in] 開く対象とする拡張子
 	int				file_extno,		//!< [in] 処理対象拡張子リストの要素数
 	int				open_extno,		//!< [in] 開く対象拡張子リストの要素数
-	const WCHAR*	errmes			//!< [in] ファイルを開けなかった場合に表示するエラーメッセージ
+	[[maybe_unused]] const WCHAR*	errmes			//!< [in] ファイルを開けなかった場合に表示するエラーメッセージ
 )
 {
-	UNREFERENCED_PARAMETER(errmes);
 //From Here Feb. 7, 2001 JEPRO 追加
 	int		i;
 //To Here Feb. 7, 2001
@@ -205,10 +204,10 @@ open_c:;
 	WCHAR	szExt[_MAX_EXT];
 	HWND	hwndOwner;
 
-	_wsplitpath( GetDocument()->m_cDocFile.GetFilePath(), szDrive, szDir, szFname, szExt );
+	_wsplitpath_s( GetDocument()->m_cDocFile.GetFilePath(), szDrive, szDir, szFname, szExt );
 
 	for( i = 0; i < open_extno; i++ ){
-		_wmakepath( szPath, szDrive, szDir, szFname, open_ext[i] );
+		::_wmakepath_s( szPath, szDrive, szDir, szFname, open_ext[i] );
 		if( !fexist(szPath) ){
 			if( i < open_extno - 1 )
 				continue;

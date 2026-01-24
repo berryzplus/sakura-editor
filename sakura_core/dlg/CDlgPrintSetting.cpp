@@ -81,13 +81,11 @@ const DWORD p_helpids[] = {	//12500
 
 int CALLBACK SetData_EnumFontFamProc(
 	ENUMLOGFONT*	pelf,	// pointer to logical-font data
-	NEWTEXTMETRIC*	pntm,	// pointer to physical-font data
-	int				nFontType,	// type of font
+	[[maybe_unused]] NEWTEXTMETRIC*	pntm,	// pointer to physical-font data
+	[[maybe_unused]] int				nFontType,	// type of font
 	LPARAM			lParam 	// address of application-defined data
 )
 {
-	UNREFERENCED_PARAMETER(nFontType);
-	UNREFERENCED_PARAMETER(pntm);
 	CDlgPrintSetting*	pCDlgPrintSetting;
 	HWND				hwndComboFontHan;
 	HWND				hwndComboFontZen;
@@ -190,14 +188,14 @@ BOOL CDlgPrintSetting::OnNotify(NMHDR* pNMHDR)
 		OnSpin( idCtrl, bSpinDown );
 		UpdatePrintableLineAndColumn();
 		break;
+	default:
+		break;
 	}
 	return TRUE;
 }
 
-BOOL CDlgPrintSetting::OnCbnSelChange( HWND hwndCtl, int wID )
+BOOL CDlgPrintSetting::OnCbnSelChange( [[maybe_unused]] HWND hwndCtl, int wID )
 {
-	UNREFERENCED_PARAMETER(hwndCtl);
-
 //	if( GetItemHwnd( IDC_COMBO_SETTINGNAME ) == hwndCtl ){
 	switch( wID ){
 	case IDC_COMBO_SETTINGNAME:
@@ -209,6 +207,8 @@ BOOL CDlgPrintSetting::OnCbnSelChange( HWND hwndCtl, int wID )
 	case IDC_COMBO_PAPER:
 		UpdatePrintableLineAndColumn();
 		break;	// ここでは行と桁の更新要求のみ。後の処理はCDialogに任せる。
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -225,7 +225,7 @@ BOOL CDlgPrintSetting::OnBnClicked( int wID )
 		MyWinHelp( GetHwnd(), HELP_CONTEXT, ::FuncID_To_HelpContextID(F_PRINT_PAGESETUP) );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 	case IDC_BUTTON_EDITSETTINGNAME:
-		wcscpy( szWork, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintSettingName );
+		::wcsncpy_s(szWork, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintSettingName, _TRUNCATE);
 		{
 			BOOL bDlgInputResult=cDlgInput1.DoModal(
 				m_hInstance,
@@ -240,9 +240,7 @@ BOOL CDlgPrintSetting::OnBnClicked( int wID )
 			}
 		}
 		if( szWork[0] != L'\0' ){
-			int		size = _countof(m_PrintSettingArr[0].m_szPrintSettingName) - 1;
-			wcsncpy( m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintSettingName, szWork, size);
-			m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintSettingName[size] = L'\0';
+			::wcsncpy_s(m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintSettingName, szWork, _TRUNCATE);
 			/* 印刷設定名一覧 */
 			hwndComboSettingName = GetItemHwnd( IDC_COMBO_SETTINGNAME );
 			ApiWrap::Combo_ResetContent( hwndComboSettingName );
@@ -270,7 +268,7 @@ BOOL CDlgPrintSetting::OnBnClicked( int wID )
 
 			if (lf.lfFaceName[0] == L'\0') {
 				// 半角フォントを設定
-				wcscpy( lf.lfFaceName, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintFontFaceHan );
+				::wcsncpy_s(lf.lfFaceName, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintFontFaceHan, _TRUNCATE);
 				// 1/10mm→画面ドット数
 				lf.lfHeight = -( m_PrintSettingArr[m_nCurrentPrintSetting].m_nPrintFontHeight * 
 					::GetDeviceCaps ( ::GetDC( m_hwndParent ), LOGPIXELSY ) / 254 );
@@ -293,7 +291,7 @@ BOOL CDlgPrintSetting::OnBnClicked( int wID )
 
 			if (lf.lfFaceName[0] == L'\0') {
 				// 半角フォントを設定
-				wcscpy( lf.lfFaceName, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintFontFaceHan );
+				::wcsncpy_s(lf.lfFaceName, m_PrintSettingArr[m_nCurrentPrintSetting].m_szPrintFontFaceHan, _TRUNCATE);
 				// 1/10mm→画面ドット数
 				lf.lfHeight = -( m_PrintSettingArr[m_nCurrentPrintSetting].m_nPrintFontHeight * 
 					::GetDeviceCaps ( ::GetDC( m_hwndParent ), LOGPIXELSY ) / 254 );
@@ -345,6 +343,8 @@ BOOL CDlgPrintSetting::OnBnClicked( int wID )
 	case IDC_CHECK_LINENUMBER:
 		UpdatePrintableLineAndColumn();
 		break;	// ここでは行と桁の更新要求のみ。後の処理はCDialogに任せる。
+	default:
+		break;
 	}
 	/* 基底クラスメンバ */
 	return CDialog::OnBnClicked( wID );
@@ -362,6 +362,8 @@ BOOL CDlgPrintSetting::OnStnClicked( int wID )
 			CalcPrintableLineAndColumn();
 		}
 		return TRUE;
+	default:
+		break;
 	}
 	/* 基底クラスメンバ */
 	return CDialog::OnStnClicked( wID );
@@ -384,6 +386,8 @@ BOOL CDlgPrintSetting::OnEnChange( HWND hwndCtl, int wID )
 	case IDC_EDIT_MARGINRX:
 		UpdatePrintableLineAndColumn();
 		break;	// ここでは行と桁の更新要求のみ。後の処理はCDialogに任せる。
+	default:
+		break;
 	}
 	/* 基底クラスメンバ */
 	return CDialog::OnEnChange( hwndCtl, wID );
@@ -436,6 +440,8 @@ BOOL CDlgPrintSetting::OnEnKillFocus( HWND hwndCtl, int wID )
 	case IDC_EDIT_FOOT3:
 		UpdatePrintableLineAndColumn();
 		break;	// ここでは行と桁の更新要求のみ。後の処理はCDialogに任せる。
+	default:
+		break;
 	}
 
 	if (isImeUndesirable(wID))
@@ -762,6 +768,8 @@ void CDlgPrintSetting::OnSpin( int nCtrlId, BOOL bDown )
 	case IDC_SPIN_MARGINBY:		nIdx = 5;				break;
 	case IDC_SPIN_MARGINLX:		nIdx = 6;				break;
 	case IDC_SPIN_MARGINRX:		nIdx = 7;				break;
+	default:
+		break;
 	}
 	if( nIdx >= 0 ){
 		nCtrlIdEDIT = sDataRange[nIdx].ctrlid;
@@ -790,6 +798,8 @@ int CDlgPrintSetting::DataCheckAndCorrect( int nCtrlId, int nData )
 	case IDC_EDIT_MARGINBY:		nIdx = 5;		break;
 	case IDC_EDIT_MARGINLX:		nIdx = 6;		break;
 	case IDC_EDIT_MARGINRX:		nIdx = 7;		break;
+	default:
+		break;
 	}
 	if( nIdx >= 0 ){
 		if( nData <= sDataRange[nIdx].minval ){
@@ -905,7 +915,7 @@ void CDlgPrintSetting::SetFontName( int idTxt, int idUse, LOGFONT& lf, int nPoin
 
 		// フォント名/サイズの作成
 		int		nMM = MulDiv( nPointSize, 254, 720 );	// フォントサイズ計算(pt->1/10mm)
-		auto_sprintf(szName, nPointSize%10 ? L"%.32s(%.1fpt/%d.%dmm)" : L"%.32s(%.0fpt/%d.%dmm)",
+		auto_snprintf_s(szName, _TRUNCATE, nPointSize%10 ? L"%.32s(%.1fpt/%d.%dmm)" : L"%.32s(%.0fpt/%d.%dmm)",
 					lf.lfFaceName,
 					double(nPointSize)/10,
 					nMM/10, nMM/10);

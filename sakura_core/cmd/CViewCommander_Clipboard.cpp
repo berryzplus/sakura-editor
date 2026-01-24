@@ -410,10 +410,8 @@ void CViewCommander::Command_PASTEBOX( const wchar_t *szPaste, size_t cchPaste )
 	@date 2004.06.29 Moca 未使用だったものを有効にする
 	オリジナルのCommand_PASTEBOX(void)はばっさり削除 (genta)
 */
-void CViewCommander::Command_PASTEBOX( LPARAM option )
+void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 {
-	UNREFERENCED_PARAMETER(option);
-
 	if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() )	// マウスによる範囲選択中
 	{
 		ErrorBeep();
@@ -469,13 +467,12 @@ void CViewCommander::Command_INSTEXT(
 	bool			bRedraw,		//!< 
 	const wchar_t*	pszText,		//!< [in] 貼り付ける文字列。
 	ptrdiff_t		nTextLen,		//!< [in] pszTextの長さ。-1を指定すると、pszTextをNUL終端文字列とみなして長さを自動計算する
-	bool			bNoWaitCursor,	//!< 
+	[[maybe_unused]] bool			bNoWaitCursor,	//!< 
 	bool			bLinePaste,		//!< [in] ラインモード貼り付け
 	bool			bFastMode,		//!< [in] 高速モード(レイアウト座標は無視する)
 	const CLogicRange*	pcSelectLogic	//!< [in] オプション。高速モードのときの削除範囲ロジック単位
 )
 {
-	UNREFERENCED_PARAMETER(bNoWaitCursor);
 	if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() ){	/* マウスによる範囲選択中 */
 		ErrorBeep();
 		return;
@@ -696,7 +693,7 @@ static bool AppendHTMLColor(
 					WCHAR szColor[60];
 					DWORD dwTEXTColor = (GetRValue(sColorAttrLast.m_cTEXT) << 16) + (GetGValue(sColorAttrLast.m_cTEXT) << 8) + GetBValue(sColorAttrLast.m_cTEXT);
 					DWORD dwBACKColor = (GetRValue(sColorAttrLast.m_cBACK) << 16) + (GetGValue(sColorAttrLast.m_cBACK) << 8) + GetBValue(sColorAttrLast.m_cBACK);
-					_swprintf( szColor, L"<span style=\"color:#%06x;background-color:#%06x\">", dwTEXTColor, dwBACKColor);
+					::_snwprintf_s(szColor, _TRUNCATE, L"<span style=\"color:#%06x;background-color:#%06x\">", dwTEXTColor, dwBACKColor);
 					cmemClip.AppendString( szColor );
 				}
 			}
@@ -827,7 +824,7 @@ void CViewCommander::Command_COPY_COLOR_HTML(bool bLineNumber)
 		}
 		nLineNumberMaxLen = i + 1; // "%d:"
 		cmemNullLine.AppendString(L":");
-		_swprintf(szLineFormat, L"%%%dd:", i);
+		::_snwprintf_s(szLineFormat, _TRUNCATE, L"%%%dd:", i);
 	}
 	if( bLineNumLayout ){
 		nBuffSize += (Int)(nLineNumberMaxLen * (rcSel.bottom - rcSel.top + 1));
@@ -840,7 +837,7 @@ void CViewCommander::Command_COPY_COLOR_HTML(bool bLineNumber)
 		COLORREF cBACK = type.m_ColorInfoArr[COLORIDX_TEXT].m_sColorAttr.m_cBACK;
 		DWORD dwBACKColor = (GetRValue(cBACK) << 16) + (GetGValue(cBACK) << 8) + GetBValue(cBACK);
 		WCHAR szBuf[50];
-		_swprintf(szBuf, L"<pre style=\"background-color:#%06x\">", dwBACKColor);
+		::_snwprintf_s(szBuf, _TRUNCATE, L"<pre style=\"background-color:#%06x\">", dwBACKColor);
 		cmemClip.AppendString( szBuf );
 	}
 	CLayoutInt nLayoutLineNum = rcSel.top;
@@ -896,8 +893,8 @@ void CViewCommander::Command_COPY_COLOR_HTML(bool bLineNumber)
 					nIdxTo   = m_pCommanderView->LineColumnToIndex(pcLayout, rcSel.right);
 					// 改行は除く
 					if( nIdxTo - nIdxFrom > 0 ){
-						const WCHAR* pLine = pcLayout->GetPtr();
-						if( pLine[nIdxTo - 1] == L'\n' || pLine[nIdxTo - 1] == L'\r' ){
+						const WCHAR* pLine2 = pcLayout->GetPtr();
+						if( pLine2[nIdxTo - 1] == L'\n' || pLine2[nIdxTo - 1] == L'\r' ){
 							--nIdxTo;
 						}
 					}
@@ -926,12 +923,12 @@ void CViewCommander::Command_COPY_COLOR_HTML(bool bLineNumber)
 							cmemClip.AppendNativeData(cmemNullLine);
 						}
 					}else{
-						int ret = _swprintf(szLineNum, szLineFormat, nLineNum + 1);
+						int ret = ::_snwprintf_s(szLineNum, _TRUNCATE, szLineFormat, int(nLineNum) + 1);
 						cmemClip.AppendString(szLineNum, ret);
 					}
 				}else{
 					if( bLineNumLayout || pcLayout->GetLogicOffset() == 0 ){
-						int ret = _swprintf(szLineNum, szLineFormat, nLayoutLineNum + 1);
+						int ret = ::_snwprintf_s(szLineNum, _TRUNCATE, szLineFormat, int(nLayoutLineNum) + 1);
 						cmemClip.AppendString(szLineNum, ret);
 					}
 				}
@@ -1147,7 +1144,7 @@ void CViewCommander::Command_COPYTAG( void )
 		GetDocument()->m_cLayoutMgr.LayoutToLogic( GetCaret().GetCaretLayoutPos(), &ptColLine );
 
 		/* クリップボードにデータを設定 */
-		std::wstring buffer = strprintf(L"%s (%d,%d): ", GetDocument()->m_cDocFile.GetFilePath(), ptColLine.y+1, ptColLine.x+1 );
+		std::wstring buffer = strprintf(L"%s (%d,%d): ", GetDocument()->m_cDocFile.GetFilePath(), int(ptColLine.y) + 1, int(ptColLine.x) + 1 );
 		m_pCommanderView->MySetClipboardData(buffer.c_str(), buffer.length(), false);
 	}
 	else{

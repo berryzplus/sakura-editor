@@ -187,10 +187,8 @@ bool CPluginManager::SearchNewPluginZip( CommonSetting& common, HWND hWndOwner, 
 }
 
 //Zipプラグインを導入する
-bool CPluginManager::InstZipPlugin( CommonSetting& common, HWND hWndOwner, const std::wstring& sZipFile, bool bInSearch )
+bool CPluginManager::InstZipPlugin( CommonSetting& common, HWND hWndOwner, const std::wstring& sZipFile, [[maybe_unused]] bool bInSearch )
 {
-	UNREFERENCED_PARAMETER(bInSearch);
-
 	DEBUG_TRACE(L"Entry InstZipPlugin\n");
 
 	CZipFile		cZipFile;
@@ -198,7 +196,7 @@ bool CPluginManager::InstZipPlugin( CommonSetting& common, HWND hWndOwner, const
 
 	// ZIPファイルが扱えるか
 	if (!cZipFile.IsOk()) {
-		wcsncpy_s(msg, std::size(msg), LS(STR_PLGMGR_ERR_ZIP), _TRUNCATE );
+		::wcsncpy_s(msg, LS(STR_PLGMGR_ERR_ZIP), _TRUNCATE );
 		InfoMessage( hWndOwner, L"%s", msg);
 		return false;
 	}
@@ -297,6 +295,8 @@ bool CPluginManager::InstZipPluginSub( CommonSetting& common, HWND hWndOwner, co
 				bOk = false;
 				bSkip = true;
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -392,10 +392,8 @@ int CPluginManager::InstallPlugin( CommonSetting& common, const WCHAR* pszPlugin
 		return -1;
 	}
 
-	wcsncpy( plugin_table[nEmpty].m_szName, pszPluginName, MAX_PLUGIN_NAME );
-	plugin_table[nEmpty].m_szName[ MAX_PLUGIN_NAME-1 ] = '\0';
-	wcsncpy( plugin_table[nEmpty].m_szId, sId.c_str(), MAX_PLUGIN_ID );
-	plugin_table[nEmpty].m_szId[ MAX_PLUGIN_ID-1 ] = '\0';
+	::wcsncpy_s(plugin_table[nEmpty].m_szName, pszPluginName, _TRUNCATE);
+	::wcsncpy_s(plugin_table[nEmpty].m_szId, sId.c_str(), _TRUNCATE);
 	plugin_table[nEmpty].m_state = isDuplicate ? PLS_UPDATED : PLS_INSTALLED;
 
 	// コマンド数の設定	2010/7/11 Uchi
@@ -405,7 +403,7 @@ int CPluginManager::InstallPlugin( CommonSetting& common, const WCHAR* pszPlugin
 
 	plugin_table[nEmpty].m_nCmdNum = 0;
 	for (i = 1; i < MAX_PLUG_CMD; i++) {
-		auto_sprintf( szPlugKey, L"C[%d]", i);
+		auto_snprintf_s(szPlugKey, _TRUNCATE, L"C[%d]", i);
 		sPlugCmd.clear();
 		cProfDef.IOProfileData( PII_COMMAND, szPlugKey, sPlugCmd );
 		if (sPlugCmd.empty()) {

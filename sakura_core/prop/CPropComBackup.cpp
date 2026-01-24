@@ -121,6 +121,8 @@ INT_PTR CPropBackup::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPCOM_PAGENUM_BACKUP;
 				return TRUE;
+			default:
+				break;
 			}
 			break;
 
@@ -177,7 +179,7 @@ INT_PTR CPropBackup::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 					ApiWrap::DlgItem_GetText( hwndDlg, IDC_EDIT_BACKUPFOLDER, szFolder, int(std::size(szFolder)));
 
 					if( SelectDir( hwndDlg, LS(STR_PROPCOMBK_SEL_FOLDER), szFolder, szFolder ) ){
-						wcscpy( m_Common.m_sBackup.m_szBackUpFolder, szFolder );
+						::wcsncpy_s(m_Common.m_sBackup.m_szBackUpFolder, szFolder, _TRUNCATE);
 						ApiWrap::DlgItem_SetText( hwndDlg, IDC_EDIT_BACKUPFOLDER, m_Common.m_sBackup.m_szBackUpFolder );
 					}
 					UpdateBackupFile( hwndDlg );
@@ -195,8 +197,12 @@ INT_PTR CPropBackup::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 				ApiWrap::DlgItem_GetText( hwndDlg, IDC_EDIT_BACKUPFOLDER, m_Common.m_sBackup.m_szBackUpFolder, std::size(m_Common.m_sBackup.m_szBackUpFolder) - 1 );
 				UpdateBackupFile( hwndDlg );
 				break;
+			default:
+				break;
 			}
 			break;	/* EN_CHANGE */
+		default:
+			break;
 		}
 		break;	/* WM_COMMAND */
 
@@ -217,6 +223,8 @@ INT_PTR CPropBackup::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -504,63 +512,63 @@ void CPropBackup::UpdateBackupFile(HWND hwndDlg)	//	バックアップファイ�
 	wchar_t temp[MAX_PATH];
 	/* バックアップを作成するファイル */ // 20051107 aroka
 	if( !m_Common.m_sBackup.m_bBackUp ){
-		temp[0] = LTEXT('\0');
+		temp[0] = L'\0';
 	}
 	else{
 		if( m_Common.m_sBackup.m_bBackUpFolder ){
-			temp[0] = LTEXT('\0');
+			temp[0] = L'\0';
 		}
 		else if( m_Common.m_sBackup.m_bBackUpDustBox  ){
-			auto_sprintf( temp, LTEXT("%ls\\"), LS(STR_PROPCOMBK_DUSTBOX) );
+			auto_snprintf_s(temp, _TRUNCATE, L"%ls\\", LS(STR_PROPCOMBK_DUSTBOX));
 		}
 		else{
-			wcsncpy_s( temp, LTEXT(".\\"), _TRUNCATE );
+			wcsncpy_s( temp, L".\\", _TRUNCATE );
 		}
 
 		switch( m_Common.m_sBackup.GetBackupType() ){
 		case 1: // .bak
-			wcscat( temp, LTEXT("$0.bak") );
+			::wcsncat_s(temp, L"$0.bak", _TRUNCATE);
 			break;
 		case 5: // .*.bak
-			wcscat( temp, LTEXT("$0.*.bak") );
+			::wcsncat_s(temp, L"$0.*.bak", _TRUNCATE);
 			break;
 		case 3: // .b??
-			wcscat( temp, LTEXT("$0.b??") );
+			::wcsncat_s(temp, L"$0.b??", _TRUNCATE);
 			break;
 		case 6: // .*.b??
-			wcscat( temp, LTEXT("$0.*.b??") );
+			::wcsncat_s(temp, L"$0.*.b??", _TRUNCATE);
 			break;
 		case 2:	//	日付，時刻
 		case 4:	//	日付，時刻
-			wcscat( temp, LTEXT("$0_") );
+			::wcsncat_s(temp, L"$0_", _TRUNCATE);
 
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_YEAR) ){	/* バックアップファイル名：日付の年 */
-				wcscat( temp, LTEXT("%Y") );
+				::wcsncat_s(temp, L"%Y", _TRUNCATE);
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_MONTH) ){	/* バックアップファイル名：日付の月 */
-				wcscat( temp, LTEXT("%m") );
+				::wcsncat_s(temp, L"%m", _TRUNCATE);
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_DAY) ){	/* バックアップファイル名：日付の日 */
-				wcscat( temp, LTEXT("%d") );
+				::wcsncat_s(temp, L"%d", _TRUNCATE);
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_HOUR) ){	/* バックアップファイル名：日付の時 */
-				wcscat( temp, LTEXT("%H") );
+				::wcsncat_s(temp, L"%H", _TRUNCATE);
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_MIN) ){	/* バックアップファイル名：日付の分 */
-				wcscat( temp, LTEXT("%M") );
+				::wcsncat_s(temp, L"%M", _TRUNCATE);
 			}
 			if( m_Common.m_sBackup.GetBackupOpt(BKUP_SEC) ){	/* バックアップファイル名：日付の秒 */
-				wcscat( temp, LTEXT("%S") );
+				::wcsncat_s(temp, L"%S", _TRUNCATE);
 			}
 
-			wcscat( temp, LTEXT(".*") );
+			::wcsncat_s(temp, L".*", _TRUNCATE);
 			break;
 		default:
 			break;
 		}
 	}
 	if( !m_Common.m_sBackup.m_bBackUpPathAdvanced ){	// 詳細設定モードでないときだけ自動更新する
-		auto_sprintf( m_Common.m_sBackup.m_szBackUpPathAdvanced, L"%ls", temp );
+		auto_snprintf_s(m_Common.m_sBackup.m_szBackUpPathAdvanced, _TRUNCATE, L"%ls", temp);
 		ApiWrap::DlgItem_SetText( hwndDlg, IDC_EDIT_BACKUPFILE, m_Common.m_sBackup.m_szBackUpPathAdvanced );
 	}
 	return;

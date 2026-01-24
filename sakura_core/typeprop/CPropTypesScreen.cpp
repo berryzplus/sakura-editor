@@ -245,6 +245,8 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 					}
 				}
 				break;
+			default:
+				break;
 			}
 			break;
 
@@ -322,6 +324,8 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 				::EnableWindow( ::GetDlgItem( hwndDlg, IDC_CHECK_KINSOKUHIDE ), 
 					::IsDlgButtonChecked( hwndDlg, IDC_CHECK_KINSOKURET ) 
 				 || ::IsDlgButtonChecked( hwndDlg, IDC_CHECK_KINSOKUKUTO ) );
+			default:
+				break;
 			}
 			break;	/* BN_CLICKED */
 		case EN_SETFOCUS:
@@ -331,6 +335,8 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 		case EN_KILLFOCUS:
 			if (isImeUndesirable(wID))
 				ImeSetOpen(hwndCtl, s_isImmOpenBkup, nullptr);
+			break;
+		default:
 			break;
 		}
 		break;	/* WM_COMMAND */
@@ -431,6 +437,8 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPTYPE_PAGENUM_SCREEN;
 				return TRUE;
+			default:
+				break;
 			}
 			break;
 		}
@@ -467,6 +475,8 @@ INT_PTR CPropTypesScreen::DispatchEvent(
 			m_hTypeFont = nullptr;
 		}
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -689,7 +699,7 @@ int CPropTypesScreen::GetData( HWND hwndDlg )
 		/* TAB表示文字列 */
 		WCHAR szTab[8+1]; /* +1. happy */
 		ApiWrap::DlgItem_GetText( hwndDlg, IDC_EDIT_TABVIEWSTRING, szTab, int(std::size(szTab)) );
-		wcscpy( m_Types.m_szTabViewString, L"^       " );
+		::wcsncpy_s(m_Types.m_szTabViewString, L"^       ", _TRUNCATE);
 		for( int i = 0; i < 8; i++ ){
 			if( !WCODE::IsTabAvailableCode(szTab[i]) )break;
 			m_Types.m_szTabViewString[i] = szTab[i];
@@ -802,9 +812,8 @@ void CPropTypesScreen::AddOutlineMethod(int nMethod, const WCHAR* pszName)
 	m_OlmArr.push_back(method);
 }
 
-void CPropTypesScreen::RemoveOutlineMethod(int nMethod, const WCHAR* szName)
+void CPropTypesScreen::RemoveOutlineMethod(int nMethod, [[maybe_unused]] const WCHAR* szName)
 {
-	UNREFERENCED_PARAMETER(szName);
 	int nSize = (int)m_OlmArr.size();
 	for(int i = 0; i < nSize; i++ ){
 		if( m_OlmArr[i].nMethod == (EOutlineType)nMethod ){
@@ -828,9 +837,8 @@ void CPropTypesScreen::AddSIndentMethod(int nMethod, const WCHAR* pszName)
 	m_SIndentArr.push_back(method);
 }
 
-void CPropTypesScreen::RemoveSIndentMethod(int nMethod, const WCHAR* szName)
+void CPropTypesScreen::RemoveSIndentMethod(int nMethod, [[maybe_unused]] const WCHAR* szName)
 {
-	UNREFERENCED_PARAMETER(szName);
 	int nSize = (int)m_SIndentArr.size();
 	for(int i = 0; i < nSize; i++ ){
 		if( m_SIndentArr[i].nMethod == (ESmartIndentType)nMethod ){

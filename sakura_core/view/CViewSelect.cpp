@@ -378,14 +378,14 @@ void CViewSelect::DrawSelectArea2( HDC hdc ) const
 					//	Jan. 24, 2004 genta nLastLenは物理桁なので変換必要
 					//	最終行にTABが入っていると反転範囲が不足する．
 					//	2006.10.01 Moca GetEndLayoutPosで処理するためColumnToIndexは不要に。
-					RECT rcNew;
-					rcNew.left   = pView->GetTextArea().GetAreaLeft() + (Int)(pView->GetTextArea().GetViewLeftCol() + ptLast.x) * nCharWidth;
-					rcNew.right  = pView->GetTextArea().GetAreaRight();
-					rcNew.top    = pView->GetTextArea().GenerateYPx( ptLast.y );
-					rcNew.bottom = rcNew.top + nCharHeight;
+					RECT rcRgn;
+					rcRgn.left   = pView->GetTextArea().GetAreaLeft() + (Int)(pView->GetTextArea().GetViewLeftCol() + ptLast.x) * nCharWidth;
+					rcRgn.right  = pView->GetTextArea().GetAreaRight();
+					rcRgn.top    = pView->GetTextArea().GenerateYPx( ptLast.y );
+					rcRgn.bottom = rcRgn.top + nCharHeight;
 					
 					// 2006.10.01 Moca GDI(リージョン)リソースリーク修正
-					HRGN hrgnEOFNew = ::CreateRectRgnIndirect( &rcNew );
+					HRGN hrgnEOFNew = ::CreateRectRgnIndirect( &rcRgn );
 					::CombineRgn( hrgnDraw, hrgnDraw, hrgnEOFNew, RGN_DIFF );
 					::DeleteObject( hrgnEOFNew );
 				}
@@ -672,8 +672,8 @@ void CViewSelect::PrintSelectionInfoMsg() const
 			select_col = -select_col;
 		}
 		int select_col_keta = (Int)select_col / (Int)pView->GetTextMetrics().GetLayoutXDefault();
-		auto_sprintf( msg, L"%d col (%dpx) * %d lines selected.",
-			select_col_keta, select_col, select_line );
+		auto_snprintf_s( msg, _TRUNCATE, L"%d col (%dpx) * %d lines selected.",
+		select_col_keta, int(select_col), int(select_line) );
 	}
 	else {
 		//	通常の選択では選択範囲の中身を数える
@@ -816,14 +816,15 @@ void CViewSelect::PrintSelectionInfoMsg() const
 		}
 
 #ifdef _DEBUG
-		auto_sprintf( msg, L"%d %s (%d lines) selected. [%d:%d]-[%d:%d]",
+		auto_snprintf_s( msg, _TRUNCATE, L"%d %s (%d lines) selected. [%d:%d]-[%d:%d]",
 			select_sum,
 			( bCountByByte ? L"bytes" : L"chars" ),
-			select_line,
-			m_sSelect.GetFrom().x, m_sSelect.GetFrom().y,
-			m_sSelect.GetTo().x, m_sSelect.GetTo().y );
+			int(select_line),
+			int(m_sSelect.GetFrom().x), int(m_sSelect.GetFrom().y),
+			int(m_sSelect.GetTo().x), int(m_sSelect.GetTo().y)
+		);
 #else
-		auto_sprintf( msg, L"%d %s (%d lines) selected.", select_sum, ( bCountByByte ? L"bytes" : L"chars" ), select_line );
+		auto_snprintf_s(msg, _TRUNCATE, L"%d %s (%d lines) selected.", select_sum, ( bCountByByte ? L"bytes" : L"chars" ), select_line);
 #endif
 	}
 	const_cast<CEditView*>(pView)->GetCaret().m_bClearStatus = false;

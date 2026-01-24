@@ -52,10 +52,8 @@ void CDocEditor::SetModified( bool flag, bool redraw)
 		GetEditWnd().UpdateCaption();
 }
 
-void CDocEditor::OnBeforeLoad(SLoadInfo* sLoadInfo)
+void CDocEditor::OnBeforeLoad([[maybe_unused]] SLoadInfo* sLoadInfo)
 {
-	UNREFERENCED_PARAMETER(sLoadInfo);
-
 	//ビューのテキスト選択解除
 	GetEditWnd().Views_DisableSelectArea(true);
 }
@@ -71,19 +69,27 @@ void CDocEditor::OnAfterLoad(const SLoadInfo& sLoadInfo)
 		IndentationStyle indentStyle{};
 		DetectIndentationStyle(pcDoc, 256, indentStyle);
 		auto& bInsSpace = pcDoc->m_cDocType.GetDocumentAttributeWrite().m_bInsSpace;
+		auto setTemporaryTabSpaceKetas = [&]() {
+			// タブ幅を一時的に設定
+			pcDoc->m_bTabSpaceCurTemp = true;
+			auto& layoutMgr = pcDoc->m_cLayoutMgr;
+			layoutMgr.SetTabSpaceKetas(CKetaXInt(indentStyle.tabSpace));
+		};
 		if (indentStyle.character == IndentationStyle::Character::Spaces) { // 半角空白でインデント
 			if (indentStyle.tabSpace > 0) { // インデント幅が検出できた場合のみ設定
 				// スペースの挿入設定を有効化
 				bInsSpace = true;
-				// タブ幅を一時的に設定
-				pcDoc->m_bTabSpaceCurTemp = true;
-				auto& layoutMgr = pcDoc->m_cLayoutMgr;
-				layoutMgr.SetTabSpaceKetas(CKetaXInt(indentStyle.tabSpace));
+				setTemporaryTabSpaceKetas();
 			}
 		}else if (indentStyle.character == IndentationStyle::Character::Tabs) { // タブ文字でインデント
 			// スペースの挿入設定を無効化
 			bInsSpace = false;
-			// タブ幅は元のままで変更しない
+			if (indentStyle.tabSpace == -1) {
+				// タブ幅は元のままで変更しない
+			}
+			else {
+				setTemporaryTabSpaceKetas();
+			}
 		}else {
 			// 検出出来なかったので何も設定しない
 		}
@@ -115,9 +121,8 @@ void CDocEditor::OnAfterLoad(const SLoadInfo& sLoadInfo)
 	CAppMode::getInstance()->SetViewMode(sLoadInfo.bViewMode);		// ビューモード	##ここも、アリかな
 }
 
-void CDocEditor::OnAfterSave(const SSaveInfo& sSaveInfo)
+void CDocEditor::OnAfterSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 {
-	UNREFERENCED_PARAMETER(sSaveInfo);
 	CEditDoc* pcDoc = GetListeningDoc();
 
 	this->SetModified(false,false);	//	Jan. 22, 2002 genta 関数化 更新フラグのクリア
@@ -166,6 +171,8 @@ void CDocEditor::SetImeMode( int mode )
 			break;
 		case 4: //	Non-Conversion
 			conv |= IME_CMODE_NOCONVERSION;
+			break;
+		default:
 			break;
 		}
 		ImmSetConversionStatus( hIme, conv, sent );

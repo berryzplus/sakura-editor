@@ -376,7 +376,7 @@ void CDlgFileTree::SetDataInit()
 		const int ctrlWidth = rc.right - rc.left;
 		int nMaxCch = ctrlWidth / xWidth;
 		CFileNameManager::getInstance()->GetTransformFileNameFast(pFile, szFilePath, int(std::size(szFilePath)), calc.GetDC(), true, nMaxCch);
-		wsprintf(szMsg, LS(STR_FILETREE_FROM_FILE), szFilePath);
+		::swprintf_s(szMsg, LS(STR_FILETREE_FROM_FILE), szFilePath);
 		::SetWindowText(GetItemHwnd(IDC_STATIC_SETTFING_FROM), szMsg);
 		bEnableDefIni = FALSE;
 	}
@@ -918,6 +918,8 @@ BOOL CDlgFileTree::OnBnClicked( int wID )
 	case IDCANCEL:
 		::EndDialog( GetHwnd(), FALSE );
 		return TRUE;
+	default:
+		break;
 	}
 
 	/* 基底クラスメンバ */
@@ -959,6 +961,8 @@ BOOL CDlgFileTree::OnNotify(NMHDR* pNMHDR)
 				SetDataItem(-1);
 			}
 		}
+	default:
+		break;
 	}
 	/* 基底クラスメンバ */
 	return CDialog::OnNotify(pNMHDR);

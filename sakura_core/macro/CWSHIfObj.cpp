@@ -40,7 +40,7 @@ void CWSHIfObj::ReadyCommands(MacroFuncInfo *Info, int flags)
 	while(Info->m_nFuncID != -1)	// Aug. 29, 2002 genta 番人の値が変更されたのでここも変更
 	{
 		wchar_t FuncName[256];
-		wcscpy(FuncName, Info->m_pszFuncName);
+		::wcsncpy_s(FuncName, Info->m_pszFuncName, _TRUNCATE);
 
 		int ArgCount = 0;
 		if( Info->m_pData ){
@@ -85,9 +85,8 @@ void CWSHIfObj::ReadyCommands(MacroFuncInfo *Info, int flags)
 	@date 2005.06.27 zenryaku 戻り値の受け取りが無くてもエラーにせずに関数を実行する
 	@date 2013.06.07 Moca 5つ以上の引数の時ずれるのを修正。NULを含む文字列対応
 */
-HRESULT CWSHIfObj::MacroCommand(int IntID, DISPPARAMS *Arguments, VARIANT* Result, void *Data)
+HRESULT CWSHIfObj::MacroCommand(int IntID, DISPPARAMS *Arguments, VARIANT* Result, [[maybe_unused]] void *Data)
 {
-	UNREFERENCED_PARAMETER(Data);
 	int I;
 	int ArgCount = Arguments->cArgs;
 

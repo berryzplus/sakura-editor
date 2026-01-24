@@ -42,9 +42,8 @@ public:
 		return m_hFont_HAN;
 	}
 
-	const LOGFONT& GetLogfont(int FontNo = 0) const
+	const LOGFONT& GetLogfont([[maybe_unused]] int FontNo = 0) const
 	{
-		UNREFERENCED_PARAMETER(FontNo);
 		return m_LogFont;
 	}
 
@@ -60,4 +59,7 @@ private:
 	LOGFONT	m_LogFont;
 	bool	m_bMiniMap;
 };
+
+CViewFont* GetViewFont(bool isMiniMap);
+
 #endif /* SAKURA_CVIEWFONT_650DC4AC_DEA2_4652_B47A_6CA998C2F9EF_H_ */

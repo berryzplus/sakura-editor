@@ -120,6 +120,8 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 					DispatchEvent( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PLUGIN_OPTION, BN_CLICKED), (LPARAM)::GetDlgItem( hwndDlg, IDC_PLUGIN_OPTION ) );
 				}
 				break;
+			default:
+				break;
 			}
 			break;
 		default:
@@ -134,6 +136,8 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPCOM_PAGENUM_PLUGIN;
 				return TRUE;
+			default:
+				break;
 			}
 			break;
 		}
@@ -160,7 +164,7 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 					static std::wstring	sTrgDir;
 					CDlgOpenFile	cDlgOpenFile;
 					WCHAR			szPath[_MAX_PATH + 1];
-					wcscpy( szPath, (sTrgDir.empty() ? CPluginManager::getInstance()->GetBaseDir().c_str() : sTrgDir.c_str()));
+					::wcsncpy_s(szPath, (sTrgDir.empty() ? CPluginManager::getInstance()->GetBaseDir().c_str() : sTrgDir.c_str()), _TRUNCATE);
 					// ファイルオープンダイアログの初期化
 					cDlgOpenFile.Create(
 						G_AppInstance(),
@@ -254,6 +258,8 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 					}
 				}
 				break;
+			default:
+				break;
 			}
 			break;
 		case CBN_DROPDOWN:
@@ -267,6 +273,8 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			//default:
 			//	break;
 			//}
+			break;
+		default:
 			break;
 		}
 
@@ -288,6 +296,8 @@ INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -340,7 +350,7 @@ void CPropPlugin::SetData_LIST( HWND hwndDlg )
 		sItem.mask = LVIF_TEXT | LVIF_PARAM;
 		sItem.iItem = index;
 		sItem.iSubItem = 0;
-		_itow( index, buf, 10 );
+		::_itow_s(index, buf, 10);
 		sItem.pszText = buf;
 		sItem.lParam = index;
 		ListView_InsertItem( hListView, &sItem );
@@ -547,18 +557,18 @@ bool CPropPlugin::BrowseReadMe(const std::wstring& sReadMeName)
 	//アプリケーションパス
 	WCHAR szExePath[MAX_PATH + 1];
 	::GetModuleFileName( nullptr, szExePath, int(std::size(szExePath)) );
-	cCmdLineBuf.AppendF( L"\"%s\"", szExePath );
+	cCmdLineBuf.Append(std::format(LR"("{}")", szExePath));
 
 	// ファイル名
-	cCmdLineBuf.AppendF( L" \"%s\"", sReadMeName.c_str() );
+	cCmdLineBuf.Append(std::format(LR"( "{}")", sReadMeName));
 
 	// コマンドラインオプション
-	cCmdLineBuf.AppendF(L" -R -CODE=99");
+	cCmdLineBuf.Append(L" -R -CODE=99");
 
 	// グループID
 	int nGroup = GetDllShareData().m_sNodes.m_nGroupSequences;
 	if( nGroup > 0 ){
-		cCmdLineBuf.AppendF( L" -GROUP=%d", nGroup+1 );
+		cCmdLineBuf.Append(std::format(L" -GROUP={}", nGroup + 1));
 	}
 
 	//CreateProcessに渡すSTARTUPINFOを作成
@@ -569,7 +579,7 @@ bool CPropPlugin::BrowseReadMe(const std::wstring& sReadMeName)
 	ZeroMemory( &pi, sizeof(pi) );
 
 	WCHAR	szCmdLine[1024];
-	wcscpy_s(szCmdLine, std::size(szCmdLine), cCmdLineBuf.c_str());
+	::wcsncpy_s(szCmdLine, cCmdLineBuf.c_str(), _TRUNCATE);
 	//リソースリーク対策
 	BOOL bRet = ::CreateProcess( nullptr, szCmdLine, nullptr, nullptr, TRUE,
 		CREATE_NEW_CONSOLE, nullptr, nullptr, &sui, &pi );

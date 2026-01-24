@@ -130,7 +130,7 @@ BOOL CEditView::KeySearchCore( const CNativeW* pcmemCurText )
 					{
 						WCHAR szFile[MAX_PATH];
 						// 2013.05.08 表示するのはファイル名(拡張子なし)のみにする
-						_wsplitpath( m_pTypeData->m_KeyHelpArr[i].m_szPath, nullptr, nullptr, szFile, nullptr );
+						_wsplitpath_s( m_pTypeData->m_KeyHelpArr[i].m_szPath, nullptr, 0, nullptr, 0, szFile, std::size(szFile), nullptr, 0 );
 						m_cTipWnd.m_cInfo.AppendString( szFile );
 					}
 					m_cTipWnd.m_cInfo.AppendString( L"\n" );
@@ -487,7 +487,7 @@ int CEditView::IsSearchString(
 	else {
 		const wchar_t* pHit = CSearchAgent::SearchString(cStr.GetPtr(), cStr.GetLength(), nPos, m_sSearchPattern);
 		if( pHit ){
-			*pnSearchStart = pHit - cStr.GetPtr();
+			*pnSearchStart = int(pHit - cStr.GetPtr());
 			*pnSearchEnd = *pnSearchStart + m_sSearchPattern.GetLen();
 			return 1;
 		}

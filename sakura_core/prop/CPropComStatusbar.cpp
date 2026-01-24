@@ -51,11 +51,10 @@ INT_PTR CALLBACK CPropStatusbar::DlgProc_page(
 INT_PTR CPropStatusbar::DispatchEvent(
     HWND		hwndDlg,	// handle to dialog box
     UINT		uMsg,		// message
-    WPARAM		wParam,		// first message parameter
+    [[maybe_unused]] WPARAM		wParam,		// first message parameter
     LPARAM		lParam 		// second message parameter
 )
 {
-	UNREFERENCED_PARAMETER(wParam);
 	NMHDR*		pNMHDR;
 
 	switch( uMsg ){
@@ -86,6 +85,8 @@ INT_PTR CPropStatusbar::DispatchEvent(
 		case PSN_SETACTIVE: //@@@ 2002.01.03 YAZAKI 最後に表示していたシートを正しく覚えていないバグ修正
 			m_nPageNum = ID_PROPCOM_PAGENUM_STATUSBAR;
 			return TRUE;
+		default:
+			break;
 		}
 		break;	/* WM_NOTIFY */
 
@@ -106,6 +107,8 @@ INT_PTR CPropStatusbar::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }

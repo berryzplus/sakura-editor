@@ -122,10 +122,15 @@ protected:
 		LPARAM	lParam		// second message parameter
 	);
 
+private:
+	bool	OnSetTypeSetting(size_t index);
+	bool	OnGetTypeSetting(size_t index);
+	bool	OnAddTypeSetting(size_t index);
+	bool	OnDelTypeSetting(size_t index);
+
 	/*
 	|| メンバ変数
 	*/
-private:
 	CMenuDrawer		m_cMenuDrawer;
 	CPropertyManager*	m_pcPropertyManager = nullptr;
 	bool			m_bUseTrayMenu = false;			//トレイメニュー表示中
@@ -139,7 +144,7 @@ private:
 
 	CImageListMgr	m_hIcons;
 
-	SFilePath		m_szLanguageDll = nullptr;
+	SFilePath		m_szLanguageDll;
 };
 
 #endif /* SAKURA_CCONTROLTRAY_E9E24D69_3511_4EC1_A29A_1D119F68004A_H_ */

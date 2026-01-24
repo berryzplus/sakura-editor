@@ -629,7 +629,7 @@ int CSearchAgent::SearchWord(
 						pattern
 					);
 					if( nullptr != pszRes ){
-						nHitPos = pszRes - pLine;
+						nHitPos = int(pszRes - pLine);
 						nIdxPos = nHitPos + nPatternLen;	// マッチ文字列長進めるように変更 2005.10.28 Karoto
 						if( nHitPos >= nHitTo ){
 							if( -1 != nHitPosOld ){
@@ -700,7 +700,7 @@ end_of_func:;
 	clockEnd = clock();
 	WCHAR buf[100];
 	memset(buf, 0x00, sizeof(buf));
-	wsprintf( buf, L"%d", clockEnd - clockStart);
+	::swprintf_s(buf, L"%d", clockEnd - clockStart);
 	::MessageBox( NULL, buf, GSTR_APPNAME, MB_OK );
 #endif
 

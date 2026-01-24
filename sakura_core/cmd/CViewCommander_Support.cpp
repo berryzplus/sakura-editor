@@ -228,11 +228,11 @@ retry:;
 		// 2007.05.21 ryoji 相対パスは設定ファイルからのパスを優先
 		GetInidirOrExedir( path, helpfile );
 	}else{
-		wcscpy( path, helpfile );
+		::wcsncpy_s(path, helpfile, _TRUNCATE);
 	}
 	// 2012.09.26 Moca HTMLHELP対応
 	WCHAR	szExt[_MAX_EXT];
-	_wsplitpath( path, nullptr, nullptr, nullptr, szExt );
+	_wsplitpath_s( path, nullptr, 0, nullptr, 0, nullptr, 0, szExt, std::size(szExt) );
 	if( 0 == _wcsicmp(szExt, L".chi") || 0 == _wcsicmp(szExt, L".chm") || 0 == _wcsicmp(szExt, L".col") ){
 		Command_EXTHTMLHELP( path, cmemCurText.GetStringPtr() );
 	}else{
@@ -256,7 +256,6 @@ void CViewCommander::Command_EXTHTMLHELP( const WCHAR* _helpfile, const WCHAR* k
 	}
 
 	HWND		hwndHtmlHelp;
-	int			nLen;
 
 	DEBUG_TRACE( L"helpfile=%s\n", helpfile.c_str() );
 
@@ -301,14 +300,13 @@ void CViewCommander::Command_EXTHTMLHELP( const WCHAR* _helpfile, const WCHAR* k
 		// タスクトレイのプロセスにHtmlHelpを起動させる
 		// 2003.06.23 Moca 相対パスは実行ファイルからのパス
 		// 2007.05.21 ryoji 相対パスは設定ファイルからのパスを優先
-		WCHAR* pWork=GetDllShareData().m_sWorkBuffer.GetWorkBuffer<WCHAR>();
+		auto szWork = GetDllShareData().m_sWorkBuffer.GetBuffer<WCHAR>();
 		if( _IS_REL_PATH( filename ) ){
-			GetInidirOrExedir( pWork, filename );
+			GetInidirOrExedir(szWork, filename);
 		}else{
-			wcscpy( pWork, filename ); //	Jul. 5, 2002 genta
+			::wcsncpy_s(std::data(szWork), std::size(szWork), filename, _TRUNCATE);
 		}
-		nLen = (int)wcslen( pWork );
-		wcscpy( &pWork[nLen + 1], cmemCurText.GetStringPtr() );
+		::wcsncat_s(std::data(szWork), std::size(szWork), cmemCurText.GetStringPtr(), _TRUNCATE);
 		hwndHtmlHelp = (HWND)::SendMessageAny(
 			GetDllShareData().m_sHandles.m_hwndTray,
 			MYWM_HTMLHELP,

@@ -147,18 +147,22 @@ INT_PTR CPropHelper::DispatchEvent(
 					/* 検索フォルダー */
 					// 2007.05.27 ryoji 相対パスは設定ファイルからのパスを優先
 					if( _IS_REL_PATH( m_Common.m_sHelper.m_szMigemoDict ) ){
-						GetInidirOrExedir( szPath, m_Common.m_sHelper.m_szMigemoDict, TRUE );
+						GetInidirOrExedir(szPath, m_Common.m_sHelper.m_szMigemoDict);
 					}else{
-						wcscpy( szPath, m_Common.m_sHelper.m_szMigemoDict );
+						::wcsncpy_s(szPath, m_Common.m_sHelper.m_szMigemoDict, _TRUNCATE);
 					}
 					if( SelectDir( hwndDlg, LS(STR_PROPCOMHELP_MIGEMODIR), szPath, szPath ) ){
-						wcscpy( m_Common.m_sHelper.m_szMigemoDict, GetRelPath(szPath) ); // 2015.03.03 可能なら相対パスにする
+						::wcsncpy_s(m_Common.m_sHelper.m_szMigemoDict, GetRelPath(szPath), _TRUNCATE); // 2015.03.03 可能なら相対パスにする
 						ApiWrap::DlgItem_SetText( hwndDlg, IDC_EDIT_MIGEMO_DICT, m_Common.m_sHelper.m_szMigemoDict );
 					}
 				}
 				return TRUE;
+			default:
+				break;
 			}
 			break;	/* BN_CLICKED */
+		default:
+			break;
 		}
 		break;	/* WM_COMMAND */
 	case WM_NOTIFY:
@@ -180,6 +184,8 @@ INT_PTR CPropHelper::DispatchEvent(
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPCOM_PAGENUM_HELPER;
 				return TRUE;
+			default:
+				break;
 			}
 //			break;	/* default */
 //		}
@@ -216,6 +222,8 @@ INT_PTR CPropHelper::DispatchEvent(
 			m_hKeywordHelpFont = nullptr;
 		}
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }

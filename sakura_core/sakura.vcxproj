@@ -59,8 +59,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>StdAfx.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalOptions>/FAsu /Fa$(IntDir) /source-charset:utf-8 /execution-charset:shift_jis /w34996 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/FAsu /Fa$(IntDir) /source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SDLCheck>true</SDLCheck>
@@ -85,12 +86,15 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkTimeCodeGenerationObjectFile />
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -306,7 +310,7 @@
     <ClInclude Include="..\sakura_core\env\CTagJumpManager.h" />
     <ClInclude Include="..\sakura_core\env\DLLSHAREDATA.h" />
     <ClInclude Include="..\sakura_core\extmodule\CBregexp.h" />
-    <ClInclude Include="..\src\main\cpp\extmodule\CBregOnig.hpp" />
+    <ClInclude Include="..\sakura_core\extmodule\CBregexpDll2.h" />
     <ClInclude Include="..\sakura_core\extmodule\CDllHandler.h" />
     <ClInclude Include="..\sakura_core\extmodule\CMigemo.h" />
     <ClInclude Include="..\sakura_core\extmodule\CUchardet.h" />
@@ -677,7 +681,7 @@
     <ClCompile Include="..\sakura_core\env\CTagJumpManager.cpp" />
     <ClCompile Include="..\sakura_core\env\DLLSHAREDATA.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CBregexp.cpp" />
-    <ClCompile Include="..\src\main\cpp\extmodule\CBregOnig.cpp" />
+    <ClCompile Include="..\sakura_core\extmodule\CBregexpDll2.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CDllHandler.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CMigemo.cpp" />
     <ClCompile Include="..\sakura_core\extmodule\CUchardet.cpp" />

@@ -76,9 +76,8 @@ bool CPPA::Execute(CEditView* pcEditView, int flags )
 	return !info.m_bError;
 }
 
-LPCWSTR CPPA::GetDllNameImp(int nIndex)
+LPCWSTR CPPA::GetDllNameImp([[maybe_unused]] int nIndex)
 {
-	UNREFERENCED_PARAMETER(nIndex);
 	return L"PPA.DLL";
 }
 
@@ -273,6 +272,8 @@ void __stdcall CPPA::stdStrObj(const char* ObjName, int Index, BYTE GS_Mode, int
 		case omSet:
 			m_CurInstance->m_cMemDebug.SetString(*Value);
 			break;
+		default:
+			break;
 		}
 		break;
 	default:
@@ -328,9 +329,9 @@ void __stdcall CPPA::stdError( int Err_CD, const char* Err_Mes )
 			funcDesc = GetDeclarations(*pFuncInfo);
 		}
 		if (!funcDesc.empty()) {
-			auto_sprintf( szMes, LS(STR_ERR_DLGPPA2), funcDesc.c_str() );
+			auto_snprintf_s(szMes, _TRUNCATE, LS(STR_ERR_DLGPPA2), funcDesc.c_str());
 		}else{
-			auto_sprintf( szMes, LS(STR_ERR_DLGPPA3), FuncID );
+			auto_snprintf_s(szMes, _TRUNCATE, LS(STR_ERR_DLGPPA3), FuncID);
 		}
 	}else{
 		if( !Err_Mes ){
@@ -346,7 +347,7 @@ void __stdcall CPPA::stdError( int Err_CD, const char* Err_Mes )
 				}
 				break;
 			default:
-				auto_sprintf( szMes, LS(STR_ERR_DLGPPA5), Err_CD, to_wchar(Err_Mes) );
+				auto_snprintf_s(szMes, _TRUNCATE, LS(STR_ERR_DLGPPA5), Err_CD, to_wchar(Err_Mes));
 			}
 		}
 	}

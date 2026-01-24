@@ -434,7 +434,11 @@ INT_PTR CPropTypesKeyHelp::DispatchEvent(
 			case IDC_BUTTON_KEYHELP_EXPORT:	/* エクスポート */
 				Export(hwndDlg);
 				return TRUE;
+			default:
+				break;
 			}
+			break;
+		default:
 			break;
 		}
 		break;
@@ -470,6 +474,8 @@ INT_PTR CPropTypesKeyHelp::DispatchEvent(
 				ApiWrap::DlgItem_SetText( hwndDlg, IDC_EDIT_KEYHELP, szPath );			/* ファイルパス */
 			}
 			break;
+		default:
+			break;
 		}
 		break;
 
@@ -481,6 +487,8 @@ INT_PTR CPropTypesKeyHelp::DispatchEvent(
 	case WM_CONTEXTMENU:	/* Context Menu */
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -588,8 +596,8 @@ int CPropTypesKeyHelp::GetData( HWND hwndDlg )
 			ListView_GetItemText( hwndList, i, 1, szAbout, int(std::size(szAbout)) );
 			ListView_GetItemText( hwndList, i, 2, szPath, int(std::size(szPath)) );
 			m_Types.m_KeyHelpArr[i].m_bUse = bUse;
-			wcscpy(m_Types.m_KeyHelpArr[i].m_szAbout, szAbout);
-			wcscpy(m_Types.m_KeyHelpArr[i].m_szPath, szPath);
+			::wcsncpy_s(m_Types.m_KeyHelpArr[i].m_szAbout, szAbout, _TRUNCATE);
+			::wcsncpy_s(m_Types.m_KeyHelpArr[i].m_szPath, szPath, _TRUNCATE);
 		}else{	/* 未登録部分はクリアする */
 			m_Types.m_KeyHelpArr[i].m_szPath[0] = L'\0';
 		}

@@ -252,6 +252,8 @@ BOOL CDlgProfileMgr::OnBnClicked( int wID )
 		GetData(false);
 		CloseDialog( 0 );
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -266,14 +268,20 @@ INT_PTR CDlgProfileMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPAR
 			if( LOWORD(wParam) == IDC_LIST_PROFILE ){
 				switch( HIWORD(wParam) ){
 				case LBN_SELCHANGE:
+				{
 					HWND hwndList = (HWND)lParam;
 					int nIdx = ApiWrap::List_GetCurSel( hwndList );
 					DlgItem_Enable( GetHwnd(), IDC_BUTTON_PROF_DELETE, nIdx != 0 );
 					DlgItem_Enable( GetHwnd(), IDC_BUTTON_PROF_RENAME, nIdx != 0 );
 					return TRUE;
 				}
+				default:
+					break;
+				}
 			}
 		}
+	default:
+		break;
 	}
 	return result;
 }
@@ -382,7 +390,7 @@ void CDlgProfileMgr::RenameProf()
 	WCHAR szText[_MAX_PATH];
 	bool bDefault = MyList_GetText( hwndList, nCurIndex, szText );
 	WCHAR szTextOld[_MAX_PATH];
-	wcscpy( szTextOld, szText );
+	::wcsncpy_s(szTextOld, szText, _TRUNCATE);
 	std::wstring strTitle = LS(STR_DLGPROFILE_RENAME_TITLE);
 	std::wstring strMessage = LS(STR_DLGPROFILE_RENAME_MSG);
 	int max_size = _MAX_PATH;
@@ -429,7 +437,7 @@ void CDlgProfileMgr::RenameProf()
 		}
 	}
 	if( bDefault ){
-		wcscat(szText, L"*");
+		::wcsncat_s(szText, L"*", _TRUNCATE);
 	}
 	ApiWrap::List_DeleteString( hwndList, nCurIndex );
 	ApiWrap::List_InsertString( hwndList, nCurIndex, szText );
@@ -444,7 +452,7 @@ void CDlgProfileMgr::SetDefaultProf(int index)
 	WCHAR szProfileName[_MAX_PATH];
 	MyList_GetText( hwndList, index, szProfileName );
 	ApiWrap::List_DeleteString( hwndList, index );
-	wcscat( szProfileName, L"*" );
+	::wcsncat_s(szProfileName, L"*", _TRUNCATE);
 	ApiWrap::List_InsertString( hwndList, index, szProfileName );
 }
 
@@ -481,7 +489,7 @@ static bool IOProfSettings( SProfileSettings& settings, bool bWrite )
 	for(int i = 0; i < nCount; i++){
 		wchar_t szKey[64];
 		std::wstring strProfName;
-		_swprintf( szKey, L"P[%d]", i + 1 ); // 1開始
+		::_snwprintf_s(szKey, _TRUNCATE, L"P[%d]", i + 1); // 1開始
 		if( bWrite ){
 			strProfName = settings.m_vProfList[i];
 			cProf.IOProfileData( pSection, szKey, strProfName );

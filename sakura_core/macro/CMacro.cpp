@@ -315,7 +315,7 @@ void CMacroParam::SetStringParam( const WCHAR* szParam, int nLength )
 	}
 	m_pData = new WCHAR[nLen + 1];
 	wmemcpy( m_pData, szParam, nLen );
-	m_pData[nLen] = LTEXT('\0');
+	m_pData[nLen] = L'\0';
 	m_nDataLen = nLen;
 	m_eType = EMacroParamTypeStr;
 }
@@ -324,7 +324,7 @@ void CMacroParam::SetIntParam( const int nParam )
 {
 	Clear();
 	m_pData = new WCHAR[16];	//	数値格納（最大16桁）用
-	_itow(nParam, m_pData, 10);
+	::_itow_s(nParam, m_pData, 16, 10);
 	m_nDataLen = (int)wcslen(m_pData);
 	m_eType = EMacroParamTypeInt;
 }
@@ -442,7 +442,7 @@ static inline const WCHAR* wtow_def( const WCHAR* arg, const WCHAR* def_val )
 	のように。
 	AddLParam以外にCKeyMacroMgr::LoadKeyMacroによってもCMacroが作成される点に注意
 */
-void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
+void CMacro::Save([[maybe_unused]] HINSTANCE hInstance, CTextOutputStream& out) const
 {
 	WCHAR			szFuncName[1024];
 	WCHAR			szFuncNameJapanese[500];
@@ -452,9 +452,9 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 	int nFuncID = m_nFuncID;
 
 	/* 2002.2.2 YAZAKI CSMacroMgrに頼む */
-	if (CSMacroMgr::GetFuncInfoByID( hInstance, nFuncID, szFuncName, szFuncNameJapanese)){
+	if (CSMacroMgr::GetFuncInfoByID(nFuncID, szFuncName, szFuncNameJapanese)) {
 		// 2014.01.24 Moca マクロ書き出しをm_eTypeを追加して統合
-		out.WriteF( L"%ls(", szFuncName ); // 2014.12.25 Moca "S_"を削除
+		out.Write(std::format(L"{}(", szFuncName)); // 2014.12.25 Moca "S_"を削除
 		CMacroParam* pParam = m_pParamTop;
 		while( pParam ){
 			if( pParam != m_pParamTop ){
@@ -486,7 +486,7 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 							wchar_t to[7];
 							from[0] = wchar_t(c);
 							from[1] = L'\0';
-							auto_sprintf( to, L"\\u%04x", c );
+							auto_snprintf_s(to, _TRUNCATE, L"\\u%04x", c);
 							cmemWork.Replace( from, to );
 							break;
 						}
@@ -502,10 +502,10 @@ void CMacro::Save( HINSTANCE hInstance, CTextOutputStream& out ) const
 			}
 			pParam = pParam->m_pNext;
 		}
-		out.WriteF( L");\t// %ls\r\n", szFuncNameJapanese );
+		out.Write(std::format(L");\t// {}\r\n", szFuncNameJapanese));
 		return;
 	}
-	out.WriteF( LS(STR_ERR_DLGMACRO01) );
+	out.Write(cxx::load_string(STR_ERR_DLGMACRO01));
 }
 
 /**	マクロ引数変換
@@ -1103,29 +1103,29 @@ bool CMacro::HandleCommand(
 			cCmdLine.AppendString(L"\" -GFOLDER=\"");
 			cCmdLine.AppendString(cmWork3.GetStringPtr());
 			cCmdLine.AppendString(L"\" -GCODE=");
-			auto_sprintf( szTemp, L"%d", nCharSet );
+			auto_snprintf_s(szTemp, _TRUNCATE, L"%d", nCharSet);
 			cCmdLine.AppendString(szTemp);
 
 			//GOPTオプション
 			pOpt[0] = '\0';
-			if( lFlag & 0x01 )wcscat( pOpt, L"S" );	/* サブフォルダーからも検索する */
-			if( lFlag & 0x04 )wcscat( pOpt, L"L" );	/* 英大文字と英小文字を区別する */
-			if( lFlag & 0x08 )wcscat( pOpt, L"R" );	/* 正規表現 */
-			if(          0x20 == (lFlag & 0x400020) )wcscat( pOpt, L"P" );	// 行を出力する
-			else if( 0x400000 == (lFlag & 0x400020) )wcscat( pOpt, L"N" );	// 否ヒット行を出力する
-			if(      0x40 == (lFlag & 0xC0) )wcscat( pOpt, L"2" );	/* Grep: 出力形式 */
-			else if( 0x80 == (lFlag & 0xC0) )wcscat( pOpt, L"3" );
-			else wcscat( pOpt, L"1" );
-			if( lFlag & 0x10000 )wcscat( pOpt, L"W" );
-			if( lFlag & 0x20000 )wcscat( pOpt, L"F" );
-			if( lFlag & 0x40000 )wcscat( pOpt, L"B" );
-			if( lFlag & 0x80000 )wcscat( pOpt, L"D" );
+			if( lFlag & 0x01 )::wcsncat_s(pOpt, L"S", _TRUNCATE);	/* サブフォルダーからも検索する */
+			if( lFlag & 0x04 )::wcsncat_s(pOpt, L"L", _TRUNCATE);	/* 英大文字と英小文字を区別する */
+			if( lFlag & 0x08 )::wcsncat_s(pOpt, L"R", _TRUNCATE);	/* 正規表現 */
+			if(          0x20 == (lFlag & 0x400020) )::wcsncat_s(pOpt, L"P", _TRUNCATE);	// 行を出力する
+			else if( 0x400000 == (lFlag & 0x400020) )::wcsncat_s(pOpt, L"N", _TRUNCATE);	// 否ヒット行を出力する
+			if(      0x40 == (lFlag & 0xC0) )::wcsncat_s(pOpt, L"2", _TRUNCATE);	/* Grep: 出力形式 */
+			else if( 0x80 == (lFlag & 0xC0) )::wcsncat_s(pOpt, L"3", _TRUNCATE);
+			else ::wcsncat_s(pOpt, L"1", _TRUNCATE);
+			if( lFlag & 0x10000 )::wcsncat_s(pOpt, L"W", _TRUNCATE);
+			if( lFlag & 0x20000 )::wcsncat_s(pOpt, L"F", _TRUNCATE);
+			if( lFlag & 0x40000 )::wcsncat_s(pOpt, L"B", _TRUNCATE);
+			if( lFlag & 0x80000 )::wcsncat_s(pOpt, L"D", _TRUNCATE);
 			if( bGrepReplace ){
-				if( lFlag & 0x100000 )wcscat( pOpt, L"C" );
-				if( lFlag & 0x200000 )wcscat( pOpt, L"O" );
+				if( lFlag & 0x100000 )::wcsncat_s(pOpt, L"C", _TRUNCATE);
+				if( lFlag & 0x200000 )::wcsncat_s(pOpt, L"O", _TRUNCATE);
 			}
 			if( pOpt[0] != L'\0' ){
-				auto_sprintf( szTemp, L" -GOPT=%s", pOpt );
+				auto_snprintf_s(szTemp, _TRUNCATE, L" -GOPT=%s", pOpt);
 				cCmdLine.AppendString(szTemp);
 			}
 
@@ -1800,6 +1800,8 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 			case F_YESNOBOX:
 				uType |= MB_YESNO | MB_ICONQUESTION;
 				break;
+			default:
+				break;
 			}
 			int ret = ::MessageBox( View->GetHwnd(), sMessage.c_str(), L"sakura macro", uType );
 			Wrap( &Result )->Receive( ret );
@@ -1871,7 +1873,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 			);
 			bool bRet;
 			WCHAR szPath[ _MAX_PATH ];
-			wcscpy( szPath, sDefault.c_str() );
+			::wcsncpy_s(szPath, sDefault.c_str(), _TRUNCATE);
 			if( LOWORD(ID) == F_FILEOPENDIALOG ){
 				bRet = cDlgOpenFile.DoModal_GetOpenFileName( szPath );
 			}else{
@@ -2329,7 +2331,7 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 				std::vector<wchar_t> vStrMenu;
 				int nLen = (int)wcslen(varCopy2.Data.bstrVal);
 				vStrMenu.assign( nLen + 1, L'\0' );
-				wcscpy(&vStrMenu[0], varCopy2.Data.bstrVal);
+				::wcsncpy_s(&vStrMenu[0], std::size(vStrMenu), varCopy2.Data.bstrVal, _TRUNCATE);
 				HMENU hMenu = ::CreatePopupMenu();
 				std::vector<HMENU> vHmenu;
 				vHmenu.push_back( hMenu );

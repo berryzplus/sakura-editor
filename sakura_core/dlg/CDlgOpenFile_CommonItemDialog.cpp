@@ -293,54 +293,42 @@ struct CDlgOpenFile_CommonItemDialog final
 	// IFileDialogEvents
 
 	HRESULT STDMETHODCALLTYPE OnFileOk(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd) override {
-		UNREFERENCED_PARAMETER(pfd);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnFolderChanging(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd,
-		/* [in] */ __RPC__in_opt IShellItem *psiFolder) override {
-		UNREFERENCED_PARAMETER(pfd);
-		UNREFERENCED_PARAMETER(psiFolder);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd,
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IShellItem *psiFolder) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnFolderChange(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd) override {
-		UNREFERENCED_PARAMETER(pfd);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnSelectionChange(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd) override {
-		UNREFERENCED_PARAMETER(pfd);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnShareViolation(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd,
-		/* [in] */ __RPC__in_opt IShellItem *psi,
-		/* [out] */ __RPC__out FDE_SHAREVIOLATION_RESPONSE *pResponse) override {
-		UNREFERENCED_PARAMETER(pResponse);
-		UNREFERENCED_PARAMETER(pfd);
-		UNREFERENCED_PARAMETER(psi);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd,
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IShellItem *psi,
+		/* [out] */ [[maybe_unused]] __RPC__out FDE_SHAREVIOLATION_RESPONSE *pResponse) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnTypeChange(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd) override {
-		UNREFERENCED_PARAMETER(pfd);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd) override {
 		return E_NOTIMPL;
 	}
 		
 	HRESULT STDMETHODCALLTYPE OnOverwrite(
-		/* [in] */ __RPC__in_opt IFileDialog *pfd,
-		/* [in] */ __RPC__in_opt IShellItem *psi,
-		/* [out] */ __RPC__out FDE_OVERWRITE_RESPONSE *pResponse) override {
-		UNREFERENCED_PARAMETER(pResponse);
-		UNREFERENCED_PARAMETER(pfd);
-		UNREFERENCED_PARAMETER(psi);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialog *pfd,
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IShellItem *psi,
+		/* [out] */ [[maybe_unused]] __RPC__out FDE_OVERWRITE_RESPONSE *pResponse) override {
 		return E_NOTIMPL;
 	}
 
@@ -352,10 +340,8 @@ struct CDlgOpenFile_CommonItemDialog final
 		/* [in] */ DWORD dwIDItem) override;
 		
 	HRESULT STDMETHODCALLTYPE OnButtonClicked(
-		/* [in] */ __RPC__in_opt IFileDialogCustomize *pfdc,
-		/* [in] */ DWORD dwIDCtl) override {
-		UNREFERENCED_PARAMETER(dwIDCtl);
-		UNREFERENCED_PARAMETER(pfdc);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialogCustomize *pfdc,
+		/* [in] */ [[maybe_unused]] DWORD dwIDCtl) override {
 		return E_NOTIMPL;
 	}
 	
@@ -365,10 +351,8 @@ struct CDlgOpenFile_CommonItemDialog final
 		/* [in] */ BOOL bChecked) override;
 	
 	HRESULT STDMETHODCALLTYPE OnControlActivating(
-		/* [in] */ __RPC__in_opt IFileDialogCustomize *pfdc,
-		/* [in] */ DWORD dwIDCtl) override {
-		UNREFERENCED_PARAMETER(dwIDCtl);
-		UNREFERENCED_PARAMETER(pfdc);
+		/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialogCustomize *pfdc,
+		/* [in] */ [[maybe_unused]] DWORD dwIDCtl) override {
 		return E_NOTIMPL;
 	}
 };
@@ -402,9 +386,9 @@ CDlgOpenFile_CommonItemDialog::CDlgOpenFile_CommonItemDialog()
 		nullptr,
 		szFile, int(std::size(szFile))
 	);
-	_wsplitpath( szFile, szDrive, szDir, nullptr, nullptr );
-	wcscpy( m_szInitialDir, szDrive );
-	wcscat( m_szInitialDir, szDir );
+	_wsplitpath_s( szFile, szDrive, std::size(szDrive), szDir, std::size(szDir), nullptr, 0, nullptr, 0 );
+	::wcsncpy_s(m_szInitialDir, szDrive, _TRUNCATE);
+	::wcsncat_s(m_szInitialDir, szDir, _TRUNCATE);
 
 
 	return;
@@ -435,10 +419,10 @@ void CDlgOpenFile_CommonItemDialog::Create(
 		my_splitpath_t( pszDefaultPath, szDrive, szDir, nullptr, nullptr );
 		// 2010.08.28 相対パス解決
 		WCHAR szRelPath[_MAX_PATH];
-		auto_sprintf( szRelPath, L"%s%s", szDrive, szDir );
+		auto_snprintf_s(szRelPath, _TRUNCATE, L"%s%s", szDrive, szDir);
 		const WCHAR* p = szRelPath;
 		if( ! ::GetLongFileName( p, m_szInitialDir ) ){
-			wcscpy(m_szInitialDir, p );
+			::wcsncpy_s(m_szInitialDir, p, _TRUNCATE);
 		}
 	}
 	m_vMRU = vMRU;
@@ -484,7 +468,7 @@ bool CDlgOpenFile_CommonItemDialog::DoModal_GetOpenFileName( WCHAR* pszPath, EFi
 	std::vector<std::wstring> fileNames;
 	bool ret = DoModalOpenDlgImpl0(false, &fileNames, L"", specs);
 	if (ret) {
-		wcscpy(pszPath, fileNames[0].c_str());
+		::wcsncpy_s(pszPath, _MAX_PATH, fileNames[0].c_str(), _TRUNCATE);
 	}
 	return ret;
 }
@@ -500,7 +484,7 @@ bool CDlgOpenFile_CommonItemDialog::DoModal_GetSaveFileName( WCHAR* pszPath )
 		const WCHAR* pOrg = pszPath;
 		if( ::GetLongFileName( pOrg, szFullPath ) ){
 			// 成功。書き戻す
-			wcscpy( pszPath , szFullPath );
+			::wcsncpy_s(pszPath, _MAX_PATH, szFullPath, _TRUNCATE);
 		}
 	}
 
@@ -522,7 +506,7 @@ HRESULT CDlgOpenFile_CommonItemDialog::Customize()
 		CCodeTypesForCombobox cCodeTypes;
 		bool bCodeSel = false;
 		ECodeType eCodeSel = CODE_NONE;
-		for( int i = (m_customizeSetting.bSkipAutoDetect ? 1 : 0) /* 保存の場合は自動選択飛ばし */; i < cCodeTypes.GetCount(); ++i ){
+		for( int i = (m_customizeSetting.bSkipAutoDetect ? 1 : 0) /* 保存の場合は自動選択飛ばし */; i < int(cCodeTypes.GetCount()); ++i ){
 			auto code = cCodeTypes.GetCode(i);
 			hr = AddControlItem(CtrlId::COMBO_CODE, (DWORD)code, cCodeTypes.GetName(i)); RETURN_IF_FAILED
 			if( code == m_nCharCode ){
@@ -760,7 +744,7 @@ HRESULT CDlgOpenFile_CommonItemDialog::DoModalSaveDlgImpl1(
 		hr = pFileSaveDialog->GetResult(&pShellItem); RETURN_IF_FAILED
 		PWSTR pszFilePath;
 		hr = pShellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath); RETURN_IF_FAILED
-		wcscpy(pszPath, pszFilePath);
+		::wcsncpy_s(pszPath, _MAX_PATH, pszFilePath, _TRUNCATE);
 		CoTaskMemFree(pszFilePath);
 	}
 
@@ -835,11 +819,10 @@ bool CDlgOpenFile_CommonItemDialog::DoModalSaveDlg( SSaveInfo* pSaveInfo, bool b
 }
 
 HRESULT CDlgOpenFile_CommonItemDialog::OnItemSelected(
-	/* [in] */ __RPC__in_opt IFileDialogCustomize *pfdc,
+	/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialogCustomize *pfdc,
 	/* [in] */ DWORD dwIDCtl,
 	/* [in] */ DWORD dwIDItem)
 {
-	UNREFERENCED_PARAMETER(pfdc);
 	switch (dwIDCtl) {
 	case CtrlId::COMBO_CODE:
 		{
@@ -874,16 +857,17 @@ HRESULT CDlgOpenFile_CommonItemDialog::OnItemSelected(
 			m_pFileDialog->SetFolder(psiFolder);
 		}
 		break;
+	default:
+		break;
 	}
 	return S_OK;
 }
 
 HRESULT CDlgOpenFile_CommonItemDialog::OnCheckButtonToggled(
-	/* [in] */ __RPC__in_opt IFileDialogCustomize *pfdc,
+	/* [in] */ [[maybe_unused]] __RPC__in_opt IFileDialogCustomize *pfdc,
 	/* [in] */ DWORD dwIDCtl,
 	/* [in] */ BOOL bChecked)
 {
-	UNREFERENCED_PARAMETER(pfdc);
 	switch (dwIDCtl) {
 	case CtrlId::CHECK_READONLY:
 		m_bViewMode = bChecked ? true : false;
@@ -894,6 +878,8 @@ HRESULT CDlgOpenFile_CommonItemDialog::OnCheckButtonToggled(
 		break;
 	case CtrlId::CHECK_BOM:
 		m_bBom = bChecked ? true : false;
+		break;
+	default:
 		break;
 	}
 	return S_OK;

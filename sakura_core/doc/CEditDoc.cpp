@@ -166,14 +166,13 @@ CEditDoc& GetEditDoc()
 	@date 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 	@date 2004.06.21 novice タグジャンプ機能追加
 */
-CEditDoc::CEditDoc(CEditApp* pcApp)
+CEditDoc::CEditDoc([[maybe_unused]] CEditApp* pcApp)
 : m_cDocFile(this)					// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocFileOperation(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocEditor(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocType(this)					// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cDocOutline(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 {
-	UNREFERENCED_PARAMETER(pcApp);
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditDoc::CEditDoc" );
 
 	// レイアウト管理情報の初期化
@@ -315,7 +314,7 @@ void CEditDoc::SetBackgroundImage()
 	}
 	if( _IS_REL_PATH(path.c_str()) ){
 		CFilePath fullPath;
-		GetInidirOrExedir( &fullPath[0], &path[0] );
+		GetInidirOrExedir(fullPath, path);
 		path = fullPath;
 	}
 
@@ -488,7 +487,7 @@ void CEditDoc::GetEditInfo(
 ) const
 {
 	//ファイルパス
-	wcscpy(pfi->m_szPath, m_cDocFile.GetFilePath());
+	::wcsncpy_s(pfi->m_szPath, m_cDocFile.GetFilePath(), _TRUNCATE);
 
 	//表示域
 	pfi->m_nViewTopLine = GetEditWnd().GetActiveView().GetTextArea().GetViewTopLine();	/* 表示域の一番上の行(0開始) */
@@ -505,7 +504,7 @@ void CEditDoc::GetEditInfo(
 
 	//GREPモード
 	pfi->m_bIsGrep = CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode;
-	wcscpy( pfi->m_szGrepKey, CAppMode::getInstance()->m_szGrepKey );
+	::wcsncpy_s(pfi->m_szGrepKey, CAppMode::getInstance()->m_szGrepKey, _TRUNCATE);
 
 	//デバッグモニタ (アウトプットウインドウ) モード
 	pfi->m_bIsDebug = CAppMode::getInstance()->IsDebugMode();
@@ -787,6 +786,8 @@ void CEditDoc::OnChangeSetting(
 		case WRAP_WINDOW_WIDTH:
 			nMaxLineKetas = m_cLayoutMgr.GetMaxLineKetas();	// 現在の折り返し幅
 			break;
+		default:
+			break;
 		}
 
 		if( m_bTabSpaceCurTemp ){
@@ -883,7 +884,7 @@ BOOL CEditDoc::OnFileClose(bool bGrepNoConfirm)
 		int			nLen = (int)wcslen( pszGrepKey );
 		CNativeW	cmemDes;
 		LimitStringLengthW( pszGrepKey , nLen, 64, cmemDes );
-		auto_sprintf( szGrepTitle, LS(STR_TITLE_GREP),
+		auto_snprintf_s( szGrepTitle, _TRUNCATE, LS(STR_TITLE_GREP),
 			cmemDes.GetStringPtr(),
 			( nLen > cmemDes.GetStringLength() ) ? L"..." : L""
 		);
@@ -891,7 +892,7 @@ BOOL CEditDoc::OnFileClose(bool bGrepNoConfirm)
 	}
 	if( nullptr == pszTitle ){
 		const EditNode* node = CAppNodeManager::getInstance()->GetEditNode( CEditWnd::getInstance()->GetHwnd() );
-		auto_sprintf( szGrepTitle, L"%s%d", LS(STR_NO_TITLE1), node->m_nId );	//(無題)
+		auto_snprintf_s(szGrepTitle, _TRUNCATE, L"%s%d", LS(STR_NO_TITLE1), node->m_nId);	//(無題)
 		pszTitle = szGrepTitle;
 	}
 	/* ウィンドウをアクティブにする */

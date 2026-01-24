@@ -143,6 +143,8 @@ LRESULT CALLBACK CPropMainMenu::TreeViewProc(
 				TreeView_EditLabel( hwndTree, htiItem );
 			}
 			return 0;
+		default:
+			break;
 		}
 		break;
 	case WM_CHAR:
@@ -167,6 +169,8 @@ static LRESULT CALLBACK WindowProcEdit(
 	switch (uMsg) {
 	case WM_GETDLGCODE:
 		return DLGC_WANTALLKEYS;
+	default:
+		break;
 	}
 	return CallWindowProc( m_wpEdit, hwndEdit, uMsg, wParam, lParam );
 }
@@ -373,7 +377,7 @@ INT_PTR CPropMainMenu::DispatchEvent(
 				}
 				pFuncWk = &msMenu[(int)tvi.lParam];
 				if (pFuncWk->m_nFunc != F_SEPARATOR) {
-					auto_sprintf( szKey, L"%ls", pFuncWk->m_sKey);
+					auto_snprintf_s(szKey, _TRUNCATE, L"%ls", pFuncWk->m_sKey);
 
 					if (!cDlgInput1.DoModal(
 							G_AppInstance(),
@@ -384,7 +388,7 @@ INT_PTR CPropMainMenu::DispatchEvent(
 							szKey)) {
 						return TRUE;
 					}
-					auto_sprintf( pFuncWk->m_sKey, L"%s", szKey);
+					auto_snprintf_s(pFuncWk->m_sKey, _TRUNCATE, L"%s", szKey);
 					pFuncWk->m_bDupErr = false;
 
 					tvi.mask = TVIF_HANDLE | TVIF_TEXT | TVIF_PARAM;
@@ -392,6 +396,8 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					TreeView_SetItem( hwndTreeRes, &tvi );
 				}
 			}
+			break;
+		default:
 			break;
 		}
 		break;
@@ -421,6 +427,8 @@ INT_PTR CPropMainMenu::DispatchEvent(
 				::SendMessage( hwndListFunk, WM_SETREDRAW, TRUE, 0 );
 
 				return TRUE;
+			default:
+				break;
 			}
 		}
 		else{
@@ -498,13 +506,11 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					case IDC_BUTTON_INSERT_NODE:		// ノード挿入
 						eFuncCode = F_NODE;
 						bIsNode = true;
-						wcsncpy( szLabel , LS(STR_PROPCOMMAINMENU_EDIT), int(std::size(szLabel)) - 1 );
-						szLabel[std::size(szLabel) - 1] = L'\0';
+						wcsncpy_s( szLabel, LS(STR_PROPCOMMAINMENU_EDIT), _TRUNCATE );
 						break;
 					case IDC_BUTTON_INSERTSEPARATOR:	// 区切線挿入
 						eFuncCode = F_SEPARATOR;
-						wcsncpy( szLabel , LS(STR_PROPCOMMAINMENU_SEP), int(std::size(szLabel)) - 1 );
-						szLabel[std::size(szLabel) - 1] = L'\0';
+						wcsncpy_s( szLabel, LS(STR_PROPCOMMAINMENU_SEP), _TRUNCATE );
 						break;
 					case IDC_BUTTON_INSERT:				// 挿入
 					case IDC_BUTTON_INSERT_A:			// 挿入
@@ -518,7 +524,7 @@ INT_PTR CPropMainMenu::DispatchEvent(
 						}
 						if (nIdxFIdx == nSpecialFuncsNum) {
 							// 特殊機能
-							wcscpy( szLabel, LS(nsFuncCode::pnFuncList_Special[nIdxFunc]) );
+							::wcsncpy_s(szLabel, LS(nsFuncCode::pnFuncList_Special[nIdxFunc]), _TRUNCATE);
 							eFuncCode = nsFuncCode::pnFuncList_Special[nIdxFunc];
 						}
 						else if (m_cLookup.Pos2FuncCode( nIdxFIdx, nIdxFunc ) != 0) {
@@ -526,9 +532,11 @@ INT_PTR CPropMainMenu::DispatchEvent(
 							eFuncCode = m_cLookup.Pos2FuncCode( nIdxFIdx, nIdxFunc );
 						}
 						else {
-							wcscpy( szLabel, L"?" );
+							::wcsncpy_s(szLabel, L"?", _TRUNCATE);
 							eFuncCode = F_SEPARATOR;
 						}
+						break;
+					default:
 						break;
 					}
 
@@ -646,6 +654,8 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					case IDC_BUTTON_ADD:				// 追加
 						ApiWrap::List_SetCurSel( hwndListFunk, nIdxFunc+1 );
 						break;
+					default:
+						break;
 					}
 					break;
 
@@ -715,7 +725,7 @@ INT_PTR CPropMainMenu::DispatchEvent(
 					}
 					if (tvi.cChildren) {
 						// 直前がノード
-						HTREEITEM		htiTemp2;
+
 						// コピー
 						bInMove = true;
 						htiTemp2 = TreeCopy(hwndTreeRes, htiTemp, htiItem, true, true);
@@ -774,8 +784,12 @@ INT_PTR CPropMainMenu::DispatchEvent(
 				case IDC_BUTTON_COLLAPSE:	// ツリー全閉
 					ApiWrap::TreeView_ExpandAll( hwndTreeRes, false );
 					break;
+				default:
+					break;
 				}
 
+				break;
+			default:
 				break;
 			}
 		}
@@ -804,6 +818,8 @@ INT_PTR CPropMainMenu::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );
 
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -922,7 +938,7 @@ void CPropMainMenu::SetData( HWND hwndDlg )
 				}
 				break;
 		}
-		wcscpy(pFuncWk->m_sKey, pcFunc->m_sKey);
+		::wcsncpy_s(pFuncWk->m_sKey, pcFunc->m_sKey, _TRUNCATE);
 		pFuncWk->m_bDupErr = false;
 		// TreeViewに挿入
 		tvis.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
@@ -1000,7 +1016,7 @@ bool CPropMainMenu::GetDataTree( HWND hwndTree, HTREEITEM htiTrg, int nLevel )
 		switch(pFuncWk->m_nFunc) {
 		case F_NODE:
 			pcFunc->m_nType = T_NODE;
-			wcscpy_s( pcFunc->m_sName, MAX_MAIN_MENU_NAME_LEN+1, SupplementAmpersand( pFuncWk->m_sName ).c_str() );
+			::wcsncpy_s(pcFunc->m_sName, MAX_MAIN_MENU_NAME_LEN+1, SupplementAmpersand( pFuncWk->m_sName ).c_str(), _TRUNCATE);
 			break;
 		case F_SEPARATOR:
 			pcFunc->m_nType = T_SEPARATOR;
@@ -1028,7 +1044,7 @@ bool CPropMainMenu::GetDataTree( HWND hwndTree, HTREEITEM htiTrg, int nLevel )
 			break;
 		}
 		pcFunc->m_nFunc = pFuncWk->m_nFunc;
-		wcscpy( pcFunc->m_sKey, pFuncWk->m_sKey );
+		::wcsncpy_s(pcFunc->m_sKey, pFuncWk->m_sKey, _TRUNCATE);
 		pcFunc->m_nLevel = nLevel;
 
 		if (tvi.cChildren) {
@@ -1050,7 +1066,7 @@ bool CPropMainMenu::GetDataTree( HWND hwndTree, HTREEITEM htiTrg, int nLevel )
 			pcFunc = &pcMenuTBL[m_Common.m_sMainMenu.m_nMainMenuNum++];
 			pcFunc->m_nType = T_NODE;
 			pcFunc->m_nFunc = F_NODE;
-			wcscpy( pcFunc->m_sName, L"auto_add" );
+			::wcsncpy_s(pcFunc->m_sName, L"auto_add", _TRUNCATE);
 			pcFunc->m_sKey[0] = L'\0';
 			pcFunc->m_nLevel = nLevel++;
 		}

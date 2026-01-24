@@ -129,7 +129,7 @@ BOOL CDlgSameColor::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			if( 0 != (g_ColorAttributeArr[i].fAttribute & COLOR_ATTRIB_NO_TEXT) )
 				continue;
 			if( m_cr != m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cTEXT ){
-				_ultow( m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cTEXT, szText, 10 );
+				::_ultow_s(m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cTEXT, szText, 10);
 				if( LB_ERR == ApiWrap::List_FindStringExact( hwndList, -1, szText ) ){
 					nItem = ApiWrap::List_AddString( hwndList, szText );
 					ApiWrap::List_SetItemData( hwndList, nItem, FALSE ); 
@@ -145,7 +145,7 @@ BOOL CDlgSameColor::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 			if( 0 != (g_ColorAttributeArr[i].fAttribute & COLOR_ATTRIB_NO_BACK) )	// 2006.12.18 ryoji フラグ利用で簡素化
 				continue;
 			if( m_cr != m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cBACK ){
-				_ultow( m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cBACK, szText, 10 );
+				::_ultow_s(m_pTypes->m_ColorInfoArr[i].m_sColorAttr.m_cBACK, szText, 10);
 				if( LB_ERR == ApiWrap::List_FindStringExact( hwndList, -1, szText ) ){
 					nItem = ApiWrap::List_AddString( hwndList, szText );
 					ApiWrap::List_SetItemData( hwndList, nItem, FALSE ); 
@@ -233,6 +233,8 @@ BOOL CDlgSameColor::OnBnClicked( int wID )
 
 	case IDCANCEL:
 		break;
+	default:
+		break;
 	}
 	return CDialog::OnBnClicked( wID );
 }
@@ -240,9 +242,8 @@ BOOL CDlgSameColor::OnBnClicked( int wID )
 /*! WM_DRAWITEM 処理
 	@date 2006.04.26 ryoji 新規作成
 */
-BOOL CDlgSameColor::OnDrawItem( WPARAM wParam, LPARAM lParam )
+BOOL CDlgSameColor::OnDrawItem( [[maybe_unused]] WPARAM wParam, LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(wParam);
 	LPDRAWITEMSTRUCT pDis = (LPDRAWITEMSTRUCT)lParam;	// 項目描画情報
 	if( IDC_LIST_COLORS != pDis->CtlID )	// オーナー描画にしているのは色選択リストだけ
 		return TRUE;

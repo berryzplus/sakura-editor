@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -22,18 +22,13 @@ private:
 	using Super = StaticString<_MAX_PATH>;
 public:
 	CFilePath() = default;
-	CFilePath(const WCHAR* rhs) : Super(rhs) { }
+	CFilePath(const WCHAR* rhs) : Super(std::wstring_view{ rhs ? rhs : L"" }) {}
 
-	[[nodiscard]] bool IsValidPath() const{ return At(0)!=L'\0'; }
+	[[nodiscard]] bool IsValidPath() const noexcept { return !empty(); }
 	[[nodiscard]] std::wstring GetDirPath() const
 	{
-		WCHAR	szDirPath[_MAX_PATH];
-		WCHAR	szDrive[_MAX_DRIVE];
-		WCHAR	szDir[_MAX_DIR];
-		_wsplitpath( this->c_str(), szDrive, szDir, nullptr, nullptr );
-		wcscpy( szDirPath, szDrive);
-		wcscat( szDirPath, szDir );
-		return szDirPath;
+		std::filesystem::path path{ *this };
+		return path.remove_filename();
 	}
 
 	//拡張子を取得する
@@ -66,12 +61,10 @@ public:
 		m_szCmdLine[0] = L'\0';
 		m_pHead = m_szCmdLine;
 	}
-	void AppendF(const WCHAR* szFormat, ...)
+	void Append(std::wstring_view text)
 	{
-		va_list v;
-		va_start(v,szFormat);
-		m_pHead+=auto_vsprintf_s(m_pHead, std::size(m_szCmdLine)-(m_pHead-m_szCmdLine),szFormat,v);
-		va_end(v);
+		::wcsncpy_s(m_pHead, std::size(m_szCmdLine) - (m_pHead - m_szCmdLine), std::data(text), _TRUNCATE);
+		m_pHead += text.length();
 	}
 	const WCHAR* c_str() const
 	{
@@ -89,4 +82,5 @@ private:
 	WCHAR	m_szCmdLine[1024];
 	WCHAR*	m_pHead;
 };
+
 #endif /* SAKURA_CMYSTRING_009A2525_6B06_4C1B_B089_C1B8A424A565_H_ */

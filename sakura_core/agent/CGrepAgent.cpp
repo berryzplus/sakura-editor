@@ -195,10 +195,8 @@ ECallbackResult CGrepAgent::OnBeforeClose()
 	return CALLBACK_CONTINUE;
 }
 
-void CGrepAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
+void CGrepAgent::OnAfterSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 {
-	UNREFERENCED_PARAMETER(sSaveInfo);
-
 	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
 	m_bGrepMode = false;	// grepウィンドウは通常ウィンドウ化
 	CAppMode::getInstance()->m_szGrepKey[0] = L'\0';
@@ -275,7 +273,7 @@ void CGrepAgent::AddTail( CEditView* pcEditView, const CNativeW& cmem, bool bAdd
 	}
 }
 
-int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WCHAR* pszWindowPath, const WCHAR* pszFile)
+int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, std::span<WCHAR> szWindowName, WCHAR* pszWindowPath, const WCHAR* pszFile)
 {
 	hWndTarget = nullptr;	//out引数をクリアする
 
@@ -307,18 +305,18 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 		}
 		CFileNameManager::getInstance()->GetMenuFullLabel_WinListNoEscape(szTitle, int(std::size(szTitle)), editInfo, node->m_nId, -1, nullptr );
 #ifdef _WIN64
-		auto_sprintf(pszWindowName, L":HWND:[%016I64x]%s", hWndTarget, pszTagName);
+		auto_snprintf_s(szWindowName, _TRUNCATE, L":HWND:[%016I64x]%s", hWndTarget, pszTagName);
 #else
-		auto_sprintf(pszWindowName, L":HWND:[%08x]%s", hWndTarget, pszTagName);
+		auto_snprintf_s(szWindowName, _TRUNCATE, L":HWND:[%08x]%s", hWndTarget, pszTagName);
 #endif
 		if( pmemTitle ){
 			pmemTitle->AppendString(szTitle);
 		}
 		pszWindowPath[0] = L'\0';
 	}else{
-		SplitPath_FolderAndFile(editInfo->m_szPath, pszWindowPath, pszWindowName);
+		SplitPath_FolderAndFile(editInfo->m_szPath, pszWindowPath, std::data(szWindowName));
 		if( pmemTitle ){
-			pmemTitle->AppendString(pszWindowName);
+			pmemTitle->AppendString(std::data(szWindowName));
 		}
 	}
 	if( pmemTitle ){
@@ -734,7 +732,7 @@ DWORD CGrepAgent::DoGrep(
 				nPathLen += 1;
 			}
 			currentFile += szWindowName;
-			int nHitCount = nGrepTreeResult;
+			nHitCount = nGrepTreeResult;
 			int nTreeRet = DoGrepFile(
 				pcViewDst,
 				&cDlgCancel,
@@ -813,15 +811,15 @@ DWORD CGrepAgent::DoGrep(
 	if( sGrepOption.bGrepHeader ){
 		WCHAR szBuffer[128];
 		if( bGrepReplace ){
-			auto_sprintf( szBuffer, LS(STR_GREP_REPLACE_COUNT), nHitCount );
+			auto_snprintf_s(szBuffer, _TRUNCATE, LS(STR_GREP_REPLACE_COUNT), nHitCount);
 		}else{
-			auto_sprintf( szBuffer, LS( STR_GREP_MATCH_COUNT ), nHitCount );
+			auto_snprintf_s(szBuffer, _TRUNCATE, LS( STR_GREP_MATCH_COUNT ), nHitCount);
 		}
 		CNativeW cmemOutput;
 		cmemOutput.SetString( szBuffer );
 		AddTail( pcViewDst, cmemOutput, sGrepOption.bGrepStdout );
 #if defined(_DEBUG) && defined(TIME_MEASURE)
-		auto_sprintf( szBuffer, LS(STR_GREP_TIMER), cRunningTimer.Read() );
+		auto_snprintf_s(szBuffer, _TRUNCATE, LS(STR_GREP_TIMER), cRunningTimer.Read());
 		cmemOutput.SetString( szBuffer );
 		AddTail( pcViewDst, cmemOutput, sGrepOption.bGrepStdout );
 #endif
@@ -987,7 +985,7 @@ int CGrepAgent::DoGrepTree(
 
 		// 2003.06.23 Moca リアルタイム表示のときは早めに表示
 		if( pcViewDst->GetDrawSwitch() ){
-			if( LTEXT('\0') != pszKey[0] ){
+			if( L'\0' != pszKey[0] ){
 				// データ検索のときファイルの合計が最大10MBを超えたら表示
 				nWork += ( cGrepEnumFilterFiles.GetFileSizeLow( i ) + 1023 ) / 1024;
 			}
@@ -1121,7 +1119,7 @@ wchar_t* lineColumnToString(
 #ifdef _DEBUG
 	// Debug 版に限って両方実行して、両者が一致することを確認
 	wchar_t strWork2[requiredMinimumCapacity];
-	::auto_sprintf( strWork2, L"(%I64d,%d)", nLine, nColumn );
+	::auto_snprintf_s(strWork2, _TRUNCATE, L"(%I64d,%d)", nLine, nColumn);
 	assert(wcscmp(strWork, strWork2) == 0);
 #endif
 	return strWork;
@@ -1172,7 +1170,7 @@ void CGrepAgent::SetGrepResult(
 	}
 	/* WZ風 */
 	else if( 2 == sGrepOption.nGrepOutputStyle ){
-		::auto_sprintf( strWork, L"・(%6I64d,%-5d): ", nLine, nColumn );
+		::auto_snprintf_s(strWork, _TRUNCATE, L"・(%6I64d,%-5d): ", nLine, nColumn);
 		cmemBuf.AppendString( strWork );
 		nMaxOutStr = 2500; // 2003.06.10 Moca 最大長変更
 	}
@@ -1384,7 +1382,8 @@ int CGrepAgent::DoGrepFile(
 			X / O  :                  (D)Folder(Abs) -> (G)RelPath(File)
 			X / X  : (H)FullPath
 */
-			auto pszWork = std::make_unique<wchar_t[]>(wcslen(pszFullPath) + wcslen(pszCodeName) + 10);
+			const auto cchWork = wcslen(pszFullPath) + wcslen(pszCodeName) + 10;
+			auto pszWork = std::make_unique<wchar_t[]>(cchWork);
 			wchar_t* szWork0 = &pszWork[0];
 			if( sGrepOption.bGrepOutputBaseFolder || sGrepOption.bGrepSeparateFolder ){
 				if( !bOutputBaseFolder && sGrepOption.bGrepOutputBaseFolder ){
@@ -1394,26 +1393,26 @@ int CGrepAgent::DoGrepFile(
 					}else{
 						pszFormatBasePath = pszFormatBasePath2;	// (B)
 					}
-					auto_sprintf( szWork0, pszFormatBasePath, pszBaseFolder );
+					auto_snprintf_s(szWork0, cchWork, _TRUNCATE, pszFormatBasePath, pszBaseFolder);
 					cmemMessage.AppendString( szWork0 );
 					bOutputBaseFolder = true;
 				}
 				if( !bOutputFolderName && sGrepOption.bGrepSeparateFolder ){
 					if( pszFolder[0] ){
-						auto_sprintf( szWork0, L"■\"%s\"\r\n", pszFolder );	// (C), (D)
+						auto_snprintf_s(szWork0, cchWork, _TRUNCATE, L"■\"%s\"\r\n", pszFolder);	// (C), (D)
 					}else{
-						wcscpy( szWork0, L"■\r\n" );
+						::wcsncpy_s(szWork0, cchWork, L"■\r\n", _TRUNCATE);
 					}
 					cmemMessage.AppendString( szWork0 );
 					bOutputFolderName = true;
 				}
-				auto_sprintf( szWork0,
+				auto_snprintf_s( szWork0, cchWork, _TRUNCATE,
 					(sGrepOption.bGrepSeparateFolder ? pszFormatFilePath // (E)
 						: pszFormatFilePath2),	// (F), (G)
 					pszDispFilePath, pszCodeName );
 				cmemMessage.AppendString( szWork0 );
 			}else{
-				auto_sprintf( szWork0, pszFormatFullPath, pszFullPath, pszCodeName );	// (H)
+				auto_snprintf_s(szWork0, cchWork, _TRUNCATE, pszFormatFullPath, pszFullPath, pszCodeName);	// (H)
 				cmemMessage.AppendString( szWork0 );
 			}
 		}
@@ -1431,7 +1430,7 @@ int CGrepAgent::DoGrepFile(
 		{
 			if( CODE_AUTODETECT == sGrepOption.nGrepCharSet ){
 				if( IsValidCodeType(nCharCode) ){
-					wcscpy( szCpName, CCodeTypeName(nCharCode).Bracket() );
+					::wcsncpy_s(szCpName, CCodeTypeName(nCharCode).Bracket(), _TRUNCATE);
 					pszCodeName = szCpName;
 				}else{
 					CCodePage::GetNameBracket(szCpName, nCharCode);
@@ -1475,7 +1474,7 @@ int CGrepAgent::DoGrepFile(
 			/* 処理中のユーザー操作を可能にする */
 			// 2010.08.31 間隔を1/32にする
 			if( 0 == nLine % 32 ) {
-				DWORD dwNow = ::GetTickCount();
+				dwNow = ::GetTickCount();
 				if ( dwNow - m_dwTickUICheck > UICHECK_INTERVAL_MILLISEC ) {
 					m_dwTickUICheck = dwNow;
 					if (!::BlockingHook( pcDlgCancel->GetHwnd() )) {
@@ -1495,7 +1494,7 @@ int CGrepAgent::DoGrepFile(
 						if( 5 <= nPercent - nOldPercent ){
 							nOldPercent = nPercent;
 							WCHAR szWork[10];
-							::auto_sprintf( szWork, L" (%3d%%)", nPercent );
+							::auto_snprintf_s(szWork, _TRUNCATE, L" (%3d%%)", nPercent);
 							std::wstring str;
 							str = str + pszFile + szWork;
 							ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );
@@ -1880,7 +1879,7 @@ int CGrepAgent::DoGrepReplaceFile(
 		{
 			if( CODE_AUTODETECT == sGrepOption.nGrepCharSet ){
 				if( IsValidCodeType(nCharCode) ){
-					wcscpy( szCpName, CCodeTypeName(nCharCode).Bracket() );
+					::wcsncpy_s(szCpName, CCodeTypeName(nCharCode).Bracket(), _TRUNCATE);
 					pszCodeName = szCpName;
 				}else{
 					CCodePage::GetNameBracket(szCpName, nCharCode);
@@ -1934,7 +1933,7 @@ int CGrepAgent::DoGrepReplaceFile(
 					if( 5 <= nPercent - nOldPercent ){
 						nOldPercent = nPercent;
 						WCHAR szWork[10];
-						::auto_sprintf( szWork, L" (%3d%%)", nPercent );
+						::auto_snprintf_s(szWork, _TRUNCATE, L" (%3d%%)", nPercent);
 						std::wstring str;
 						str = str + pszFile + szWork;
 						ApiWrap::DlgItem_SetText( pcDlgCancel->GetHwnd(), IDC_STATIC_CURFILE, str.c_str() );

@@ -57,21 +57,20 @@ LPWSTR CFileNameManager::GetTransformFileNameFast( LPCWSTR pszSrc, LPWSTR pszDes
 			m_pShareData->m_Common.m_sFileName.m_szTransformFileNameTo[m_nTransformFileNameOrgId[0]]
 		);
 		for( i = 1; i < m_nTransformFileNameCount; i++ ){
-			wcscpy( szBuf, pszDest );
+			::wcsncpy_s(szBuf, pszDest, _TRUNCATE);
 			GetFilePathFormat( szBuf, pszDest, nDestLen,
 				m_szTransformFileNameFromExp[i],
 				m_pShareData->m_Common.m_sFileName.m_szTransformFileNameTo[m_nTransformFileNameOrgId[i]] );
 		}
 		if( nPxWidth != -1 ){
-			wcscpy( szBuf, pszDest );
+			::wcsncpy_s(szBuf, pszDest, _TRUNCATE);
 			GetShortViewPath( pszDest, nDestLen, szBuf, hDC, nPxWidth, bFitMode );
 		}
 	}else if( nPxWidth != -1 ){
 		GetShortViewPath( pszDest, nDestLen, pszSrc, hDC, nPxWidth, bFitMode );
 	}else{
 		// 変換する必要がない コピーだけする
-		wcsncpy( pszDest, pszSrc, nDestLen - 1 );
-		pszDest[nDestLen - 1] = '\0';
+		::wcsncpy_s(pszDest, nDestLen, pszSrc, _TRUNCATE);
 	}
 	return pszDest;
 }
@@ -222,7 +221,7 @@ bool CFileNameManager::ExpandMetaToFolder( LPCWSTR pszSrc, LPWSTR pszDes, int nD
 					; // 読み飛ばす
 				for( ; nMetaLen == pAlias->nLenth; pAlias++ ){
 					if( 0 == wmemicmp( pAlias->szAlias, szMeta ) ){
-						wcscpy( szMeta, pAlias->szOrig );
+						::wcsncpy_s(szMeta, pAlias->szOrig, _TRUNCATE);
 						break;
 					}
 				}
@@ -238,12 +237,13 @@ bool CFileNameManager::ExpandMetaToFolder( LPCWSTR pszSrc, LPWSTR pszDes, int nD
 						szMeta, szPath, int(std::size(szPath)) );
 				}
 				if( false == bFolderPath || L'\0' == szPath[0] ){
-					pStr = _wgetenv( szMeta );
 					// 環境変数
-					if( nullptr != pStr ){
-						nPathLen = (int)wcslen( pStr );
+					size_t returnValue = 0;
+					if (SFilePath szBuf; 0 == ::_wgetenv_s(&returnValue, szBuf, std::size(szBuf), szMeta) && returnValue) {
+						pStr = szBuf;
+						nPathLen = szBuf.Length();
 						if( nPathLen < _MAX_PATH ){
-							wcscpy( szPath, pStr );
+							::wcsncpy_s(szPath, pStr, _TRUNCATE);
 						}else{
 							*pd = L'\0';
 							return false;
@@ -354,7 +354,7 @@ bool CFileNameManager::GetMenuFullLabel(
 	int ret = 0;
 	if( nullptr == pfi ){
 		GetAccessKeyLabelByIndex( szAccKey, bEspaceAmp, index, bAccKeyZeroOrigin );
-		ret = auto_snprintf_s( pszOutput, nBuffSize, LS(STR_MENU_UNKOWN), szAccKey );
+		ret = auto_snprintf_s( pszOutput, nBuffSize, _TRUNCATE, LS(STR_MENU_UNKOWN), szAccKey );
 		return 0 < ret;
 	}else if( pfi->m_bIsGrep ){
 		
@@ -380,13 +380,13 @@ bool CFileNameManager::GetMenuFullLabel(
 		//	Jan. 19, 2002 genta
 		//	&の重複処理を追加したため継続判定を若干変更
 		//	20100729 ExpandParameterにあわせて、・・・を...に変更
-		ret = auto_snprintf_s( pszOutput, nBuffSize, LS(STR_MENU_GREP),
+		ret = auto_snprintf_s( pszOutput, nBuffSize, _TRUNCATE, LS(STR_MENU_GREP),
 			szAccKey, pszKey,
 			( nGrepKeyLen > cmemDes.GetStringLength() ) ? L"...":L""
 		);
 	}else if( pfi->m_bIsDebug ){
 		GetAccessKeyLabelByIndex( szAccKey, bEspaceAmp, index, bAccKeyZeroOrigin );
-		ret = auto_snprintf_s( pszOutput, nBuffSize, LS(STR_MENU_OUTPUT), szAccKey );
+		ret = auto_snprintf_s( pszOutput, nBuffSize, _TRUNCATE, LS(STR_MENU_OUTPUT), szAccKey );
 	}else{
 		return GetMenuFullLabel(pszOutput, nBuffSize, bEspaceAmp, pfi->m_szPath, nId, pfi->m_bIsModified, pfi->m_nCharCode, bFavorite,
 			 index, bAccKeyZeroOrigin, hDC);
@@ -419,9 +419,9 @@ bool CFileNameManager::GetMenuFullLabel(
 		}
 	}else{
 		if( nId == -1 ){
-			wsprintf( szFileName, LS( STR_NO_TITLE1 ));
+			::swprintf_s(szFileName, LS(STR_NO_TITLE1));
 		}else{
-			wsprintf( szFileName, L"%s%d", LS( STR_NO_TITLE1 ), nId);
+			::swprintf_s(szFileName, L"%s%d", LS(STR_NO_TITLE1), nId);
 		}
 		pszName = szFileName;
 	}
@@ -434,7 +434,7 @@ bool CFileNameManager::GetMenuFullLabel(
 		pszCharset = szCodePageName;
 	}
 	
-	int ret = auto_snprintf_s( pszOutput, nBuffSize, L"%s%s%s%s%s",
+	int ret = auto_snprintf_s( pszOutput, nBuffSize, _TRUNCATE, L"%s%s%s%s%s",
 		szAccKey, (bFavorite ? L"★ " : L""), pszName,
 		(bModified ? L" *":L""), pszCharset
 	);

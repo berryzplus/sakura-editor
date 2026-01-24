@@ -49,6 +49,8 @@ ECallbackResult CBackupAgent::OnPreBeforeSave(SSaveInfo* pSaveInfo)
 				return CALLBACK_INTERRUPT;
 			}
 			break;
+		default:
+			break;
 		}
 	}
 	return CALLBACK_CONTINUE;
@@ -154,7 +156,7 @@ int CBackupAgent::MakeBackUp(
 		//	1. 該当ディレクトリ中のbackupファイルを1つずつ探す
 		for( i = 0; i <= 99; i++ ){	//	最大値に関わらず，99（2桁の最大値）まで探す
 			//	ファイル名をセット
-			auto_sprintf( pBase, L"%02d", i );
+			auto_snprintf_s(pBase, std::size(szPath) - (szPath - pBase), _TRUNCATE, L"%02d", i);
 
 			hFind = ::FindFirstFile( szPath, &fData );
 			if( hFind == INVALID_HANDLE_VALUE ){
@@ -175,7 +177,7 @@ int CBackupAgent::MakeBackUp(
 
 		for( ; i >= boundary; --i ){
 			//	ファイル名をセット
-			auto_sprintf( pBase, L"%02d", i );
+			auto_snprintf_s(pBase, std::size(szPath) - (szPath - pBase), _TRUNCATE, L"%02d", i);
 			if( ::DeleteFile( szPath ) == 0 ){
 				::MessageBox( CEditWnd::getInstance()->GetHwnd(), szPath, LS(STR_BACKUP_ERR_DELETE), MB_OK );
 				//	Jun.  5, 2005 genta 戻り値変更
@@ -192,13 +194,13 @@ int CBackupAgent::MakeBackUp(
 		WCHAR szNewPath[MAX_PATH];
 		WCHAR *pNewNrBase;
 
-		wcscpy( szNewPath, szPath );
+		::wcsncpy_s(szNewPath, szPath, _TRUNCATE);
 		pNewNrBase = szNewPath + wcslen( szNewPath ) - 2;
 
 		for( ; i >= 0; --i ){
 			//	ファイル名をセット
-			auto_sprintf( pBase, L"%02d", i );
-			auto_sprintf( pNewNrBase, L"%02d", i + 1 );
+			auto_snprintf_s(pBase, std::size(szPath) - (szPath - pBase), _TRUNCATE, L"%02d", i);
+			auto_snprintf_s(pNewNrBase, std::size(szNewPath) - (szNewPath - pNewNrBase), _TRUNCATE, L"%02d", i + 1);
 
 			//	ファイルの移動
 			if( ::MoveFile( szPath, szNewPath ) == 0 ){
@@ -219,9 +221,9 @@ int CBackupAgent::MakeBackUp(
 	WCHAR	szDir[_MAX_DIR];
 	WCHAR	szFname[_MAX_FNAME];
 	WCHAR	szExt[_MAX_EXT];
-	_wsplitpath( szPath, szDrive, szDir, szFname, szExt );
+	_wsplitpath_s( szPath, szDrive, szDir, szFname, szExt );
 	WCHAR	szPath2[MAX_PATH];
-	auto_sprintf( szPath2, L"%s%s", szDrive, szDir );
+	auto_snprintf_s(szPath2, _TRUNCATE, L"%s%s", szDrive, szDir);
 
 	HANDLE			hFind;
 	WIN32_FIND_DATA	fData;
@@ -238,7 +240,7 @@ int CBackupAgent::MakeBackUp(
 		//@@@ 2001.12.11 start MIK
 		if( bup_setting.m_bBackUpDustBox && !dustflag ){	//@@@ 2002.03.23 ネットワーク・リムーバブルドライブでない
 			WCHAR	szDustPath[_MAX_PATH+1];
-			::wcscpy_s(szDustPath, szPath);
+			::wcsncpy_s(szDustPath, szPath, _TRUNCATE);
 			SHFILEOPSTRUCT	fos;
 			fos.hwnd   = CEditWnd::getInstance()->GetHwnd();
 			fos.wFunc  = FO_DELETE;
@@ -296,7 +298,7 @@ bool CBackupAgent::FormatBackUpPath(
 	const CommonSetting_Backup& bup_setting = GetDllShareData().m_Common.m_sBackup;
 
 	/* パスの分解 */
-	_wsplitpath( target_file, szDrive, szDir, szFname, szExt );
+	_wsplitpath_s( target_file, szDrive, szDir, szFname, szExt );
 
 	if( bup_setting.m_bBackUpFolder
 	  && (!bup_setting.m_bBackUpFolderRM || !IsLocalDrive( target_file ))) {	/* 指定フォルダーにバックアップを作成する */	// m_bBackUpFolderRM 追加	2010/5/27 Uchi
@@ -304,13 +306,13 @@ bool CBackupAgent::FormatBackUpPath(
 		CFileNameManager::ExpandMetaToFolder( bup_setting.m_szBackUpFolder, selDir, int(std::size(selDir)) );
 		if (GetFullPathName(selDir, _MAX_PATH, szNewPath, &psNext) == 0) {
 			// うまく取れなかった
-			wcscpy( szNewPath, selDir );
+			::wcsncpy_s(szNewPath, newPathCount, selDir, _TRUNCATE);
 		}
 		/* フォルダーの最後が半角かつ'\\'でない場合は、付加する */
 		AddLastYenFromDirectoryPath( szNewPath );
 	}
 	else{
-		auto_sprintf( szNewPath, L"%s%s", szDrive, szDir );
+		auto_snprintf_s(szNewPath, newPathCount, _TRUNCATE, L"%s%s", szDrive, szDir);
 	}
 
 	/* 相対フォルダーを挿入 */
@@ -326,43 +328,43 @@ bool CBackupAgent::FormatBackUpPath(
 		/* バックアップファイル名のタイプ 1=(.bak) 2=*_日付.* */
 		switch( bup_setting.GetBackupType() ){
 		case 1:
-			if( -1 == auto_snprintf_s( pBase, nBaseCount, L"%s.bak", szFname ) ){
+			if( -1 == auto_snprintf_s( pBase, nBaseCount, _TRUNCATE, L"%s.bak", szFname ) ){
 				return false;
 			}
 			break;
 		case 5: //	Jun.  5, 2005 genta 1の拡張子を残す版
-			if( -1 == auto_snprintf_s( pBase, nBaseCount, L"%s%s.bak", szFname, szExt ) ){
+			if( -1 == auto_snprintf_s( pBase, nBaseCount, _TRUNCATE, L"%s%s.bak", szFname, szExt ) ){
 				return false;
 			}
 			break;
 		case 2:	//	日付，時刻
 			_tzset();
-			_wstrdate( szTime );
+			::_wstrdate_s(szTime, std::size(szTime));
 			_time64( &ltime );				/* システム時刻を得ます */
 			_localtime64_s( &result, &ltime );/* 現地時間に変換する */
 
 			szForm[0] = L'\0';
 			if( bup_setting.GetBackupOpt(BKUP_YEAR) ){	/* バックアップファイル名：日付の年 */
-				wcscat( szForm, L"%Y" );
+				::wcsncat_s(szForm, L"%Y", _TRUNCATE);
 			}
 			if( bup_setting.GetBackupOpt(BKUP_MONTH) ){	/* バックアップファイル名：日付の月 */
-				wcscat( szForm, L"%m" );
+				::wcsncat_s(szForm, L"%m", _TRUNCATE);
 			}
 			if( bup_setting.GetBackupOpt(BKUP_DAY) ){	/* バックアップファイル名：日付の日 */
-				wcscat( szForm, L"%d" );
+				::wcsncat_s(szForm, L"%d", _TRUNCATE);
 			}
 			if( bup_setting.GetBackupOpt(BKUP_HOUR) ){	/* バックアップファイル名：日付の時 */
-				wcscat( szForm, L"%H" );
+				::wcsncat_s(szForm, L"%H", _TRUNCATE);
 			}
 			if( bup_setting.GetBackupOpt(BKUP_MIN) ){	/* バックアップファイル名：日付の分 */
-				wcscat( szForm, L"%M" );
+				::wcsncat_s(szForm, L"%M", _TRUNCATE);
 			}
 			if( bup_setting.GetBackupOpt(BKUP_SEC) ){	/* バックアップファイル名：日付の秒 */
-				wcscat( szForm, L"%S" );
+				::wcsncat_s(szForm, L"%S", _TRUNCATE);
 			}
 			/* YYYYMMDD時分秒 形式に変換 */
 			wcsftime( szTime, int(std::size(szTime)) - 1, szForm, &result );
-			if( -1 == auto_snprintf_s( pBase, nBaseCount, L"%s_%ls%s", szFname, szTime, szExt ) ){
+			if( -1 == auto_snprintf_s( pBase, nBaseCount, _TRUNCATE, L"%s_%ls%s", szFname, szTime, szExt ) ){
 				return false;
 			}
 			break;
@@ -374,24 +376,24 @@ bool CBackupAgent::FormatBackUpPath(
 
 				szTime[0] = L'\0';
 				if( bup_setting.GetBackupOpt(BKUP_YEAR) ){	/* バックアップファイル名：日付の年 */
-					auto_sprintf(szTime,L"%d",ctimeLastWrite->wYear);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%d",ctimeLastWrite->wYear);
 				}
 				if( bup_setting.GetBackupOpt(BKUP_MONTH) ){	/* バックアップファイル名：日付の月 */
-					auto_sprintf(szTime,L"%ls%02d",szTime,ctimeLastWrite->wMonth);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%ls%02d",szTime,ctimeLastWrite->wMonth);
 				}
 				if( bup_setting.GetBackupOpt(BKUP_DAY) ){	/* バックアップファイル名：日付の日 */
-					auto_sprintf(szTime,L"%ls%02d",szTime,ctimeLastWrite->wDay);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%ls%02d",szTime,ctimeLastWrite->wDay);
 				}
 				if( bup_setting.GetBackupOpt(BKUP_HOUR) ){	/* バックアップファイル名：日付の時 */
-					auto_sprintf(szTime,L"%ls%02d",szTime,ctimeLastWrite->wHour);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%ls%02d",szTime,ctimeLastWrite->wHour);
 				}
 				if( bup_setting.GetBackupOpt(BKUP_MIN) ){	/* バックアップファイル名：日付の分 */
-					auto_sprintf(szTime,L"%ls%02d",szTime,ctimeLastWrite->wMinute);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%ls%02d",szTime,ctimeLastWrite->wMinute);
 				}
 				if( bup_setting.GetBackupOpt(BKUP_SEC) ){	/* バックアップファイル名：日付の秒 */
-					auto_sprintf(szTime,L"%ls%02d",szTime,ctimeLastWrite->wSecond);
+					auto_snprintf_s(szTime, _TRUNCATE, L"%ls%02d",szTime,ctimeLastWrite->wSecond);
 				}
-				if( -1 == auto_snprintf_s( pBase, nBaseCount, L"%s_%ls%s", szFname, szTime, szExt ) ){
+				if( -1 == auto_snprintf_s( pBase, nBaseCount, _TRUNCATE, L"%s_%ls%s", szFname, szTime, szExt ) ){
 					return false;
 				}
 			}
@@ -407,14 +409,16 @@ bool CBackupAgent::FormatBackUpPath(
 				//	Jun.  5, 2005 genta 拡張子を残せるように処理起点を操作する
 				if( bup_setting.GetBackupType() == 3 ){
 					// 元の拡張子をクリアする
-					::wcscpy_s(szExt, L"");
+					::wcsncpy_s(szExt, L"", _TRUNCATE);
 				}
 				const WCHAR szBackupExt[] = { L'.', bup_setting.GetBackupExtChar(), L'0', L'0', 0 };
-				::wcscat_s(szExt, szBackupExt);
+				::wcsncat_s(szExt, szBackupExt, _TRUNCATE);
 			}
-			if( -1 == auto_snprintf_s( pBase, nBaseCount, L"%s%s", szFname, szExt ) ){
+			if( -1 == auto_snprintf_s( pBase, nBaseCount, _TRUNCATE, L"%s%s", szFname, szExt ) ){
 				return false;
 			}
+			break;
+		default:
 			break;
 		}
 
@@ -443,7 +447,7 @@ bool CBackupAgent::FormatBackUpPath(
 			// make keys
 			// $0-$9に対応するフォルダー名を切り出し
 			WCHAR keybuff[1024];
-			wcscpy( keybuff, szDir );
+			::wcsncpy_s(keybuff, szDir, _TRUNCATE);
 			CutLastYenFromDirectoryPath( keybuff );
 
 			WCHAR *folders[10];
@@ -468,7 +472,7 @@ bool CBackupAgent::FormatBackUpPath(
 			}
 			{
 				// $0-$9を置換
-				//wcscpy( szNewPath, L"" );
+				//::wcsncpy_s(szNewPath, L"", _TRUNCATE);
 				WCHAR *q = formatString.data();
 				WCHAR *q2 = q;
 				while( *q ){
@@ -504,10 +508,10 @@ bool CBackupAgent::FormatBackUpPath(
 
 			// * を拡張子にする
 			while( wcschr( szNewPath, L'*' ) ){
-				wcscpy( temp, szNewPath );
+				::wcsncpy_s(temp, szNewPath, _TRUNCATE);
 				cp = wcschr( temp, L'*' );
 				*cp = 0;
-				if( -1 == auto_snprintf_s( szNewPath, newPathCount, L"%s%s%s", temp, ep, cp+1 ) ){
+				if( -1 == auto_snprintf_s( szNewPath, newPathCount, _TRUNCATE, L"%s%s%s", temp, ep, cp+1 ) ){
 					return false;
 				}
 			}

@@ -223,8 +223,12 @@ INT_PTR CPropKeyword::DispatchEvent(
 					/* リスト中で選択されているキーワードを編集する */
 					Edit_List_KeyWord( hwndDlg, hwndLIST_KEYWORD );
 					break;
+				default:
+					break;
 				}
 				return TRUE;
+			default:
+				break;
 			}
 		}else{
 			switch( pNMHDR->code ){
@@ -240,6 +244,8 @@ INT_PTR CPropKeyword::DispatchEvent(
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPCOM_PAGENUM_KEYWORD;
 				return TRUE;
+			default:
+				break;
 			}
 		}
 		break;
@@ -254,6 +260,8 @@ INT_PTR CPropKeyword::DispatchEvent(
 				/* ダイアログデータの設定 Keyword 指定キーワードセットの設定 */
 				SetKeyWordSet( hwndDlg, nIndex1 );
 				return TRUE;
+			default:
+				break;
 			}
 		}else{
 			switch( wNotifyCode ){
@@ -357,7 +365,7 @@ INT_PTR CPropKeyword::DispatchEvent(
 					return TRUE;
 				case IDC_BUTTON_KEYSETRENAME: // キーワードセットの名称変更
 					// モードレスダイアログの表示
-					wcscpy( szKeyWord, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetTypeName( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx ) );
+					::wcsncpy_s(szKeyWord, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetTypeName( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx ), _TRUNCATE);
 					{
 						BOOL bDlgInputResult = cDlgInput1.DoModal(
 							G_AppInstance(),
@@ -429,8 +437,12 @@ INT_PTR CPropKeyword::DispatchEvent(
 				case IDCANCEL:
 					EndDialog( hwndDlg, IDCANCEL );
 					break;
+				default:
+					break;
 				}
 				break;	/* BN_CLICKED */
+			default:
+				break;
 			}
 		}
 		break;	/* WM_COMMAND */
@@ -467,6 +479,8 @@ INT_PTR CPropKeyword::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -489,7 +503,7 @@ void CPropKeyword::Edit_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 	ListView_GetItem( hwndLIST_KEYWORD, &lvi );
 
 	/* ｎ番目のセットのｍ番目のキーワードを返す */
-	wcscpy( szKeyWord, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWord( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx, lvi.lParam ) );
+	::wcsncpy_s(szKeyWord, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWord( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx, lvi.lParam ), _TRUNCATE);
 
 	/* モードレスダイアログの表示 */
 	if( !cDlgInput1.DoModal( G_AppInstance(), hwndDlg, LS(STR_PROPCOMKEYWORD_KEYEDIT1), LS(STR_PROPCOMKEYWORD_KEYEDIT2), MAX_KEYWORDLEN, szKeyWord ) ){
@@ -540,9 +554,8 @@ void CPropKeyword::Delete_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 }
 
 /* リスト中のキーワードをインポートする */
-void CPropKeyword::Import_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
+void CPropKeyword::Import_List_KeyWord( HWND hwndDlg, [[maybe_unused]] HWND hwndLIST_KEYWORD )
 {
-	UNREFERENCED_PARAMETER(hwndLIST_KEYWORD);
 	bool	bCase = false;
 	int		nIdx = m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx;
 	m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.SetKeyWordCase( nIdx, bCase );
@@ -560,9 +573,8 @@ void CPropKeyword::Import_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 }
 
 /* リスト中のキーワードをエクスポートする */
-void CPropKeyword::Export_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
+void CPropKeyword::Export_List_KeyWord( HWND hwndDlg, [[maybe_unused]] HWND hwndLIST_KEYWORD )
 {
-	UNREFERENCED_PARAMETER(hwndLIST_KEYWORD);
 	/* ダイアログデータの設定 Keyword 指定キーワードセットの設定 */
 	SetKeyWordSet( hwndDlg, m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx );
 
@@ -577,9 +589,8 @@ void CPropKeyword::Export_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
 }
 
 //! キーワードを整頓する
-void CPropKeyword::Clean_List_KeyWord( HWND hwndDlg, HWND hwndLIST_KEYWORD )
+void CPropKeyword::Clean_List_KeyWord( HWND hwndDlg, [[maybe_unused]] HWND hwndLIST_KEYWORD )
 {
-	UNREFERENCED_PARAMETER(hwndLIST_KEYWORD);
 	if( IDYES == ::MessageBox( hwndDlg, LS(STR_PROPCOMKEYWORD_DEL),
 			GSTR_APPNAME, MB_YESNO | MB_ICONQUESTION ) ){	// 2009.03.26 ryoji MB_ICONSTOP->MB_ICONQUESTION
 		m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.CleanKeyWords( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx );
@@ -684,17 +695,14 @@ void CPropKeyword::SetKeyWordSet( HWND hwndDlg, int nIdx )
 }
 
 /* ダイアログデータの取得 Keyword */
-int CPropKeyword::GetData( HWND hwndDlg )
+int CPropKeyword::GetData( [[maybe_unused]] HWND hwndDlg )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
 	return TRUE;
 }
 
 /* ダイアログデータの取得 Keyword 指定キーワードセットの取得 */
-void CPropKeyword::GetKeyWordSet( HWND hwndDlg, int nIdx )
+void CPropKeyword::GetKeyWordSet( [[maybe_unused]] HWND hwndDlg, [[maybe_unused]] int nIdx )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
-	UNREFERENCED_PARAMETER(nIdx);
 }
 
 //キーワード数を表示する。
@@ -713,6 +721,6 @@ void CPropKeyword::DispKeywordCount( HWND hwndDlg )
 	nAlloc -= m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetKeyWordNum( m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.m_nCurrentKeyWordSetIdx );
 	nAlloc += m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr.GetFreeSize();
 	
-	auto_sprintf( szCount, LS(STR_PROPCOMKEYWORD_INFO), MAX_KEYWORDLEN, n, nAlloc );
+	auto_snprintf_s(szCount, _TRUNCATE, LS(STR_PROPCOMKEYWORD_INFO), MAX_KEYWORDLEN, n, nAlloc);
 	::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_KEYWORD_COUNT ), szCount );
 }

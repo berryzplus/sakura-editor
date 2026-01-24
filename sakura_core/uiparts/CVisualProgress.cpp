@@ -7,7 +7,6 @@
 #include "StdAfx.h"
 #include "CVisualProgress.h"
 #include "CWaitCursor.h"
-
 #include "window/CEditWnd.h"
 #include "apiwrap/CommonControl.h"
 
@@ -16,8 +15,6 @@
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 CVisualProgress::CVisualProgress()
-: m_pcWaitCursor(nullptr)
-, nOldValue(-1)
 {
 }
 
@@ -30,17 +27,13 @@ CVisualProgress::~CVisualProgress()
 //                        ロード前後                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CVisualProgress::OnBeforeLoad(SLoadInfo* sLoadInfo)
+void CVisualProgress::OnBeforeLoad([[maybe_unused]] SLoadInfo* sLoadInfo)
 {
-	UNREFERENCED_PARAMETER(sLoadInfo);
-
 	_Begin();
 }
 
-void CVisualProgress::OnAfterLoad(const SLoadInfo& sLoadInfo)
+void CVisualProgress::OnAfterLoad([[maybe_unused]] const SLoadInfo& sLoadInfo)
 {
-	UNREFERENCED_PARAMETER(sLoadInfo);
-
 	_End();
 }
 
@@ -48,17 +41,13 @@ void CVisualProgress::OnAfterLoad(const SLoadInfo& sLoadInfo)
 //                        セーブ前後                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CVisualProgress::OnBeforeSave(const SSaveInfo& sSaveInfo)
+void CVisualProgress::OnBeforeSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 {
-	UNREFERENCED_PARAMETER(sSaveInfo);
-
 	_Begin();
 }
 
-void CVisualProgress::OnFinalSave(ESaveResult eSaveResult)
+void CVisualProgress::OnFinalSave([[maybe_unused]] ESaveResult eSaveResult)
 {
-	UNREFERENCED_PARAMETER(eSaveResult);
-
 	_End();
 }
 

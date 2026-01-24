@@ -211,6 +211,8 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				}
 			}
 			return TRUE;
+		default:
+			break;
 		}
 		break;
 
@@ -247,8 +249,12 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				// 削除すると選択が解除されるので，元に戻す
 				ApiWrap::Combo_SetCurSel( hwndCOMBO_MENU, nIdx1 );
 				return TRUE;
+			default:
+				break;
 			}
 			break;	/* BN_CLICKED */
+		default:
+			break;
 		}
 
 		if( hwndCOMBO_MENU == hwndCtl ){
@@ -260,6 +266,8 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				}
 				SetDataMenuList( hwndDlg, nIdx1 );
 				break;	/* CBN_SELCHANGE */
+			default:
+				break;
 			}
 		}else
 		if( hwndLIST_RES == hwndCtl ){
@@ -281,7 +289,7 @@ INT_PTR CPropCustmenu::DispatchEvent(
 //			idListBox = (int) LOWORD(wParam);	// identifier of list box
 //			hwndListBox = (HWND) lParam;		// handle of list box
 				WCHAR		szKey[2];
-				auto_sprintf( szKey, L"%hc", m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx1][nIdx2] );
+				auto_snprintf_s(szKey, _TRUNCATE, L"%hc", m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx1][nIdx2]);
 				{
 					BOOL bDlgInputResult = cDlgInput1.DoModal(
 						G_AppInstance(),
@@ -299,18 +307,20 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				m_cLookup.Funccode2Name( m_Common.m_sCustomMenu.m_nCustMenuItemFuncArr[nIdx1][nIdx2], szLabel, 255 );
 
 				{
-					KEYCODE keycode[3]={0}; wctomb(keycode, szKey[0]);
+					std::array<KEYCODE, 3> keycode{};
+					int converted = 0;
+					::wctomb_s(&converted, std::data(keycode), std::size(keycode), szKey[0]);
 					m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx1][nIdx2] = keycode[0];
 				}
 //@@@ 2002.01.08 YAZAKI カスタムメニューでアクセスキーを消した時、左カッコ ( がメニュー項目に一回残るバグ修正
 				if (m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx1][nIdx2]){
-					auto_sprintf( szLabel2, LTEXT("%s(%hc)"),
+					auto_snprintf_s( szLabel2, _TRUNCATE, L"%s(%hc)",
 						szLabel,
 						m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx1][nIdx2]
 					);
 				}
 				else {
-					auto_sprintf( szLabel2, LTEXT("%ls"), szLabel );
+					auto_snprintf_s(szLabel2, _TRUNCATE, L"%ls", szLabel);
 				}
 
 				ApiWrap::List_InsertString( hwndLIST_RES, nIdx2, szLabel2 );
@@ -338,6 +348,8 @@ INT_PTR CPropCustmenu::DispatchEvent(
 				}else{
 				}
 				break;	/* LBN_SELCHANGE */
+			default:
+				break;
 			}
 		}
 		else if( hwndCOMBO_FUNCKIND == hwndCtl ){
@@ -358,6 +370,8 @@ INT_PTR CPropCustmenu::DispatchEvent(
 					m_cLookup.SetListItem( hwndLIST_FUNC, nIdx3 );
 				}
 				return TRUE;
+			default:
+				break;
 			}
 		}else{
 			EFunctionCode	eFuncCode = F_0;
@@ -598,8 +612,12 @@ INT_PTR CPropCustmenu::DispatchEvent(
 					}
 					m_Common.m_sCustomMenu.m_bCustMenuPopupArr[nIdx1] = IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_SUBMENU );
 					break;
+				default:
+					break;
 				}
 
+				break;
+			default:
 				break;
 			}
 		}
@@ -629,6 +647,8 @@ INT_PTR CPropCustmenu::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -677,8 +697,7 @@ void CPropCustmenu::SetDataMenuList(HWND hwndDlg, int nIdx)
 	ApiWrap::List_ResetContent( hwndLIST_RES );
 	for( i = 0; i < m_Common.m_sCustomMenu.m_nCustMenuItemNumArr[nIdx]; ++i ){
 		if( 0 == m_Common.m_sCustomMenu.m_nCustMenuItemFuncArr[nIdx][i] ){
-			wcsncpy( szLabel, LS(STR_PROPCOMCUSTMENU_SEP), int(std::size(szLabel)) - 1 );	//Oct. 18, 2000 JEPRO 「ツールバー」タブで使っているセパレータと同じ線種に統一した
-			szLabel[std::size(szLabel) - 1] = L'\0';
+			::wcsncpy_s(szLabel, LS(STR_PROPCOMCUSTMENU_SEP), _TRUNCATE);	//Oct. 18, 2000 JEPRO 「ツールバー」タブで使っているセパレータと同じ線種に統一した
 		}else{
 			EFunctionCode code = m_Common.m_sCustomMenu.m_nCustMenuItemFuncArr[nIdx][i];
 			//	Oct. 3, 2001 genta
@@ -686,9 +705,9 @@ void CPropCustmenu::SetDataMenuList(HWND hwndDlg, int nIdx)
 		}
 		/* キー */
 		if( '\0' == m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx][i] ){
-			wcscpy( szLabel2, szLabel );
+			::wcsncpy_s(szLabel2, szLabel, _TRUNCATE);
 		}else{
-			auto_sprintf( szLabel2, LTEXT("%ls(%hc)"),
+			auto_snprintf_s( szLabel2, _TRUNCATE, L"%ls(%hc)",
 				szLabel,
 				m_Common.m_sCustomMenu.m_nCustMenuItemKeyArr[nIdx][i]
 			);
@@ -706,9 +725,8 @@ void CPropCustmenu::SetDataMenuList(HWND hwndDlg, int nIdx)
 }
 
 /* ダイアログデータの取得 Custom menu */
-int CPropCustmenu::GetData( HWND hwndDlg )
+int CPropCustmenu::GetData( [[maybe_unused]] HWND hwndDlg )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
 	return TRUE;
 }
 

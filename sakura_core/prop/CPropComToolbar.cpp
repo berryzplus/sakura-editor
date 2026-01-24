@@ -236,6 +236,8 @@ INT_PTR CPropToolbar::DispatchEvent(
 		case IDC_LIST_FUNC:	/* ボタン一覧リスト */
 			DrawToolBarItemList( pDis );	/* ツールバーボタンリストのアイテム描画 */
 			return TRUE;
+		default:
+			break;
 		}
 		return TRUE;
 
@@ -255,6 +257,8 @@ INT_PTR CPropToolbar::DispatchEvent(
 		case PSN_SETACTIVE:
 			m_nPageNum = ID_PROPCOM_PAGENUM_TOOLBAR;
 			return TRUE;
+		default:
+			break;
 		}
 		break;
 
@@ -267,6 +271,8 @@ INT_PTR CPropToolbar::DispatchEvent(
 			switch( wNotifyCode ){
 			case LBN_SELCHANGE:
 				return TRUE;
+			default:
+				break;
 			}
 		}else
 		if( hwndCombo == hwndCtl ){
@@ -295,6 +301,8 @@ INT_PTR CPropToolbar::DispatchEvent(
 				}
 				::SendMessage( hwndFuncList, WM_SETREDRAW, TRUE, 0 );
 				return TRUE;
+			default:
+				break;
 			}
 		}else{
 			switch( wNotifyCode ){
@@ -439,8 +447,12 @@ INT_PTR CPropToolbar::DispatchEvent(
 					ApiWrap::List_SetCurSel( hwndResList, nIndex1 );
 					//	To Here Apr. 13, 2002 genta
 					break;
+				default:
+					break;
 				}
 
+				break;
+			default:
 				break;
 			}
 		}
@@ -471,6 +483,8 @@ INT_PTR CPropToolbar::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -601,15 +615,12 @@ void CPropToolbar::DrawToolBarItemList( DRAWITEMSTRUCT* pDis )
 	if( tbb.fsStyle & TBSTYLE_SEP ){
 		// テキストだけ表示する
 		if( tbb.idCommand == F_SEPARATOR ){
-			wcsncpy( szLabel, LS(STR_PROPCOMTOOL_ITEM1), int(std::size(szLabel)) - 1 );	// nLength 未使用 2003/01/09 Moca
-			szLabel[std::size(szLabel) - 1] = L'\0';
+			wcsncpy_s(szLabel, LS(STR_PROPCOMTOOL_ITEM1), _TRUNCATE); // nLength 未使用 2003/01/09 Moca
 		}else if( tbb.idCommand == F_MENU_NOT_USED_FIRST ){
 			// ツールバー折返
-			wcsncpy( szLabel, LS(STR_PROPCOMTOOL_ITEM2), int(std::size(szLabel)) - 1 );
-			szLabel[std::size(szLabel) - 1] = L'\0';
+			wcsncpy_s(szLabel, LS(STR_PROPCOMTOOL_ITEM2), _TRUNCATE);
 		}else{
-			wcsncpy( szLabel, LS(STR_PROPCOMTOOL_ITEM3), int(std::size(szLabel)) - 1 );
-			szLabel[std::size(szLabel) - 1] = L'\0';
+			wcsncpy_s(szLabel, LS(STR_PROPCOMTOOL_ITEM3), _TRUNCATE);
 		}
 	}else{
 		// アイコンとテキストを表示する

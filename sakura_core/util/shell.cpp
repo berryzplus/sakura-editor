@@ -197,6 +197,7 @@ static LRESULT CALLBACK PropSheetWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, L
 				break;
 
 			case 101:	// インポート／エクスポートの起点リセット（起点を設定フォルダーにする）
+			{
 				int nMsgResult = MYMESSAGEBOX(
 					hwnd,
 					MB_OKCANCEL | MB_ICONINFORMATION,
@@ -209,6 +210,9 @@ static LRESULT CALLBACK PropSheetWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, L
 					GetInidir( pShareData->m_sHistory.m_szIMPORTFOLDER );
 					AddLastChar( pShareData->m_sHistory.m_szIMPORTFOLDER, std::size(pShareData->m_sHistory.m_szIMPORTFOLDER), L'\\' );
 				}
+				break;
+			}
+			default:
 				break;
 			}
 		}
@@ -334,11 +338,9 @@ HWND OpenHtmlHelp(
 	LPCWSTR		szFile,	//!< [in] HTML Helpのファイル名。不等号に続けてウィンドウタイプ名を指定可能。
 	UINT		uCmd,	//!< [in] HTML Help に渡すコマンド
 	DWORD_PTR	data,	//!< [in] コマンドに応じたデータ
-	bool		msgflag	//!< [in] エラーメッセージを表示するか。省略時はtrue。
+	[[maybe_unused]] bool		msgflag	//!< [in] エラーメッセージを表示するか。省略時はtrue。
 )
 {
-	UNREFERENCED_PARAMETER(msgflag);
-
 	return ::HtmlHelpW( hWnd, szFile, uCmd, data );
 }
 
@@ -387,7 +389,7 @@ BOOL ResolveShortcutLink( HWND hwnd, LPCWSTR lpszLinkFile, LPWSTR lpszPath )
 						if( SUCCEEDED(hRes = pIShellLink->GetDescription(szDescription, MAX_PATH ) ) ){
 							if( L'\0' != szGotPath[0] ){
 								/* 正常終了 */
-								wcscpy_s( lpszPath, _MAX_PATH, szGotPath );
+								::wcsncpy_s(lpszPath, _MAX_PATH, szGotPath, _TRUNCATE);
 								bRes = TRUE;
 							}
 						}
@@ -579,6 +581,8 @@ BOOL MySelectFont( LOGFONT* plf, INT* piPointSize, HWND hwndDlgOwner, bool Fixed
 		case CDERR_STRUCTSIZE:		MYTRACE( L"CDERR_STRUCTSIZE \n" );		break;
 		case CFERR_MAXLESSTHANMIN:	MYTRACE( L"CFERR_MAXLESSTHANMIN \n" );	break;
 		case CFERR_NOFONTS:			MYTRACE( L"CFERR_NOFONTS \n" );			break;
+		default:
+			break;
 		}
 #endif
 		return FALSE;

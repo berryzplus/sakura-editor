@@ -17,7 +17,7 @@
 	Copyright (C) 2007, ryoji, じゅうじ, maru
 	Copyright (C) 2009, nasukoji, ryoji
 	Copyright (C) 2010, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -129,19 +129,16 @@ CEditView::CEditView( void )
 // 2007.10.23 kobake コンストラクタ内の処理をすべてCreateに移しました。(初期化処理が不必要に分散していたため)
 BOOL CEditView::Create(
 	HWND		hwndParent,	//!< 親
-	CEditDoc*	pcEditDoc,	//!< 参照するドキュメント
+	[[maybe_unused]] CEditDoc* pcEditDoc,	//!< 参照するドキュメント
 	int			nMyIndex,	//!< ビューのインデックス
 	BOOL		bShow,		//!< 作成時に表示するかどうか
 	bool		bMiniMap
 )
 {
 	m_bMiniMap = bMiniMap;
-	m_pcTextArea = new CTextArea(this);
-	m_pcCaret = new CCaret(this, pcEditDoc);
-	m_pcRuler = new CRuler(this, pcEditDoc);
+
 	m_pcViewFont = GetEditWnd().GetViewFont(m_bMiniMap);
 
-	m_cHistory = new CAutoMarkMgr;
 	m_cRegexKeyword = nullptr;				// 2007.04.08 ryoji
 
 	SetDrawSwitch(true);
@@ -230,7 +227,6 @@ BOOL CEditView::Create(
 
 	WNDCLASS	wc;
 	m_hwndParent = hwndParent;
-	m_pcEditDoc = pcEditDoc;
 	m_pTypeData = &m_pcEditDoc->m_cDocType.GetDocumentAttribute();
 	m_nMyIndex = nMyIndex;
 
@@ -370,18 +366,8 @@ void CEditView::Close()
 	delete m_pcDropTarget;
 	m_pcDropTarget = nullptr;
 
-	delete m_cHistory;
-	m_cHistory = nullptr;
-
 	delete m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	m_cRegexKeyword = nullptr;
-
-	delete m_pcTextArea;
-	m_pcTextArea = nullptr;
-	delete m_pcCaret;
-	m_pcCaret = nullptr;
-	delete m_pcRuler;
-	m_pcRuler = nullptr;
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -649,6 +635,8 @@ LRESULT CEditView::DispatchEvent(
 		case XBUTTON2:
 			OnXRBUTTONDOWN( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
 			break;
+		default:
+			break;
 		}
 
 		return TRUE;
@@ -661,6 +649,8 @@ LRESULT CEditView::DispatchEvent(
 			break;
 		case XBUTTON2:
 			OnXRBUTTONUP( wParam, (short)LOWORD( lParam ), (short)HIWORD( lParam ) );
+			break;
+		default:
 			break;
 		}
 
@@ -1214,7 +1204,7 @@ bool CEditView::IsCurrentPositionURL(
 	//nLineLen = CLogicInt(__min(nLineLen, ptXY.GetX2() + _MAX_PATH));
 	while( i <= ptXY.GetX2() && i < nLineLen ){
 		bMatch = ( bUseRegexKeyword
-					&& m_cRegexKeyword->RegexIsKeyword( std::wstring_view(pLine, nLineLen), i, &nUrlLen, &nMatchColor )
+					&& m_cRegexKeyword->RegexIsKeyword( CStringRef(pLine, nLineLen), i, &nUrlLen, &nMatchColor )
 					&& nMatchColor == COLORIDX_URL );
 		if( !bMatch ){
 			bMatch = ( bDispUrl
@@ -1245,16 +1235,12 @@ bool CEditView::IsCurrentPositionURL(
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 VOID CEditView::OnTimer(
-	HWND hwnd,		// handle of window for timer messages
-	UINT uMsg,		// WM_TIMER message
-	UINT_PTR idEvent,	// timer identifier
-	DWORD dwTime 	// current system time
+	[[maybe_unused]] HWND hwnd,		// handle of window for timer messages
+	[[maybe_unused]] UINT uMsg,		// WM_TIMER message
+	[[maybe_unused]] UINT_PTR idEvent,	// timer identifier
+	[[maybe_unused]] DWORD dwTime 	// current system time
 	)
 {
-	UNREFERENCED_PARAMETER(dwTime);
-	UNREFERENCED_PARAMETER(hwnd);
-	UNREFERENCED_PARAMETER(idEvent);
-	UNREFERENCED_PARAMETER(uMsg);
 	POINT		po;
 	RECT		rc;
 
@@ -1848,7 +1834,7 @@ bool CEditView::GetSelectedData(
 		//>> 2002/04/18 Azumaiya
 
 		// メモリ確保に失敗したら抜ける
-		if( buffer->Capacity() < nBufSize ){
+		if( buffer->Capacity() < size_t(nBufSize) ){
 			return false;
 		}
 
@@ -1961,7 +1947,7 @@ bool CEditView::GetSelectedData(
 				buffer->Append( pszQuote, quoteLen );
 			}
 			if( bWithLineNumber ){	/* 行番号を付与する */
-				auto lineNumLen = auto_sprintf( pszLineNum, L" %d:" , nLineNum + 1 );
+				const auto lineNumLen = auto_snprintf_s(pszLineNum, std::size(strLineNum), _TRUNCATE, L" %d:", int(nLineNum) + 1);
 				buffer->Append( pszSpaces, nLineNumCols - wcslen( pszLineNum ) );
 				buffer->Append( pszLineNum, (size_t)lineNumLen );
 			}
@@ -2035,11 +2021,11 @@ bool CEditView::GetSelectedData(
 */
 bool CEditView::GetSelectedDataOne( CNativeW& cmemBuf, int nMaxLen )
 {
-	const wchar_t*	pLine;
-	CLogicInt		nLineLen;
-	CLogicInt		nIdxFrom;
-	CLogicInt		nIdxTo;
-	CLogicInt		nSelectLen;
+	const wchar_t*	pLine = nullptr;
+	CLogicInt		nLineLen{ 0 };
+	CLogicInt		nIdxFrom{ 0 };
+	CLogicInt		nIdxTo{ 0 };
+	CLogicInt		nSelectLen{ 0 };
 
 	if( !GetSelectionInfo().IsTextSelected() ){
 		return false;
@@ -2607,10 +2593,8 @@ void CEditView::SetInsMode(bool mode)
 //                         イベント                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-void CEditView::OnAfterLoad(const SLoadInfo& sLoadInfo)
+void CEditView::OnAfterLoad([[maybe_unused]] const SLoadInfo& sLoadInfo)
 {
-	UNREFERENCED_PARAMETER(sLoadInfo);
-
 	if( nullptr == GetHwnd() ){
 		// MiniMap 非表示
 		return;
@@ -2646,10 +2630,8 @@ void CEditView::AddCurrentLineToHistory( void )
 }
 
 //	2001/06/18 Start by asa-o: 補完ウィンドウ用のキーワードヘルプ表示
-bool  CEditView::ShowKeywordHelp( POINT po, LPCWSTR pszHelp, LPRECT prcHokanWin)
+bool  CEditView::ShowKeywordHelp( POINT po, LPCWSTR pszHelp, [[maybe_unused]] LPRECT prcHokanWin)
 {
-	UNREFERENCED_PARAMETER(prcHokanWin);
-
 	CNativeW	cmemCurText;
 	RECT		rcTipWin,
 				rcDesktop;
@@ -2767,10 +2749,8 @@ bool CEditView::IsEmptyArea( CLayoutPoint ptFrom, CLayoutPoint ptTo, bool bSelec
 }
 
 /*! アンドゥバッファの処理 */
-void CEditView::SetUndoBuffer(bool bPaintLineNumber)
+void CEditView::SetUndoBuffer([[maybe_unused]] bool bPaintLineNumber)
 {
-	UNREFERENCED_PARAMETER(bPaintLineNumber);
-
 	if( nullptr != m_cCommander.GetOpeBlk() && m_cCommander.GetOpeBlk()->Release() == 0 ){
 		if( 0 < m_cCommander.GetOpeBlk()->GetNum() ){	/* 操作の数を返す */
 			/* 操作の追加 */

@@ -34,8 +34,6 @@ const DWORD p_helpids[] = {
 
 CDlgSetCharSet::CDlgSetCharSet()
 {
-	m_pnCharSet = nullptr;			// 文字コードセット
-	m_pbBom = nullptr;				// 文字コードセット
 }
 
 /* モーダルダイアログの表示 */
@@ -58,10 +56,9 @@ BOOL CDlgSetCharSet::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	ApiWrap::Combo_SetExtendedUI( m_hwndCharSet, TRUE );
 
 	// 文字コードセット選択コンボボックス初期化
-	int i;
 	CCodeTypesForCombobox cCodeTypes;
 	ApiWrap::Combo_ResetContent( m_hwndCharSet );
-	for (i = 1; i < cCodeTypes.GetCount(); ++i) {
+	for (size_t i = 1; i < cCodeTypes.GetCount(); ++i) {
 		int idx = ApiWrap::Combo_AddString( m_hwndCharSet, cCodeTypes.GetName(i) );
 		ApiWrap::Combo_SetItemData( m_hwndCharSet, idx, cCodeTypes.GetCode(i) );
 	}
@@ -91,6 +88,8 @@ BOOL CDlgSetCharSet::OnBnClicked( int wID )
 	case IDCANCEL:
 		CloseDialog( FALSE );
 		return TRUE;
+	default:
+		break;
 	}
 
 	/* 基底クラスメンバ */
@@ -133,6 +132,7 @@ BOOL CDlgSetCharSet::OnCbnSelChange( HWND hwndCtl, int wID )
 	switch (wID) {
 	//	文字コードの変更をBOMチェックボックスに反映
 	case IDC_COMBO_CHARSET:
+	{
 		SetBOM();
 		nIdx = ApiWrap::Combo_GetCurSel( hwndCtl );
 		lRes = ApiWrap::Combo_GetItemData( hwndCtl, nIdx );
@@ -151,6 +151,9 @@ BOOL CDlgSetCharSet::OnCbnSelChange( HWND hwndCtl, int wID )
 			fCheck = BST_UNCHECKED;
 		}
 		ApiWrap::BtnCtl_SetCheck( m_hwndCheckBOM, fCheck );
+		break;
+	}
+	default:
 		break;
 	}
 	return TRUE;

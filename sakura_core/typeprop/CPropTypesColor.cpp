@@ -103,7 +103,7 @@ bool CPropTypesColor::Import( HWND hwndDlg )
 	/* 色設定 I/O */
 	for( int i = 0; i < m_Types.m_nColorInfoArrNum; ++i ){
 		ColorInfoArr[i] = m_Types.m_ColorInfoArr[i];
-		wcscpy( ColorInfoArr[i].m_szName, m_Types.m_ColorInfoArr[i].m_szName );
+		::wcsncpy_s(ColorInfoArr[i].m_szName, m_Types.m_ColorInfoArr[i].m_szName, _TRUNCATE);
 	}
 
 	// インポート
@@ -116,7 +116,7 @@ bool CPropTypesColor::Import( HWND hwndDlg )
 	m_Types.m_nColorInfoArrNum = COLORIDX_LAST;
 	for( int i = 0; i < m_Types.m_nColorInfoArrNum; ++i ){
 		m_Types.m_ColorInfoArr[i] =  ColorInfoArr[i];
-		wcscpy( m_Types.m_ColorInfoArr[i].m_szName, ColorInfoArr[i].m_szName );
+		::wcsncpy_s(m_Types.m_ColorInfoArr[i].m_szName, ColorInfoArr[i].m_szName, _TRUNCATE);
 	}
 	/* ダイアログデータの設定 color */
 	SetData( hwndDlg );
@@ -164,6 +164,8 @@ LRESULT APIENTRY CPropTypesColor::ColorList_SubclassProc( HWND hwnd, UINT uMsg, 
 				break;
 			}
 		}
+		break;
+	default:
 		break;
 	}
 	switch( uMsg ){
@@ -351,6 +353,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_BUTTON_TEXTCOLOR ), nullptr, TRUE );
 				::InvalidateRect( ::GetDlgItem( hwndDlg, IDC_BUTTON_BACKCOLOR ), nullptr, TRUE );
 				return TRUE;
+			default:
+				break;
 			}
 		}
 		switch( wNotifyCode ){
@@ -483,6 +487,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 						::IsDlgButtonCheckedBool( hwndDlg, IDC_CHECK_STRINGLINEONLY ) );
 					return TRUE;
 				}
+			default:
+				break;
 			}
 			break;	/* BN_CLICKED */
 		case EN_SETFOCUS:
@@ -492,6 +498,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 		case EN_KILLFOCUS:
 			if (isImeUndesirable(wID))
 				ImeSetOpen(hwndCtl, s_isImmOpenBkup, nullptr);
+			break;
+		default:
 			break;
 		}
 		break;	/* WM_COMMAND */
@@ -572,6 +580,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPTYPE_PAGENUM_COLOR;
 				return TRUE;
+			default:
+				break;
 			}
 			break;	/* default */
 		}
@@ -590,6 +600,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 		case IDC_LIST_COLORS:		/* 色種別リスト */
 			DrawColorListItem( pDis );
 			return TRUE;
+		default:
+			break;
 		}
 		break;
 
@@ -610,6 +622,8 @@ INT_PTR CPropTypesColor::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids2 );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.11.17 add end MIK
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -713,7 +727,7 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 					szVertLine[offset+1] = '\0';
 					offset += 1;
 				}
-				offset += auto_sprintf( &szVertLine[offset], L"%d(%d,%d)", nXColAdd, nXCol, nXColEnd );
+				offset += auto_snprintf_s(&szVertLine[offset], std::size(szVertLine) - offset, _TRUNCATE, L"%d(%d,%d)", nXColAdd, nXCol, nXColEnd);
 			}
 		}
 		else{
@@ -722,7 +736,7 @@ void CPropTypesColor::SetData( HWND hwndDlg )
 				szVertLine[offset+1] = '\0';
 				offset += 1;
 			}
-			offset += auto_sprintf( &szVertLine[offset], L"%d", nXCol );
+			offset += auto_snprintf_s(&szVertLine[offset], std::size(szVertLine) - offset, _TRUNCATE, L"%d", nXCol);
 		}
 	}
 	ApiWrap::EditCtl_LimitText( ::GetDlgItem( hwndDlg, IDC_EDIT_VERTLINE ), MAX_VERTLINES * 15 );

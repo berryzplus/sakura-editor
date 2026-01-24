@@ -9,6 +9,9 @@
 #define SAKURA_STRING_EX_87282FEB_4B23_4112_9C5A_419F43618705_H_
 #pragma once
 
+// snprintf_sに CStrictInteger を渡せない問題の回避に必要
+#include "basis/CStrictInteger.h"
+
 #include <vadefs.h>
 #include <string>
 #include <string_view>
@@ -71,12 +74,6 @@ int skr_towlower( int c );
 //                           拡張・独自実装                    //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//文字数の上限付きコピー
-LPWSTR wcscpyn(LPWSTR lpString1,LPCWSTR lpString2,int iMaxLength); //iMaxLengthは文字単位。
-
-//	Apr. 03, 2003 genta
-char *strncpy_ex(char *dst, size_t dst_count, const char* src, size_t src_count);
-
 //大文字小文字を区別せずに文字列を検索
 const WCHAR* wcsistr( const WCHAR* s1, const WCHAR* s2 );
 const ACHAR* stristr( const ACHAR* s1, const ACHAR* s2 );
@@ -122,18 +119,8 @@ int my_strnicmp( const char *s1, const char *s2, size_t n );
 //転送系
 inline ACHAR* auto_memcpy(ACHAR* dest, const ACHAR* src, size_t count){        ::memcpy (dest,src,count); return dest; }
 inline WCHAR* auto_memcpy(WCHAR* dest, const WCHAR* src, size_t count){ return ::wmemcpy(dest,src,count);              }
-inline ACHAR* auto_strcpy(ACHAR* dst, const ACHAR* src){ return strcpy(dst,src); }
-inline WCHAR* auto_strcpy(WCHAR* dst, const WCHAR* src){ return wcscpy(dst,src); }
-inline errno_t auto_strcpy_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcpy_s(dst,nDstCount,src); }
-inline errno_t auto_strcpy_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscpy_s(dst,nDstCount,src); }
-inline ACHAR* auto_strncpy(ACHAR* dst,const ACHAR* src,size_t count){ return strncpy(dst,src,count); }
-inline WCHAR* auto_strncpy(WCHAR* dst,const WCHAR* src,size_t count){ return wcsncpy(dst,src,count); }
 inline ACHAR* auto_memset(ACHAR* dest, ACHAR c, size_t count){        memset (dest,c,count); return dest; }
 inline WCHAR* auto_memset(WCHAR* dest, WCHAR c, size_t count){ return wmemset(dest,c,count);              }
-inline ACHAR* auto_strcat(ACHAR* dst, const ACHAR* src){ return strcat(dst,src); }
-inline WCHAR* auto_strcat(WCHAR* dst, const WCHAR* src){ return wcscat(dst,src); }
-inline errno_t auto_strcat_s(ACHAR* dst, size_t nDstCount, const ACHAR* src){ return strcat_s(dst,nDstCount,src); }
-inline errno_t auto_strcat_s(WCHAR* dst, size_t nDstCount, const WCHAR* src){ return wcscat_s(dst,nDstCount,src); }
 
 //比較系
 inline int auto_memcmp (const ACHAR* p1, const ACHAR* p2, size_t count){ return amemcmp(p1,p2,count); }
@@ -178,24 +165,19 @@ WCHAR* strtotcs( WCHAR* dest, const ACHAR* src, size_t count );
 WCHAR* strtotcs( WCHAR* dest, const WCHAR* src, size_t count );
 
 //印字系
-inline int auto_vsprintf(ACHAR* buf, const ACHAR* format, va_list& v) { return ::vsprintf(buf, format, v); }
-inline int auto_vsprintf(WCHAR* buf, const WCHAR* format, va_list& v) { return ::_vswprintf(buf, format, v); }
-inline int auto_sprintf(ACHAR* buf, const ACHAR* format, ...) { va_list args; va_start(args, format); const int n = auto_vsprintf(buf, format, args); va_end(args); return n; }
-inline int auto_sprintf(WCHAR* buf, const WCHAR* format, ...) { va_list args; va_start(args, format); const int n = auto_vsprintf(buf, format, args); va_end(args); return n; }
+template<typename... Params> requires (... && !is_strict_integer_v<Params>)
+inline int auto_snprintf_s(ACHAR* buf, size_t nBufCount, size_t count, const ACHAR* format, Params&&... params) noexcept {
+	return ::_snprintf_s(buf, nBufCount, count, format, std::forward<Params>(params)...);
+}
+template<typename... Params> requires (... && !is_strict_integer_v<Params>)
+inline int auto_snprintf_s(WCHAR* buf, size_t nBufCount, size_t count, const WCHAR* format, Params&&... params) noexcept {
+	return ::_snwprintf_s(buf, nBufCount, count, format, std::forward<Params>(params)...);
+}
+template<typename... Params> requires (... && !is_strict_integer_v<Params>) inline int auto_snprintf_s(std::span<ACHAR> buf, size_t count, const ACHAR* format, Params&&... params) noexcept { return auto_snprintf_s(std::data(buf), std::size(buf), count, format, std::forward<Params>(params)...); }
+template<typename... Params> requires (... && !is_strict_integer_v<Params>) inline int auto_snprintf_s(std::span<WCHAR> buf, size_t count, const WCHAR* format, Params&&... params) noexcept { return auto_snprintf_s(std::data(buf), std::size(buf), count, format, std::forward<Params>(params)...); }
 
-inline int auto_vsprintf_s(ACHAR* buf, size_t nBufCount, const ACHAR* format, va_list& v) { return ::_vsnprintf_s(buf, nBufCount, _TRUNCATE, format, v); }
-inline int auto_vsprintf_s(WCHAR* buf, size_t nBufCount, const WCHAR* format, va_list& v) { return ::_vsnwprintf_s(buf, nBufCount, _TRUNCATE, format, v); }
-#define auto_snprintf_s(buf, nBufCount, format, ...)	::_snwprintf_s((buf), nBufCount, _TRUNCATE, (format), __VA_ARGS__)
-
-std::wstring& eos(std::wstring& strOut, size_t cchOut);
-std::string& eos(std::string& strOut, size_t cchOut);
-
-int vstrprintf(std::wstring& strOut, const WCHAR* pszFormat, va_list& argList);
-int vstrprintf(std::string& strOut, const CHAR* pszFormat, va_list& argList);
 int strprintf(std::wstring& strOut, const WCHAR* pszFormat, ...);
 int strprintf(std::string& strOut, const CHAR* pszFormat, ...);
-std::wstring vstrprintf(const WCHAR* pszFormat, va_list& argList);
-std::string vstrprintf(const CHAR* pszFormat, va_list& argList);
 std::wstring strprintf(const WCHAR* pszFormat, ...);
 std::string strprintf(const CHAR* pszFormat, ...);
 
@@ -203,18 +185,15 @@ std::string strprintf(const CHAR* pszFormat, ...);
 //                      文字コード変換                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-#include <vector>
-
 //SJIS→UNICODE。終端にL'\0'を付けてくれる版。
-size_t mbstowcs2(wchar_t* dst,const char* src,size_t dst_count);
-size_t mbstowcs2(wchar_t* pDst, int nDstCount, const char* pSrc, int nSrcCount);
+size_t mbstowcs2(wchar_t* dst, const char* src, size_t dst_count);
+size_t mbstowcs2(wchar_t* pDst, size_t nDstCount, const char* pSrc, size_t nSrcCount);
 
 //UNICODE→SJIS。終端に'\0'を付けてくれる版。
 size_t wcstombs2(char* dst,const wchar_t* src,size_t dst_count);
 
 //SJIS→UNICODE。
 wchar_t*	mbstowcs_new(const char* pszSrc);								//戻り値はnew[]で確保して返す。使い終わったらdelete[]すること。
-wchar_t*	mbstowcs_new(const char* pSrc, int nSrcLen, int* pnDstLen);		//戻り値はnew[]で確保して返す。使い終わったらdelete[]すること。
 
 std::wstring u8stowcs(std::wstring& strOut, std::string_view strInput);
 std::string wcstou8s(std::string& strOut, std::wstring_view strInput);

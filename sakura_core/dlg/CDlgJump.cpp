@@ -112,10 +112,8 @@ BOOL CDlgJump::OnNotify(NMHDR* pNMHDR)
 }
 // To Here Oct. 6, 2000
 
-BOOL CDlgJump::OnCbnSelChange( HWND hwndCtl, int wID )
+BOOL CDlgJump::OnCbnSelChange( [[maybe_unused]] HWND hwndCtl, int wID )
 {
-	UNREFERENCED_PARAMETER(hwndCtl);
-
 	int	nIndex;
 	int	nWorkLine;
 	switch( wID ){
@@ -124,6 +122,8 @@ BOOL CDlgJump::OnCbnSelChange( HWND hwndCtl, int wID )
 		nWorkLine = (int)ApiWrap::Combo_GetItemData( GetItemHwnd( IDC_COMBO_PLSQLBLOCKS ), nIndex );
 		::SetDlgItemInt( GetHwnd(), IDC_EDIT_PLSQL_E1, nWorkLine, FALSE );
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -184,6 +184,8 @@ BOOL CDlgJump::OnBnClicked( int wID )
 	case IDCANCEL:
 		::EndDialog( GetHwnd(), FALSE );
 		return TRUE;
+	default:
+		break;
 	}
 	/* 基底クラスメンバ */
 	return CDialog::OnBnClicked( wID );
@@ -255,13 +257,13 @@ void CDlgJump::SetData( void )
 	for( i = 0; i < cFuncInfoArr.GetNum(); ++i ){
 		if( 31 == cFuncInfoArr.GetAt( i )->m_nInfo ){
 			if( m_pShareData->m_bLineNumIsCRLF_ForJump ){	/* 行番号の表示 false=折り返し単位／true=改行単位 */
-				auto_sprintf( szText, LS(STR_DLGJUMP_PSLQL),
-					cFuncInfoArr.GetAt( i )->m_nFuncLineCRLF,
+				auto_snprintf_s( szText, _TRUNCATE, LS(STR_DLGJUMP_PSLQL),
+					int(cFuncInfoArr.GetAt(i)->m_nFuncLineCRLF),
 					cFuncInfoArr.GetAt( i )->m_cmemFuncName.GetStringPtr()
 				);
 			}else{
-				auto_sprintf( szText, LS(STR_DLGJUMP_PSLQL),
-					cFuncInfoArr.GetAt( i )->m_nFuncLineLAYOUT,
+				auto_snprintf_s( szText, _TRUNCATE, LS(STR_DLGJUMP_PSLQL),
+					int(cFuncInfoArr.GetAt(i)->m_nFuncLineLAYOUT),
 					cFuncInfoArr.GetAt( i )->m_cmemFuncName.GetStringPtr()
 				);
 			}
@@ -276,13 +278,13 @@ void CDlgJump::SetData( void )
 		}
 		if( 41 == cFuncInfoArr.GetAt( i )->m_nInfo ){
 			if( m_pShareData->m_bLineNumIsCRLF_ForJump ){	/* 行番号の表示 false=折り返し単位／true=改行単位 */
-				auto_sprintf( szText, LS(STR_DLGJUMP_PSLQL),
-					cFuncInfoArr.GetAt( i )->m_nFuncLineCRLF,
+				auto_snprintf_s( szText, _TRUNCATE, LS(STR_DLGJUMP_PSLQL),
+					int(cFuncInfoArr.GetAt(i)->m_nFuncLineCRLF),
 					cFuncInfoArr.GetAt( i )->m_cmemFuncName.GetStringPtr()
 				);
 			}else{
-				auto_sprintf( szText, LS(STR_DLGJUMP_PSLQL),
-					cFuncInfoArr.GetAt( i )->m_nFuncLineLAYOUT,
+				auto_snprintf_s( szText, _TRUNCATE, LS(STR_DLGJUMP_PSLQL),
+					int(cFuncInfoArr.GetAt(i)->m_nFuncLineLAYOUT),
 					cFuncInfoArr.GetAt( i )->m_cmemFuncName.GetStringPtr()
 				);
 			}

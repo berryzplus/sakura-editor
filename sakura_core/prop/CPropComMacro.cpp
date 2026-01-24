@@ -117,6 +117,8 @@ INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 			case LVN_ITEMCHANGED:
 				CheckListPosition_Macro( hwndDlg );
 				break;
+			default:
+				break;
 			}
 			break;
 		default:
@@ -132,6 +134,8 @@ INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 			case PSN_SETACTIVE:
 				m_nPageNum = ID_PROPCOM_PAGENUM_MACRO;
 				return TRUE;
+			default:
+				break;
 			}
 			break;
 		}
@@ -155,12 +159,16 @@ INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 			case IDC_MACRO_REG:		// マクロ設定
 				SetMacro2List_Macro( hwndDlg );
 				break;
+			default:
+				break;
 			}
 			break;
 		case CBN_DROPDOWN:
 			switch( wID ){
 			case IDC_MACROPATH:
 				OnFileDropdown_Macro( hwndDlg );
+				break;
+			default:
 				break;
 			}
 			break;	/* CBN_DROPDOWN */
@@ -182,9 +190,13 @@ INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 					}
 				}
 				break;
+			default:
+				break;
 			}
 			break;
 		// To Here 2003.06.23 Moca
+		default:
+			break;
 		}
 
 		break;	/* WM_COMMAND */
@@ -205,6 +217,8 @@ INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 //@@@ 2001.12.22 End
+	default:
+		break;
 	}
 	return FALSE;
 }
@@ -248,11 +262,11 @@ void CPropMacro::SetData( HWND hwndDlg )
 		WCHAR szText[8];
 		szText[0] = L'\0';
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnOpened )
-			::lstrcat(szText, L"O");
+			::wcsncat_s(szText, L"O", _TRUNCATE);
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnTypeChanged )
-			::lstrcat(szText, L"T");
+			::wcsncat_s(szText, L"T", _TRUNCATE);
 		if( index == m_pShareData->m_Common.m_sMacro.m_nMacroOnSave )
-			::lstrcat(szText, L"S");
+			::wcsncat_s(szText, L"S", _TRUNCATE);
 		memset_raw( &sItem, 0, sizeof( sItem ));
 		sItem.iItem = index;
 		sItem.mask = LVIF_TEXT;
@@ -279,7 +293,8 @@ void CPropMacro::SetData( HWND hwndDlg )
 	
 	//	マクロ停止ダイアログ表示待ち時間
 	WCHAR szCancelTimer[16] = {0};
-	ApiWrap::DlgItem_SetText( hwndDlg, IDC_MACROCANCELTIMER, _itow(m_Common.m_sMacro.m_nMacroCancelTimer, szCancelTimer, 10) );
+	::_itow_s(m_Common.m_sMacro.m_nMacroCancelTimer, szCancelTimer, 10);
+	ApiWrap::DlgItem_SetText(hwndDlg, IDC_MACROCANCELTIMER, szCancelTimer);
 
 	return;
 }
@@ -431,7 +446,7 @@ void CPropMacro::InitDialog( HWND hwndDlg )
 		sItem.mask = LVIF_TEXT | LVIF_PARAM;
 		sItem.iItem = pos;
 		sItem.iSubItem = 0;
-		_itow( pos, buf, 10 );
+		::_itow_s(pos, buf, 10);
 		sItem.pszText = buf;
 		sItem.lParam = pos;
 		ListView_InsertItem( hListView, &sItem );
@@ -441,7 +456,7 @@ void CPropMacro::InitDialog( HWND hwndDlg )
 	HWND hNumCombo = ::GetDlgItem( hwndDlg, IDC_COMBO_MACROID );
 	for( pos = 0; pos < MAX_CUSTMACRO ; ++pos ){
 		wchar_t buf[10];
-		auto_sprintf( buf, L"%d", pos );
+		auto_snprintf_s(buf, _TRUNCATE, L"%d", pos);
 		int result = ApiWrap::Combo_AddString( hNumCombo, buf );
 		if( result == CB_ERR ){
 			PleaseReportToAuthor( hwndDlg, L"PropComMacro::InitDlg::AddMacroId" );
@@ -541,11 +556,11 @@ void CPropMacro::SetMacro2List_Macro( HWND hwndDlg )
 	for( iItem = 0; iItem < MAX_CUSTMACRO; iItem++){
 		szText[0] = L'\0';
 		if( iItem == nMacroOnOpened )
-			::lstrcat(szText, L"O");
+			::wcsncat_s(szText, L"O", _TRUNCATE);
 		if( iItem == nMacroOnTypeChanged )
-			::lstrcat(szText, L"T");
+			::wcsncat_s(szText, L"T", _TRUNCATE);
 		if( iItem == nMacroOnSave )
-			::lstrcat(szText, L"S");
+			::wcsncat_s(szText, L"S", _TRUNCATE);
 		memset_raw( &sItem, 0, sizeof( sItem ));
 		sItem.iItem = iItem;
 		sItem.mask = LVIF_TEXT;
@@ -571,7 +586,7 @@ void CPropMacro::SelectBaseDir_Macro( HWND hwndDlg )
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	if( _IS_REL_PATH( szDir ) ){
 		WCHAR folder[_MAX_PATH];
-		wcscpy( folder, szDir );
+		::wcsncpy_s(folder, szDir, _TRUNCATE);
 		GetInidirOrExedir( szDir, folder );
 	}
 
@@ -588,7 +603,7 @@ void CPropMacro::SelectDir_Python(HWND hwndDlg)
 	ApiWrap::DlgItem_GetText(hwndDlg, IDC_PYTHONDIR, szDir, int(std::size(szDir)));
 	if (_IS_REL_PATH(szDir)) {
 		WCHAR folder[_MAX_PATH];
-		wcscpy(folder, szDir);
+		::wcsncpy_s(folder, szDir, _TRUNCATE);
 		GetInidirOrExedir(szDir, folder);
 	}
 	if (SelectDir(hwndDlg, LS(STR_PROPCOMMACR_SEL_PYTHONDIR), szDir, szDir)) {
@@ -616,10 +631,10 @@ void CPropMacro::OnFileDropdown_Macro( HWND hwndDlg )
 	// 2007.05.19 ryoji 相対パスは設定ファイルからのパスを優先
 	if( _IS_REL_PATH( path ) ){
 		WCHAR folder[_MAX_PATH * 2];
-		wcscpy( folder, path );
+		::wcsncpy_s(folder, path, _TRUNCATE);
 		GetInidirOrExedir( path, folder );
 	}
-	wcscat( path, L"*.*" );	//	2002/05/01 YAZAKI どんなファイルもどんと来い。
+	::wcsncat_s(path, L"*.*", _TRUNCATE);	//	2002/05/01 YAZAKI どんなファイルもどんと来い。
 
 	//	候補の初期化
 	ApiWrap::Combo_ResetContent( hCombo );

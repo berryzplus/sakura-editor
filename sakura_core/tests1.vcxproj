@@ -47,7 +47,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis /w34996 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 /execution-charset:shift_jis %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\src\test\resources\;..\src\main\resources;..\sakura_core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -56,7 +56,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;imagehlp.lib;Shlwapi.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -114,6 +114,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\test\resources\code-main.cpp" />
+    <ClCompile Include="..\src\test\cpp\tests1\env\ShareDataTestSuite.cpp" />
     <ClCompile Include="..\src\test\resources\testing\StartEditorProcess.cpp" />
     <ClCompile Include="..\src\test\cpp\tests1\test-cdocline.cpp" />
     <ClCompile Include="..\src\test\cpp\tests1\test-cdoclinemgr.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\test\resources\pch.h" />
+    <ClInclude Include="..\src\test\cpp\tests1\env\ShareDataTestSuite.hpp" />
     <ClInclude Include="..\src\test\resources\StartEditorProcess.hpp" />
     <ClInclude Include="..\src\test\resources\eval_outputs.hpp" />
     <ClInclude Include="..\src\test\resources\rt_zipres.h" />

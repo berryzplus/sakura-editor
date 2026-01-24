@@ -14,16 +14,12 @@
 */
 
 #include "StdAfx.h"
-#include <stdlib.h>
 #include "outline/CFuncInfoArr.h"
 #include "outline/CFuncInfo.h"
 
 /* CFuncInfoArrクラス構築 */
 CFuncInfoArr::CFuncInfoArr()
 {
-	m_nFuncInfoArrNum = 0;	/* 配列要素数 */
-	m_ppcFuncInfoArr = nullptr;	/* 配列 */
-	m_nAppendTextLenMax = 0;
 	return;
 }
 
@@ -55,7 +51,7 @@ void CFuncInfoArr::Empty( void )
 /* データがない場合はNULLを返す */
 CFuncInfo* CFuncInfoArr::GetAt(size_t nIdx) noexcept
 {
-	if (m_nFuncInfoArrNum <= nIdx) {
+	if (m_nFuncInfoArrNum <= int(nIdx)) {
 		return nullptr;
 	}
 	return m_ppcFuncInfoArr[nIdx];

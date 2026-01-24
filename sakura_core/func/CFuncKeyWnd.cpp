@@ -61,7 +61,7 @@ CFuncKeyWnd::CFuncKeyWnd()
 	m_pShareData = &GetDllShareData();
 	m_nCurrentKeyState = -1;
 	for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
-		m_szFuncNameArr[i][0] = LTEXT('\0');
+		m_szFuncNameArr[i][0] = L'\0';
 	}
 //	2002.11.04 Moca Open()側で設定
 //	m_nButtonGroupNum = 4;
@@ -86,7 +86,7 @@ CFuncKeyWnd::CFuncKeyWnd()
 	lf.lfClipPrecision	= 0x2;
 	lf.lfQuality		= 0x1;
 	lf.lfPitchAndFamily	= 0x31;
-	wcscpy( lf.lfFaceName, L"ＭＳ Ｐゴシック" );
+	::wcsncpy_s(lf.lfFaceName, L"ＭＳ Ｐゴシック", _TRUNCATE);
 	m_hFont = ::CreateFontIndirect( &lf );
 
 	m_bSizeBox = false;
@@ -183,12 +183,8 @@ void CFuncKeyWnd::Close( void )
 //	LPARAM	lParam 	// second message parameter
 
 // WM_SIZE処理
-LRESULT CFuncKeyWnd::OnSize( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CFuncKeyWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(hwnd);
-	UNREFERENCED_PARAMETER(lParam);
-	UNREFERENCED_PARAMETER(uMsg);
-	UNREFERENCED_PARAMETER(wParam);
 	int			nButtonWidth;
 	int			nButtonHeight;
 	int			i;
@@ -250,10 +246,8 @@ LRESULT CFuncKeyWnd::DispatchEvent(
 }
 #endif//////////////////////////////////////////////////////////////
 
-LRESULT CFuncKeyWnd::OnCommand( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CFuncKeyWnd::OnCommand( HWND hwnd, [[maybe_unused]] UINT msg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(msg);
-	UNREFERENCED_PARAMETER(wParam);
 	int		i;
 	HWND	hwndCtl;
 
@@ -275,12 +269,8 @@ LRESULT CFuncKeyWnd::OnCommand( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 // WM_TIMERタイマーの処理
-LRESULT CFuncKeyWnd::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CFuncKeyWnd::OnTimer( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(hwnd);
-	UNREFERENCED_PARAMETER(lParam);
-	UNREFERENCED_PARAMETER(uMsg);
-	UNREFERENCED_PARAMETER(wParam);
 // 	HWND hwnd,	// handle of window for timer messages
 //	UINT uMsg,	// WM_TIMER message
 //	UINT idEvent,	// timer identifier
@@ -317,7 +307,7 @@ LRESULT CFuncKeyWnd::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			if( nFuncCode != m_nFuncCodeArr[i] ){
 				m_nFuncCodeArr[i] = nFuncCode;
 				if( 0 == m_nFuncCodeArr[i] ){
-					m_szFuncNameArr[i][0] = LTEXT('\0');
+					m_szFuncNameArr[i][0] = L'\0';
 				}else{
 					//	Oct. 2, 2001 genta
 					m_pcEditDoc->m_cFuncLookup.Funccode2Name(
@@ -349,12 +339,8 @@ LRESULT CFuncKeyWnd::OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 
 // WM_DESTROY処理
-LRESULT CFuncKeyWnd::OnDestroy( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT CFuncKeyWnd::OnDestroy( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(hwnd);
-	UNREFERENCED_PARAMETER(lParam);
-	UNREFERENCED_PARAMETER(uMsg);
-	UNREFERENCED_PARAMETER(wParam);
 	int i;
 
 	/* タイマーを削除 */

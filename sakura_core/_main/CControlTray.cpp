@@ -83,16 +83,16 @@ void CControlTray::DoGrep()
 		m_cDlgGrep.m_strText = m_pShareData->m_sSearchKeywords.m_aSearchKeys[0];
 	}
 	if( 0 < m_pShareData->m_sSearchKeywords.m_aGrepFiles.size() ){
-		wcscpy( m_cDlgGrep.m_szFile, m_pShareData->m_sSearchKeywords.m_aGrepFiles[0] );		/* 検索ファイル */
+		::wcsncpy_s(m_cDlgGrep.m_szFile, m_pShareData->m_sSearchKeywords.m_aGrepFiles[0], _TRUNCATE);		/* 検索ファイル */
 	}
 	if( 0 < m_pShareData->m_sSearchKeywords.m_aGrepFolders.size() ){
-		wcscpy( m_cDlgGrep.m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0] );	/* 検索フォルダー */
+		::wcsncpy_s(m_cDlgGrep.m_szFolder, m_pShareData->m_sSearchKeywords.m_aGrepFolders[0], _TRUNCATE);	/* 検索フォルダー */
 	}
 	if (0 < m_pShareData->m_sSearchKeywords.m_aExcludeFiles.size()) {
-		wcscpy(m_cDlgGrep.m_szExcludeFile, m_pShareData->m_sSearchKeywords.m_aExcludeFiles[0]);	/* 除外ファイル */
+		::wcsncpy_s(m_cDlgGrep.m_szExcludeFile, m_pShareData->m_sSearchKeywords.m_aExcludeFiles[0], _TRUNCATE);	/* 除外ファイル */
 	}
 	if (0 < m_pShareData->m_sSearchKeywords.m_aExcludeFolders.size()) {
-		wcscpy(m_cDlgGrep.m_szExcludeFolder, m_pShareData->m_sSearchKeywords.m_aExcludeFolders[0]);	/* 除外フォルダー */
+		::wcsncpy_s(m_cDlgGrep.m_szExcludeFolder, m_pShareData->m_sSearchKeywords.m_aExcludeFolders[0], _TRUNCATE);	/* 除外フォルダー */
 	}
 
 	/* Grepダイアログの表示 */
@@ -132,23 +132,23 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	cCmdLine.AppendString(L"\" -GFOLDER=\"");
 	cCmdLine.AppendString(cmWork3.GetStringPtr());
 	cCmdLine.AppendString(L"\" -GCODE=");
-	auto_sprintf( szTemp, L"%d", cDlgGrep.m_nGrepCharSet );
+	auto_snprintf_s(szTemp, _TRUNCATE, L"%d", cDlgGrep.m_nGrepCharSet);
 	cCmdLine.AppendString(szTemp);
 
 	//GOPTオプション
 	WCHAR pOpt[64] = L"";
-	if( cDlgGrep.m_bSubFolder					)wcscat( pOpt, L"S" );	// サブフォルダーからも検索する
-	if( cDlgGrep.m_sSearchOption.bLoHiCase		)wcscat( pOpt, L"L" );	// 英大文字と英小文字を区別する
-	if( cDlgGrep.m_sSearchOption.bRegularExp	)wcscat( pOpt, L"R" );	// 正規表現
-	if( cDlgGrep.m_nGrepOutputLineType == 1     )wcscat( pOpt, L"P" );	// 行を出力する
-	if( cDlgGrep.m_nGrepOutputLineType == 2     )wcscat( pOpt, L"N" );	// 否ヒット行を出力する 2014.09.23
-	if( cDlgGrep.m_sSearchOption.bWordOnly		)wcscat( pOpt, L"W" );	// 単語単位で探す
-	if( 1 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"1" );	// Grep: 出力形式
-	if( 2 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"2" );	// Grep: 出力形式
-	if( 3 == cDlgGrep.m_nGrepOutputStyle		)wcscat( pOpt, L"3" );
-	if( cDlgGrep.m_bGrepOutputFileOnly		)wcscat( pOpt, L"F" );
-	if( cDlgGrep.m_bGrepOutputBaseFolder		)wcscat( pOpt, L"B" );
-	if( cDlgGrep.m_bGrepSeparateFolder		)wcscat( pOpt, L"D" );
+	if( cDlgGrep.m_bSubFolder					)::wcsncat_s(pOpt, L"S", _TRUNCATE);	// サブフォルダーからも検索する
+	if( cDlgGrep.m_sSearchOption.bLoHiCase		)::wcsncat_s(pOpt, L"L", _TRUNCATE);	// 英大文字と英小文字を区別する
+	if( cDlgGrep.m_sSearchOption.bRegularExp	)::wcsncat_s(pOpt, L"R", _TRUNCATE);	// 正規表現
+	if( cDlgGrep.m_nGrepOutputLineType == 1     )::wcsncat_s(pOpt, L"P", _TRUNCATE);	// 行を出力する
+	if( cDlgGrep.m_nGrepOutputLineType == 2     )::wcsncat_s(pOpt, L"N", _TRUNCATE);	// 否ヒット行を出力する 2014.09.23
+	if( cDlgGrep.m_sSearchOption.bWordOnly		)::wcsncat_s(pOpt, L"W", _TRUNCATE);	// 単語単位で探す
+	if( 1 == cDlgGrep.m_nGrepOutputStyle		)::wcsncat_s(pOpt, L"1", _TRUNCATE);	// Grep: 出力形式
+	if( 2 == cDlgGrep.m_nGrepOutputStyle		)::wcsncat_s(pOpt, L"2", _TRUNCATE);	// Grep: 出力形式
+	if( 3 == cDlgGrep.m_nGrepOutputStyle		)::wcsncat_s(pOpt, L"3", _TRUNCATE);
+	if( cDlgGrep.m_bGrepOutputFileOnly		)::wcsncat_s(pOpt, L"F", _TRUNCATE);
+	if( cDlgGrep.m_bGrepOutputBaseFolder		)::wcsncat_s(pOpt, L"B", _TRUNCATE);
+	if( cDlgGrep.m_bGrepSeparateFolder		)::wcsncat_s(pOpt, L"D", _TRUNCATE);
 	if( pOpt[0] != L'\0' ){
 		cCmdLine.AppendString( L" -GOPT=" );
 		cCmdLine.AppendString( pOpt );
@@ -276,15 +276,14 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	m_pcPropertyManager = new CPropertyManager();
 	m_pcPropertyManager->Create( GetTrayHwnd(), &m_hIcons, &m_cMenuDrawer );
 
-	wcscpy(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
+	::wcsncpy_s(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, _TRUNCATE);
 
 	return GetTrayHwnd();
 }
 
 //! タスクトレイにアイコンを登録する
-bool CControlTray::CreateTrayIcon( HWND hWnd )
+bool CControlTray::CreateTrayIcon( [[maybe_unused]] HWND hWnd )
 {
-	UNREFERENCED_PARAMETER(hWnd);
 	// タスクトレイのアイコンを作る
 	if( m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray ){	/* タスクトレイのアイコンを使う */
 		//	Dec. 02, 2002 genta
@@ -349,7 +348,7 @@ BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIco
 	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
 	tnd.hIcon				= hIcon;
 	if( pszTip ){
-		lstrcpyn( tnd.szTip, pszTip, int(std::size(tnd.szTip)) );
+		::wcsncpy_s(tnd.szTip, pszTip, _TRUNCATE);
 	}else{
 		tnd.szTip[0] = L'\0';
 	}
@@ -398,6 +397,8 @@ LRESULT CControlTray::DispatchEvent(
 			/* メニューアイテム描画 */
 			m_cMenuDrawer.DrawItem( lpdis );
 			return TRUE;
+		default:
+			break;
 		}
 		return FALSE;
 	case WM_MEASUREITEM:
@@ -411,6 +412,8 @@ LRESULT CControlTray::DispatchEvent(
 				lpmis->itemHeight = nItemHeight;
 			}
 			return TRUE;
+		default:
+			break;
 		}
 		return FALSE;
 	case WM_EXITMENULOOP:
@@ -585,6 +588,8 @@ LRESULT CControlTray::DispatchEvent(
 		case HELPINFO_MENUITEM:
 			MyWinHelp( hwnd, HELP_CONTEXT, FuncID_To_HelpContextID( (EFunctionCode)lphi->iCtrlId ) );
 			break;
+		default:
+			break;
 		}
 		return TRUE;
 	case WM_COMMAND:
@@ -598,7 +603,7 @@ LRESULT CControlTray::DispatchEvent(
 		case PM_CHANGESETTING_ALL:
 			{
 				bool bChangeLang = wcscmp( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, m_szLanguageDll ) != 0;
-				wcscpy( m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
+				::wcsncpy_s(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, _TRUNCATE);
 				std::vector<std::wstring> values;
 				if( bChangeLang ){
 					CShareData::getInstance()->ConvertLangValues(values, true);
@@ -637,99 +642,6 @@ LRESULT CControlTray::DispatchEvent(
 			break;
 		}
 		return 0L;
-
-	case MYWM_SET_TYPESETTING:
-		{
-			int nIdx = (int)wParam;
-			STypeConfig& type = m_pShareData->m_sWorkBuffer.m_TypeConfig;
-			if( 0 <= nIdx && m_pShareData->m_nTypesCount ){
-				if( 0 == nIdx ){
-					m_pShareData->m_TypeBasis = type;
-					m_pShareData->m_TypeBasis.m_nIdx = 0;
-				}
-				*(CShareData::getInstance()->GetTypeSettings()[nIdx]) = type;
-				CShareData::getInstance()->GetTypeSettings()[nIdx]->m_nIdx = nIdx;
-				wcscpy(m_pShareData->m_TypeMini[nIdx].m_szTypeName, type.m_szTypeName);
-				wcscpy(m_pShareData->m_TypeMini[nIdx].m_szTypeExts, type.m_szTypeExts);
-				m_pShareData->m_TypeMini[nIdx].m_id = type.m_id;
-				m_pShareData->m_TypeMini[nIdx].m_encoding = type.m_encoding;
-			}else{
-				return FALSE;
-			}
-		}
-		return TRUE;
-	case MYWM_GET_TYPESETTING:
-		{
-			int nIdx = (int)wParam;
-			if( 0 <= nIdx && m_pShareData->m_nTypesCount ){
-				m_pShareData->m_sWorkBuffer.m_TypeConfig = *(CShareData::getInstance()->GetTypeSettings()[nIdx]);
-			}else{
-				return FALSE;
-			}
-		}
-		return TRUE;
-	case MYWM_ADD_TYPESETTING:
-		{
-			int nInsert = (int)wParam;
-			// "共通"の前には入れない
-			if( 0 < nInsert && nInsert <= m_pShareData->m_nTypesCount && nInsert < MAX_TYPES ){
-				std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
-				STypeConfig* type = new STypeConfig();
-				*type = *types[0]; // 基本をコピー
-				type->m_nIdx = nInsert;
-				type->m_id = (::GetTickCount() & 0x3fffffff) + nInsert * 0x10000;
-				// 同じ名前のものがあったらその次にする
-				int nAddNameNum = nInsert + 1;
-				auto_sprintf( type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum ); 
-				for(int k = 1; k < m_pShareData->m_nTypesCount; k++){
-					if( wcscmp(types[k]->m_szTypeName, type->m_szTypeName) == 0 ){
-						nAddNameNum++;
-						auto_sprintf( type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum ); 
-						k = 0;
-					}
-				}
-				type->m_szTypeExts[0] = L'\0';
-				type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
-				types.resize( m_pShareData->m_nTypesCount + 1 );
-				int nTypeSizeOld = m_pShareData->m_nTypesCount;
-				m_pShareData->m_nTypesCount++;
-				for( int i = nTypeSizeOld; nInsert < i; i-- ){
-					types[i] = types[i-1];
-					types[i]->m_nIdx = i;
-					m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i-1];
-				}
-				types[nInsert] = type;
-				wcscpy(m_pShareData->m_TypeMini[nInsert].m_szTypeName, type->m_szTypeName);
-				wcscpy(m_pShareData->m_TypeMini[nInsert].m_szTypeExts, type->m_szTypeExts);
-				m_pShareData->m_TypeMini[nInsert].m_id = type->m_id;
-				m_pShareData->m_TypeMini[nInsert].m_encoding = type->m_encoding;
-			}else{
-				return FALSE;
-			}
-		}
-		return TRUE;
-	case MYWM_DEL_TYPESETTING:
-		{
-			int nDelPos = (int)wParam;
-			if( 0 < nDelPos && nDelPos < m_pShareData->m_nTypesCount && 1 < m_pShareData->m_nTypesCount ){
-				int nTypeSizeOld = m_pShareData->m_nTypesCount;
-				std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
-				delete types[nDelPos];
-				for(int i = nDelPos; i < nTypeSizeOld - 1; i++ ){
-					types[i] = types[i+1];
-					types[i]->m_nIdx = i;
-					m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i+1];
-				}
-				types.resize( m_pShareData->m_nTypesCount - 1 );
-				m_pShareData->m_nTypesCount--;
-				m_pShareData->m_TypeMini[nTypeSizeOld-1].m_szTypeName[0] = L'\0';
-				m_pShareData->m_TypeMini[nTypeSizeOld-1].m_szTypeExts[0] = L'\0';
-				m_pShareData->m_TypeMini[nTypeSizeOld-1].m_id = 0;
-			}else{
-				return FALSE;
-			}
-		}
-		return TRUE;
 
 	case MYWM_NOTIFYICON:
 //		MYTRACE( L"MYWM_NOTIFYICON\n" );
@@ -992,6 +904,8 @@ LRESULT CControlTray::DispatchEvent(
 			return 0L;
 		case WM_RBUTTONDBLCLK:
 			return 0L;
+		default:
+			break;
 		}
 		break;
 
@@ -1033,6 +947,18 @@ LRESULT CControlTray::DispatchEvent(
 		::AllowSetForegroundWindow(DWORD(wParam));
 		return 0L;
 
+	case MYWM_SET_TYPESETTING:
+		return OnSetTypeSetting(wParam);
+
+	case MYWM_GET_TYPESETTING:
+		return OnGetTypeSetting(wParam);
+
+	case MYWM_ADD_TYPESETTING:
+		return OnAddTypeSetting(wParam);
+
+	case MYWM_DEL_TYPESETTING:
+		return OnDelTypeSetting(wParam);
+
 	default:
 		// タスクバーが再作成されたときは、トレイアイコンを再登録する
 		if (gm_uMsgTaskbarCreated == uMsg) {
@@ -1047,17 +973,127 @@ LRESULT CControlTray::DispatchEvent(
 }
 
 /* WM_COMMANDメッセージ処理 */
-void CControlTray::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
+void CControlTray::OnCommand( WORD wNotifyCode, [[maybe_unused]] WORD wID , [[maybe_unused]] HWND hwndCtl )
 {
-	UNREFERENCED_PARAMETER(wID);
-	UNREFERENCED_PARAMETER(hwndCtl);
-
 	switch( wNotifyCode ){
 	/* メニューからのメッセージ */
 	case 0:
 		break;
+	default:
+		break;
 	}
 	return;
+}
+
+bool CControlTray::OnSetTypeSetting(size_t index)
+{
+	if (m_pShareData->m_nTypesCount <= 0 || size_t(m_pShareData->m_nTypesCount) <= index) {
+		return false;
+	}
+
+	const auto& type = m_pShareData->m_sWorkBuffer.m_TypeConfig;
+	if (0 == index) {
+		m_pShareData->m_TypeBasis = type;
+		m_pShareData->m_TypeBasis.m_nIdx = 0;
+	}
+
+	auto types = CShareData::getInstance()->GetTypeSettings();
+	*types[index] = type;
+	types[index]->m_nIdx = int(index);
+
+	auto& typeMini = m_pShareData->m_TypeMini[index];
+	::wcsncpy_s(typeMini.m_szTypeName, type.m_szTypeName, _TRUNCATE);
+	::wcsncpy_s(typeMini.m_szTypeExts, type.m_szTypeExts, _TRUNCATE);
+	typeMini.m_id = type.m_id;
+	typeMini.m_encoding = type.m_encoding;
+
+	return true;
+}
+
+bool CControlTray::OnGetTypeSetting(size_t index)
+{
+	if (m_pShareData->m_nTypesCount <= 0 || size_t(m_pShareData->m_nTypesCount) <= index) {
+		return false;
+	}
+
+	m_pShareData->m_sWorkBuffer.m_TypeConfig = *(CShareData::getInstance()->GetTypeSettings()[index]);
+
+	return true;
+}
+
+bool CControlTray::OnAddTypeSetting(size_t index)
+{
+	if (m_pShareData->m_nTypesCount < 0 || int(MAX_TYPES) <= m_pShareData->m_nTypesCount || size_t(m_pShareData->m_nTypesCount) < index) {
+		return false;
+	}
+
+	// 0:"共通" の前には入れない
+	if (0 == index) {
+		return false;
+	}
+
+	const auto nInsert = (int)index;
+	auto& types = CShareData::getInstance()->GetTypeSettings();
+	auto type = new STypeConfig(*types[0]);	// 基本をコピー
+	type->m_id = (::GetTickCount64() & 0x3fffffff) + nInsert * 0x10000;
+
+	// 同じ名前のものがあったらその次にする
+	auto nAddNameNum = nInsert + 1;
+	::swprintf_s(type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum);
+	for (auto k = 1; k < m_pShareData->m_nTypesCount; ++k) {
+		if (0 == wcscmp(types[k]->m_szTypeName, type->m_szTypeName)) {
+			nAddNameNum++;
+			::swprintf_s(type->m_szTypeName, LS(STR_TRAY_TYPE_NAME), nAddNameNum);
+			k = 0;
+		}
+	}
+	type->m_szTypeExts[0] = L'\0';
+	type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
+	types.resize(m_pShareData->m_nTypesCount + 1);
+
+	const auto nTypeSizeOld = m_pShareData->m_nTypesCount;
+	++m_pShareData->m_nTypesCount;
+	for (auto i = nTypeSizeOld; nInsert < i; --i) {
+		types[i] = types[i - 1];
+		types[i]->m_nIdx = i;
+		m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i - 1];
+	}
+
+	types[nInsert] = type;
+
+	return true;
+}
+
+bool CControlTray::OnDelTypeSetting(size_t index)
+{
+	if (m_pShareData->m_nTypesCount <= 0 || size_t(m_pShareData->m_nTypesCount) <= index) {
+		return false;
+	}
+
+	const auto nDelPos = (int)index;
+	if (nDelPos <= 0) {
+		return false;
+	}
+
+	const auto nTypeSizeOld = m_pShareData->m_nTypesCount;
+	auto& types = CShareData::getInstance()->GetTypeSettings();
+
+	delete types[nDelPos];
+
+	for (auto i = nDelPos; i < nTypeSizeOld - 1; ++i) {
+		types[i] = types[i + 1];
+		types[i]->m_nIdx = i;
+		m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i + 1];
+	}
+	types.resize(m_pShareData->m_nTypesCount - 1);
+	m_pShareData->m_nTypesCount--;
+
+	auto& typeMini = m_pShareData->m_TypeMini[nTypeSizeOld - 1];
+	typeMini.m_szTypeName[0] = L'\0';
+	typeMini.m_szTypeExts[0] = L'\0';
+	typeMini.m_id = 0;
+
+	return true;
 }
 
 /*!
@@ -1094,7 +1130,7 @@ void CControlTray::OnNewEditor( bool bNewWindow )
 	@date 2008.05.05 novice GetModuleHandle(NULL)→NULLに変更
 */
 bool CControlTray::OpenNewEditor(
-	HINSTANCE			hInstance,			//!< [in] インスタンスID (実は未使用)
+	[[maybe_unused]] HINSTANCE			hInstance,			//!< [in] インスタンスID (実は未使用)
 	HWND				hWndParent,			//!< [in] 親ウィンドウハンドル．エラーメッセージ表示用
 	const SLoadInfo&	sLoadInfo,			//!< [in]
 	const WCHAR*		szCmdLineOption,	//!< [in] 追加のコマンドラインオプション
@@ -1103,8 +1139,6 @@ bool CControlTray::OpenNewEditor(
 	bool				bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-	UNREFERENCED_PARAMETER(hInstance);
-
 	/* 共有データ構造体のアドレスを返す */
 	DLLSHAREDATA*	pShareData = &GetDllShareData();
 
@@ -1120,16 +1154,16 @@ bool CControlTray::OpenNewEditor(
 	//アプリケーションパス
 	WCHAR szEXE[MAX_PATH + 1];
 	::GetModuleFileName( nullptr, szEXE, int(std::size(szEXE)) );
-	cCmdLineBuf.AppendF( L"\"%s\"", szEXE );
+	cCmdLineBuf.Append(std::format(LR"("{}")", szEXE));
 
 	// ファイル名
-	if( sLoadInfo.cFilePath.c_str()[0] != L'\0' )	cCmdLineBuf.AppendF( L" \"%s\"", sLoadInfo.cFilePath.c_str() );
+	if( sLoadInfo.cFilePath.c_str()[0] != L'\0' )	cCmdLineBuf.Append(std::format(LR"( "{}")", std::wstring_view{ sLoadInfo.cFilePath }));
 
 	// コード指定
-	if( IsValidCodeOrCPType(sLoadInfo.eCharCode) )cCmdLineBuf.AppendF( L" -CODE=%d", sLoadInfo.eCharCode );
+	if( IsValidCodeOrCPType(sLoadInfo.eCharCode) )cCmdLineBuf.Append(std::format(L" -CODE={}", int(sLoadInfo.eCharCode)));
 
 	// ビューモード指定
-	if( sLoadInfo.bViewMode )cCmdLineBuf.AppendF( L" -R" );
+	if( sLoadInfo.bViewMode )cCmdLineBuf.Append(L" -R");
 
 	// グループID
 	if( false == bNewWindow ){	// 新規エディタをウインドウで開く
@@ -1137,15 +1171,15 @@ bool CControlTray::OpenNewEditor(
 		HWND hwndAncestor = MyGetAncestor( hWndParent, GA_ROOTOWNER2 );	// 2007.10.22 ryoji GA_ROOTOWNER -> GA_ROOTOWNER2
 		int nGroup = CAppNodeManager::getInstance()->GetEditNode( hwndAncestor )->GetGroup();
 		if( nGroup > 0 ){
-			cCmdLineBuf.AppendF( L" -GROUP=%d", nGroup );
+			cCmdLineBuf.Append(std::format(L" -GROUP={}", nGroup));
 		}
 	}else{
 		// 空いているグループIDを使用する
-		cCmdLineBuf.AppendF( L" -GROUP=%d", CAppNodeManager::getInstance()->GetFreeGroupId() );
+		cCmdLineBuf.Append(std::format(L" -GROUP={}", CAppNodeManager::getInstance()->GetFreeGroupId()));
 	}
 
 	if( CCommandLine::getInstance()->IsSetProfile() ){
-		cCmdLineBuf.AppendF( L" -PROF=\"%ls\"", CCommandLine::getInstance()->GetProfileName() );
+		cCmdLineBuf.Append(std::format(LR"( -PROF="{}")", CCommandLine::getInstance()->GetProfileName()));
 	}
 
 	// 追加のコマンドラインオプション
@@ -1175,7 +1209,7 @@ bool CControlTray::OpenNewEditor(
 				ErrorMessage(hWndParent, LS(STR_TRAY_RESPONSEFILE));
 				return false;
 			}
-			wcscpy(szResponseFile, pszTempFile);
+			::wcsncpy_s(szResponseFile, pszTempFile, _TRUNCATE);
 			free(pszTempFile);
 			CTextOutputStream output(szResponseFile);
 			if( !output ){
@@ -1187,9 +1221,9 @@ bool CControlTray::OpenNewEditor(
 			output.WriteString(szCmdLineOption);
 			output.Close();
 			sync = true;
-			cCmdLineBuf.AppendF(L" -@=\"%s\"", szResponseFile);
+			cCmdLineBuf.Append(std::format(LR"( -@="{}")", szResponseFile));
 		}else{
-			cCmdLineBuf.AppendF(L" %s", szCmdLineOption);
+			cCmdLineBuf.Append(std::format(L" {}", szCmdLineOption));
 		}
 	}
 	// -- -- -- -- プロセス生成 -- -- -- -- //
@@ -1223,7 +1257,7 @@ bool CControlTray::OpenNewEditor(
 #ifdef _DEBUG
 //	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
 #endif
-	WCHAR szCmdLine[1024]; wcscpy_s(szCmdLine, std::size(szCmdLine), cCmdLineBuf.c_str());
+	WCHAR szCmdLine[1024]; ::wcsncpy_s(szCmdLine, cCmdLineBuf.c_str(), _TRUNCATE);
 	BOOL bCreateResult = CreateProcess(
 		szEXE,					// 実行可能モジュールの名前
 		szCmdLine,				// コマンドラインの文字列
@@ -1341,10 +1375,10 @@ bool CControlTray::OpenNewEditor2(
 	// 追加のコマンドラインオプション
 	CCommandLineString cCmdLine;
 	if( pfi != nullptr ){
-		if( pfi->m_ptCursor.x >= 0					)cCmdLine.AppendF( L" -X=%d", pfi->m_ptCursor.x +1 );
-		if( pfi->m_ptCursor.y >= 0					)cCmdLine.AppendF( L" -Y=%d", pfi->m_ptCursor.y +1 );
-		if( pfi->m_nViewLeftCol >= CLayoutInt(0)	)cCmdLine.AppendF( L" -VX=%d", (Int)pfi->m_nViewLeftCol + 1 );
-		if( pfi->m_nViewTopLine >= CLayoutInt(0)	)cCmdLine.AppendF( L" -VY=%d", (Int)pfi->m_nViewTopLine + 1 );
+		if( pfi->m_ptCursor.x >= 0					)cCmdLine.Append(std::format(L" -X={}", int(pfi->m_ptCursor.x) + 1));
+		if( pfi->m_ptCursor.y >= 0					)cCmdLine.Append(std::format(L" -Y={}", int(pfi->m_ptCursor.y) + 1));
+		if( pfi->m_nViewLeftCol >= CLayoutInt(0)	)cCmdLine.Append(std::format(L" -VX={}", (Int)pfi->m_nViewLeftCol + 1));
+		if( pfi->m_nViewTopLine >= CLayoutInt(0)	)cCmdLine.Append(std::format(L" -VY={}", (Int)pfi->m_nViewTopLine + 1));
 	}
 	SLoadInfo sLoadInfo;
 	sLoadInfo.cFilePath = pfi ? pfi->m_szPath : L"";
@@ -1742,18 +1776,17 @@ void CControlTray::OnDestroy()
 	@date 2006.07.02 ryoji CControlProcess から移動
 */
 INT_PTR CALLBACK CControlTray::ExitingDlgProc(
-	HWND	hwndDlg,	// handle to dialog box
+	[[maybe_unused]] HWND	hwndDlg,	// handle to dialog box
 	UINT	uMsg,		// message
-	WPARAM	wParam,		// first message parameter
-	LPARAM	lParam		// second message parameter
+	[[maybe_unused]] WPARAM	wParam,		// first message parameter
+	[[maybe_unused]] LPARAM	lParam		// second message parameter
 )
 {
-	UNREFERENCED_PARAMETER(hwndDlg);
-	UNREFERENCED_PARAMETER(lParam);
-	UNREFERENCED_PARAMETER(wParam);
 	switch( uMsg ){
 	case WM_INITDIALOG:
 		return TRUE;
+	default:
+		break;
 	}
 	return FALSE;
 }

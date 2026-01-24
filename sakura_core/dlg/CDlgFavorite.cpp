@@ -95,7 +95,7 @@ CDlgFavorite::CDlgFavorite()
 	m_szMsg[0] = L'\0';
 
 	/* サイズ変更時に位置を制御するコントロール数 */
-	static_assert( int(std::size(anchorList)) == int(std::size(m_rcItems)) );
+	static_assert( std::size(anchorList) == std::extent_v<decltype(m_rcItems)>);
 
 	{
 		i = 0;
@@ -553,7 +553,7 @@ BOOL CDlgFavorite::OnBnClicked( int wID )
 						size_t nLen = wcslen(pRecent->GetItemText(i));
 						std::vector<WCHAR> vecPath(nLen + 2);
 						WCHAR* szPath = &vecPath[0];
-						wcscpy( szPath, pRecent->GetItemText(i) );
+						::wcsncpy_s(szPath, std::size(vecPath), pRecent->GetItemText(i), _TRUNCATE);
 						CutLastYenFromDirectoryPath(szPath);
 						if( false == IsFileExists(szPath, false ) ){
 							pRecent->DeleteItem(i);
@@ -577,6 +577,8 @@ BOOL CDlgFavorite::OnBnClicked( int wID )
 			AddItem();
 		}
 		return TRUE;
+	default:
+		break;
 	}
 
 	/* 基底クラスメンバ */
@@ -597,6 +599,8 @@ BOOL CDlgFavorite::OnNotify(NMHDR* pNMHDR)
 			TabSelectChange(false);
 			return TRUE;
 			//break;
+		default:
+			break;
 		}
 	}else{
 		hwndList = m_aListViewInfo[m_nCurrentTab].hListView;
@@ -627,6 +631,7 @@ BOOL CDlgFavorite::OnNotify(NMHDR* pNMHDR)
 			
 			// ListViewでDeleteキーが押された:削除
 			case LVN_KEYDOWN:
+			{
 				switch( ((NMLVKEYDOWN*)pNMHDR)->wVKey )
 				{
 				case VK_DELETE:
@@ -643,6 +648,8 @@ BOOL CDlgFavorite::OnNotify(NMHDR* pNMHDR)
 						RightMenu( po );
 					}
 					return TRUE;
+				default:
+					break;
 				}
 				int nIdx = getCtrlKeyState();
 				WORD wKey = ((NMLVKEYDOWN*)pNMHDR)->wVKey;
@@ -663,6 +670,9 @@ BOOL CDlgFavorite::OnNotify(NMHDR* pNMHDR)
 					TabSelectChange(true);
 					return FALSE;
 				}
+			}
+			default:
+				break;
 			}
 		}
 	}
@@ -744,8 +754,8 @@ bool CDlgFavorite::RefreshList( void )
 		{
 			ret_val = true;
 		
-			if( msg[0] != L'\0' ) wcscat( msg, LS( STR_DLGFAV_DELIMITER ) );
-			wcscat( msg, m_aFavoriteInfo[nTab].m_pszCaption );
+			if( msg[0] != L'\0' ) ::wcsncat_s(msg, LS( STR_DLGFAV_DELIMITER ), _TRUNCATE);
+			::wcsncat_s(msg, m_aFavoriteInfo[nTab].m_pszCaption, _TRUNCATE);
 		}
 	}
 
@@ -1031,7 +1041,6 @@ void CDlgFavorite::RightMenu(POINT &menuPos)
 				if( 0 < nSelectedCount ){
 					int nLvItem = -1;
 					bool bAddFalse = false;
-					CRecent& exceptMRU = *m_aFavoriteInfo[m_nExceptTab].m_pRecent;
 					while( (nLvItem = ListView_GetNextItem(hwndList, nLvItem, LVNI_SELECTED)) != -1 ) {
 						int nRecIndex = ListView_GetLParamInt(hwndList, nLvItem);
 						if( exceptMRU.GetArrayCount() <= exceptMRU.GetItemCount() ){
@@ -1064,6 +1073,8 @@ void CDlgFavorite::RightMenu(POINT &menuPos)
 	case MENU_DELETE_SELECTED:
 		OnBnClicked( IDC_BUTTON_DELETE_SELECTED );
 		break;
+	default:
+		break;
 	}
 }
 
@@ -1073,7 +1084,7 @@ int FormatFavoriteColumn(WCHAR* buf, int size, int index, bool view)
 	// 0 - 9 A - Z
 	const int mod = index % 36;
 	const WCHAR c = (WCHAR)(((mod) <= 9)?(L'0' + mod):(L'A' + mod - 10));
-	return auto_snprintf_s( buf, size, L"%c %s", c, (view ? L"  " : LS( STR_DLGFAV_HIDDEN )) );
+	return auto_snprintf_s( buf, size, _TRUNCATE, L"%c %s", c, (view ? L"  " : LS( STR_DLGFAV_HIDDEN )) );
 }
 
 /*!
@@ -1135,7 +1146,7 @@ void CDlgFavorite::ListViewSort(ListViewSortInfo& info, const CRecent* pRecent, 
 	col.cchTextMax = int(std::size(szHeader)) - 4;
 	col.iSubItem = 0;
 	ListView_GetColumn( info.hListView, column, &col );
-	wcscat(szHeader, info.bSortAscending ? L"▼" : L"▲");
+	::wcsncat_s(szHeader, info.bSortAscending ? L"▼" : L"▲", _TRUNCATE);
 	col.mask = LVCF_TEXT;
 	col.pszText = szHeader;
 	col.iSubItem = 0;
