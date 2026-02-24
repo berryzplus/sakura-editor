@@ -66,18 +66,18 @@ if(MSVC)
   )
 endif(MSVC)
 
-# coverage.cppをリストから削除
-if(MINGW OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC"))
+if(MINGW)
+  # coverage.cppをリストから削除
   list(REMOVE_ITEM TESTS1_SOURCES ${CMAKE_SOURCE_DIR}/src/test/resources/coverage.cpp)
-endif()
+endif(MINGW)
 
 # define resource files of tests1
 set(TESTS1_RESOURCE_SCRIPTS ${CMAKE_SOURCE_DIR}/sakura_core/tests1_rc.rc)
 
-# Convert RC files to UTF-8 for MinGW and clang-cl
-if(MINGW OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC"))
+if(MINGW)
+  # Convert RC files to UTF-8 for MinGW
   convert_rc_files_to_utf8(TESTS1_RESOURCE_SCRIPTS "ja-JP" ${CMAKE_BINARY_DIR})
-endif(MINGW)
+endif()
 
 # Create a custom target for test_resource_zip generation
 add_custom_target(test_resource_zip
@@ -129,6 +129,10 @@ set_target_properties(tests1
   PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}"
     ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}"
+)
+
+add_custom_command(TARGET tests1 PRE_LINK
+  COMMAND ${CMAKE_COMMAND} -E remove -f $<TARGET_FILE:tests1>
 )
 
 if(MINGW)
