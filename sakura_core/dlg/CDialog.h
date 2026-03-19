@@ -65,6 +65,8 @@ class CDialog{
 	using Me = CDialog;
 
 public:
+	static INT_PTR CALLBACK MyDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	/*
 	||  Constructors
 	*/

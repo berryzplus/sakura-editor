@@ -34,32 +34,54 @@
 #include "apiwrap/StdControl.h"
 #include "apiwrap/DarkMode.h"
 
-/* ダイアログプロシージャ */
-INT_PTR CALLBACK MyDialogProc(
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,		// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam 	// second message parameter
-)
+/*!
+ * @brief ダイアログプロシージャ
+ *
+ * @param hWndDlg [in] ダイアログのウィンドウハンドル
+ * @param uMsg [in] メッセージ
+ * @param wParam [in] メッセージの第1パラメータ
+ * @param lParam [in] メッセージの第2パラメータ
+ * @return メッセージ処理の結果
+ * @retval TRUE  メッセージを処理した（デフォルト処理を呼ばせない）
+ * @retval FALSE メッセージを処理しなかった（デフォルト処理を呼ばせる）
+ * @date 2003/09/06 KEITA WIN64対応のため、DWLP_USERを使うよう変更
+ */
+INT_PTR CALLBACK CDialog::MyDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	CDialog* pCDialog;
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		pCDialog = ( CDialog* )lParam;
-		if( nullptr != pCDialog ){
-			return pCDialog->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
-	default:
-		// Modified by KEITA for WIN64 2003.9.6
-		pCDialog = ( CDialog* )::GetWindowLongPtr( hwndDlg, DWLP_USER );
-		if( nullptr != pCDialog ){
-			return pCDialog->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
+	// WM_INITDIALOGが来たら初期化処理を行う
+	if (auto pcDialog = std::bit_cast<CDialog*>(lParam); WM_INITDIALOG == uMsg && pcDialog) {
+		// ウインドウハンドルを保存する
+		pcDialog->m_hWnd = hWndDlg;
+
+		// lParamをユーザーデータとして保存する
+		::SetWindowLongPtrW(hWndDlg, DWLP_USER, lParam);
+
+		// ダイアログの初期化
+		const auto bRet = pcDialog->OnInitDialog(hWndDlg, wParam, lParam);
+
+		// ダイアログデータの設定
+		pcDialog->SetData();
+
+		// 可変ダイアログの位置とサイズを調整する
+		pcDialog->SetDialogPosSize();
+
+		// 初期化完了フラグを立てる
+		pcDialog->m_bInited = TRUE;
+
+		return bRet;	// WM_INITDIALOGはここで処理完了。戻り値の意味が他と異なることに注意。
 	}
+
+	// GetWindowLongPtrWを使う都合、nullptrはマズい
+	if (!hWndDlg) {
+		return FALSE;	// デフォルト処理に任せる
+	}
+
+	// ユーザーデータからCDialogを復元する
+	if (auto pcDialog = std::bit_cast<CDialog*>(::GetWindowLongPtrW(hWndDlg, DWLP_USER))) {
+		return pcDialog->DispatchEvent(hWndDlg, uMsg, wParam, lParam);
+	}
+
+	return FALSE;	// デフォルト処理に任せる
 }
 
 /*!	コンストラクタ
@@ -174,10 +196,6 @@ void CDialog::CloseDialog( INT_PTR nModalRetVal )
 
 BOOL CDialog::OnInitDialog( HWND hwndDlg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
 {
-	m_hWnd = hwndDlg;
-	// Modified by KEITA for WIN64 2003.9.6
-	::SetWindowLongPtr( m_hWnd, DWLP_USER, lParam );
-
 	m_hFontDialog = UpdateDialogFont( hwndDlg );
 
 	// --- Dark Mode ---
@@ -188,12 +206,6 @@ BOOL CDialog::OnInitDialog( HWND hwndDlg, [[maybe_unused]] WPARAM wParam, LPARAM
 	DarkMode::setWindowMenuBarSubclass(hWnd);
 	DarkMode::setWindowExStyle(hWnd, false, WS_EX_COMPOSITED);
 
-	/* ダイアログデータの設定 */
-	SetData();
-
-	SetDialogPosSize();
-
-	m_bInited = TRUE;
 	return TRUE;
 }
 
@@ -421,7 +433,6 @@ INT_PTR CDialog::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 {
 //	DEBUG_TRACE( L"CDialog::DispatchEvent() uMsg == %xh\n", uMsg );
 	switch( uMsg ){
-	case WM_INITDIALOG:	return OnInitDialog( hwndDlg, wParam, lParam );
 	case WM_DESTROY:	return OnDestroy();
 	case WM_COMMAND:	return OnCommand( wParam, lParam );
 	case WM_NOTIFY:		return OnNotify( (NMHDR*)lParam );

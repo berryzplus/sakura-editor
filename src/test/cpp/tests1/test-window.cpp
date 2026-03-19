@@ -53,6 +53,11 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
+TEST(CDialog, MyDialogProc101)
+{
+	EXPECT_THAT(CDialog::MyDialogProc(nullptr, WM_NULL, 0, 0), IsFalse());
+}
+
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
