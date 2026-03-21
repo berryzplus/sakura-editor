@@ -78,7 +78,7 @@ INT_PTR CALLBACK CDialog::MyDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 
 	// ユーザーデータからCDialogを復元する
 	if (auto pcDialog = std::bit_cast<CDialog*>(::GetWindowLongPtrW(hWndDlg, DWLP_USER))) {
-		return pcDialog->DispatchEvent(hWndDlg, uMsg, wParam, lParam);
+		return pcDialog->DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 	}
 
 	return FALSE;	// デフォルト処理に任せる

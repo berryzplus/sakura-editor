@@ -118,7 +118,7 @@ INT_PTR	CPropPlugin::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LP
 				// リストビューへのダブルクリックで「プラグイン設定」を呼び出す
 				if (::IsWindowEnabled(::GetDlgItem( hwndDlg, IDC_PLUGIN_OPTION )))
 				{
-					DispatchEvent( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PLUGIN_OPTION, BN_CLICKED), (LPARAM)::GetDlgItem( hwndDlg, IDC_PLUGIN_OPTION ) );
+					DispatchDlgEvent( hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_PLUGIN_OPTION, BN_CLICKED), (LPARAM)::GetDlgItem( hwndDlg, IDC_PLUGIN_OPTION ) );
 				}
 				break;
 			default:

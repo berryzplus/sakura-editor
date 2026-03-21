@@ -79,7 +79,7 @@ public:
 	/*
 	||  Attributes & Operations
 	*/
-	virtual INT_PTR DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 */
+	virtual INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	INT_PTR DoModal(HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete, LPARAM lParam);	/* モーダルダイアログの表示 */
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, int nDlgTemplete, LPARAM lParam, int nCmdShow);	/* モードレスダイアログの表示 */
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, LPCDLGTEMPLATE lpTemplate, LPARAM lParam, int nCmdShow);	/* モードレスダイアログの表示 */
@@ -168,6 +168,15 @@ protected:
 	HFONT SetMainFont( HWND hTarget );
 	// このダイアログに設定されているフォントを取得
 	HFONT GetDialogFont() { return m_hFontDialog; }
+};
+
+class CPropBase : public CDialog
+{
+public:
+	CPropBase()
+		: CDialog(false, true)
+	{
+	}
 };
 
 #endif /* SAKURA_CDIALOG_17C8C15C_881C_4C1F_B953_CB11FCC8B70B_H_ */

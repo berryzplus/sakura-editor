@@ -13,7 +13,7 @@
 	Copyright (C) 2005, MIK, aroka, genta
 	Copyright (C) 2006, fon
 	Copyright (C) 2010, Uchi
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holders to use this code for other purpose.
@@ -24,6 +24,7 @@
 #pragma once
 
 #include "types/CType.h" // STypeConfig
+#include "dlg/CDialog.h"
 
 class CPropTypes;
 class CKeyWordSetMgr;
@@ -71,12 +72,13 @@ enum PropTypeSheetOrder {
 
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
-class CPropTypes{
+class CPropTypes : public CPropBase {
 
 public:
 	//生成と破棄
 	CPropTypes();
-	~CPropTypes();
+	~CPropTypes() override;
+
 	void Create(HINSTANCE hInstApp, HWND hwndParent);	//!< 初期化
 	INT_PTR DoPropertySheet(int nPageNum);		//!< プロパティシートの作成
 
@@ -128,7 +130,6 @@ protected:
 	//                      各プロパティページ                     //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
-	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得

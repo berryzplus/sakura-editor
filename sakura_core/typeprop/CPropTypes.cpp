@@ -72,7 +72,7 @@ typedef	INT_PTR (CPropTypes::*pDispatchPage)( HWND, UINT, WPARAM, LPARAM );
 #define GEN_PROPTYPES_CALLBACK(FUNC,CLASS) \
 INT_PTR CALLBACK FUNC(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) \
 { \
-	return PropTypesCommonProc(hwndDlg,uMsg,wParam,lParam,reinterpret_cast<pDispatchPage>(&CLASS::DispatchEvent)); \
+	return PropTypesCommonProc(hwndDlg,uMsg,wParam,lParam,reinterpret_cast<pDispatchPage>(&CLASS::DispatchDlgEvent)); \
 }
 GEN_PROPTYPES_CALLBACK(PropTypesScreen,		CPropTypesScreen)
 GEN_PROPTYPES_CALLBACK(PropTypesWindow,		CPropTypesWindow)

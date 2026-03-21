@@ -14,7 +14,7 @@
 	Copyright (C) 2007, genta, ryoji
 	Copyright (C) 2010, Uchi
 	Copyright (C) 2013, Uchi
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -25,6 +25,7 @@
 
 #include "func/CFuncLookup.h"
 #include "env/CommonSetting.h"
+#include "dlg/CDialog.h"
 
 struct DLLSHAREDATA;
 class CImageListMgr;
@@ -67,14 +68,15 @@ enum PropComSheetOrder {
 
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
-class CPropCommon
+class CPropCommon : public CPropBase
 {
 public:
 	/*
 	||  Constructors
 	*/
 	CPropCommon();
-	~CPropCommon();
+	~CPropCommon() override;
+
 	//	Sep. 29, 2001 genta マクロクラスを渡すように;
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
 	void Create( HWND hwndParent, CImageListMgr* pcIcons, CMenuDrawer* pMenuDrawer );	/* 初期化 */
@@ -153,7 +155,6 @@ protected:
 	int m_nLastPos_FILENAME; //!< 前回フォーカスのあった場所 ファイル名タブ用
 
 	//! Message Handler
-	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 	void Import(HWND hwndDlg);	//!< インポートする
