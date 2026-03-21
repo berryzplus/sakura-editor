@@ -59,7 +59,7 @@ static const DWORD p_helpids[] = {	//11700
 INT_PTR CALLBACK CPropMacro::DlgProc_page(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropMacro::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropMacro::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 
 // IMEのオープン状態復帰用

@@ -62,13 +62,13 @@ static const DWORD p_helpids[] = {	//10800
 INT_PTR CALLBACK CPropKeyword::DlgProc_page(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropKeyword::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropKeyword::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 //	To Here Jun. 2, 2001 genta
 INT_PTR CALLBACK CPropKeyword::DlgProc_dialog(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	return DlgProc2( reinterpret_cast<pDispatchPage>(&CPropKeyword::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc2( reinterpret_cast<pDispatchPage>(&CPropKeyword::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 
 /* Keyword メッセージ処理 */

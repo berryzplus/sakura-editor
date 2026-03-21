@@ -84,7 +84,7 @@ INT_PTR CALLBACK CPropFileName::DlgProc_page(
 		break;
 	}
 
-	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropFileName::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropFileName::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 
 INT_PTR	CPropFileName::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -53,7 +53,7 @@ static const DWORD p_helpids[] = {	//11700
 INT_PTR CALLBACK CPropPlugin::DlgProc_page(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropPlugin::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropPlugin::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 
 /*! Pluginページのメッセージ処理

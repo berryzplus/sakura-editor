@@ -81,7 +81,7 @@ static WNDPROC	m_wpEdit = nullptr;
 INT_PTR CALLBACK CPropMainMenu::DlgProc_page(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropMainMenu::DispatchEvent), hwndDlg, uMsg, wParam, lParam );
+	return DlgProc( reinterpret_cast<pDispatchPage>(&CPropMainMenu::DispatchDlgEvent), hwndDlg, uMsg, wParam, lParam );
 }
 
 // TreeViewキー入力時のメッセージ処理
