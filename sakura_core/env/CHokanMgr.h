@@ -7,7 +7,7 @@
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2001, asa-o
 	Copyright (C) 2003, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -33,7 +33,7 @@ public:
 	||  Constructors
 	*/
 	CHokanMgr();
-	~CHokanMgr();
+	~CHokanMgr() override;
 
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);/* モードレスダイアログの表示 */
 	void Hide( void );
@@ -60,6 +60,8 @@ public:
 	void ChangeView(LPARAM pcEditView);/* モードレス時：対象となるビューの変更 */
 
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
+
+	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
 	BOOL OnLbnSelChange( HWND hwndCtl, int wID ) override;
@@ -88,4 +90,5 @@ protected:
 	*/
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add
 };
+
 #endif /* SAKURA_CHOKANMGR_0CB0AF1A_1F22_482E_9221_B9FAE4F0D8A0_H_ */

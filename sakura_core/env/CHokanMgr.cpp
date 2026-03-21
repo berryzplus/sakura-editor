@@ -11,14 +11,14 @@
 	Copyright (C) 2003, Moca, KEITA
 	Copyright (C) 2004, genta, Moca, novice
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holders to use this code for other purpose.
-*/
+ */
 #include "StdAfx.h"
-#include <memory>
 #include "env/CHokanMgr.h"
+
 #include "env/CShareData.h"
 #include "view/CEditView.h"
 #include "plugin/CJackManager.h"
@@ -29,12 +29,9 @@
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
 
-WNDPROC			gm_wpHokanListProc;
-
-LRESULT APIENTRY HokanList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT APIENTRY HokanList_SubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	// Modified by KEITA for WIN64 2003.9.6
-	CHokanMgr* pCHokanMgr = (CHokanMgr*)::GetWindowLongPtr( ::GetParent( hwnd ), DWLP_USER );
+	const auto pCHokanMgr = (CHokanMgr*)dwRefData;
 
 	switch( uMsg ){
 	case WM_LBUTTONDOWN:
@@ -53,10 +50,14 @@ LRESULT APIENTRY HokanList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 			}
 		}
 		return 0;	// 本来のウィンドウプロシージャは呼ばない（アクティブ化しない）
+
+	case WM_DESTROY:
+		::RemoveWindowSubclass(hwnd, &HokanList_SubclassProc, uIdSubclass);
+		return 0;
 	default:
 		break;
 	}
-	return CallWindowProc( gm_wpHokanListProc, hwnd, uMsg, wParam, lParam);
+	return ::DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
 CHokanMgr::CHokanMgr()
@@ -72,17 +73,9 @@ CHokanMgr::~CHokanMgr()
 }
 
 /* モードレスダイアログの表示 */
-HWND CHokanMgr::DoModeless( HINSTANCE hInstance , HWND hwndParent, LPARAM lParam )
+HWND CHokanMgr::DoModeless(HINSTANCE hInstance , HWND hwndParent, LPARAM lParam)
 {
-	HWND hwndWork;
-	hwndWork = CDialog::DoModeless( hInstance, hwndParent, IDD_HOKAN, lParam, SW_HIDE );
-	::SetFocus( ((CEditView*)m_lParam)->GetHwnd() );	//エディタにフォーカスを戻す
-	OnSize( 0, 0 );
-	/* リストをフック */
-	// Modified by KEITA for WIN64 2003.9.6
-	::gm_wpHokanListProc = (WNDPROC) ::SetWindowLongPtr( GetItemHwnd( IDC_LIST_WORDS ), GWLP_WNDPROC, (LONG_PTR)HokanList_SubclassProc  );
-
-	return hwndWork;
+	return CDialog::DoModeless(hInstance, hwndParent, IDD_HOKAN, lParam, SW_HIDE);
 }
 
 /* モードレス時：対象となるビューの変更 */
@@ -457,6 +450,23 @@ INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lP
 	return result;
 }
 
+bool CHokanMgr::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
+{
+	(void) CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
+	// リストをフックする
+	const auto hListWords = ::GetDlgItem(hWndDlg, IDC_LIST_WORDS);
+	::SetWindowSubclass(hListWords, &HokanList_SubclassProc, IDC_LIST_WORDS, DWORD_PTR(this));
+
+	bool bRet = true;
+	if (const auto pcEditView = std::bit_cast<CEditView*>(lParam)) {
+		::SetFocus(pcEditView->GetHwnd());	//エディタにフォーカスを戻す
+		bRet = false;
+	}
+
+	return bRet;
+}
+
 BOOL CHokanMgr::OnSize( WPARAM wParam, LPARAM lParam )
 {
 	/* 基底クラスメンバ */
@@ -616,7 +626,7 @@ int CHokanMgr::KeyProc( WPARAM wParam, LPARAM lParam )
 	case VK_PRIOR:
 	case VK_NEXT:
 		/* リストボックスのデフォルトの動作をさせる */
-		::CallWindowProc( (WNDPROC)gm_wpHokanListProc, GetItemHwnd( IDC_LIST_WORDS ), WM_KEYDOWN, wParam, lParam );
+		::SendMessageW(GetItemHwnd(IDC_LIST_WORDS), WM_KEYDOWN, wParam, lParam);
 		return -1;
 	case VK_RETURN:
 	case VK_TAB:
