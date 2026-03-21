@@ -114,12 +114,7 @@ void CPropFormat::ChangeTimeExample( HWND hwndDlg )
 }
 
 /* Format メッセージ処理 */
-INT_PTR CPropFormat::DispatchEvent(
-	HWND	hwndDlg,	// handle to dialog box
-	UINT	uMsg,	// message
-	WPARAM	wParam,	// first message parameter
-	LPARAM	lParam 	// second message parameter
-)
+INT_PTR CPropFormat::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD		wNotifyCode;
 	WORD		wID;

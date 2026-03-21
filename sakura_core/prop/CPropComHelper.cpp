@@ -67,12 +67,7 @@ INT_PTR CALLBACK CPropHelper::DlgProc_page(
 //	To Here Jun. 2, 2001 genta
 
 /* Helper メッセージ処理 */
-INT_PTR CPropHelper::DispatchEvent(
-	HWND	hwndDlg,	// handle to dialog box
-	UINT	uMsg,		// message
-	WPARAM	wParam,		// first message parameter
-	LPARAM	lParam 		// second message parameter
-)
+INT_PTR CPropHelper::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD		wNotifyCode;
 	WORD		wID;

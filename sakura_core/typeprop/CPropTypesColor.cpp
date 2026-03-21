@@ -278,12 +278,7 @@ static bool isImeUndesirable(int id)
 }
 
 /* color メッセージ処理 */
-INT_PTR CPropTypesColor::DispatchEvent(
-	HWND				hwndDlg,	// handle to dialog box
-	UINT				uMsg,		// message
-	WPARAM				wParam,		// first message parameter
-	LPARAM				lParam 		// second message parameter
-)
+INT_PTR CPropTypesColor::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD				wNotifyCode;
 	WORD				wID;

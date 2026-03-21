@@ -48,12 +48,7 @@ INT_PTR CALLBACK CPropStatusbar::DlgProc_page(
 }
 
 /* メッセージ処理 */
-INT_PTR CPropStatusbar::DispatchEvent(
-    HWND		hwndDlg,	// handle to dialog box
-    UINT		uMsg,		// message
-    [[maybe_unused]] WPARAM		wParam,		// first message parameter
-    LPARAM		lParam 		// second message parameter
-)
+INT_PTR CPropStatusbar::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NMHDR*		pNMHDR;
 

@@ -68,12 +68,7 @@ static std::vector<SHokanMethod>* GetHokanMethodList()
 // 2001/06/13 Start By asa-o: タイプ別設定の支援タブに関する処理
 
 /* メッセージ処理 */
-INT_PTR CPropTypesSupport::DispatchEvent(
-	HWND		hwndDlg,	// handle to dialog box
-	UINT		uMsg,		// message
-	WPARAM		wParam,		// first message parameter
-	LPARAM		lParam 		// second message parameter
-)
+INT_PTR CPropTypesSupport::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD		wNotifyCode;
 	WORD		wID;

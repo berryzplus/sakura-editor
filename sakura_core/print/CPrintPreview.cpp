@@ -2034,12 +2034,7 @@ void CPrintPreview::SetFocusToPrintPreviewBar( void )
 
 /* 印刷プレビュー 操作バー ダイアログのメッセージ処理 */
 // IDD_PRINTPREVIEWBAR
-INT_PTR CPrintPreview::DispatchEvent(
-	HWND				hwndDlg,	// handle to dialog box
-	UINT				uMsg,		// message
-	WPARAM				wParam,		// first message parameter
-	[[maybe_unused]] LPARAM				lParam 		// second message parameter
-)
+INT_PTR CPrintPreview::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hWndDlg = hwndDlg;
 

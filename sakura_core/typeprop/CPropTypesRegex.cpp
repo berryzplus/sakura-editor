@@ -79,12 +79,7 @@ bool CPropTypesRegex::Export(HWND hwndDlg)
 }
 
 /* 正規表現キーワード メッセージ処理 */
-INT_PTR CPropTypesRegex::DispatchEvent(
-	HWND		hwndDlg,	// handle to dialog box
-	UINT		uMsg,		// message
-	WPARAM		wParam,		// first message parameter
-	LPARAM		lParam 		// second message parameter
-)
+INT_PTR CPropTypesRegex::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD	wNotifyCode;
 	WORD	wID;

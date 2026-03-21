@@ -60,12 +60,7 @@ static int nKeyHelpRMenuType[] = {
 
 	@date 2006.04.10 fon 新規作成
 */
-INT_PTR CPropTypesKeyHelp::DispatchEvent(
-	HWND		hwndDlg,	// handle to dialog box
-	UINT		uMsg,		// message
-	WPARAM		wParam,		// first message parameter
-	LPARAM		lParam 		// second message parameter
-)
+INT_PTR CPropTypesKeyHelp::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD	wNotifyCode;
 	WORD	wID;

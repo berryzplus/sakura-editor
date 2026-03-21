@@ -87,12 +87,7 @@ LRESULT CALLBACK CPropComKeybindWndProc( [[maybe_unused]] HWND hwndDlg, UINT uMs
 /* To Here Oct. 13, 2000 */
 
 /* Keybind メッセージ処理 */
-INT_PTR CPropKeybind::DispatchEvent(
-	HWND	hwndDlg,	// handle to dialog box
-	UINT	uMsg,	// message
-	WPARAM	wParam,	// first message parameter
-	LPARAM	lParam 	// second message parameter
-)
+INT_PTR CPropKeybind::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD		wNotifyCode;
 	WORD		wID;

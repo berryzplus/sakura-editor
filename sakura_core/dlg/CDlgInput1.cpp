@@ -85,12 +85,7 @@ int CDlgInput1::GetData()
 }
 
 /* ダイアログのメッセージ処理 */
-INT_PTR CDlgInput1::DispatchEvent(
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,		// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam 	// second message parameter
-)
+INT_PTR CDlgInput1::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	//@@@ 2002.01.07 add start
