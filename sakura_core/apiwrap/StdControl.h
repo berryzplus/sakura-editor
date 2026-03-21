@@ -21,20 +21,58 @@ UNICODE版では問題無いが、ANSI版では設定の前にコード変換す
 そういった意味でも、このファイル内のラップ関数を使うことを推奨する。
 */
 
-#include <windows.h>
-#include <Commctrl.h>
-#include <shlwapi.h>
+#include <Windows.h>
+#include <windowsx.h>
+#include <CommCtrl.h>
+#include <Shlwapi.h>
 #include "mem/CNativeW.h"
-#include <vector>
+#include "util/window.h"
 
 namespace ApiWrap{
+
+using namespace std::literals::string_view_literals;
+
+/*!
+ * @brief テキスト取得結果構造体
+ */
+struct SGetTextResult {
+	bool success = false;	//!< テキストの取得に成功したか
+	std::wstring text;		//!< 取得したテキスト
+
+	//! デフォルトコンストラクタは失敗状態を表す
+	SGetTextResult() = default;
+
+	//! 成功状態を表すコンストラクタ
+	explicit SGetTextResult(std::wstring&& result) noexcept
+		: success(true)
+		, text(std::move(result))
+	{
+	}
+
+	/*!
+	 * @brief 成功状態を返す変換演算子
+	 *
+	 * @retval true 取得成功。
+	 * @note テキストが空でもtrue。
+	 */
+	explicit operator bool() const noexcept { return success; }
+
+	/*!
+	 * @brief 取得した文字列を返す変換演算子
+	 *
+	 * @note 失敗状態でも空文字列が返る。
+	 */
+	explicit operator const std::wstring& () const noexcept { return text; }
+};
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      ウィンドウ共通                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+	bool Wnd_SetText(HWND hWnd, std::wstring_view str);
+
 	inline BOOL Wnd_SetText(HWND hwnd, const WCHAR* str)
 	{
-		return SetWindowText(hwnd, str);
+		return Wnd_SetText(hwnd, str ? std::wstring_view{ str } : L""sv);
 	}
 
 	/*!
@@ -44,7 +82,7 @@ namespace ApiWrap{
 	*/
 	inline BOOL Wnd_SetText(HWND hwnd, const CNativeW& str)
 	{
-		return SetWindowText(hwnd, str.GetStringPtr());
+		return Wnd_SetText(hwnd, std::wstring_view(str));
 	}
 
 	/*!
@@ -56,78 +94,31 @@ namespace ApiWrap{
 	*/
 	bool Wnd_GetText( HWND hWnd, std::wstring& strText );
 
-	/*!
-		@brief Window テキストを取得する
-		@param[in]  hwnd	ウィンドウハンドル
-		@param[out] str		ウィンドウテキスト
-		@return		成功した場合 true
-		@return		失敗した場合 false
-	*/
-	inline bool Wnd_GetText(HWND hwnd, CNativeW& str)
-	{
-		// バッファをクリアしておく
-		str.Clear();
+	bool Wnd_GetText(HWND hWnd, CNativeW& str);
 
-		// GetWindowTextLength() はウィンドウテキスト取得に必要なバッファサイズを返す。
-		// 条件によっては必要なサイズより大きな値を返すことがある模様
-		// https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowtextlengtha
-		const int length = ::GetWindowTextLength(hwnd);
-		if (length < 0)
-		{
-			// ドキュメントには失敗した場合、あるいはテキストが空の場合には 0 を返すとある。
-			// 0 の場合はエラーかどうか判断できないのでテキストの取得処理を続行する。
-			// 仕様上は負の場合はありえないが、念の為エラーチェックしておく。
-			return false;
-		}
-
-		// ドキュメントには NULL 文字に関して言及がないので念の為 +1 しておく
-		const int bufsize = length + 1;
-		
-		// ウィンドウタイトルを設定するのに必要なバッファを確保する
-		if (str.capacity() < bufsize)
-		{
-			str.AllocStringBuffer(bufsize);
-		}
-
-		int actualCount = ::GetWindowText(hwnd, str.GetStringPtr(), str.capacity());
-		if (actualCount < 0)
-		{
-			// 仕様上は負の場合はありえないが、念の為エラーチェックしておく。
-			return false;
-		}
-		else if (actualCount == 0)
-		{
-			// GetWindowText はエラーの場合、またはテキストが空の場合は 0 を返す
-			if (GetLastError() != 0)
-			{
-				return false;
-			}
-		}
-		else if(actualCount >= str.capacity())
-		{
-			// GetWindowText() の仕様上はありえないはず
-			return false;
-		}
-
-		// Win32 API の GetWindowText() を呼んだだけでは CNativeW 内部の
-		// データサイズが更新されないのでデータサイズを反映する
-		str._SetStringLength(actualCount);
-
-		// 正しく設定されているはず
-		assert(str.GetStringLength() == actualCount);
-		return true;
+/*!
+ * @brief 指定したウインドウのテキストを取得する
+ */
+inline SGetTextResult GetWindowTextW(HWND hWnd)
+{
+	if (std::wstring buffer; Wnd_GetText(hWnd, buffer)) {
+		return SGetTextResult(std::move(buffer));
 	}
+	return SGetTextResult();
+}
+
+/*!
+ * @brief 指定したウインドウのテキストを変更する
+ */
+inline bool SetWindowTextW(HWND hWnd, std::wstring_view text)
+{
+	return Wnd_SetText(hWnd, text);
+}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      コンボボックス                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	inline int Combo_AddString(HWND hwndCombo, const WCHAR* str)
-	{
-		// CB_ADDSTRING は失敗の時、負の値を返す。
-		// 成功した場合 0 ベースのインデックスを返す。
-		// 64bit 対応時に int で十分
-		return (int)::SendMessage( hwndCombo, CB_ADDSTRING, 0, LPARAM(str) );
-	}
+	int Combo_AddString(HWND hWndCombo, std::wstring_view str);
 
 	inline LRESULT Combo_GetLBText(HWND hwndCombo, int nIndex, WCHAR* str)
 	{
@@ -148,7 +139,7 @@ namespace ApiWrap{
 	inline LRESULT Combo_GetItemData(HWND hwndCtl, int index)			{ return ((LRESULT)(ULONG_PTR)::SendMessage(hwndCtl, CB_GETITEMDATA, (WPARAM)index, 0L)); }
 	inline int Combo_SetItemData(HWND hwndCtl, int index, int data)		{ return (int)(DWORD)::SendMessage(hwndCtl, CB_SETITEMDATA, (WPARAM)index, (LPARAM)data); }
 	inline int Combo_SetItemData(HWND hwndCtl, int index, void* data)	{ return (int)(DWORD)::SendMessage(hwndCtl, CB_SETITEMDATA, (WPARAM)index, (LPARAM)data); }
-	inline int Combo_GetLBTextLen(HWND hwndCtl, int index)				{ return (int)(DWORD)::SendMessage(hwndCtl, CB_GETLBTEXTLEN, (WPARAM)index, 0L); }
+	inline int Combo_GetLBTextLen(HWND hwndCtl, size_t index)			{ return ComboBox_GetLBTextLen(hwndCtl, index); }
 	inline int Combo_InsertString(HWND hwndCtl, size_t index, LPCWSTR lpsz) noexcept { return ComboBox_InsertString(hwndCtl, index, lpsz); }
 	inline int Combo_LimitText(HWND hwndCtl, size_t cchLimit) noexcept	{ return ComboBox_LimitText(hwndCtl, cchLimit); }
 	inline int Combo_ResetContent(HWND hwndCtl)							{ return (int)(DWORD)::SendMessage(hwndCtl, CB_RESETCONTENT, 0L, 0L); }
@@ -158,46 +149,9 @@ namespace ApiWrap{
 	inline int Combo_SetDroppedWidth(HWND hwndCtl, int width)			{ return (int)(DWORD)::SendMessage(hwndCtl, CB_SETDROPPEDWIDTH, (WPARAM)width, 0L); }
 	inline BOOL Combo_GetDroppedState(HWND hwndCtl)						{ return (BOOL)(DWORD)::SendMessage(hwndCtl, CB_GETDROPPEDSTATE, 0L, 0L ); }
 
-	inline bool Combo_GetLBText(HWND hwndCombo, int nIndex, CNativeW& str)
-	{
-		// バッファをクリアしておく
-		str.Clear();
+	bool Combo_GetLBText(HWND hWndCombo, size_t index, std::wstring& str);
+	bool Combo_GetLBText(HWND hWndCombo, size_t index, CNativeW& str);
 
-		// 範囲外は失敗にする
-		if (nIndex < 0)
-		{
-			return false;
-		}
-
-		// 文字列長を取得する、取得できなければエラー
-		const int length = Combo_GetLBTextLen( hwndCombo, nIndex );
-		if ( length == CB_ERR || length < 0)
-		{
-			return false;
-		}
-
-		// 必要なメモリを確保する
-		const int bufsize = length + 1;
-		str.AllocStringBuffer( bufsize );
-
-		// アイテムテキストを取得する
-		const int actualCount = (int)Combo_GetLBText( hwndCombo, nIndex, str.GetStringPtr() );
-		if (actualCount == CB_ERR || actualCount < 0)
-		{
-			return false;
-		}
-		else if(str.capacity() <= actualCount)
-		{
-			return false;
-		}
-
-		// CNativeW 内部のデータサイズを更新する
-		str._SetStringLength(actualCount);
-
-		// 正しく設定されているはず
-		assert(str.GetStringLength() == actualCount);
-		return true;
-	}
 	inline void Combo_GetEditSel( HWND hwndCombo, DWORD& dwSelStart, DWORD& dwSelEnd )
 	{
 		::SendMessage( hwndCombo, CB_GETEDITSEL, WPARAM( &dwSelStart ), LPARAM( &dwSelEnd ) );
@@ -212,16 +166,46 @@ namespace ApiWrap{
 		}
 	}
 
+/*!
+ * @brief 指定したコンボボックスの入力文字数を制限する
+ */
+template<std::ranges::sized_range T>
+inline int LimitCbText(HWND hWnd, const T& buffer)
+{
+	return Combo_LimitText(hWnd, std::size(buffer) - 1);
+}
+
+/*!
+ * @brief コンボボックスに項目を追加する
+ */
+template<std::ranges::input_range R>
+inline void AddCbItems(HWND hWnd, const R& items)
+{
+	for (const auto& item : items) {
+		Combo_AddString(hWnd, item);
+	}
+}
+
+/*!
+ * @brief コンボボックスの項目テキストを取得する
+ *
+ * @note このメソッドが必要な実装には、おそらく問題がある。
+ */
+inline SGetTextResult GetCbItemText(HWND hWnd, size_t index)
+{
+	if (std::wstring buffer; Combo_GetLBText(hWnd, index, buffer)) {
+		return SGetTextResult(std::move(buffer));
+	}
+	return SGetTextResult();
+}
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      リストボックス                         //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	bool List_GetText( HWND hList, int nIndex, std::wstring& strText );
+	bool List_GetText(HWND hList, size_t index, std::wstring& strText);
 	int List_GetText(HWND hwndList, size_t nIndex, std::span<WCHAR> buffer) noexcept;
 	int List_GetText(HWND hwndList, size_t nIndex, WCHAR* pszText, size_t cchText) noexcept;
-	inline int List_AddString(HWND hwndList, _In_z_ LPCWSTR str) noexcept
-	{
-		return ListBox_AddString(hwndList, str);
-	}
+	int List_AddString(HWND hwndList, std::wstring_view str);
 	inline int List_AddItemData(HWND hwndCtl, int data)					{ return (int)(DWORD)::SendMessage(hwndCtl, LB_ADDSTRING, 0L, (LPARAM)data); }
 	inline int List_AddItemData(HWND hwndCtl, void* data)				{ return (int)(DWORD)::SendMessage(hwndCtl, LB_ADDSTRING, 0L, (LPARAM)data); }
 	inline int List_DeleteString(HWND hwndCtl, int index)				{ return (int)(DWORD)::SendMessage(hwndCtl, LB_DELETESTRING, (WPARAM)index, 0L); }
@@ -229,7 +213,7 @@ namespace ApiWrap{
 	inline int List_GetCaretIndex(HWND hwndCtl)							{ return (int)(DWORD)::SendMessage(hwndCtl, LB_GETCARETINDEX, 0L, 0L); }
 	inline int List_GetCount(HWND hwndCtl)								{ return (int)(DWORD)::SendMessage(hwndCtl, LB_GETCOUNT, 0L, 0L); }
 	inline int List_GetCurSel(HWND hwndCtl)								{ return (int)(DWORD)::SendMessage(hwndCtl, LB_GETCURSEL, 0L, 0L); }
-	inline int List_GetTextLen(HWND hwndCtl, int nIndex)				{ return (int)(DWORD)::SendMessage(hwndCtl, LB_GETTEXTLEN, nIndex, 0L); }
+	inline int List_GetTextLen(HWND hwndCtl, size_t index)				{ return ListBox_GetTextLen(hwndCtl, index); }
 	inline int List_SetCurSel(HWND hwndCtl, int index)					{ return (int)(DWORD)::SendMessage(hwndCtl, LB_SETCURSEL, (WPARAM)index, 0L); }
 	inline LRESULT List_GetItemData(HWND hwndCtl, int index)			{ return (LRESULT)(ULONG_PTR)::SendMessage(hwndCtl, LB_GETITEMDATA, (WPARAM)index, 0L); }
 	inline int List_SetItemData(HWND hwndCtl, int index, int data)		{ return (int)(DWORD)::SendMessage(hwndCtl, LB_SETITEMDATA, (WPARAM)index, (LPARAM)data); }
@@ -245,6 +229,30 @@ namespace ApiWrap{
 	inline int List_SetItemHeight(HWND hwndCtl, size_t index, int cy) noexcept { return ListBox_SetItemHeight(hwndCtl, index, cy); }
 	inline int List_SetTopIndex(HWND hwndCtl, int indexTop)				{ return (int)(DWORD)::SendMessage(hwndCtl, LB_SETTOPINDEX, (WPARAM)indexTop, 0L); }
 
+/*!
+ * @brief リストボックスに項目を追加する
+ */
+template<std::ranges::input_range R>
+inline void AddLbItems(HWND hWnd, const R& items)
+{
+	for (const auto& item : items) {
+		ApiWrap::List_AddString(hWnd, item);
+	}
+}
+
+/*!
+ * @brief リストボックスの項目テキストを取得する
+ *
+ * @note このメソッドが必要な実装には、おそらく問題がある。
+ */
+inline SGetTextResult GetLbItemText(HWND hWnd, size_t index)
+{
+	if (std::wstring buffer; List_GetText(hWnd, static_cast<int>(index), buffer)) {
+		return SGetTextResult(std::move(buffer));
+	}
+	return SGetTextResult();
+}
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      エディット コントロール                //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -252,6 +260,15 @@ namespace ApiWrap{
 	inline void EditCtl_SetSel(HWND hwndCtl, int ichStart, int ichEnd)	{ ::SendMessage(hwndCtl, EM_SETSEL, ichStart, ichEnd); }
 
 	inline void EditCtl_ReplaceSel(HWND hwndCtl, const WCHAR* lpsz)		{ ::SendMessage(hwndCtl, EM_REPLACESEL, 0, LPARAM(lpsz)); }
+
+/*!
+ * @brief 指定したエディットコントロールの入力文字数を制限する
+ */
+template<std::ranges::sized_range T>
+inline void LimitEditText(HWND hWnd, const T& buffer)
+{
+	EditCtl_LimitText(hWnd, std::size(buffer) - 1);
+}
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                      ボタン コントロール                    //
@@ -283,15 +300,54 @@ namespace ApiWrap{
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       ダイアログ内                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	inline BOOL DlgItem_SetText(HWND hwndDlg, int nIDDlgItem, const WCHAR* str)
-	{
-		return SetDlgItemText(hwndDlg, nIDDlgItem, str);
-	}
-
-	bool DlgItem_GetText( HWND hDlg, int nIDDlgItem, std::wstring& strText );
+	bool DlgItem_SetText(HWND hWndDlg, int nIDDlgItem, std::wstring_view str);
+	bool DlgItem_GetText(HWND hWndDlg, int nIDDlgItem, std::wstring& buffer);
 	UINT DlgItem_GetText(HWND hwndDlg, int nIDDlgItem, WCHAR* pszText, size_t nMaxCount) noexcept;
+
+/*!
+ * @brief ダイアログボックス項目のテキストを取得する
+ */
+inline SGetTextResult GetDlgItemTextW(HWND hDlg, int nIdDlgItem)
+{
+	if (std::wstring buffer; DlgItem_GetText(hDlg, nIdDlgItem, buffer)) {
+		return SGetTextResult(std::move(buffer));
+	}
+	return SGetTextResult();
+}
+
+/*!
+ * @brief 指定したウインドウのテキストを変更する
+ */
+inline bool SetDlgItemTextW(HWND hDlg, int nIdDlgItem, std::wstring_view text)
+{
+	return DlgItem_SetText(hDlg, nIdDlgItem, text);
+}
+
+inline void CheckDlgButton(HWND hDlg, int nIDButton, bool bCheck = true)
+{
+	CheckDlgButtonBool(hDlg, nIDButton, bCheck);
+}
+
+inline bool IsDlgButtonChecked(HWND hDlg, int nIDButton)
+{
+	return IsDlgButtonCheckedBool(hDlg, nIDButton);
+}
+
+inline bool EnableDlgItem(HWND hDlg, int nIDDlgItem, bool enable = true)
+{
+	return DlgItem_Enable(hDlg, nIDDlgItem, enable);
+}
+
+inline bool ShowDlgItem(HWND hDlg, int nIDDlgItem, bool show = true)
+{
+	const auto hWndCtl = ::GetDlgItem(hDlg, nIDDlgItem);
+	if (!hWndCtl) return false;
+	const auto nCmdShow = show ? SW_SHOW : SW_HIDE;
+	return ::ShowWindow(hWndCtl, nCmdShow);
+}
 
 	bool TreeView_GetItemTextVector(HWND hwndTree, TVITEM& item, std::vector<WCHAR>& vecStr);
 	void TreeView_ExpandAll( HWND, bool, int nMaxDepth = 100 );
 }
+
 #endif /* SAKURA_STDCONTROL_57A7282D_B9F0_4642_ABFF_48B6D715CCA7_H_ */

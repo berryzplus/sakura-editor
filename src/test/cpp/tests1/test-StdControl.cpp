@@ -9,174 +9,11 @@
 
 #include "cxx/ResourceHolder.hpp"
 #include "dlg/CDialog.h"
-#include "util/window.h"
 
 #include "sakura_rc.h"
 
 using namespace std::literals::string_literals;
-
-/*!
- * 仮定義用namespace
- *
- * 実装に必要だが未定義の関数を、ここに仮定義する
- */
-namespace ApiWrap {
-
-/*!
- * @brief テキスト取得結果構造体
- */
-struct SGetTextResult {
-	bool success = false;	//!< テキストの取得に成功したか
-	std::wstring text;		//!< 取得したテキスト
-
-	//! デフォルトコンストラクタは失敗状態を表す
-	SGetTextResult() = default;
-
-	//! 成功状態を表すコンストラクタ
-	explicit SGetTextResult(std::wstring&& result) noexcept
-		: success(true)
-		, text(std::move(result))
-	{
-	}
-
-	/*!
-	 * @brief 成功状態を返す変換演算子
-	 *
-	 * @retval true 取得成功。
-	 * @note テキストが空でもtrue。
-	 */
-	explicit operator bool() const noexcept { return success; }
-
-	/*!
-	 * @brief 取得した文字列を返す変換演算子
-	 *
-	 * @note 失敗状態でも空文字列が返る。
-	 */
-	explicit operator const std::wstring& () const noexcept { return text; }
-};
-
-/*!
- * @brief 指定したウインドウのテキストを取得する
- */
-SGetTextResult GetWindowTextW(HWND hWnd)
-{
-	if (std::wstring buffer; Wnd_GetText(hWnd, buffer)) {
-		return SGetTextResult(std::move(buffer));
-	}
-	return SGetTextResult();
-}
-
-/*!
- * @brief 指定したウインドウのテキストを変更する
- */
-bool SetWindowTextW(HWND hWnd, const std::wstring& text)
-{
-	return Wnd_SetText(hWnd, std::data(text));
-}
-
-/*!
- * @brief 指定したエディットコントロールの入力文字数を制限する
- */
-template<std::ranges::sized_range T>
-void LimitEditText(HWND hWnd, const T& buffer)
-{
-	EditCtl_LimitText(hWnd, std::size(buffer) - 1);
-}
-
-/*!
- * @brief リストボックスに項目を追加する
- */
-template<std::ranges::input_range R>
-void AddLbItems(HWND hWnd, const R& items)
-{
-	for (const auto& item : items) {
-		ApiWrap::List_AddString(hWnd, std::data(item));
-	}
-}
-
-/*!
- * @brief リストボックスの項目テキストを取得する
- *
- * @note このメソッドが必要な実装には、おそらく問題がある。
- */
-SGetTextResult GetLbItemText(HWND hWnd, size_t index)
-{
-	if (std::wstring buffer; List_GetText(hWnd, static_cast<int>(index), buffer)) {
-		return SGetTextResult(std::move(buffer));
-	}
-	return SGetTextResult();
-}
-
-/*!
- * @brief 指定したkコンボボックスの入力文字数を制限する
- */
-template<std::ranges::sized_range T>
-int LimitCbText(HWND hWnd, const T& buffer)
-{
-	return Combo_LimitText(hWnd, std::size(buffer) - 1);
-}
-
-/*!
- * @brief コンボボックスに項目を追加する
- */
-template<std::ranges::input_range R>
-void AddCbItems(HWND hWnd, const R& items)
-{
-	for (const auto& item : items) {
-		ApiWrap::Combo_AddString(hWnd, std::data(item));
-	}
-}
-
-/*!
- * @brief コンボボックスの項目テキストを取得する
- *
- * @note このメソッドが必要な実装には、おそらく問題がある。
- */
-SGetTextResult GetCbItemText(HWND hWnd, size_t index)
-{
-	if (const auto itemLength = Combo_GetLBTextLen(hWnd, static_cast<int>(index)); 0 < itemLength) {
-		if (std::wstring buffer(itemLength, L'\0'); Combo_GetLBText(hWnd, static_cast<int>(index), std::data(buffer))) {
-			return SGetTextResult(std::move(buffer));
-		}
-	}
-	return SGetTextResult();
-}
-
-/*!
- * @brief ダイアログボックス項目のテキストを取得する
- */
-SGetTextResult GetDlgItemTextW(HWND hDlg, int nIdDlgItem)
-{
-	if (std::wstring buffer; DlgItem_GetText(hDlg, nIdDlgItem, buffer)) {
-		return SGetTextResult(std::move(buffer));
-	}
-	return SGetTextResult();
-}
-
-/*!
- * @brief 指定したウインドウのテキストを変更する
- */
-bool SetDlgItemTextW(HWND hDlg, int nIdDlgItem, const std::wstring& text)
-{
-	return DlgItem_SetText(hDlg, nIdDlgItem, std::data(text));
-}
-
-void CheckDlgButton(HWND hDlg, int nIDButton, bool bCheck = true)
-{
-	CheckDlgButtonBool(hDlg, nIDButton, bCheck);
-}
-
-bool IsDlgButtonChecked(HWND hDlg, int nIDButton)
-{
-	return IsDlgButtonCheckedBool(hDlg, nIDButton);
-}
-
-bool EnableDlgItem(HWND hDlg, int nIDDlgItem, bool enable = true)
-{
-	return DlgItem_Enable(hDlg, nIDDlgItem, enable);
-}
-
-} // namespace ApiWrap
+using namespace std::literals::string_view_literals;
 
 namespace window {
 
@@ -187,6 +24,7 @@ using WindowHolder = cxx::ResourceHolder<&::DestroyWindow>;
  */
 TEST(ApiWrap, WndTest001)
 {
+	// パラメーター不正
 	EXPECT_THAT(ApiWrap::GetWindowTextW(nullptr), IsFalse());
 
 	const auto expected = L"0123456789012345678901234567890123456789"s;
@@ -199,18 +37,24 @@ TEST(ApiWrap, WndTest001)
 	// 単純な取得
 	EXPECT_THAT(ApiWrap::GetWindowTextW(hWnd), StrEq(expected));
 
+	// タイトルを空にする
+	ApiWrap::SetWindowTextW(hWnd, L""sv);
+	EXPECT_THAT(ApiWrap::GetWindowTextW(hWnd), IsFalse());
+
+	CNativeW cmemText;
+	ApiWrap::Wnd_SetText(hWnd, nullptr);
+	EXPECT_THAT(ApiWrap::Wnd_GetText(hWnd, cmemText), IsFalse());
+	ApiWrap::SetWindowTextW(hWnd, L"test"s);
+	EXPECT_THAT(ApiWrap::GetWindowTextW(hWnd), StrEq(L"test"));
+	EXPECT_THAT(ApiWrap::Wnd_GetText(hWnd, cmemText), IsTrue());
+	EXPECT_THAT(cmemText.GetStringPtr(), StrEq(L"test"));
+
 	// GitHub #1528 の退行防止テストケース。
 	// 取得する文字列の長さが basic_string::capacity と同じだった場合に一文字取りこぼしていた。
 	std::wstring s(std::size(expected) - 1, L'\0');
+	ApiWrap::SetWindowTextW(hWnd, expected);
 	EXPECT_THAT(ApiWrap::Wnd_GetText(hWnd, s), IsTrue());
 	EXPECT_THAT(s, StrEq(expected));
-
-	ApiWrap::SetWindowTextW(hWnd, L"test"s);
-	EXPECT_THAT(ApiWrap::GetWindowTextW(hWnd), StrEq(L"test"));
-
-	CNativeW cmemText;
-	EXPECT_THAT(ApiWrap::Wnd_GetText(hWnd, cmemText), IsTrue());
-	EXPECT_THAT(cmemText.GetStringPtr(), StrEq(L"test"));
 }
 
 /*!
@@ -355,13 +199,25 @@ TEST(ApiWrap, DlgItemTest001) {
 			ApiWrap::SetDlgItemTextW(hDlg, IDC_COMBO_TEXT, L"test item"s);
 			EXPECT_THAT(ApiWrap::GetDlgItemTextW(hDlg, IDC_COMBO_TEXT), StrEq(L"test item"));
 
+			// 存在しないIDを指定して取得失敗させる
+			EXPECT_THAT(ApiWrap::GetDlgItemTextW(hDlg, IDC_COMBO_TEXT2), IsFalse());
+
+			// チェックボックスの状態を確認する
 			EXPECT_THAT(ApiWrap::IsDlgButtonChecked(hDlg, IDC_CHK_REGULAREXP), IsFalse());
 
+			// チェックボックスの状態を変更して確認する
 			ApiWrap::CheckDlgButton(hDlg, IDC_CHK_REGULAREXP, true);
 			EXPECT_THAT(ApiWrap::IsDlgButtonChecked(hDlg, IDC_CHK_REGULAREXP), IsTrue());
 
+			// チェックボックスの状態を元に戻せることを確認する
 			ApiWrap::CheckDlgButton(hDlg, IDC_CHK_REGULAREXP, false);
 			EXPECT_THAT(ApiWrap::IsDlgButtonChecked(hDlg, IDC_CHK_REGULAREXP), IsFalse());
+
+			// チェックボックスの表示状態を変更する
+			ApiWrap::ShowDlgItem(hDlg, IDC_CHK_REGULAREXP, false);
+
+			// チェックボックスの表示状態を元に戻す
+			ApiWrap::ShowDlgItem(hDlg, IDC_CHK_REGULAREXP, true);
 		}
 	};
 

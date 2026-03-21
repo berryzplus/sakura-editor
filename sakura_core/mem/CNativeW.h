@@ -77,6 +77,8 @@ public:
 	bool operator == (const CNativeW& rhs) const noexcept { return 0 == Compare(rhs); }
 	bool operator != (const CNativeW& rhs) const noexcept { return !(*this == rhs); }
 
+	explicit operator std::wstring_view () const & noexcept { return std::wstring_view{ GetStringPtr(), size_t(GetStringLength()) }; }
+
 	//ネイティブ取得インターフェース
 	[[nodiscard]] wchar_t operator[]( size_t nIndex ) const;                    //!< 任意位置の文字取得。nIndexは文字単位。
 	CLogicInt GetStringLength() const                        //!< 文字列長を返す。文字単位。
