@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 2002, YAZAKI
 	Copyright (C) 2003, かろと
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -16,8 +16,8 @@
 #define SAKURA_CPRINTPREVIEW_71FC07B8_7648_4179_81A7_0FE3299DBA0A_H_
 #pragma once
 
-#include <Windows.h> // 2002/2/10 aroka
 #include "basis/SakuraBasis.h"
+#include "dlg/CDialog.h"
 #include "util/design_template.h"
 #include "CPrint.h" // 2002/2/10 aroka
 #include "types/CType.h"
@@ -30,7 +30,11 @@ class CLayout;
 class CLayoutMgr;
 class CStringRef;
 
-class CPrintPreview {
+class CPrintPreview final : public CDialog {
+private:
+	using Base = CDialog;
+	using Me = CPrintPreview;
+
 	static constexpr auto COMPAT_BMP_BASE =      1;   /* COMPAT_BMP_SCALEピクセル幅を複写する画面ピクセル幅 */
 	static constexpr auto COMPAT_BMP_SCALE =     2;   /* 互換BMPのCOMPAT_BMP_BASEに対する倍率(1以上の整数倍) */
 
@@ -39,15 +43,16 @@ public:
 	/*
 	||  コンストラクタ
 	*/
-	CPrintPreview( class CEditWnd* pParentWnd );
-	~CPrintPreview();
+	explicit CPrintPreview(CEditWnd* pParentWnd);
+	~CPrintPreview() override;
 
 	/*
 	||	イベント
 	*/
 	//	Window Messages
+	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 	LRESULT OnPaint(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
-	LRESULT OnSize(WPARAM wParam, LPARAM lParam);				/* WM_SIZE 処理 */
+	BOOL	OnSize(WPARAM wParam, LPARAM lParam) override;					/* WM_SIZE 処理 */
 	LRESULT OnVScroll( WPARAM wParam, LPARAM lParam );
 	LRESULT OnHScroll( WPARAM wParam, LPARAM lParam );
 	LRESULT OnMouseMove( WPARAM wParam, LPARAM lParam );
@@ -83,20 +88,7 @@ public:
 		return nullptr;
 	}
 
-	//	PrintPreviewバーのメッセージ処理。
-	//	まずPrintPreviewBar_DlgProcにメッセージが届き、DispatchEvent_PPBに転送する仕組み
-	static INT_PTR CALLBACK PrintPreviewBar_DlgProc(
-		HWND	hwndDlg,	// handle to dialog box
-		UINT	uMsg,		// message
-		WPARAM	wParam,		// first message parameter
-		LPARAM	lParam		// second message parameter
-	);
-	INT_PTR DispatchEvent_PPB(
-		HWND	hwndDlg,	// handle to dialog box
-		UINT	uMsg,		// message
-		WPARAM	wParam,		// first message parameter
-		LPARAM	lParam 		// second message parameter
-	);
+	INT_PTR	DispatchEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 protected:
 	/*
@@ -261,4 +253,5 @@ protected:
 
 	DISALLOW_COPY_AND_ASSIGN(CPrintPreview);
 };
+
 #endif /* SAKURA_CPRINTPREVIEW_71FC07B8_7648_4179_81A7_0FE3299DBA0A_H_ */

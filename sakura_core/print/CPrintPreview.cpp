@@ -19,7 +19,8 @@
 */
 
 #include "StdAfx.h"
-#include "CPrintPreview.h"
+#include "print/CPrintPreview.h"
+
 #include "uiparts/HandCursor.h"
 #include "doc/layout/CLayout.h"
 #include "window/CEditWnd.h"
@@ -54,8 +55,9 @@ CPrint CPrintPreview::m_cPrint;		//!< 現在のプリンター情報 2003.05.02 
 	印刷プレビューを表示するために必要な情報を初期化、領域確保。
 	コントロールも作成する。
 */
-CPrintPreview::CPrintPreview(CEditWnd* pParentWnd ) :
-	m_pParentWnd( pParentWnd )
+CPrintPreview::CPrintPreview(CEditWnd* pParentWnd)
+	: CDialog(true, true)
+	, m_pParentWnd( pParentWnd )
 {
 	/* 印刷用のレイアウト情報の作成 */
 	m_pLayoutMgr_Print = new CLayoutMgr;
@@ -309,7 +311,7 @@ LRESULT CPrintPreview::OnPaint(
 	return 0L;
 }
 
-LRESULT CPrintPreview::OnSize( WPARAM wParam, LPARAM lParam )
+BOOL CPrintPreview::OnSize( WPARAM wParam, LPARAM lParam )
 {
 	int	cx = LOWORD( lParam );
 	int	cy = HIWORD( lParam );
@@ -1910,14 +1912,11 @@ int CALLBACK CPrintPreview::MyEnumFontFamProc(
 */
 void CPrintPreview::CreatePrintPreviewControls( void )
 {
+	const auto hInstance = G_AppInstance();
+	const auto hWndParent = m_pParentWnd->GetHwnd();
+
 	/* 印刷プレビュー 操作バー */
-	m_hwndPrintPreviewBar = ::CreateDialogParam(
-		CSelectLang::getLangRsrcInstance(),					// handle to application instance
-		MAKEINTRESOURCE( IDD_PRINTPREVIEWBAR ),				// identifies dialog box template name
-		m_pParentWnd->GetHwnd(),							// handle to owner window
-		CPrintPreview::PrintPreviewBar_DlgProc,	// pointer to dialog box procedure
-		(LPARAM)this
-	);
+	m_hwndPrintPreviewBar = CDialog::DoModeless(hInstance, hWndParent, IDD_PRINTPREVIEWBAR, 0L, SW_SHOW);
 
 	/* 縦スクロールバーの作成 */
 	m_hwndVScrollBar = ::CreateWindowEx(
@@ -2025,38 +2024,6 @@ void CPrintPreview::DestroyPrintPreviewControls( void )
 	}
 }
 
-/* ダイアログプロシージャ */
-INT_PTR CALLBACK CPrintPreview::PrintPreviewBar_DlgProc(
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,		// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam 	// second message parameter
-)
-{
-	CPrintPreview* pCPrintPreview;
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		UpdateDialogFont( hwndDlg );
-
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( hwndDlg, DWLP_USER, lParam );
-		// 2007.02.11 Moca WM_INITもDispatchEvent_PPBを呼ぶように
-		pCPrintPreview = reinterpret_cast<CPrintPreview*>(lParam);
-		if( nullptr != pCPrintPreview ){
-			return pCPrintPreview->DispatchEvent_PPB( hwndDlg, uMsg, wParam, lParam );
-		}
-		return TRUE;
-	default:
-		// Modified by KEITA for WIN64 2003.9.6
-		pCPrintPreview = ( CPrintPreview* )::GetWindowLongPtr( hwndDlg, DWLP_USER );
-		if( nullptr != pCPrintPreview ){
-			return pCPrintPreview->DispatchEvent_PPB( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
-	}
-}
-
 /* 印刷プレビュー 操作バーにフォーカスを当てる */
 void CPrintPreview::SetFocusToPrintPreviewBar( void )
 {
@@ -2067,21 +2034,19 @@ void CPrintPreview::SetFocusToPrintPreviewBar( void )
 
 /* 印刷プレビュー 操作バー ダイアログのメッセージ処理 */
 // IDD_PRINTPREVIEWBAR
-INT_PTR CPrintPreview::DispatchEvent_PPB(
+INT_PTR CPrintPreview::DispatchEvent(
 	HWND				hwndDlg,	// handle to dialog box
 	UINT				uMsg,		// message
 	WPARAM				wParam,		// first message parameter
 	[[maybe_unused]] LPARAM				lParam 		// second message parameter
 )
 {
+	const auto hWndDlg = hwndDlg;
+
 	WORD				wNotifyCode;
 	WORD				wID;
 
 	switch( uMsg ){
-
-	case WM_INITDIALOG:
-		::EnableWindow( ::GetDlgItem(hwndDlg, IDC_CHECK_ANTIALIAS), TRUE );
-		return TRUE;
 	case WM_COMMAND:
 		wNotifyCode = HIWORD(wParam);	/* 通知コード */
 		wID			= LOWORD(wParam);	/* 項目ID、コントロールID またはアクセラレータID */
@@ -2163,7 +2128,7 @@ INT_PTR CPrintPreview::DispatchEvent_PPB(
 	default:
 		break;
 	}
-	return FALSE;
+	return CDialog::DispatchEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 // 印刷用フォントを作成する
@@ -2250,4 +2215,13 @@ void CPrintPreview::DestroyFonts()
 	m_hFontHan = m_hFontHan_b = m_hFontHan_u = m_hFontHan_bu =
 	m_hFontZen = m_hFontZen_b = m_hFontZen_u = m_hFontZen_bu = NULL;
 #endif
+}
+
+bool CPrintPreview::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
+{
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
+	ApiWrap::EnableDlgItem(hWndDlg, IDC_CHECK_ANTIALIAS, true);
+
+	return bRet;
 }
