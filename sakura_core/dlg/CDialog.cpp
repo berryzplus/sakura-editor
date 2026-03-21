@@ -57,7 +57,7 @@ INT_PTR CALLBACK CDialog::MyDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 		::SetWindowLongPtrW(hWndDlg, DWLP_USER, lParam);
 
 		// ダイアログの初期化
-		const auto bRet = pcDialog->OnInitDialog(hWndDlg, wParam, lParam);
+		const auto bRet = HANDLE_WM_INITDIALOG(hWndDlg, wParam, lParam, pcDialog->OnInitDialog);
 
 		// ダイアログデータの設定
 		pcDialog->SetData();
@@ -192,21 +192,6 @@ void CDialog::CloseDialog( INT_PTR nModalRetVal )
 		m_hWnd = nullptr;
 	}
 	return;
-}
-
-BOOL CDialog::OnInitDialog( HWND hwndDlg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
-{
-	m_hFontDialog = UpdateDialogFont( hwndDlg );
-
-	// --- Dark Mode ---
-	auto hWnd = m_hWnd;
-	DarkMode::setColorizeTitleBarConfig(true);
-	DarkMode::setDarkWndNotifySafeEx(hWnd, true, true);
-	DarkMode::setWindowEraseBgSubclass(hWnd);
-	DarkMode::setWindowMenuBarSubclass(hWnd);
-	DarkMode::setWindowExStyle(hWnd, false, WS_EX_COMPOSITED);
-
-	return TRUE;
 }
 
 void CDialog::SetDialogPosSize()
@@ -455,6 +440,23 @@ INT_PTR CDialog::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		break;
 	}
 	return FALSE;
+}
+
+/*!
+ * @brief WM_INITDIALOGハンドラ
+ */
+bool CDialog::OnInitDialog(HWND hWnd, HWND hWndFocus [[maybe_unused]], LPARAM lParam [[maybe_unused]])
+{
+	m_hFontDialog = UpdateDialogFont(hWnd);
+
+	// --- Dark Mode ---
+	DarkMode::setColorizeTitleBarConfig(true);
+	DarkMode::setDarkWndNotifySafeEx(hWnd, true, true);
+	DarkMode::setWindowEraseBgSubclass(hWnd);
+	DarkMode::setWindowMenuBarSubclass(hWnd);
+	DarkMode::setWindowExStyle(hWnd, false, WS_EX_COMPOSITED);
+
+	return true;
 }
 
 BOOL CDialog::OnCommand( WPARAM wParam, LPARAM lParam )
