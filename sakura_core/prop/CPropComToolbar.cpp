@@ -173,8 +173,10 @@ static void SetDlgItemsEnableState(
 }
 
 /* Toolbar メッセージ処理 */
-INT_PTR CPropToolbar::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropToolbar::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD				wNotifyCode;
 	WORD				wID;
 	HWND				hwndCtl;

@@ -229,8 +229,10 @@ CDlgFuncList::CDlgFuncList() : CDialog(true)
 
 	@date 2007.11.07 ryoji 新規
 */
-INT_PTR CDlgFuncList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CDlgFuncList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto wMsg = uMsg;
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 

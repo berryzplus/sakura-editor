@@ -72,8 +72,10 @@ INT_PTR CALLBACK CPropKeyword::DlgProc_dialog(
 }
 
 /* Keyword メッセージ処理 */
-INT_PTR CPropKeyword::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropKeyword::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD				wNotifyCode;
 	WORD				wID;
 	HWND				hwndCtl;

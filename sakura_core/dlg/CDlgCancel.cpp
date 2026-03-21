@@ -25,8 +25,10 @@ CDlgCancel::CDlgCancel()
 /** 標準以外のメッセージを捕捉する
 	@date 2008.05.28 ryoji 新規作成
 */
-INT_PTR CDlgCancel::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CDlgCancel::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto wMsg = uMsg;
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	switch( wMsg ){

@@ -181,8 +181,10 @@ LPVOID CDlgWindowList::GetHelpIdTable()
 	return (LPVOID)p_helpids;
 }
 
-INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CDlgWindowList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto wMsg = uMsg;
 	INT_PTR result;
 	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
 

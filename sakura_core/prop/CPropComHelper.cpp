@@ -67,8 +67,10 @@ INT_PTR CALLBACK CPropHelper::DlgProc_page(
 //	To Here Jun. 2, 2001 genta
 
 /* Helper メッセージ処理 */
-INT_PTR CPropHelper::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropHelper::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	NMHDR*		pNMHDR;

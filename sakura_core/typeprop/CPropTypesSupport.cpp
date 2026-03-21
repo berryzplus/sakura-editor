@@ -68,8 +68,10 @@ static std::vector<SHokanMethod>* GetHokanMethodList()
 // 2001/06/13 Start By asa-o: タイプ別設定の支援タブに関する処理
 
 /* メッセージ処理 */
-INT_PTR CPropTypesSupport::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropTypesSupport::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	NMHDR*		pNMHDR;

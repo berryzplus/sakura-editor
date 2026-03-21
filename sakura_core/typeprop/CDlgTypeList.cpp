@@ -180,8 +180,10 @@ BOOL CDlgTypeList::OnActivate( WPARAM wParam, LPARAM lParam )
 	return CDialog::OnActivate( wParam, lParam );
 }
 
-INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CDlgTypeList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto wMsg = uMsg;
 	HWND hwndRMenu = GetItemHwnd( IDC_CHECK_EXT_RMENU );
 	HWND hwndDblClick = GetItemHwnd( IDC_CHECK_EXT_DBLCLICK );
 

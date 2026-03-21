@@ -341,8 +341,10 @@ void CHokanMgr::HokanSearchByKeyword(
 /*!
 	標準以外のメッセージを捕捉する
 */
-INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CHokanMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto wMsg = uMsg;
 	// 念のため IME 関連のメッセージが来るようならビューに処理させる
 	// 何かの環境依存（常駐ソフト？）によるものかもしれないが、
 	// フォーカスが無くても IME 関連メッセージがこっちに来るケースがあったので、その対策

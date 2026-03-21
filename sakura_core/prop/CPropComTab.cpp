@@ -77,8 +77,10 @@ INT_PTR CALLBACK CPropTab::DlgProc_page(
 //	To Here Jun. 2, 2001 genta
 
 /* メッセージ処理 */
-INT_PTR CPropTab::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CPropTab::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 //	int			idCtrl;
 

@@ -60,8 +60,10 @@ static int nKeyHelpRMenuType[] = {
 
 	@date 2006.04.10 fon 新規作成
 */
-INT_PTR CPropTypesKeyHelp::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropTypesKeyHelp::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD	wNotifyCode;
 	WORD	wID;
 	HWND	hwndList;

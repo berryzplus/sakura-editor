@@ -79,8 +79,10 @@ bool CPropTypesRegex::Export(HWND hwndDlg)
 }
 
 /* 正規表現キーワード メッセージ処理 */
-INT_PTR CPropTypesRegex::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropTypesRegex::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD	wNotifyCode;
 	WORD	wID;
 	HWND	hwndList;

@@ -129,8 +129,10 @@ static void SetDlgItemsEnableState(
 }
 
 /* Custom menu メッセージ処理 */
-INT_PTR CPropCustmenu::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropCustmenu::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	HWND		hwndCtl;

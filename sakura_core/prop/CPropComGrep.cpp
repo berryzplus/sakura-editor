@@ -58,8 +58,10 @@ INT_PTR CALLBACK CPropGrep::DlgProc_page(
 //	To Here Jun. 2, 2001 genta
 
 /* メッセージ処理 */
-INT_PTR CPropGrep::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CPropGrep::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 //	WORD		wNotifyCode;
 //	WORD		wID;
 //	HWND		hwndCtl;

@@ -62,8 +62,10 @@ INT_PTR CALLBACK CPropPlugin::DlgProc_page(
 	@param wParam パラメータ1
 	@param lParam パラメータ2
 */
-INT_PTR CPropPlugin::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CPropPlugin::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 	int			idCtrl;
 

@@ -82,8 +82,10 @@ static bool isImeUndesirable(int id)
 	@param wParam パラメータ1
 	@param lParam パラメータ2
 */
-INT_PTR CPropMacro::DispatchEvent( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
+INT_PTR	CPropMacro::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 	int			idCtrl;
 

@@ -85,8 +85,10 @@ int CDlgInput1::GetData()
 }
 
 /* ダイアログのメッセージ処理 */
-INT_PTR CDlgInput1::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CDlgInput1::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	switch (uMsg) {
 	//@@@ 2002.01.07 add start
 	case WM_HELP:

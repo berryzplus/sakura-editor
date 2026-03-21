@@ -89,8 +89,10 @@ static bool isImeUndesirable(int id)
 }
 
 /*! ファイルページ メッセージ処理 */
-INT_PTR CPropFile::DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR	CPropFile::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	HWND		hwndCtl;
