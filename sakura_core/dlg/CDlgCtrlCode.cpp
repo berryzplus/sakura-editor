@@ -180,8 +180,10 @@ int CDlgCtrlCode::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgCtrlCode::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgCtrlCode::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;

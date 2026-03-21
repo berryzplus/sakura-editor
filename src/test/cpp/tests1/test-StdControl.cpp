@@ -186,7 +186,9 @@ TEST(ApiWrap, DlgItemTest001) {
 		{
 		}
 
-		BOOL OnInitDialog(HWND hDlg, WPARAM wParam, LPARAM lParam) override {
+		bool OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override {
+			const auto hDlg = hWndDlg;
+			const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 			OnFirstIdle(hDlg);
 
 			::EndDialog(hDlg, IDCANCEL);

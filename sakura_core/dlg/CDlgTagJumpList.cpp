@@ -392,8 +392,10 @@ int CDlgTagJumpList::GetData( void )
 	@date 2005.03.31 MIK
 		階層カラムの追加．キーワード指定欄の追加
 */
-BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgTagJumpList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;

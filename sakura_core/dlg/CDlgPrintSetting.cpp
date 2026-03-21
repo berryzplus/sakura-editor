@@ -126,8 +126,10 @@ int CDlgPrintSetting::DoModal(
 	return nRet;
 }
 
-BOOL CDlgPrintSetting::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgPrintSetting::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */

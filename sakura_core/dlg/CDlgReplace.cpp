@@ -321,8 +321,10 @@ int CDlgReplace::GetData( void )
 	}
 }
 
-BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgReplace::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 	//	Jun. 26, 2001 genta
 	//	この位置で正規表現の初期化をする必要はない

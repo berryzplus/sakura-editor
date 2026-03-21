@@ -56,7 +56,9 @@ int CShareDataLockCounter::GetLockCounter(){
 
 class CLockCancel final: public CDlgCancel{
 public:
-	BOOL OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam ) override{
+	bool OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override{
+		const auto hwnd = hWndDlg;
+		const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 		BOOL ret = CDlgCancel::OnInitDialog(hwnd, wParam, lParam);
 		HWND hwndCancel = GetHwnd();
 		HWND hwndMsg = ::GetDlgItem(hwndCancel, IDC_STATIC_MSG);

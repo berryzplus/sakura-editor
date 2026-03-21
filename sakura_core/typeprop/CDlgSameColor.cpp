@@ -105,8 +105,10 @@ int CDlgSameColor::DoModal( HINSTANCE hInstance, HWND hwndParent, WORD wID, STyp
 /*! WM_INITDIALOG 処理
 	@date 2006.04.26 ryoji 新規作成
 */
-BOOL CDlgSameColor::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgSameColor::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 
 	HWND hwndStatic = GetItemHwnd( IDC_STATIC_COLOR );

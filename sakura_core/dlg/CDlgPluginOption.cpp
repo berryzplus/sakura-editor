@@ -268,8 +268,10 @@ int CDlgPluginOption::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgPluginOption::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgPluginOption::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;

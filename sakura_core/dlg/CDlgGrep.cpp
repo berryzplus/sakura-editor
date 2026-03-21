@@ -292,8 +292,10 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCur
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP, (LPARAM)nullptr );
 }
 
-BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgGrep::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 
 	/* カレントフォルダーが初期値 */

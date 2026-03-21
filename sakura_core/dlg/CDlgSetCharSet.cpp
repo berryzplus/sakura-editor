@@ -45,8 +45,10 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_SETCHARSET, (LPARAM)nullptr );
 }
 
-BOOL CDlgSetCharSet::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgSetCharSet::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 	
 	m_hwndCharSet = GetItemHwnd( IDC_COMBO_CHARSET );	// 文字コードセットコンボボックス

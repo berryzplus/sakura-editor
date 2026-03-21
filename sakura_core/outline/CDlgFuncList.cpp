@@ -1682,8 +1682,10 @@ void CDlgFuncList::SetTreeFileSub( HTREEITEM hParent, const WCHAR* pszFile )
 	}
 }
 
-BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFuncList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	m_bStretching = false;
 	m_bHovering = false;
 	m_nHilightedBtn = -1;

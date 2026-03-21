@@ -330,8 +330,10 @@ int CDlgFileTree::GetDataItem( SFileTreeItem& item )
 	return TRUE;
 }
 
-BOOL CDlgFileTree::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFileTree::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd(hwndDlg);
 	SFileTreeItem item;
 

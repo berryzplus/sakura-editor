@@ -70,8 +70,10 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 	return CDialog::DoModeless( hInstance, hwndParent, nDlgTemplete, (LPARAM)nullptr, SW_SHOW );
 }
 
-BOOL CDlgCancel::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgCancel::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 	HICON	hIcon;
 	hIcon = ::LoadIcon( nullptr, IDI_ASTERISK );

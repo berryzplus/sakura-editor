@@ -19,8 +19,10 @@
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 
-BOOL CDlgFileUpdateQuery::OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam )
+bool CDlgFileUpdateQuery::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hWnd = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	ApiWrap::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
 	ApiWrap::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ?
 		LS(STR_ERR_DLGUPQRY1):LS(STR_ERR_DLGUPQRY2) );

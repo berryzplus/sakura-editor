@@ -74,8 +74,10 @@ int CDlgWinSize::DoModal(
 
 /*! 初期化処理
 */
-BOOL CDlgWinSize::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgWinSize::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	_SetHwnd( hwndDlg );
 
 	ApiWrap::Combo_AddString( GetItemHwnd( IDC_COMBO_WINTYPE ), LS( STR_DLGWINSZ_NORMAL ) );	//L"普通"

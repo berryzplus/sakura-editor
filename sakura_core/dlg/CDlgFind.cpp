@@ -93,8 +93,10 @@ void CDlgFind::ChangeView( LPARAM pcEditView )
 	return;
 }
 
-BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
+bool CDlgFind::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwnd = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 

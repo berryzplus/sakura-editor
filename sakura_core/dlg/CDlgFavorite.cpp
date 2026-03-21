@@ -348,8 +348,10 @@ int CDlgFavorite::GetData( void )
 	return TRUE;
 }
 
-BOOL CDlgFavorite::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
+bool CDlgFavorite::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
+	const auto hwndDlg = hWndDlg;
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 	HWND		hwndList;
 	HWND		hwndBaseList;
 	HWND		hwndTab;
