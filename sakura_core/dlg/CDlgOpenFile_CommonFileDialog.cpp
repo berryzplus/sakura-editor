@@ -12,7 +12,7 @@
 	Copyright (C) 2004, genta
 	Copyright (C) 2005, novice, ryoji
 	Copyright (C) 2006, ryoji, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -200,6 +200,13 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 	LPARAM lParam 	// message parameter
 )
 {
+	const auto hWndDlg = hdlg;
+	CDlgOpenFileData* pData = nullptr;
+	if (WM_INITDIALOG != uiMsg && hdlg) {
+		pData = (CDlgOpenFileData*)::GetWindowLongPtrW(hdlg, DWLP_USER);
+		if (!pData || !pData->m_hwndOpenDlg || !pData->m_hwndComboCODES || !pData->m_hwndCheckBOM || !pData->m_hwndComboMRU || !pData->m_hwndComboOPENFOLDER) return 0;
+	}
+
 	POINT					po;
 	RECT					rc;
 	int						i;
@@ -239,11 +246,10 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 //		MYTRACE( L"WM_MOVE 2\n" );
 		break;
 	case WM_SIZE:
-		{
+		if (pData) {
 			nWidth = LOWORD(lParam);	// width of client area
 
 			/* 「開く」ダイアログのサイズと位置 */
-			CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
 			hwndFrame = ::GetParent( hdlg );
 			::GetWindowRect( hwndFrame, &pData->m_pcDlgOpenFile->m_pShareData->m_Common.m_sOthers.m_rcOpenDialog );
 
@@ -254,8 +260,9 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 			::ScreenToClient( hdlg, &po );
 			::SetWindowPos( pData->m_hwndComboMRU, nullptr, 0, 0, nWidth - po.x - nRightMargin, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER );
 			::SetWindowPos( pData->m_hwndComboOPENFOLDER, nullptr, 0, 0, nWidth - po.x - nRightMargin, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER );
-			return 0;
 		}
+		return 0;
+
 	case WM_INITDIALOG:
 		{
 			UpdateDialogFont( hdlg );
@@ -263,8 +270,9 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 			// Save off the long pointer to the OPENFILENAME structure.
 			// Modified by KEITA for WIN64 2003.9.6
 			OPENFILENAME* pOfn = (OPENFILENAME*)lParam;
-			CDlgOpenFileData* pData = reinterpret_cast<CDlgOpenFileData*>(pOfn->lCustData);
-			::SetWindowLongPtr(hdlg, DWLP_USER, (LONG_PTR)pData);
+			pData = std::bit_cast<CDlgOpenFileData*>(pOfn->lCustData);
+			if (!pData) return TRUE;
+			::SetWindowLongPtrW(hdlg, DWLP_USER, LONG_PTR(pData));
 			pData->m_pOf = pOfn;
 
 			/* Explorerスタイルの「開く」ダイアログのハンドル */
@@ -378,8 +386,7 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 		switch( pofn->hdr.code ){
 		case CDN_FILEOK:
 			// 拡張子の補完を自前で行う	// 2006.11.10 ryoji
-			{
-				CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
+			if (pData) {
 				if( pData->m_bIsSaveDialog ){
 					WCHAR szDefExt[_MAX_EXT];	// 補完する拡張子
 					WCHAR szBuf[_MAX_PATH + _MAX_EXT];	// ワーク
@@ -466,17 +473,15 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 
 		case CDN_FOLDERCHANGE  :
 //			MYTRACE( L"pofn->hdr.code=CDN_FOLDERCHANGE  \n" );
-			{
+			if (pData) {
 				wchar_t szFolder[_MAX_PATH];
-				CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
 				lRes = CommDlg_OpenSave_GetFolderPath( pData->m_hwndOpenDlg, szFolder, int(std::size(szFolder)) );
 			}
 //			MYTRACE( L"\tlRes=%d\pszFolder=[%ls]\n", lRes, szFolder );
 
 			break;
 		case CDN_SELCHANGE :
-			{
-				CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
+			if (pData) {
 				if( pData->m_ofn.Flags & OFN_ALLOWMULTISELECT ){
 					DWORD nLength = CommDlg_OpenSave_GetSpec( pData->m_hwndOpenDlg, nullptr, 0 );
 					nLength += _MAX_PATH + 2;
@@ -505,13 +510,13 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 			//	From Here Jul. 26, 2003 ryoji
 			//	文字コードの変更をBOMチェックボックスに反映
 			case IDC_COMBO_CODE:
-				{
-					CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
+				if (pData) {
 					nIdx = ApiWrap::Combo_GetCurSel( (HWND) lParam );
 					lRes = ApiWrap::Combo_GetItemData( (HWND) lParam, nIdx );
 					CCodeTypeName	cCodeTypeName( lRes );
-					if (cCodeTypeName.UseBom()) {
-						::EnableWindow( pData->m_hwndCheckBOM, TRUE );
+					const auto bUseBom = cCodeTypeName.UseBom();
+					ApiWrap::EnableDlgItem(hWndDlg, IDC_CHECK_BOM, bUseBom);
+					if (bUseBom) {
 						if (lRes == pData->m_nCharCode){
 							fCheck = pData->m_bBom? BST_CHECKED: BST_UNCHECKED;
 						}else{
@@ -519,17 +524,15 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 						}
 					}
 					else {
-						::EnableWindow( pData->m_hwndCheckBOM, FALSE );
 						fCheck = BST_UNCHECKED;
 					}
-					ApiWrap::BtnCtl_SetCheck( pData->m_hwndCheckBOM, fCheck );
+					ApiWrap::CheckDlgButton(hWndDlg, IDC_CHECK_BOM, fCheck);
 				}
 				break;
 			//	To Here Jul. 26, 2003 ryoji
 			case IDC_COMBO_MRU:
 			case IDC_COMBO_OPENFOLDER:
-				{
-					CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
+				if (pData) {
 					WCHAR	szWork[_MAX_PATH + 1];
 					nIdx = ApiWrap::Combo_GetCurSel( (HWND) lParam );
 
@@ -551,9 +554,7 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 			}
 			break;	/* CBN_SELCHANGE */
 		case CBN_DROPDOWN:
-			{
-				CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
-
+			if (pData) {
 				switch( wID ){
 				case IDC_COMBO_MRU:
 					if ( ApiWrap::Combo_GetCount( pData->m_hwndComboMRU ) == 0) {
@@ -586,11 +587,8 @@ UINT_PTR CALLBACK CDlgOpenFile_CommonFileDialog::OFNHookProc(
 		case BN_CLICKED:
 			switch( wID ){
 			case IDC_CHECK_CP:
-				{
-					CDlgOpenFileData* pData = (CDlgOpenFileData*)::GetWindowLongPtr(hdlg, DWLP_USER);
-					if( IsDlgButtonCheckedBool( hdlg, IDC_CHECK_CP ) ){
-						AddComboCodePages( hdlg, pData->m_hwndComboCODES, -1, pData->m_bInitCodePage );
-					}
+				if (pData && ApiWrap::IsDlgButtonChecked(hWndDlg, IDC_CHECK_CP)) {
+					AddComboCodePages( hdlg, pData->m_hwndComboCODES, -1, pData->m_bInitCodePage );
 				}
 				break;
 			default:
