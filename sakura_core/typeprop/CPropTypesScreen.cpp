@@ -190,7 +190,6 @@ static bool isImeUndesirable(int id)
 INT_PTR	CPropTypesScreen::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	HWND		hwndCtl;

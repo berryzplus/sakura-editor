@@ -93,7 +93,6 @@ static bool isImeUndesirable(int id)
 INT_PTR	CPropWin::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 // From Here Sept. 9, 2000 JEPRO
 	WORD		wNotifyCode;
 	WORD		wID;

@@ -85,7 +85,6 @@ static bool isImeUndesirable(int id)
 INT_PTR	CPropMacro::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 	int			idCtrl;
 

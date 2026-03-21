@@ -70,7 +70,6 @@ INT_PTR CALLBACK CPropHelper::DlgProc_page(
 INT_PTR	CPropHelper::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	NMHDR*		pNMHDR;

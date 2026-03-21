@@ -90,7 +90,6 @@ LRESULT CALLBACK CPropComKeybindWndProc( [[maybe_unused]] HWND hwndDlg, UINT uMs
 INT_PTR	CPropKeybind::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	WORD		wNotifyCode;
 	WORD		wID;
 	HWND		hwndCtl;

@@ -2037,9 +2037,7 @@ void CPrintPreview::SetFocusToPrintPreviewBar( void )
 INT_PTR	CPrintPreview::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	const auto hWndDlg = hwndDlg;
-
 	WORD				wNotifyCode;
 	WORD				wID;
 

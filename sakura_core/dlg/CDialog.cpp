@@ -417,7 +417,6 @@ void CDialog::CreateSizeBox( void )
 INT_PTR	CDialog::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 //	DEBUG_TRACE( L"CDialog::DispatchEvent() uMsg == %xh\n", uMsg );
 	switch( uMsg ){
 	case WM_DESTROY:	return OnDestroy();

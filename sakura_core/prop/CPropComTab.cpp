@@ -80,7 +80,6 @@ INT_PTR CALLBACK CPropTab::DlgProc_page(
 INT_PTR	CPropTab::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 //	int			idCtrl;
 

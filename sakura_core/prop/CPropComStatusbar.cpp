@@ -51,7 +51,6 @@ INT_PTR CALLBACK CPropStatusbar::DlgProc_page(
 INT_PTR	CPropStatusbar::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	NMHDR*		pNMHDR;
 
 	switch( uMsg ){

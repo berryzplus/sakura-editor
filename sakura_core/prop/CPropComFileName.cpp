@@ -90,7 +90,6 @@ INT_PTR CALLBACK CPropFileName::DlgProc_page(
 INT_PTR	CPropFileName::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto uMsg = uMsg;
 	HWND	hListView;
 	int		nIndex;
 	WCHAR	szFrom[_MAX_PATH];
