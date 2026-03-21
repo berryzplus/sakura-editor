@@ -59,7 +59,7 @@ public:
 	BOOL DoHokan(int nVKey);
 	void ChangeView(LPARAM pcEditView);/* モードレス時：対象となるビューの変更 */
 
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 

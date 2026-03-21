@@ -88,7 +88,7 @@ public:
 		return nullptr;
 	}
 
-	INT_PTR	DispatchEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 protected:
 	/*

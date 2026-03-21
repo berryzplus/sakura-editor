@@ -76,7 +76,7 @@ public:
 	EDockSide GetDockSide() { return m_eDockSide; }
 
 protected:
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;	// 2007.11.07 ryoji 標準以外のメッセージを捕捉する
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	CommonSetting_OutLine& CommonSet(void){ return m_pShareData->m_Common.m_sOutline; }
 	STypeConfig& TypeSet(void){ return m_type; }

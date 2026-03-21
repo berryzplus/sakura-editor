@@ -50,7 +50,7 @@ class CDlgAbout final : public CDialog
 public:
 	int DoModal(HINSTANCE hInstance, HWND hwndParent);	/* モーダルダイアログの表示 */
 	//	Nov. 7, 2000 genta	標準以外のメッセージを捕捉する
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;

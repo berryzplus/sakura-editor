@@ -128,7 +128,7 @@ protected:
 	//                      各プロパティページ                     //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得
@@ -151,7 +151,7 @@ protected:
 class CPropTypesScreen : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得
@@ -170,7 +170,7 @@ public:
 class CPropTypesWindow : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得
@@ -188,7 +188,7 @@ private:
 class CPropTypesColor : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	void SetDataKeyword(HWND hwndDlg);									//!< セット名コンボボックスの値セット
@@ -212,7 +212,7 @@ public:
 class CPropTypesSupport : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得
@@ -227,7 +227,7 @@ public:
 class CPropTypesRegex : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	void SetDataKeywordList(HWND hwndDlg);								//!< ダイアログデータの設定リスト部分
@@ -246,7 +246,7 @@ private:
 class CPropTypesKeyHelp : public CPropTypes
 {
 public:
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);			//!< メッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 protected:
 	void SetData(HWND hwndDlg);											//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);											//!< ダイアログデータの取得

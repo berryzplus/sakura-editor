@@ -34,7 +34,7 @@ public:
 protected:
 
 	LPVOID GetHelpIdTable( void ) override;
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;	//! ダイアログのメッセージ処理
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;			//!< WM_INITDIALOG 処理
 	BOOL OnBnClicked( int wID ) override;							//!< BN_CLICKED 処理
 	BOOL OnDrawItem( WPARAM wParam, LPARAM lParam ) override;	//!< WM_DRAWITEM 処理

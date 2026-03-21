@@ -43,7 +43,7 @@ protected:
 	BOOL OnLbnDblclk(int wID) override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam ) override;
-	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData() override;	/* ダイアログデータの設定 */
 	void SetData(int selIdx);	/* ダイアログデータの設定 */
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add

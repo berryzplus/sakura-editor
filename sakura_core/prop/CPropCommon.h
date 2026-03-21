@@ -153,7 +153,7 @@ protected:
 	int m_nLastPos_FILENAME; //!< 前回フォーカスのあった場所 ファイル名タブ用
 
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 	void Import(HWND hwndDlg);	//!< インポートする
@@ -180,7 +180,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 };
@@ -195,7 +195,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -214,7 +214,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -235,7 +235,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -255,7 +255,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -281,7 +281,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	void SetDataMenuList(HWND hwndDlg, int nIdx);
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
@@ -299,7 +299,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -321,7 +321,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 };
@@ -336,7 +336,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -357,7 +357,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -376,7 +376,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -394,7 +394,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -412,7 +412,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -430,7 +430,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -455,7 +455,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -475,7 +475,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 };
@@ -492,7 +492,7 @@ public:
 	bool BrowseReadMe(const std::wstring& sReadMeName);		//	Readme ファイルの表示
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 
@@ -512,7 +512,7 @@ public:
 		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 protected:
 	//! Message Handler
-	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
 	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
 	void Import(HWND hwndDlg);	//!< メニュー設定をインポートする
