@@ -187,13 +187,13 @@ TEST(ApiWrap, DlgItemTest001) {
 		}
 
 		bool OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override {
-			const auto hDlg = hWndDlg;
 			const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-			OnFirstIdle(hDlg);
 
-			::EndDialog(hDlg, IDCANCEL);
+			OnFirstIdle(hWndDlg);
 
-			return TRUE;
+			::EndDialog(hWndDlg, IDCANCEL);
+
+			return bRet;
 		}
 
 		void OnFirstIdle(HWND hDlg) const {

@@ -325,7 +325,7 @@ bool CDlgReplace::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
+
 	//	Jun. 26, 2001 genta
 	//	この位置で正規表現の初期化をする必要はない
 	//	他との一貫性を保つため削除
@@ -353,9 +353,6 @@ bool CDlgReplace::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
-
-	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
-	if( !bRet ) return bRet;
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );

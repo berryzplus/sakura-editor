@@ -107,9 +107,7 @@ int CDlgSameColor::DoModal( HINSTANCE hInstance, HWND hwndParent, WORD wID, STyp
 */
 bool CDlgSameColor::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 
 	HWND hwndStatic = GetItemHwnd( IDC_STATIC_COLOR );
 	HWND hwndList = GetItemHwnd( IDC_LIST_COLORS );

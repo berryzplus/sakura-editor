@@ -294,9 +294,7 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCur
 
 bool CDlgGrep::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
 
 	/* カレントフォルダーが初期値 */
 	if((m_szFolder[0] == L'\0' || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder) &&
@@ -350,9 +348,6 @@ bool CDlgGrep::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_EXCLUDE_FILE), &m_cRecentExcludeFile);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_EXCLUDE_FOLDER), &m_cRecentExcludeFolder);
-
-	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
-	if( !bRet ) return bRet;
 
 	// フォント設定	2012/11/27 Uchi
 	const int nItemIds[] = { IDC_COMBO_TEXT, IDC_COMBO_FILE, IDC_COMBO_FOLDER, IDC_COMBO_EXCLUDE_FILE, IDC_COMBO_EXCLUDE_FOLDER };

@@ -143,9 +143,7 @@ int CDlgAbout::DoModal( HINSTANCE hInstance, HWND hwndParent )
 */
 bool CDlgAbout::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
-	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
+	(void) CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
 
 	WCHAR			szFile[_MAX_PATH];
 
@@ -243,9 +241,6 @@ bool CDlgAbout::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		ApiWrap::StCtl_SetIcon( hIconWnd, hIcon );
 	}
 	//	To Here Dec. 2, 2002 genta
-
-	/* 基底クラスメンバ */
-	(void)CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
 
 	// URLウィンドウをサブクラス化する
 	m_UrlUrWnd.SetSubclassWindow( GetItemHwnd( IDC_STATIC_URL_UR ) );

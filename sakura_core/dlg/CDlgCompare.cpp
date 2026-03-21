@@ -243,7 +243,6 @@ bool CDlgCompare::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd(hwndDlg);
 
 	CreateSizeBox();
 	CDialog::OnSize();
@@ -266,7 +265,7 @@ bool CDlgCompare::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgCompare::OnDestroy( void )

@@ -47,9 +47,7 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 
 bool CDlgSetCharSet::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
 	
 	m_hwndCharSet = GetItemHwnd( IDC_COMBO_CHARSET );	// 文字コードセットコンボボックス
 	m_hwndCheckBOM = GetItemHwnd( IDC_CHECK_BOM );		// BOMチェックボックス
@@ -66,8 +64,7 @@ bool CDlgSetCharSet::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		ApiWrap::Combo_SetItemData( m_hwndCharSet, idx, cCodeTypes.GetCode(i) );
 	}
 
-	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgSetCharSet::OnBnClicked( int wID )

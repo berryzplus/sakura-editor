@@ -95,15 +95,15 @@ void CDlgFind::ChangeView( LPARAM pcEditView )
 
 bool CDlgFind::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwnd = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
+
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 
 	// フォント設定	2012/11/27 Uchi
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
 	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
+
 	return bRet;
 }
 

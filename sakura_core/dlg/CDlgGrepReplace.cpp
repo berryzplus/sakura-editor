@@ -128,17 +128,12 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 
 bool CDlgGrepReplace::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
-	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
+	const auto bRet = CDlgGrep::OnInitDialog(hWndDlg, hWndFocus, lParam);
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	ApiWrap::Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
-
-	BOOL bRet = CDlgGrep::OnInitDialog( hwndDlg, wParam, lParam );
-	if( !bRet ) return bRet;
 
 	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT2 ), WM_GETFONT, 0, 0 );
 	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT2 ) );

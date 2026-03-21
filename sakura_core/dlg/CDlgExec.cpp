@@ -69,9 +69,7 @@ int CDlgExec::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 
 bool CDlgExec::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwnd = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwnd );
 	
 	ECodeType codes[] = { CODE_SJIS, CODE_UNICODE, CODE_UTF8 };
 	HWND hwndCombo;
@@ -85,9 +83,9 @@ bool CDlgExec::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		ApiWrap::Combo_AddString( hwndCombo, CCodeTypeName(codes[i]).Normal() );
 	}
 
-	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_m_szCommand), &m_cRecentCmd);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_CUR_DIR), &m_cRecentCur);
+
 	return bRet;
 }
 

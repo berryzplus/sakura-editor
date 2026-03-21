@@ -76,9 +76,7 @@ int CDlgWinSize::DoModal(
 */
 bool CDlgWinSize::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
 
 	ApiWrap::Combo_AddString( GetItemHwnd( IDC_COMBO_WINTYPE ), LS( STR_DLGWINSZ_NORMAL ) );	//L"普通"
 	ApiWrap::Combo_AddString( GetItemHwnd( IDC_COMBO_WINTYPE ), LS( STR_DLGWINSZ_MAXIMIZE ) );	//L"最大化"
@@ -90,7 +88,7 @@ bool CDlgWinSize::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	ApiWrap::UpDown_SetRange( GetItemHwnd( IDC_SPIN_WX ), 30000, -30000 );
 	ApiWrap::UpDown_SetRange( GetItemHwnd( IDC_SPIN_WY ), 30000, -30000 );
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgWinSize::OnBnClicked( int wID )

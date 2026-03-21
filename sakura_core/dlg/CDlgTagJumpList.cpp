@@ -395,15 +395,13 @@ int CDlgTagJumpList::GetData( void )
 bool CDlgTagJumpList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
-	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+	(void) CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
 	long		lngStyle;
-	BOOL		bRet;
-
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
+	bool		bRet;
 
 	CreateSizeBox();
 	CDialog::OnSize();
@@ -424,9 +422,6 @@ bool CDlgTagJumpList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		m_nWidth = rcDialog.right - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
-
-	// ウィンドウのリサイズ
-	SetDialogPosSize();
 
 	//リストビューの表示位置を取得する。
 	hwndList = ::GetDlgItem( hwndDlg, IDC_LIST_TAGJUMP );
@@ -501,9 +496,6 @@ bool CDlgTagJumpList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 
 	SetComboBoxDeleter(hwndKey, &m_cRecentKeyword);
 
-	/* 基底クラスメンバ */
-	CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
-	
 	return bRet;
 }
 

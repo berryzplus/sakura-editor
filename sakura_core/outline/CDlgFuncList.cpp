@@ -1686,12 +1686,11 @@ bool CDlgFuncList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
 	m_bStretching = false;
 	m_bHovering = false;
 	m_nHilightedBtn = -1;
 	m_nCapturingBtn = -1;
-
-	_SetHwnd( hwndDlg );
 
 	HWND		hwndList;
 	int			nCxVScroll;
@@ -1881,7 +1880,7 @@ bool CDlgFuncList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		}
 	}
 
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgFuncList::OnBnClicked( int wID )

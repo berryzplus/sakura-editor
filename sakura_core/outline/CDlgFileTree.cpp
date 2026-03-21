@@ -332,9 +332,8 @@ int CDlgFileTree::GetDataItem( SFileTreeItem& item )
 
 bool CDlgFileTree::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd(hwndDlg);
+
 	SFileTreeItem item;
 
 	ApiWrap::EditCtl_LimitText(GetItemHwnd(IDC_EDIT_DEFINI), m_fileTreeSetting.m_szDefaultProjectIni.GetBufferCount() -1);
@@ -346,8 +345,7 @@ bool CDlgFileTree::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	m_pcDlgFuncList->LoadFileTreeSetting(m_fileTreeSetting, path);
 	SetDataInit();
 
-	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog(GetHwnd(), wParam, lParam);
+	return bRet;
 }
 
 void CDlgFileTree::SetDataInit()

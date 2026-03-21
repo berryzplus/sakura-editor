@@ -72,9 +72,8 @@ HWND CDlgCancel::DoModeless( HINSTANCE hInstance, HWND hwndParent, int nDlgTempl
 
 bool CDlgCancel::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
+
 	HICON	hIcon;
 	hIcon = ::LoadIcon( nullptr, IDI_ASTERISK );
 //	hIcon = ::LoadIcon( m_hInstance, MAKEINTRESOURCE( IDI_ICON_GREP ) );
@@ -83,9 +82,7 @@ bool CDlgCancel::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_BIG, (LPARAM)nullptr );
 	::SendMessageAny( GetHwnd(), WM_SETICON, ICON_BIG, (LPARAM)hIcon );
 
-	/* 基底クラスメンバ */
-//	CreateSizeBox();
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgCancel::OnBnClicked( int wID )

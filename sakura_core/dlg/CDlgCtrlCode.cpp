@@ -184,11 +184,10 @@ bool CDlgCtrlCode::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
-
-	_SetHwnd( hwndDlg );
 
 	hwndList = GetDlgItem( hwndDlg, IDC_LIST_CTRLCODE );
 	::GetWindowRect( hwndList, &rc );
@@ -221,8 +220,7 @@ bool CDlgCtrlCode::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	col.iSubItem = 3;
 	ListView_InsertColumn( hwndList, 3, &col );
 
-	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgCtrlCode::OnBnClicked( int wID )

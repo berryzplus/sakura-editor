@@ -196,7 +196,6 @@ bool CDlgWindowList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd(hwndDlg);
 
 	CreateSizeBox();
 
@@ -216,7 +215,6 @@ bool CDlgWindowList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		m_nWidth = rcDialog.right - rcDialog.left;
 		m_nHeight = rcDialog.bottom - rcDialog.top;
 	}
-	SetDialogPosSize();
 	OnSize(0, 0);
 
 	HWND hwndList = GetItemHwnd(IDC_LIST_WINDOW);
@@ -237,7 +235,8 @@ bool CDlgWindowList::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 
 	::SetForegroundWindow(hwndDlg);
 	::BringWindowToTop(hwndDlg);
-	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
+
+	return bRet;
 }
 
 BOOL CDlgWindowList::OnDestroy( void )

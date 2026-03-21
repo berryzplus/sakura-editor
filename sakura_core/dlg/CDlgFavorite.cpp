@@ -361,9 +361,6 @@ bool CDlgFavorite::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	int			nTab;
 	long		lngStyle;
 
-	_SetHwnd( hwndDlg );
-	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
-
 	::GetWindowRect( hwndDlg, &rc );
 	m_ptDefaultSize.x = rc.right - rc.left;
 	m_ptDefaultSize.y = rc.bottom - rc.top;
@@ -392,9 +389,6 @@ bool CDlgFavorite::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 		GetItemClientRect( m_aFavoriteInfo[0].m_nId, rc );
 		m_rcListDefault = rc;
 	}
-
-	// ウィンドウのリサイズ
-	SetDialogPosSize();
 
 	hwndTab = ::GetDlgItem( hwndDlg, IDC_TAB_FAVORITE );
 	TabCtrl_DeleteAllItems( hwndTab );
@@ -466,7 +460,7 @@ bool CDlgFavorite::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	TabCtrl_SetCurSel( hwndTab, m_nCurrentTab );
 	//ChangeSlider( m_nCurrentTab );
 
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgFavorite::OnDestroy( void )

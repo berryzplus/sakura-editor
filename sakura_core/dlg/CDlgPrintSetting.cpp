@@ -128,9 +128,7 @@ int CDlgPrintSetting::DoModal(
 
 bool CDlgPrintSetting::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
-	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	_SetHwnd( hwndDlg );
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	ApiWrap::Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_SETTINGNAME ), TRUE );
@@ -143,7 +141,7 @@ bool CDlgPrintSetting::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	//	::SetTimer( GetHwnd(), IDT_PRINTSETTING, 500, NULL );
 	//UpdatePrintableLineAndColumn();
 
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgPrintSetting::OnDestroy( void )

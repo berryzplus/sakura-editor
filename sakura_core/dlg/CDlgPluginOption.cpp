@@ -272,12 +272,11 @@ bool CDlgPluginOption::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 {
 	const auto hwndDlg = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
 	long		lngStyle;
-
-	_SetHwnd( hwndDlg );
 
 	hwndList = GetDlgItem( hwndDlg, IDC_LIST_PLUGIN_OPTIONS );
 	::GetWindowRect( hwndList, &rc );
@@ -315,8 +314,7 @@ bool CDlgPluginOption::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
 	ApiWrap::EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_PLUGIN_OPTION_DIR ), _MAX_PATH );
 	ApiWrap::EditCtl_LimitText( GetDlgItem( hwndDlg, IDC_EDIT_PLUGIN_OPTION_NUM ), 11 );
 
-	/* 基底クラスメンバ */
-	return CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
+	return bRet;
 }
 
 BOOL CDlgPluginOption::OnNotify(NMHDR* pNMHDR)

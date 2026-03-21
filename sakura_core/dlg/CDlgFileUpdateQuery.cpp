@@ -23,11 +23,11 @@ bool CDlgFileUpdateQuery::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lPar
 {
 	const auto hWnd = hWndDlg;
 	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
-	ApiWrap::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
-	ApiWrap::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ?
-		LS(STR_ERR_DLGUPQRY1):LS(STR_ERR_DLGUPQRY2) );
 
-	return CDialog::OnInitDialog( hWnd, wParam, lParam );
+	ApiWrap::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
+	ApiWrap::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ? LS(STR_ERR_DLGUPQRY1) : LS(STR_ERR_DLGUPQRY2) );
+
+	return bRet;
 }
 
 /*!
