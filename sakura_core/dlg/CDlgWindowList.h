@@ -26,7 +26,7 @@ protected:
 	BOOL	OnBnClicked(int wID) override;
 	LPVOID	GetHelpIdTable() override;
 	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL OnDestroy( void ) override;
 	BOOL OnSize(WPARAM wParam, LPARAM lParam) override;
 	BOOL OnMinMaxInfo(LPARAM lParam);

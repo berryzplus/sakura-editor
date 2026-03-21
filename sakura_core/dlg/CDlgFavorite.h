@@ -47,7 +47,7 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
-	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+	bool	OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam) override;
 	BOOL	OnDestroy( void ) override;
 	BOOL	OnBnClicked(int wID) override;
 	BOOL	OnNotify(NMHDR* pNMHDR) override;
