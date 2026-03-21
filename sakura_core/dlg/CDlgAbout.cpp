@@ -114,7 +114,7 @@ INT_PTR	CDlgAbout::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPAR
 	const auto hWnd = hWndDlg;
 	const auto wMsg = uMsg;
 	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 	switch( wMsg ){
 	case WM_CTLCOLORDLG:
 	case WM_CTLCOLORSTATIC:

@@ -188,7 +188,7 @@ INT_PTR	CDlgTypeList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	HWND hwndDblClick = GetItemHwnd( IDC_CHECK_EXT_DBLCLICK );
 
 	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 	switch( wMsg ){
 	case WM_COMMAND:
 		{

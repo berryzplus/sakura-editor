@@ -107,7 +107,7 @@ INT_PTR	CDlgInput1::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPA
 		break;
 	}
 
-	return CDialog::DispatchEvent(hwndDlg, uMsg, wParam, lParam);
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 bool CDlgInput1::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)

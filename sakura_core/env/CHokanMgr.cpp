@@ -355,7 +355,7 @@ INT_PTR	CHokanMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPAR
 	}
 
 	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 	switch( wMsg ){
 	case WM_MOUSEACTIVATE:
 		// アクティブにしないでおく

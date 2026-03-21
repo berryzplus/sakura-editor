@@ -2123,7 +2123,7 @@ INT_PTR	CPrintPreview::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, 
 	default:
 		break;
 	}
-	return CDialog::DispatchEvent(hWndDlg, uMsg, wParam, lParam);
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 // 印刷用フォントを作成する

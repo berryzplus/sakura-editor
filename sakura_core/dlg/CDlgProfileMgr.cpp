@@ -263,7 +263,7 @@ INT_PTR	CDlgProfileMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam,
 	const auto hWnd = hWndDlg;
 	const auto wMsg = uMsg;
 	INT_PTR result;
-	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
+	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 	switch( wMsg ){
 	case WM_COMMAND:
 		{

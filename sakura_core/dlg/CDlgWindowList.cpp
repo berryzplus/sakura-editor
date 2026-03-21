@@ -186,7 +186,7 @@ INT_PTR	CDlgWindowList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam,
 	const auto hWnd = hWndDlg;
 	const auto wMsg = uMsg;
 	INT_PTR result;
-	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 
 	if (wMsg == WM_GETMINMAXINFO) {
 		return OnMinMaxInfo(lParam);
