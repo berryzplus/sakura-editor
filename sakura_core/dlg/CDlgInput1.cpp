@@ -9,13 +9,14 @@
 	Copyright (C) 2002, MIK
 	Copyright (C) 2003, KEITA
 	Copyright (C) 2006, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
-*/
+ */
 #include "StdAfx.h"
 #include "dlg/CDlgInput1.h"
+
 #include "CEditApp.h"
 #include "Funccode_enum.h"	// EFunctionCode
 #include "util/shell.h"
@@ -35,36 +36,28 @@ static const DWORD p_helpids[] = {	//13000
 	0, 0
 };	//@@@ 2002.01.07 add end MIK
 
-/* ダイアログプロシージャ */
-INT_PTR CALLBACK CDlgInput1Proc(
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,		// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam 	// second message parameter
-)
+CDlgInput1::CDlgInput1()
+	: CDialog(false, false)
 {
-	CDlgInput1* pCDlgInput1;
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		pCDlgInput1 = ( CDlgInput1* )lParam;
-		if( nullptr != pCDlgInput1 ){
-			UpdateDialogFont( hwndDlg );
-			return pCDlgInput1->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
-	default:
-		// Modified by KEITA for WIN64 2003.9.6
-		pCDlgInput1 = ( CDlgInput1* )::GetWindowLongPtr( hwndDlg, DWLP_USER );
-		if( nullptr != pCDlgInput1 ){
-			return pCDlgInput1->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
-		}else{
-			return FALSE;
-		}
-	}
 }
 
-/* モードレスダイアログの表示 */
+/* モーダルダイアログの表示 */
+bool CDlgInput1::DoModal(
+	HWND				hwndParent,
+	std::wstring_view	title,
+	std::wstring_view	message,
+	std::span<WCHAR>	buffer
+)
+{
+	m_Title = title;
+	m_Message = message;
+	m_Text = buffer;
+
+	const auto unusedArg1 = nullptr;
+	return (BOOL) CDialog::DoModal(unusedArg1, hwndParent, IDD_INPUT1, 0L);
+}
+
+/* モーダルダイアログの表示 */
 BOOL CDlgInput1::DoModal(
 	HINSTANCE		hInstApp,
 	HWND			hwndParent,
@@ -74,24 +67,21 @@ BOOL CDlgInput1::DoModal(
 	WCHAR*			pszText
 )
 {
-	const auto nMaxTextLen = int(bufferSize);
-	BOOL bRet;
-	m_hInstance = hInstApp;		/* アプリケーションインスタンスのハンドル */
-	m_hwndParent = hwndParent;	/* オーナーウィンドウのハンドル */
-	m_pszTitle = pszTitle;		/* ダイアログタイトル */
-	m_pszMessage = pszMessage;		/* メッセージ */
-	m_nMaxTextLen = nMaxTextLen;	/* 入力サイズ上限 */
-//	m_pszText = pszText;			/* テキスト */
-	m_cmemText.SetString( pszText );
-	bRet = (BOOL)::DialogBoxParam(
-		CSelectLang::getLangRsrcInstance(),
-		MAKEINTRESOURCE( IDD_INPUT1 ),
-		m_hwndParent,
-		CDlgInput1Proc,
-		(LPARAM)this
-	);
-	wcscpy( pszText, m_cmemText.GetStringPtr() );
-	return bRet;
+	return DoModal(hwndParent, pszTitle, pszMessage, std::span<WCHAR>(pszText, bufferSize + 1));
+}
+
+int CDlgInput1::GetData()
+{
+	const auto hWndDlg = GetHwnd();
+
+	auto result = ApiWrap::GetDlgItemTextW(hWndDlg, IDC_EDIT_INPUT1);
+	if (!result) return -1;
+
+	if (std::size(m_Text) <= std::size(result.text)) return -1;
+
+	::wcscpy_s(std::data(m_Text), std::size(m_Text), std::data(result.text));
+
+	return 1;
 }
 
 /* ダイアログのメッセージ処理 */
@@ -102,44 +92,7 @@ INT_PTR CDlgInput1::DispatchEvent(
 	LPARAM lParam 	// second message parameter
 )
 {
-	WORD	wNotifyCode;
-	WORD	wID;
-//	int		nRet;
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		/* ダイアログデータの設定 */
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( hwndDlg, DWLP_USER, lParam );
-
-		::SetWindowText( hwndDlg, m_pszTitle );	/* ダイアログタイトル */
-		ApiWrap::EditCtl_LimitText( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ), m_nMaxTextLen );	/* 入力サイズ上限 */
-		ApiWrap::DlgItem_SetText( hwndDlg, IDC_EDIT_INPUT1, m_cmemText.GetStringPtr() );	/* テキスト */
-		::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_MSG ), m_pszMessage );	/* メッセージ */
-
-		return TRUE;
-	case WM_COMMAND:
-		wNotifyCode = HIWORD(wParam);	/* 通知コード */
-		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
-		switch( wNotifyCode ){
-		/* ボタン／チェックボックスがクリックされた */
-		case BN_CLICKED:
-			switch( wID ){
-			case IDOK:
-				m_cmemText.AllocStringBuffer( ::GetWindowTextLength( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ) ) );
-				::GetWindowText( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ), m_cmemText.GetStringPtr(), m_nMaxTextLen + 1 );	/* テキスト */
-				::EndDialog( hwndDlg, TRUE );
-				return TRUE;
-			case IDCANCEL:
-				::EndDialog( hwndDlg, FALSE );
-				return TRUE;
-			default:
-				break;
-			}
-			break;	//@@@ 2002.01.07 add
-		default:
-			break;
-		}
-		break;	//@@@ 2002.01.07 add
+	switch (uMsg) {
 	//@@@ 2002.01.07 add start
 	case WM_HELP:
 		{
@@ -153,8 +106,44 @@ INT_PTR CDlgInput1::DispatchEvent(
 		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
 		return TRUE;
 	//@@@ 2002.01.07 add end
+
 	default:
 		break;
 	}
-	return FALSE;
+
+	return CDialog::DispatchEvent(hwndDlg, uMsg, wParam, lParam);
+}
+
+bool CDlgInput1::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
+{
+	const auto bRet = CDialog::OnInitDialog(hWndDlg, hWndFocus, lParam);
+
+	ApiWrap::SetWindowTextW(hWndDlg, m_Title);
+	ApiWrap::SetDlgItemTextW(hWndDlg, IDC_STATIC_MSG, m_Message);
+
+	ApiWrap::LimitEditText(::GetDlgItem(hWndDlg, IDC_EDIT_INPUT1), m_Text);
+	ApiWrap::SetDlgItemTextW(hWndDlg, IDC_EDIT_INPUT1, std::data(m_Text));
+
+	return bRet;
+}
+
+BOOL CDlgInput1::OnBnClicked(int wID)
+{
+	const auto hWndDlg = GetHwnd();
+
+	if (IDCANCEL == wID) {
+		::EndDialog(hWndDlg, FALSE);
+		return TRUE;
+	}
+
+	if (GetData() < 0) {
+		return TRUE;
+	}
+
+	if (IDOK != wID) {
+		return FALSE;
+	}
+
+	::EndDialog(hWndDlg, TRUE);
+	return TRUE;
 }
