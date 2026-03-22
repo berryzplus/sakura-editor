@@ -37,8 +37,6 @@ public:
 	int DoModal( HINSTANCE hInstance, HWND hwndParent, int* pnSet );
 
 protected:
-
-	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	int  GetData( void ) override;
 	void SetData( void ) override;

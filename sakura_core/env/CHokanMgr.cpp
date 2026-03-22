@@ -457,14 +457,6 @@ INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lP
 	return result;
 }
 
-BOOL CHokanMgr::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
-{
-	_SetHwnd( hwndDlg );
-	/* 基底クラスメンバ */
-//-	CreateSizeBox();
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
-}
-
 BOOL CHokanMgr::OnDestroy( void )
 {
 	/* 基底クラスメンバ */

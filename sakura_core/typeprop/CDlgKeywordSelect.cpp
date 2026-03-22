@@ -80,15 +80,6 @@ int CDlgKeywordSelect::DoModal( HINSTANCE hInstance, HWND hwndParent, int* pnSet
 	return TRUE;
 }
 
-/*! 初期化処理
-*/
-BOOL CDlgKeywordSelect::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
-{
-	_SetHwnd( hwndDlg );
-
-	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
-}
-
 BOOL CDlgKeywordSelect::OnBnClicked( int wID )
 {
 	switch( wID ){
