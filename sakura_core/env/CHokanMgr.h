@@ -61,7 +61,6 @@ public:
 
 	INT_PTR DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
 
-	BOOL OnDestroy( void ) override;
 	BOOL OnSize( WPARAM wParam, LPARAM lParam ) override;
 	BOOL OnLbnSelChange( HWND hwndCtl, int wID ) override;
 
