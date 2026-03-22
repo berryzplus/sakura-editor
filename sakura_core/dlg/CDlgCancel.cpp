@@ -27,11 +27,7 @@ CDlgCancel::CDlgCancel()
 */
 INT_PTR	CDlgCancel::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto hWnd = hWndDlg;
-	const auto wMsg = uMsg;
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-	switch( wMsg ){
+	switch (uMsg) {
 	case WM_CLOSE:
 		if( m_bAutoCleanup ){
 			::DestroyWindow( GetHwnd() );
@@ -47,7 +43,7 @@ INT_PTR	CDlgCancel::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPA
 	default:
 		break;
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 /** 自動破棄を遅延実行する

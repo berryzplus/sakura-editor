@@ -56,10 +56,7 @@ CDlgSameColor::~CDlgSameColor()
 INT_PTR	CDlgSameColor::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const auto hWnd = hWndDlg;
-	const auto wMsg = uMsg;
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-	switch( wMsg ){
+	switch (uMsg) {
 	case WM_COMMAND:
 		// 色選択リストボックスの選択が変更された場合の処理
 		if( IDC_LIST_COLORS == LOWORD(wParam) && LBN_SELCHANGE == HIWORD(wParam) ){
@@ -83,7 +80,7 @@ INT_PTR	CDlgSameColor::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, 
 	default:
 		break;
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 /*! モーダルダイアログの表示

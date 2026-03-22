@@ -1173,15 +1173,10 @@ static int CALLBACK CompareListViewFunc( LPARAM lParamItem1, LPARAM lParamItem2,
 
 INT_PTR	CDlgFavorite::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto hWnd = hWndDlg;
-	const auto wMsg = uMsg;
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-
-	if( wMsg == WM_GETMINMAXINFO ){
+	if (WM_GETMINMAXINFO == uMsg) {
 		return OnMinMaxInfo( lParam );
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 BOOL CDlgFavorite::OnSize( WPARAM wParam, LPARAM lParam )

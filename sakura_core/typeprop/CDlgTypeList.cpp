@@ -187,9 +187,7 @@ INT_PTR	CDlgTypeList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	HWND hwndRMenu = GetItemHwnd( IDC_CHECK_EXT_RMENU );
 	HWND hwndDblClick = GetItemHwnd( IDC_CHECK_EXT_DBLCLICK );
 
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-	switch( wMsg ){
+	switch (uMsg) {
 	case WM_COMMAND:
 		{
 		HWND hwndList = GetItemHwnd( IDC_LIST_TYPES );
@@ -308,7 +306,7 @@ INT_PTR	CDlgTypeList::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, L
 	default:
 		break;
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 /* ダイアログデータの設定 */

@@ -354,9 +354,7 @@ INT_PTR	CHokanMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPAR
 		return TRUE;
 	}
 
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-	switch( wMsg ){
+	switch (uMsg) {
 	case WM_MOUSEACTIVATE:
 		// アクティブにしないでおく
 		::SetWindowLongPtr( GetHwnd(), DWLP_MSGRESULT, MA_NOACTIVATE );
@@ -449,7 +447,7 @@ INT_PTR	CHokanMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPAR
 	default:
 		break;
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 bool CHokanMgr::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)

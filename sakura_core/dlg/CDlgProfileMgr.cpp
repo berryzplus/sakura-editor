@@ -260,11 +260,7 @@ BOOL CDlgProfileMgr::OnBnClicked( int wID )
 
 INT_PTR	CDlgProfileMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto hWnd = hWndDlg;
-	const auto wMsg = uMsg;
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-	switch( wMsg ){
+	switch (uMsg) {
 	case WM_COMMAND:
 		{
 			if( LOWORD(wParam) == IDC_LIST_PROFILE ){
@@ -285,7 +281,7 @@ INT_PTR	CDlgProfileMgr::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam,
 	default:
 		break;
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 void CDlgProfileMgr::UpdateIni()

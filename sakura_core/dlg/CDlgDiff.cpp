@@ -465,15 +465,10 @@ LPVOID CDlgDiff::GetHelpIdTable( void )
 
 INT_PTR	CDlgDiff::DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	const auto hWnd = hWndDlg;
-	const auto wMsg = uMsg;
-	INT_PTR result;
-	result = CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-
-	if( wMsg == WM_GETMINMAXINFO ){
+	if (WM_GETMINMAXINFO == uMsg) {
 		return OnMinMaxInfo( lParam );
 	}
-	return result;
+	return CDialog::DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
 }
 
 bool CDlgDiff::OnInitDialog(HWND hWndDlg, HWND hWndFocus, LPARAM lParam)
