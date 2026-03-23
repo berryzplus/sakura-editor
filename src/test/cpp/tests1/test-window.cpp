@@ -14,6 +14,7 @@
 #include "dlg/CDlgCancel.h"
 #include "dlg/CDlgCompare.h"
 #include "dlg/CDlgFileUpdateQuery.h"
+#include "dlg/CDlgInput1.h"
 #include "dlg/CDlgPluginOption.h"
 #include "dlg/CDlgPrintSetting.h"
 #include "dlg/CDlgTagJumpList.h"
@@ -31,6 +32,7 @@
 
 #include "_main/CCommandLine.h"
 #include "_main/CControlTray.h"
+#include "apiwrap/StdControl.h"
 #include "plugin/CJackManager.h"
 #include "plugin/CPluginManager.h"
 #include "prop/CPropCommon.h"
@@ -476,6 +478,32 @@ TEST_F(EditWndTest, ShowDlgGrepReplace101)
 	dialog::ModalDialogCloser closer;
 
 	pcEditWnd->GetActiveView().GetCommander().HandleCommand(F_GREP_REPLACE_DLG, true, 0, 0, 0, 0);
+}
+/*!
+ * 1行入力ダイアログの表示テスト
+ */
+TEST_F(EditWndTest, ShowDlgInputBox001)
+{
+	// 表示されたモーダルダイアログをOKボタンで閉じるようにする
+	dialog::ModalDialogCloser closer([] (HWND hWndDlg) {
+		// 不明なボタンIDで処理中断
+		::SendMessageW(hWndDlg, WM_COMMAND, MAKELONG(IDC_EDIT_INPUT1, BN_CLICKED), 0);
+
+		// 文字数超過で処理中断
+		ApiWrap::SetDlgItemTextW(hWndDlg, IDC_EDIT_INPUT1, L"test");
+		::SendMessageW(hWndDlg, WM_COMMAND, MAKELONG(IDOK, BN_CLICKED), 0);
+
+		// 適切な入力なら取り込む
+		ApiWrap::SetDlgItemTextW(hWndDlg, IDC_EDIT_INPUT1, L"tes");
+		::SendMessageW(hWndDlg, WM_COMMAND, MAKELONG(IDOK, BN_CLICKED), 0);
+	});
+
+	std::wstring buffer{ L"TES" };
+
+	CDlgInput1 dlg{};
+	EXPECT_THAT(dlg.DoModal(unusedArg1, pcEditWnd->GetHwnd(), L"title", L"message", std::size(buffer), std::data(buffer)), IsTrue());
+
+	EXPECT_THAT(buffer, StrEq(L"tes"));
 }
 
 /*!
