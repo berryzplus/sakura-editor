@@ -38,10 +38,14 @@
 
 #include "config/system_constants.h"
 
+#include <fstream>
+
 #include "tests1_rc.h"
 
 using namespace std::literals::string_literals;
 using namespace std::literals::string_view_literals;
+
+std::filesystem::path GetTempFilePathWithExt(std::wstring_view prefix, std::wstring_view extension);
 
 void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& optOutDir);
 
@@ -337,17 +341,6 @@ TEST_F(EditWndTest, ShowDlgFuncList001)
 	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
 
 	pcEditWnd->m_cDlgFuncList.CloseDialog(0);
-}
-
-/*!
- * 補完ダイアログの表示テスト
- */
-TEST_F(EditWndTest, ShowDlgHokan001)
-{
-	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"Complete()"), IsTrue());
-	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
-
-	pcEditWnd->m_cHokanMgr.CloseDialog(0);
 }
 
 /*!
@@ -759,6 +752,28 @@ TEST_F(EditWndTest, ShowDlgWindowList001)
 	CDlgWindowList cDlgWindowList;
 	const auto hWnd = pcEditWnd->GetHwnd();
 	cDlgWindowList.DoModal(unusedArg1, hWnd, 0);
+}
+
+/*!
+ * 補完ダイアログの表示テスト
+ */
+TEST_F(EditWndTest, ShowHokanMgr001)
+{
+	// データなしだとスカる
+	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"Complete()"), IsTrue());
+	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
+
+	// とりあえずデータを入れる
+	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"InsText('tes')"), IsTrue());
+	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
+
+	auto& cCaret = pcEditWnd->GetActiveView().GetCaret();
+	cCaret.SetCaretLayoutPos(CLayoutPoint(15, 0));
+
+	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"Complete()"), IsTrue());
+	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
+
+	pcEditWnd->m_cHokanMgr.CloseDialog(0);
 }
 
 /*!
