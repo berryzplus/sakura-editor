@@ -690,7 +690,7 @@ HWND CEditWnd::Create(
 		}
 
 // 一時的に無効化する
-#if 0
+#if 1
 		if( !m_bUIPI ){	// 返事が返らない
 			TopErrorMessage( GetHwnd(),
 				LS(STR_ERR_DLGEDITWND02)
