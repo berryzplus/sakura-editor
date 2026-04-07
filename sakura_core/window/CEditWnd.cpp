@@ -678,17 +678,13 @@ HWND CEditWnd::Create(
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
-		for (int repeat = 0; repeat < 3 && !m_bUIPI; ++repeat) {
-			::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd),
-				SMTO_NOTIMEOUTIFNOTHUNG | SMTO_ERRORONEXIT,
-				5000,
-				nullptr
-			);
+		for (const auto startTick = ::GetTickCount64(); !m_bUIPI && ::GetTickCount64() - startTick < 10000;) {
+			::SendMessageW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd));
 
 			// 少し待つ
 			::Sleep(100);
 		}
-
+		
 // 一時的に無効化する
 #if 1
 		if( !m_bUIPI ){	// 返事が返らない

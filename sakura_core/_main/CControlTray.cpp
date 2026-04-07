@@ -444,11 +444,7 @@ LRESULT CControlTray::DispatchEvent(
 
 	case MYWM_UIPI_CHECK:
 		/* エディタ－トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
-		::SendMessageTimeoutW(HWND(lParam), MYWM_UIPI_CHECK, 0L, 0L,	// 返事を返す
-			SMTO_NOTIMEOUTIFNOTHUNG | SMTO_ERRORONEXIT,
-			2500,
-			nullptr
-		);
+		::SendMessageW(HWND(lParam), MYWM_UIPI_CHECK, 0L, 0L);	// 返事を返す
 		return 0L;
 
 	case MYWM_HTMLHELP:
