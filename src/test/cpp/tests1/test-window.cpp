@@ -883,7 +883,7 @@ TEST_F(EditWndTest, LoadAndInvokeDllPlugin001)
 	const auto pluginPath = GetIniFileName().remove_filename().append(L"plugins");
 
 	// プラグイン定義を展開する
-	extract_zip_resource(IDR_ZIPRES1, pluginPath);
+	extract_zip_resource(IDR_ZIPRES4, pluginPath);
 
 	constexpr int pluginId = 2;
 

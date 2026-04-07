@@ -85,12 +85,24 @@ endif()
 
 # Create a custom target for test_resource_zip generation
 add_custom_target(test_resource_zip
-  COMMAND ${CMAKE_COMMAND} -E remove_directory "${TESTS1_RESOURCE_STAGE_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-plugin"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-plugin"
-  COMMAND ${CMAKE_COMMAND} -E make_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/src/test/resources/tests1/test-plugin
     ${TESTS1_RESOURCE_STAGE_DIR}/test-plugin
+  COMMAND ${7ZIP_EXECUTABLE}
+    u -tzip -r -mcu=on
+    ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-plugin
+    > NUL
+  BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+  COMMENT "Generating resources.ja-JP.zip"
+)
+
+# Create a custom target for test_dllplugin_zip generation
+add_custom_target(test_dllplugin_zip
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${TEST_DLLPLUGIN_DIR}
     ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin
@@ -99,13 +111,12 @@ add_custom_target(test_resource_zip
     ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin/tests1_dllplugin.dll
   COMMAND ${7ZIP_EXECUTABLE}
     u -tzip -r -mcu=on
-    ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
-    ${TESTS1_RESOURCE_STAGE_DIR}/test-plugin
+    ${CMAKE_BINARY_DIR}/resources-dllplugin.zip
     ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin
     > NUL
-  BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+  BYPRODUCTS ${CMAKE_BINARY_DIR}/resources-dllplugin.zip
   DEPENDS ${TEST_DLLPLUGIN_TARGET}
-  COMMENT "Generating resources.ja-JP.zip"
+  COMMENT "Generating resources-dllplugin.zip"
 )
 
 # define executable
@@ -172,6 +183,7 @@ add_dependencies(tests1
   sakura_lang_en_US
   sakura_lang_zh_CN
   test_resource_zip
+  test_dllplugin_zip
   generate_gtest
   generate_miniz
   ppa_stub
