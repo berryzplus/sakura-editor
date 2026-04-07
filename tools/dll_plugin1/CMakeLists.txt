@@ -32,7 +32,7 @@ target_compile_features(${project_name} PUBLIC cxx_std_20)
 
 set_target_properties(${project_name}
   PROPERTIES
-    OUTPUT_NAME "tests1_dllplugin"
+    OUTPUT_NAME "dll_plugin1"
     LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}"
     LINKER_LANGUAGE "CXX"
     PDB_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}"

@@ -8,7 +8,7 @@ Version=1.0.0
 Url=
 
 [Dll]
-Name=tests1_dllplugin.dll
+Name=dll_plugin1.dll
 
 [Plug]
 EditorStart=TestDllEditorStart
