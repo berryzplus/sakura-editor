@@ -75,32 +75,12 @@ endif(MINGW)
 set(TESTS1_RESOURCE_SCRIPTS ${CMAKE_SOURCE_DIR}/sakura_core/tests1_rc.rc)
 
 set(TEST_DLLPLUGIN_DIR "${CMAKE_SOURCE_DIR}/src/test/resources/tests1/test-dllplugin")
-set(TEST_DLLPLUGIN_TARGET tests1_dllplugin)
+set(TEST_DLLPLUGIN_TARGET dll_plugin1)
 set(TESTS1_RESOURCE_STAGE_DIR "${CMAKE_BINARY_DIR}/tests1_resources")
 
 if(MINGW)
   # Convert RC files to UTF-8 for MinGW
   convert_rc_files_to_utf8(TESTS1_RESOURCE_SCRIPTS "ja-JP" ${CMAKE_BINARY_DIR})
-endif()
-
-add_library(${TEST_DLLPLUGIN_TARGET} MODULE
-  ${TEST_DLLPLUGIN_DIR}/tests1_dllplugin.cpp
-)
-
-target_compile_features(${TEST_DLLPLUGIN_TARGET} PRIVATE cxx_std_20)
-
-set_target_properties(${TEST_DLLPLUGIN_TARGET}
-  PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
-    LIBRARY_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
-    PDB_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
-)
-
-if(MINGW)
-  set_target_properties(${TEST_DLLPLUGIN_TARGET}
-    PROPERTIES
-      PREFIX ""
-  )
 endif()
 
 # Create a custom target for test_resource_zip generation
