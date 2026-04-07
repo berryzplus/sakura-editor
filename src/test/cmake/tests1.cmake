@@ -74,19 +74,57 @@ endif(MINGW)
 # define resource files of tests1
 set(TESTS1_RESOURCE_SCRIPTS ${CMAKE_SOURCE_DIR}/sakura_core/tests1_rc.rc)
 
+set(TEST_DLLPLUGIN_DIR "${CMAKE_SOURCE_DIR}/src/test/resources/tests1/test-dllplugin")
+set(TEST_DLLPLUGIN_TARGET tests1_dllplugin)
+set(TESTS1_RESOURCE_STAGE_DIR "${CMAKE_BINARY_DIR}/tests1_resources")
+
 if(MINGW)
   # Convert RC files to UTF-8 for MinGW
   convert_rc_files_to_utf8(TESTS1_RESOURCE_SCRIPTS "ja-JP" ${CMAKE_BINARY_DIR})
 endif()
 
+add_library(${TEST_DLLPLUGIN_TARGET} MODULE
+  ${TEST_DLLPLUGIN_DIR}/tests1_dllplugin.cpp
+)
+
+target_compile_features(${TEST_DLLPLUGIN_TARGET} PRIVATE cxx_std_20)
+
+set_target_properties(${TEST_DLLPLUGIN_TARGET}
+  PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
+    LIBRARY_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
+    PDB_OUTPUT_DIRECTORY "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
+)
+
+if(MINGW)
+  set_target_properties(${TEST_DLLPLUGIN_TARGET}
+    PROPERTIES
+      PREFIX ""
+  )
+endif()
+
 # Create a custom target for test_resource_zip generation
 add_custom_target(test_resource_zip
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${TESTS1_RESOURCE_STAGE_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-plugin"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/src/test/resources/tests1/test-plugin
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-plugin
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${TEST_DLLPLUGIN_DIR}
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_FILE:${TEST_DLLPLUGIN_TARGET}>
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin/tests1_dllplugin.dll
   COMMAND ${7ZIP_EXECUTABLE}
     u -tzip -r -mcu=on
     ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
-    ${CMAKE_SOURCE_DIR}/src/test/resources/tests1/test-plugin
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-plugin
+    ${TESTS1_RESOURCE_STAGE_DIR}/test-dllplugin
     > NUL
   BYPRODUCTS ${CMAKE_BINARY_DIR}/resources.ja-JP.zip
+  DEPENDS ${TEST_DLLPLUGIN_TARGET}
   COMMENT "Generating resources.ja-JP.zip"
 )
 

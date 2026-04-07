@@ -875,6 +875,60 @@ TEST_F(EditWndTest, ShowDlgPluginOption001)
 }
 
 /*!
+ * DLLプラグイン読み込みと実行のテスト
+ */
+TEST_F(EditWndTest, LoadAndInvokeDllPlugin001)
+{
+	// プラグイン設定フォルダー
+	const auto pluginPath = GetIniFileName().remove_filename().append(L"plugins");
+
+	// プラグイン定義を展開する
+	extract_zip_resource(IDR_ZIPRES1, pluginPath);
+
+	constexpr int pluginId = 2;
+
+	auto& sPlugin = GetDllShareData().m_Common.m_sPlugin;
+	sPlugin.m_bEnablePlugin = true;
+
+	auto& pluginRec = sPlugin.m_PluginTable[pluginId];
+	pluginRec.m_nCmdNum = pluginId;
+	::wcscpy_s(pluginRec.m_szId, L"TestDllPlugin");
+	::wcscpy_s(pluginRec.m_szName, L"test-dllplugin");
+
+	// ジャック初期化
+	CJackManager::getInstance();
+
+	// プラグイン読み込み
+	CPluginManager::getInstance()->LoadAllPlugin();
+
+	auto* plugin = CPluginManager::getInstance()->GetPlugin(pluginId);
+	ASSERT_THAT(plugin, Ne(nullptr));
+
+	auto plugs = plugin->GetPlugs();
+	ASSERT_THAT(plugs.empty(), IsFalse());
+
+	CWSHIfObj::List params;
+	EXPECT_THAT(plugin->InvokePlug(&pcEditWnd->GetActiveView(), *plugs.front(), params), IsTrue());
+
+	const auto dllPath = pluginPath / L"test-dllplugin" / L"tests1_dllplugin.dll";
+	const auto hModule = ::LoadLibraryW(dllPath.c_str());
+	ASSERT_THAT(hModule, Ne(nullptr));
+
+	auto pGetCallCount = reinterpret_cast<int(*)()>(::GetProcAddress(hModule, "TestDllGetCallCount"));
+	ASSERT_THAT(pGetCallCount, Ne(nullptr));
+	EXPECT_THAT(pGetCallCount(), Ge(1));
+
+	::FreeLibrary(hModule);
+
+	// プラグイン読み込み解除
+	CPluginManager::getInstance()->UnloadAllPlugin();
+
+	if (const auto pluginPath = GetIniFileName().remove_filename().append(L"plugins"); fexist(pluginPath)) {
+		std::filesystem::remove_all(pluginPath);
+	}
+}
+
+/*!
  * 印刷設定ダイアログの表示テスト
  */
 TEST_F(EditWndTest, ShowDlgPrintSetting001)
