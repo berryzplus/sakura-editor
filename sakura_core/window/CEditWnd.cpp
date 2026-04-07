@@ -688,6 +688,9 @@ HWND CEditWnd::Create(
 			// 少し待つ
 			::Sleep(100);
 		}
+
+// 一時的に無効化する
+#if 0
 		if( !m_bUIPI ){	// 返事が返らない
 			TopErrorMessage( GetHwnd(),
 				LS(STR_ERR_DLGEDITWND02)
@@ -696,6 +699,7 @@ HWND CEditWnd::Create(
 			m_hWnd = hWnd = nullptr;
 			return hWnd;
 		}
+#endif
 	}
 
 	CShareData::getInstance()->SetTraceOutSource( GetHwnd() );	// TraceOut()起動元ウィンドウの設定	// 2006.06.26 ryoji
