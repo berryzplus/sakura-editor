@@ -677,8 +677,17 @@ HWND CEditWnd::Create(
 	m_bIsActiveApp = ( ::GetActiveWindow() == GetHwnd() );	// 2007.03.08 ryoji
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
-	{
-		::SendMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_UIPI_CHECK,  (WPARAM)0, (LPARAM)GetHwnd() );
+	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
+		for (int repeat = 0; repeat < 3 && !m_bUIPI; ++repeat) {
+			::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd),
+				SMTO_NOTIMEOUTIFNOTHUNG | SMTO_ERRORONEXIT,
+				5000,
+				nullptr
+			);
+
+			// 少し待つ
+			::Sleep(100);
+		}
 		if( !m_bUIPI ){	// 返事が返らない
 			TopErrorMessage( GetHwnd(),
 				LS(STR_ERR_DLGEDITWND02)
