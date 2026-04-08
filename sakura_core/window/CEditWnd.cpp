@@ -18,7 +18,7 @@
 	Copyright (C) 2010, ryoji, Moca、Uchi
 	Copyright (C) 2011, ryoji
 	Copyright (C) 2013, Uchi
-	Copyright (C) 2018-2026, Sakura Editor Organization
+	Copyright (C) 2018-2022, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -677,16 +677,9 @@ HWND CEditWnd::Create(
 	m_bIsActiveApp = ( ::GetActiveWindow() == GetHwnd() );	// 2007.03.08 ryoji
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
-	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
-		for (const auto startTick = ::GetTickCount64(); !m_bUIPI && ::GetTickCount64() - startTick < 10000;) {
-			::SendMessageW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd));
-
-			// 少し待つ
-			::Sleep(100);
-		}
-		
-// 一時的に無効化する
-#if 0
+	{
+		m_bUIPI = FALSE;
+		::SendMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_UIPI_CHECK,  (WPARAM)0, (LPARAM)GetHwnd() );
 		if( !m_bUIPI ){	// 返事が返らない
 			TopErrorMessage( GetHwnd(),
 				LS(STR_ERR_DLGEDITWND02)
@@ -695,7 +688,6 @@ HWND CEditWnd::Create(
 			m_hWnd = hWnd = nullptr;
 			return hWnd;
 		}
-#endif
 	}
 
 	CShareData::getInstance()->SetTraceOutSource( GetHwnd() );	// TraceOut()起動元ウィンドウの設定	// 2006.06.26 ryoji
