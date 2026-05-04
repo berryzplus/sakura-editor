@@ -33,12 +33,26 @@
 #include "dlg/ModalDialogCloser.hpp"
 #include "window/EditorTestSuite.hpp"
 
+#include "sakura_h.h"
+
 #include "tests1_rc.h"
 
 using namespace std::literals::string_literals;
 using namespace std::literals::string_view_literals;
 
 void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& optOutDir);
+
+#ifdef __MINGW32__
+#include <guiddef.h>
+
+__CRT_UUID_DECL(
+	ITrayWnd,
+	0xBB2F50E1,
+	0x4785,
+	0x47FD,
+	0x87, 0x28, 0xE7, 0x50, 0xA6, 0xEC, 0x96, 0xD2
+)
+#endif
 
 namespace cxx {
 
@@ -893,21 +907,30 @@ TEST_P(WinMainTest, DoGrep001)
 	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
 	EXPECT_THAT(hTrayWnd, NotNull());
 
-	cxx::com_pointer<IAccessible> pAccessible = nullptr;
+	cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
 	EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
 		hTrayWnd,
-		OBJID_CLIENT,
-		IID_PPV_ARGS(&pAccessible)
+		OBJID_NATIVEOM,
+		IID_PPV_ARGS(&pDispatch)
 	));
 
-	const _variant_t selfChild(static_cast<long>(CHILDID_SELF), VT_I4);
-
 	// トレイアイコン左クリックメニューを表示させる
-	EXPECT_HRESULT_SUCCEEDED(pAccessible->accDoDefaultAction(selfChild));
+	DISPID dispid = 1; // ShowPopupL
+	DISPPARAMS params = {};
+	EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+		dispid,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		&params,
+		nullptr,
+		nullptr,
+		nullptr
+	));
+
+	pDispatch = nullptr;
 
 	EmulateSelectPopupMenu(L"Grep(G)...");
-
-	pAccessible = nullptr;
 
 	// Grepダイアログが表示されるのを待って実行する
 	if(const auto hDlgGrep = WaitForDialog(L"Grep")) {
@@ -985,17 +1008,28 @@ TEST_P(WinMainTest, OpenFile001)
 	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
 	EXPECT_THAT(hTrayWnd, NotNull());
 
-	cxx::com_pointer<IAccessible> pAccessible = nullptr;
+	cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
 	EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
 		hTrayWnd,
-		OBJID_CLIENT,
-		IID_PPV_ARGS(&pAccessible)
+		OBJID_NATIVEOM,
+		IID_PPV_ARGS(&pDispatch)
 	));
 
-	const _variant_t selfChild(static_cast<long>(CHILDID_SELF), VT_I4);
-
 	// トレイアイコン左クリックメニューを表示させる
-	EXPECT_HRESULT_SUCCEEDED(pAccessible->accDoDefaultAction(selfChild));
+	DISPID dispid = 1; // ShowPopupL
+	DISPPARAMS params = {};
+	EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+		dispid,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		&params,
+		nullptr,
+		nullptr,
+		nullptr
+	));
+
+	pDispatch = nullptr;
 
 	EmulateSelectPopupMenu(L"開く(O)...");
 
@@ -1003,8 +1037,6 @@ TEST_P(WinMainTest, OpenFile001)
 		EmulateSetValue(GetFocusedElement(), gm_TestDataPath.c_str());
 		EmulateHitEnter();
 	}
-
-	pAccessible = nullptr;
 
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
@@ -1050,24 +1082,100 @@ TEST_P(WinMainTest, OpenNewEditor001)
 	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
 	EXPECT_THAT(hTrayWnd, NotNull());
 
-	cxx::com_pointer<IAccessible> pAccessible = nullptr;
+	cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
 	EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
 		hTrayWnd,
-		OBJID_CLIENT,
-		IID_PPV_ARGS(&pAccessible)
+		OBJID_NATIVEOM,
+		IID_PPV_ARGS(&pDispatch)
 	));
 
-	const _variant_t selfChild(static_cast<long>(CHILDID_SELF), VT_I4);
-
 	// トレイアイコン左クリックメニューを表示させる
-	EXPECT_HRESULT_SUCCEEDED(pAccessible->accDoDefaultAction(selfChild));
+	DISPID dispid = 1; // ShowPopupL
+	DISPPARAMS params = {};
+	EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+		dispid,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		&params,
+		nullptr,
+		nullptr,
+		nullptr
+	));
+
+	pDispatch = nullptr;
 
 	EmulateSelectPopupMenu(L"新規作成(N)");
 
-	pAccessible = nullptr;
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 編集ウインドウからプロセスIDを取得する
+	DWORD dwEditorProcessId;
+	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
+	if (!dwControlProcessId) {
+		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
+	}
+
+	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, OpenNewEditor002)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+	EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+		hTrayWnd,
+		OBJID_NATIVEOM,
+		IID_PPV_ARGS(&pDispatch)
+	));
+
+	// トレイアイコンダブルクリックする
+	DISPID dispid = 3; // OpenNewEditor
+	DISPPARAMS params = {};
+	EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+		dispid,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		&params,
+		nullptr,
+		nullptr,
+		nullptr
+	));
+
+	pDispatch = nullptr;
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
 
 	// 編集ウインドウからプロセスIDを取得する
 	DWORD dwEditorProcessId;
@@ -1149,6 +1257,61 @@ TEST_P(WinMainTest, ShowDlgProfileMgr101)
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, ShowPropCommon001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+	EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+		hTrayWnd,
+		OBJID_NATIVEOM,
+		IID_PPV_ARGS(&pDispatch)
+	));
+
+	// トレイアイコン右クリックメニューを表示させる
+	DISPID dispid = 2; // ShowPopupR
+	DISPPARAMS params = {};
+	EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+		dispid,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		&params,
+		nullptr,
+		nullptr,
+		nullptr
+	));
+
+	pDispatch = nullptr;
+
+	EmulateSelectPopupMenu(L"共通設定(C)...");
+
+	// 共通設定ダイアログが表示されるのを待って閉じる
+	const auto hWndDlgPropCommon = WaitForDialog(LS(STR_PROPCOMMON));
+	EmulateInvokeButton(hWndDlgPropCommon, L"OK");
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
 }
 
 /*!

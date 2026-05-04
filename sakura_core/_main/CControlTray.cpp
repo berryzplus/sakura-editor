@@ -62,6 +62,230 @@
 // 3秒
 #define IDT_EDITCHECK_INTERVAL 3000
 
+#ifdef __MINGW32__
+#include <guiddef.h>
+
+__CRT_UUID_DECL(
+	ITrayWnd,
+	0xBB2F50E1,
+	0x4785,
+	0x47FD,
+	0x87, 0x28, 0xE7, 0x50, 0xA6, 0xEC, 0x96, 0xD2
+)
+#endif
+
+#ifdef __MINGW32__
+
+HRESULT STDAPICALLTYPE RegisterTypeLibForUser(
+	ITypeLib* pTypeLib,
+	_In_ OLECHAR* szFullPath,
+	_In_opt_ OLECHAR* szHelpDir
+)
+{
+	const auto hOleAut = ::LoadLibraryW(L"oleaut32.dll");
+	if (!hOleAut) return E_FAIL;
+
+	using PFN_RegisterTypeLibForUser = decltype(&RegisterTypeLibForUser);
+
+	if (const auto fn = PFN_RegisterTypeLibForUser(::GetProcAddress(hOleAut, "RegisterTypeLibForUser"))) {
+		return fn(pTypeLib, szFullPath, szHelpDir);
+	}
+
+	// fallback
+	return ::RegisterTypeLib(pTypeLib, szFullPath, szHelpDir);
+}
+
+#endif // __MINGW32__
+
+template<typename TCoClass>
+class TClassFactoryImpl final : public cxx::TComImpl<IClassFactory>
+{
+private:
+	using ITypeInfoPtr = cxx::com_pointer<ITypeInfo>;
+
+	ITypeInfoPtr _TypeInfo = nullptr;
+
+	using Base = TComImpl<IClassFactory>;
+	using Me   = TClassFactoryImpl<TCoClass>;
+
+public:
+	using type				= TCoClass;
+
+	static com_pointer_type make_instance(
+		ITypeLib& TypeLib)
+	{
+		ITypeInfoPtr pTypeInfo;
+		_com_util::CheckError(TypeLib.GetTypeInfoOfGuid(__uuidof(typename TCoClass::type), &pTypeInfo));
+
+		return Base::to_com_pointer(std::make_unique<Me>(*pTypeInfo));
+	}
+
+	explicit TClassFactoryImpl(ITypeInfo& TypeInfo_)
+		: _TypeInfo(&TypeInfo_)
+	{
+	}
+
+#pragma region ClassFactory
+	IFACEMETHODIMP CreateInstance(
+		_In_opt_ LPUNKNOWN  pUnkOuter,
+		_In_ REFIID		 riid,
+		_COM_Outptr_ void** ppvObject) override
+	{
+		if (!ppvObject)
+		{
+			return E_POINTER;
+		}
+
+		*ppvObject = nullptr;
+
+		if (pUnkOuter)
+		{
+			return CLASS_E_NOAGGREGATION;
+		}
+
+		if (!(riid == __uuidof(typename TCoClass::type) || riid == IID_IDispatch || riid == IID_IUnknown))
+		{
+			return E_NOINTERFACE;
+		}
+
+		try
+		{
+			auto pObject = TCoClass::to_com_pointer(std::make_unique<TCoClass>(*_TypeInfo, *this));
+
+			*ppvObject = pObject.Detach();
+		}
+		catch (const std::bad_alloc&)
+		{
+			return E_OUTOFMEMORY;
+		}
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP LockServer(
+		BOOL fLock) override
+	{
+		if (fLock)
+		{
+			AddRef();
+		}
+		else
+		{
+			Release();
+		}
+
+		return S_OK;
+	}
+
+#pragma endregion
+};
+
+class CTrayWndImpl final : public cxx::TComImpl<ITrayWnd> {
+private:
+	ITypeInfo& m_TypeInfo;
+
+	using Base = TComImpl<ITrayWnd>;
+	using Me = CTrayWndImpl;
+
+public:
+	using type = ITrayWnd;
+
+	explicit CTrayWndImpl(ITypeInfo& TypeInfo_, IClassFactory&)
+		: m_TypeInfo(TypeInfo_)
+	{
+	}
+
+	HWND GetHwnd() const
+	{
+		return GetDllShareData().m_sHandles.m_hwndTray;
+	}
+
+#pragma region Dispatch
+	IFACEMETHODIMP GetTypeInfoCount(
+		UINT*		pctinfo
+	) override
+	{
+		if (!pctinfo)
+		{
+			return E_POINTER;
+		}
+
+		*pctinfo = 1;
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP GetTypeInfo(
+		UINT		iTInfo,
+		LCID		lcid [[maybe_unused]],
+		ITypeInfo**	ppTInfo
+	) override
+	{
+		if (!ppTInfo)
+		{
+			return E_POINTER;
+		}
+
+		*ppTInfo = nullptr;
+
+		if (iTInfo != 0)
+		{
+			return DISP_E_BADINDEX;
+		}
+
+		return m_TypeInfo.QueryInterface(IID_PPV_ARGS(ppTInfo));
+	}
+
+	IFACEMETHODIMP GetIDsOfNames(
+		REFIID		riid [[maybe_unused]],
+		LPOLESTR*	rgszNames,
+		UINT		cNames,
+		LCID		lcid [[maybe_unused]],
+		DISPID*		rgDispId
+	) override
+	{
+		return ::DispGetIDsOfNames(&m_TypeInfo, rgszNames, cNames, rgDispId);
+	}
+
+	IFACEMETHODIMP Invoke(
+		DISPID		dispIdMember,
+		REFIID		riid [[maybe_unused]],
+		LCID		lcid [[maybe_unused]],
+		WORD		wFlags,
+		DISPPARAMS*	pDispParams,
+		VARIANT*	pVarResult,
+		EXCEPINFO*	pExcepInfo,
+		UINT*		puArgErr
+	) override
+	{
+		// このオブジェクトのメソッドに転送する
+		return ::DispInvoke(this, &m_TypeInfo, dispIdMember, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
+	}
+
+#pragma endregion
+
+	IFACEMETHODIMP ShowPopupL() override
+	{
+		::PostMessageW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONUP);
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP ShowPopupR() override
+	{
+		::PostMessageW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_RBUTTONUP);
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP OpenNewEditor() override
+	{
+		::PostMessageW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONDBLCLK);
+
+		return S_OK;
+	}
+};
+
 class CControlTrayAccessible final : public CAccessible
 {
 private:
@@ -84,6 +308,21 @@ public:
 	}
 
 	~CControlTrayAccessible() override = default;
+
+	STDMETHODIMP get_accParent(IDispatch** ppdispParent) override
+	{
+		if (const auto hr = Base::get_accParent(ppdispParent); FAILED(hr)) return hr;
+
+		const auto hWnd = m_owner ? m_owner->GetHwnd() : nullptr;
+
+		*ppdispParent = nullptr;
+
+		return ::AccessibleObjectFromWindow(
+				hWnd,
+				OBJID_NATIVEOM,
+				IID_PPV_ARGS(ppdispParent)
+			);
+	}
 
 	STDMETHODIMP get_accName(VARIANT varChild, BSTR* pszName) override
 	{
@@ -372,6 +611,15 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 		return nullptr;
 	}
 
+	SFilePath tlbPath{ GetExeFileName().c_str()};
+
+	cxx::com_pointer<ITypeLib> pTypeLib;
+	_com_util::CheckError(::LoadTypeLibEx(tlbPath, REGKIND_NONE, &pTypeLib));
+
+	_com_util::CheckError(::RegisterTypeLibForUser(pTypeLib, tlbPath, nullptr));
+
+	m_pClassFactory = TClassFactoryImpl<CTrayWndImpl>::make_instance(*pTypeLib);
+
 	//ウィンドウクラス登録
 	WNDCLASSEXW wc{ sizeof(WNDCLASSEXW) };
 	wc.style			= CS_DBLCLKS;
@@ -454,18 +702,24 @@ void CControlTray::CreateTrayIcon()
 /* メッセージループ */
 void CControlTray::MessageLoop( void )
 {
-//複数プロセス版
-	MSG	msg;
-	int ret;
-	
-	//2004.02.17 Moca GetMessageのエラーチェック
-	while ( GetTrayHwnd() != nullptr && (ret = ::GetMessage(&msg, nullptr, 0, 0 )) != 0 ){
-		if( ret == -1 ){
-			break;
-		}
-		::TranslateMessage( &msg );
-		::DispatchMessage( &msg );
+	DWORD cookie = 0;
+
+	if (const auto hr = ::CoRegisterClassObject(
+		CLSID_TrayWnd,
+		m_pClassFactory,
+		CLSCTX_LOCAL_SERVER,
+		REGCLS_MULTIPLEUSE,
+		&cookie
+	); FAILED(hr)) return;
+
+	MSG	msg{};
+	while (::GetMessageW(&msg, nullptr, 0, 0)) {
+		::TranslateMessage(&msg);
+		::DispatchMessageW(&msg);
 	}
+
+	::CoRevokeClassObject(cookie);
+
 	return;
 }
 
@@ -1004,6 +1258,8 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	m_pAccessible = CControlTrayAccessible::make_instance(this);
 
+	m_pClassFactory->CreateInstance(nullptr, IID_PPV_ARGS(&m_pTrayWnd));
+
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	// タスクトレイアイコン作成
@@ -1144,6 +1400,10 @@ LRESULT CControlTray::OnGetObject(HWND hWnd, WPARAM dwFlags, LONG dwObjId) const
 {
 	if (dwObjId == OBJID_CLIENT) {
 		return ::LresultFromObject(IID_IAccessible, dwFlags, m_pAccessible);
+	}
+
+	if (dwObjId == OBJID_NATIVEOM) {
+		return ::LresultFromObject(IID_ITrayWnd, dwFlags, m_pTrayWnd);
 	}
 
 	return ::DefWindowProcW(hWnd, WM_GETOBJECT, dwFlags, dwObjId);

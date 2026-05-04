@@ -1,0 +1,33 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(BB2F50E1-4785-47FD-8728-E750A6EC96D2),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+]
+interface ITrayWnd : IDispatch
+{
+	[id(1)] HRESULT ShowPopupL();
+	[id(2)] HRESULT ShowPopupR();
+	[id(3)] HRESULT OpenNewEditor();
+};
+
+[
+	uuid(0468450A-BACD-425D-829E-DB4E714B341B),
+	version(1.0)
+]
+library SakuraEditorLib
+{
+	importlib("stdole2.tlb");
+
+	[
+		uuid(4113FEFC-018E-4B77-811D-AD328E0B38EE)
+	]
+	coclass TrayWnd
+	{
+		[default] interface ITrayWnd;
+	};
+}

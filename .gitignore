@@ -28,6 +28,10 @@ tags
 testData_*.txt
 UpgradeLog.htm
 
+# MIDL出力ファイルのうち、使わないものを除外する
+/src/main/resources/dlldata.c
+/src/main/resources/sakura_p.c
+
 # SonarScanローカル実行用(解析ツールをダウンロードするフォルダ)
 .sonar
 

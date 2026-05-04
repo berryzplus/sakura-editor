@@ -154,6 +154,9 @@
     <ClInclude Include="..\sakura_core\StdAfx.h">
       <Filter>Pre-compiled Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\main\resources\sakura_h.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\sakura_core\agent\CAutoReloadAgent.h">
       <Filter>Cpp Source Files\agent</Filter>
     </ClInclude>
@@ -1215,6 +1218,9 @@
   <ItemGroup>
     <ClCompile Include="..\sakura_core\StdAfx.cpp">
       <Filter>Pre-compiled Header</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\resources\sakura_i.c">
+      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sakura_core\agent\CAutoReloadAgent.cpp">
       <Filter>Cpp Source Files\agent</Filter>
@@ -2369,6 +2375,11 @@
     <Text Include="..\sakura_core\util\ReadMe_util.txt">
       <Filter>Cpp Source Files\util</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\src\main\resources\sakura.idl">
+      <Filter>Resource Files</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <FuncCodeRes Include="..\sakura_core\Funccode_x.hsrc" />

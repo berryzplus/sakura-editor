@@ -34,6 +34,8 @@
 #include "uiparts/CMenuDrawer.h"
 #include "window/CWnd.h"
 
+#include "sakura_h.h"
+
 struct SLoadInfo;
 struct EditInfo;
 
@@ -150,7 +152,11 @@ private:
 
 	BOOL			m_bCreatedTrayIcon = FALSE;		//!< トレイにアイコンを作った
 
+	cxx::com_pointer<IClassFactory>	m_pClassFactory = nullptr;
+
 	cxx::com_pointer<IAccessible>	m_pAccessible = nullptr;
+
+	cxx::com_pointer<ITrayWnd>		m_pTrayWnd = nullptr;
 
 	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
 

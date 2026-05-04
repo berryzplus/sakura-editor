@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+    type="win32"
+    name="sakura"
+    processorArchitecture="@EXE_ARCH@"
+    version="1.0.0.0"
+  />
+  <description>Sakura Editor</description>
+  <file name="@EXE_NAME@">
+    <typelib tlbid="{0468450A-BACD-425D-829E-DB4E714B341B}" version="1.0"
+      helpdir="" flags="HASDISKIMAGE" />
+    <comClass
+      clsid="{4113FEFC-018E-4B77-811D-AD328E0B38EE}"
+      threadingModel="Apartment"
+      tlbid="{0468450A-BACD-425D-829E-DB4E714B341B}"
+      progid="TrayWnd">
+      <progid>TrayWnd.1</progid>
+    </comClass>
+  </file>
+  <comInterfaceExternalProxyStub
+    name="ITrayWnd"
+    iid="{BB2F50E1-4785-47FD-8728-E750A6EC96D2}"
+    tlbid="{0468450A-BACD-425D-829E-DB4E714B341B}"
+    proxyStubClsid32="{00020420-0000-0000-C000-000000000046}"
+  />
+</assembly>

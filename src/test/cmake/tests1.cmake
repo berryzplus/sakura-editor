@@ -4,7 +4,26 @@
 #   ${7ZIP_EXECUTABLE}
 #   ${ARCH}
 #   ${CMAKE_GENERATOR_PLATFORM}
+#   ${EXE_ARCH}
 #   ${MT_EXECUTABLE}
+
+# Create a custom command for tests1.exe.manifest generation
+add_custom_command(
+  OUTPUT "${CMAKE_BINARY_DIR}/tests1.exe.manifest"
+  COMMAND ${CMAKE_COMMAND} 
+    -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+    -DEXE_NAME="tests1.exe"
+    -DEXE_ARCH="${EXE_ARCH}"
+    -DOUTPUT_FILE="${CMAKE_BINARY_DIR}/tests1.exe.manifest"
+    -P ${CMAKE_SOURCE_DIR}/src/main/cmake/manifest.cmake
+  COMMENT "Generating tests1.exe.manifest"
+)
+
+# Create a custom target that depends on the generated file
+add_custom_target(generate_tests1_exe_manifest
+  DEPENDS
+    "${CMAKE_BINARY_DIR}/tests1.exe.manifest"
+)
 
 # Include GoogleTest's targets
 include(${CMAKE_SOURCE_DIR}/src/test/cmake/GoogleTest.cmake)
@@ -168,6 +187,7 @@ add_custom_command(TARGET tests1 PRE_LINK
 if(MINGW)
   set(TESTS1_MANIFEST_INPUTS
     "${CMAKE_SOURCE_DIR}/src/main/resources/sakura.mingw.manifest.xml"
+    "${CMAKE_BINARY_DIR}/tests1.exe.manifest"
   )
   set(TESTS1_MERGED_MANIFEST "${CMAKE_BINARY_DIR}/tests1.merged.manifest")
 
@@ -224,6 +244,7 @@ add_dependencies(tests1
   sakura
   sakura_lang_en_US
   sakura_lang_zh_CN
+  generate_tests1_exe_manifest
   test_resource_zip
   test_dllplugin_zip
   generate_gtest

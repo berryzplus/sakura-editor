@@ -49,6 +49,13 @@ else()
   set(GENERATOR_ARGS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 endif()
 
+# マニフェスト用にCPUアーキテクチャを編集する
+if(ARCH STREQUAL "x64")
+  set(EXE_ARCH "amd64")
+else()
+  set(EXE_ARCH "${ARCH}")
+endif()
+
 # ホストツールのプラットフォームとCPUを決める
 if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
   set(HOST_PLATFORM "x64")
@@ -131,6 +138,13 @@ if(MT_EXECUTABLE)
   message(STATUS "Found mt.exe: ${MT_EXECUTABLE}")
 endif()
 
+# MSVCの場合のみMIDLを探す
+if(MSVC)
+  find_program(MIDL_EXECUTABLE midl REQUIRED)
+else()
+  set(MIDL_EXECUTABLE echo)
+endif()
+
 # Find Git with additional search paths
 find_program(GIT_EXECUTABLE git
   PATHS
@@ -198,6 +212,39 @@ add_custom_target(show_dev_banner ALL
 # Include compiletests.cmake
 include(${CMAKE_SOURCE_DIR}/src/test/cmake/compiletests.cmake)
 
+set(SAKURA_IDL        ${CMAKE_SOURCE_DIR}/src/main/resources/sakura.idl)
+set(SAKURA_IDL_HEADER ${CMAKE_SOURCE_DIR}/src/main/resources/sakura_h.h)
+set(SAKURA_IDL_IID    ${CMAKE_SOURCE_DIR}/src/main/resources/sakura_i.c)
+set(SAKURA_TLB        ${CMAKE_SOURCE_DIR}/src/main/resources/sakura.tlb)
+
+get_filename_component(SAKURA_IDL_HEADER_NAME ${SAKURA_IDL_HEADER} NAME)
+get_filename_component(SAKURA_IDL_IID_NAME    ${SAKURA_IDL_IID}    NAME)
+
+add_custom_command(
+  OUTPUT
+    ${SAKURA_IDL_HEADER}
+    ${SAKURA_IDL_IID}
+    ${SAKURA_TLB}
+  COMMAND ${MIDL_EXECUTABLE}
+    /env ${CMAKE_GENERATOR_PLATFORM}
+    /out ${CMAKE_SOURCE_DIR}/src/main/resources
+    /h ${SAKURA_IDL_HEADER_NAME}
+    /iid ${SAKURA_IDL_IID_NAME}
+    /tlb ${SAKURA_TLB}
+    /target "NT60" /W1 /char signed /nologo
+    ${SAKURA_IDL}
+  DEPENDS
+    ${SAKURA_IDL}
+  COMMENT "Generating sakura_h.h and sakura_i.c, sakura.tlb"
+)
+
+add_custom_target(generate_sakura_idl
+  DEPENDS
+    ${SAKURA_IDL_HEADER}
+    ${SAKURA_IDL_IID}
+    ${SAKURA_TLB}
+)
+
 # Create a custom command for version.h generation
 add_custom_command(
   OUTPUT "${CMAKE_BINARY_DIR}/version.h"
@@ -250,6 +297,24 @@ add_custom_command(
 add_custom_target(generate_funccode_enum
   DEPENDS
     "${CMAKE_BINARY_DIR}/Funccode_enum.h"
+)
+
+# Create a custom command for sakura.exe.manifest generation
+add_custom_command(
+  OUTPUT "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
+  COMMAND ${CMAKE_COMMAND} 
+    -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+    -DEXE_NAME=sakura.exe
+    -DEXE_ARCH=${EXE_ARCH}
+    -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/sakura.exe.manifest
+    -P ${CMAKE_SOURCE_DIR}/src/main/cmake/manifest.cmake
+  COMMENT "Generating sakura.exe.manifest"
+)
+
+# Create a custom target that depends on the generated file
+add_custom_target(generate_sakura_exe_manifest
+  DEPENDS
+    "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
 )
 
 # Include darkmodelib.cmake
@@ -417,6 +482,7 @@ endif(MINGW)
 file(GLOB_RECURSE HEADERS
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.hpp
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.h
+  ${SAKURA_IDL_HEADER}
   ${CMAKE_SOURCE_DIR}/sakura_core/*.hpp
   ${CMAKE_SOURCE_DIR}/sakura_core/*.h
 )
@@ -424,7 +490,19 @@ file(GLOB_RECURSE HEADERS
 # define source files of sakura_core
 file(GLOB_RECURSE SOURCES
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.cpp
+  ${SAKURA_IDL_IID}
   ${CMAKE_SOURCE_DIR}/sakura_core/*.cpp
+)
+
+set_source_files_properties(${SAKURA_IDL_HEADER}
+  PROPERTIES
+    GENERATED TRUE
+)
+
+set_source_files_properties(${SAKURA_IDL_IID}
+  PROPERTIES
+    GENERATED TRUE
+    SKIP_PRECOMPILE_HEADERS ON
 )
 
 set(RESOURCE_SCRIPTS
@@ -488,11 +566,18 @@ target_link_libraries(sakura_core
     winspool
 )
 
+if(MSVC)
+  add_dependencies(sakura_core
+    generate_sakura_idl
+  )
+endif(MSVC)
+
 # Add dependencies for sakura_core
 add_dependencies(sakura_core
   generate_version_header
   generate_funccode_define
   generate_funccode_enum
+  generate_sakura_exe_manifest
   generate_darkmodelib
   generate_bregonig
   generate_cmigemo
@@ -530,6 +615,12 @@ if(MINGW)
       "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/sakura_rc_ja-JP>"
   )
 
+  # add definitions for sakura_core
+  target_compile_definitions(sakura_core
+    PUBLIC
+      _MIDL_USE_GUIDDEF_
+  )
+
   target_link_options(sakura_core
     PUBLIC
       -municode
@@ -539,6 +630,7 @@ if(MINGW)
 
   set(SAKURA_MANIFEST_INPUTS
     "${CMAKE_SOURCE_DIR}/src/main/resources/sakura.mingw.manifest.xml"
+    "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
   )
   set(SAKURA_MERGED_MANIFEST "${CMAKE_BINARY_DIR}/sakura.merged.manifest")
 
