@@ -275,22 +275,25 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	return GetTrayHwnd();
 }
 
-//! タスクトレイにアイコンを登録する
-bool CControlTray::CreateTrayIcon( [[maybe_unused]] HWND hWnd )
+/*!
+ * @brief タスクトレイにアイコンを登録する
+ *
+ * @date 2001/01/12 JEPRO トレイアイコンにポイントするとバージョンno.が表示されるように修正
+ * @date 2001/04/12 aroka
+ */
+void CControlTray::CreateTrayIcon()
 {
 	// タスクトレイのアイコンを作る
-	if( m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray ){	/* タスクトレイのアイコンを使う */
-		//	Dec. 02, 2002 genta
-		HICON hIcon = GetAppIcon( m_hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true );
-//From Here Jan. 12, 2001 JEPRO トレイアイコンにポイントするとバージョンno.が表示されるように修正
-//			TrayMessage( GetTrayHwnd(), NIM_ADD, 0,  hIcon, GSTR_APPNAME );
+	bool bCreated = false;
+	if (m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray) {	/* タスクトレイのアイコンを使う */
+		const auto hIcon = GetAppIcon(m_hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
+
+		StaticString<64 + _MAX_PATH> pszTips{};
+
 		/* バージョン情報 */
-		//	UR version no.を設定 (cf. cDlgAbout.cpp)
-		WCHAR	pszTips[64 + _MAX_PATH];
-		//	2004.05.13 Moca バージョン番号は、プロセスごとに取得する
-		DWORD dwVersionMS, dwVersionLS;
-		GetAppVersionInfo( nullptr, VS_VERSION_INFO,
-			&dwVersionMS, &dwVersionLS );
+		DWORD dwVersionMS;
+		DWORD dwVersionLS;
+		GetAppVersionInfo(m_hInstance, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS);
 
 		std::wstring profname;
 		if (const auto pszProfileName = GetProfileName(); *pszProfileName) {
@@ -305,11 +308,12 @@ bool CControlTray::CreateTrayIcon( [[maybe_unused]] HWND hWnd )
 			LOWORD( dwVersionLS ),
 			profname.c_str()
 		);
-		TrayMessage( GetTrayHwnd(), NIM_ADD, 0,  hIcon, pszTips );
-//To Here Jan. 12, 2001
-		m_bCreatedTrayIcon = TRUE;	/* トレイにアイコンを作った */
+		TrayMessage(GetTrayHwnd(), NIM_ADD, 0, hIcon, pszTips);
+
+		bCreated = true;
 	}
-	return true;
+
+	m_bCreatedTrayIcon = bCreated;	/* トレイにアイコンを作った */
 }
 
 /* メッセージループ */
@@ -893,7 +897,7 @@ LRESULT CControlTray::DispatchEvent(
 	default:
 		// タスクバーが再作成されたときは、トレイアイコンを再登録する
 		if (gm_uMsgTaskbarCreated == uMsg) {
-			CreateTrayIcon(hWnd);
+			CreateTrayIcon();
 			break;	//あとはデフォルトに任せる
 		}
 		break;	/* default */
@@ -934,7 +938,7 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	// タスクトレイアイコン作成
-	CreateTrayIcon(hWnd);
+	CreateTrayIcon();
 
 	// タスクトレイ左クリックメニューへのショートカットキー登録
 	RegisterHotKey(hWnd);

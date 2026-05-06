@@ -72,7 +72,7 @@ public:
 	|| メンバ関数
 	*/
 	HWND Create(HINSTANCE hInstance);	/* 作成 */
-	bool CreateTrayIcon(HWND hWnd);	// 20010412 by aroka
+
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
 	void MessageLoop( void );	/* メッセージループ */
 	void OnDestroy( void );		/* WM_DESTROY 処理 */	// 2006.07.09 ryoji
@@ -111,6 +111,7 @@ public:
 	*/
 	static void DoGrepCreateWindow(HINSTANCE hinst, HWND, CDlgGrep& cDlgGrep);
 protected:
+	void	CreateTrayIcon();
 	void	DoGrep();	//Stonee, 2001/03/21
 	void	RegisterHotKey(HWND hWnd) noexcept;
 
