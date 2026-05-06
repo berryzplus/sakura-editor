@@ -82,6 +82,22 @@ WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 namespace window {
 
 /*!
+ * @brief タスクトレイにアイコンを作成する
+ *
+ * @param hInstance [in] インスタンスハンドル
+ * @param hWndTray [in] タスクトレイのウィンドウハンドル
+ * @retval true 作成に成功
+ * @retval false 作成に失敗
+ *
+ * @date 2001/01/12 JEPRO トレイアイコンにポイントするとバージョンno.が表示されるように修正
+ * @date 2001/04/12 aroka
+ */
+bool CreateTrayIcon(
+	_In_ HINSTANCE hInstance,
+	_In_ HWND hWndTray
+);
+
+/*!
  * @brief タスクトレイにメッセージを送信する
  *
  * @param hWndTray [in] タスクトレイのウィンドウハンドル
@@ -316,42 +332,41 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 
 }
 
-//! タスクトレイにアイコンを登録する
-bool CControlTray::CreateTrayIcon( [[maybe_unused]] HWND hWnd )
+namespace window {
+
+bool CreateTrayIcon(HINSTANCE hInstance, HWND hWndTray)
 {
 	// タスクトレイのアイコンを作る
-	if( m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray ){	/* タスクトレイのアイコンを使う */
-		//	Dec. 02, 2002 genta
-		HICON hIcon = GetAppIcon( m_hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true );
-//From Here Jan. 12, 2001 JEPRO トレイアイコンにポイントするとバージョンno.が表示されるように修正
-//			TrayMessage( GetTrayHwnd(), NIM_ADD, 0,  hIcon, GSTR_APPNAME );
+	if (!GetDllShareData().m_Common.m_sGeneral.m_bUseTaskTray) return false;
+
+		const auto hIcon = GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
+
 		/* バージョン情報 */
-		//	UR version no.を設定 (cf. cDlgAbout.cpp)
-		WCHAR	pszTips[64 + _MAX_PATH];
-		//	2004.05.13 Moca バージョン番号は、プロセスごとに取得する
-		DWORD dwVersionMS, dwVersionLS;
-		GetAppVersionInfo( nullptr, VS_VERSION_INFO,
-			&dwVersionMS, &dwVersionLS );
+		DWORD dwVersionMS;
+		DWORD dwVersionLS;
+		GetAppVersionInfo(hInstance, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS);
 
 		std::wstring profname;
 		if (const auto pszProfileName = GetProfileName(); *pszProfileName) {
 			profname = L" ";
 			profname += pszProfileName;
 		}
-		auto_snprintf_s(pszTips, std::size(pszTips), L"%s %d.%d.%d.%d%ls",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
+
+		const auto tipText = std::format(L"{:s} {:d}.{:d}.{:d}.{:d}{:s}",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
 			GSTR_APPNAME,
 			HIWORD( dwVersionMS ),
 			LOWORD( dwVersionMS ),
 			HIWORD( dwVersionLS ),
 			LOWORD( dwVersionLS ),
-			profname.c_str()
+			profname
 		);
-		window::SendTrayMessage(GetTrayHwnd(), 0, NIM_ADD, hIcon, pszTips);
-//To Here Jan. 12, 2001
-		m_bCreatedTrayIcon = TRUE;	/* トレイにアイコンを作った */
-	}
-	return true;
+
+		window::SendTrayMessage(hWndTray, 0, NIM_ADD, hIcon, tipText);
+
+	return true;	//トレイにアイコンを作った
 }
+
+} // namespace window
 
 /* メッセージループ */
 void CControlTray::MessageLoop( void )
@@ -911,7 +926,7 @@ LRESULT CControlTray::DispatchEvent(
 	default:
 		// タスクバーが再作成されたときは、トレイアイコンを再登録する
 		if (gm_uMsgTaskbarCreated == uMsg) {
-			CreateTrayIcon(hWnd);
+			m_bCreatedTrayIcon = window::CreateTrayIcon(m_hInstance, hWnd);
 			break;	//あとはデフォルトに任せる
 		}
 		break;	/* default */
@@ -954,7 +969,7 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
 
 	// タスクトレイアイコン作成
-	CreateTrayIcon(hWnd);
+	m_bCreatedTrayIcon = window::CreateTrayIcon(m_hInstance, hWnd);
 
 	// タスクトレイ左クリックメニューへのショートカットキー登録
 	RegisterHotKey(hWnd);
