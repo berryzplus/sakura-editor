@@ -94,6 +94,11 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	}
 };
 
+TEST_F(TrayWndTest, WndProc101)
+{
+	EXPECT_THAT(CControlTray::WndProc(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 TEST_F(TrayWndTest, OnCreate101)
 {
 	HWND hWndTray = nullptr;

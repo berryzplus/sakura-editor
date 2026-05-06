@@ -62,6 +62,8 @@ private:
 	static inline const UINT gm_uMsgTaskbarCreated = ::RegisterWindowMessageW(L"TaskbarCreated");
 
 public:
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
 	/*
 	||  Constructors
 	*/
