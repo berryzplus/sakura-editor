@@ -144,6 +144,12 @@ private:
 	CImageListMgr	m_hIcons;
 
 	SFilePath		m_szLanguageDll;
+
+	// DispatchEventから切り出した変数群（そのうちリネームする）
+	HWND			hwndHtmlHelp = nullptr;
+	WORD			wHotKeyMods = 0;
+	WORD			wHotKeyCode = 0;
+	bool			bLDClick = false;		//<! 左ダブルクリックをしたか
 };
 
 #endif /* SAKURA_CCONTROLTRAY_E9E24D69_3511_4EC1_A29A_1D119F68004A_H_ */
