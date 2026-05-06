@@ -61,8 +61,6 @@
 #define IDT_EDITCHECK 2
 // 3秒
 #define IDT_EDITCHECK_INTERVAL 3000
-/////////////////////////////////////////////////////////////////////////
-static LRESULT CALLBACK CControlTrayWndProc( HWND, UINT, WPARAM, LPARAM );
 
 WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 {
@@ -178,31 +176,63 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		false, nullptr, GetDllShareData().m_Common.m_sTabBar.m_bNewWindow? true : false );
 }
 
-/* ウィンドウプロシージャじゃ */
-static LRESULT CALLBACK CControlTrayWndProc(
-	HWND	hwnd,	// handle of window
+/*!
+ * @brief Windowsと直接やり取りするコールバックプロシージャ
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ *
+ * @note ウィンドウプロシージャじゃ
+ *
+ * @date 2003/09/06 KEITA Use SetWindowLongPtr for WIN64
+ */
+/* static */ LRESULT CALLBACK CControlTray::WndProc(
+	HWND	hWnd,	// handle of window
 	UINT	uMsg,	// message identifier
 	WPARAM	wParam,	// first message parameter
 	LPARAM	lParam 	// second message parameter
-)
+) /* noexcept */
 {
-	CREATESTRUCT* pCreate;
-	CControlTray* pSApp;
+	// WM_CREATEが来たらウインドウに作成パラメーターを関連付ける
+	if (auto lpCreateStruct = LPCREATESTRUCTW(lParam);
+		WM_CREATE == uMsg &&
+		lpCreateStruct &&
+		lpCreateStruct->lpCreateParams)
+	{
+		// ウインドウ作成パラメーターには this ポインターが渡されている
+		auto pcWnd = std::bit_cast<CControlTray*>(lpCreateStruct->lpCreateParams);
 
-	switch( uMsg ){
-	case WM_CREATE:
-		pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
-		pSApp = reinterpret_cast<CControlTray*>(pCreate->lpCreateParams);
-		return pSApp->DispatchEvent( hwnd, uMsg, wParam, lParam );
-	default:
-		// Modified by KEITA for WIN64 2003.9.6
-		//RELPRINT( L"dispatch\n" );
-		pSApp = ( CControlTray* )::GetWindowLongPtr( hwnd, GWLP_USERDATA );
-		if( nullptr != pSApp ){
-			return pSApp->DispatchEvent( hwnd, uMsg, wParam, lParam );
-		}
-		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
+		// ウインドウハンドルを関連付ける
+		pcWnd->m_hWnd = hWnd;
+
+		// ウインドウハンドルにクラスオブジェクトを関連付ける
+		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(lpCreateStruct->lpCreateParams));
+
+		return pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
 	}
+
+	// GetWindowLongPtr する都合、NULLを弾く
+	if (!hWnd) {
+		return 0L;
+	}
+
+	// ウインドウに関連付けられたオブジェクトに処理を委譲
+	if (auto pcWnd = std::bit_cast<CControlTray*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
+		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
+		if (WM_DESTROY == uMsg) {
+			// Windows にスレッドの終了を要求します。
+			::PostQuitMessage(0);
+
+			pcWnd->m_hWnd = nullptr;
+		}
+		return ret;
+	}
+
+	//あとはデフォルトに任せる
+	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -238,7 +268,7 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	//ウィンドウクラス登録
 	WNDCLASSEXW wc{ sizeof(WNDCLASSEXW) };
 	wc.style			= CS_DBLCLKS;
-	wc.lpfnWndProc		= CControlTrayWndProc;
+	wc.lpfnWndProc		= &WndProc;
 	wc.cbClsExtra		= 0;
 	wc.cbWndExtra		= 0;
 	wc.hInstance		= hInstance;
@@ -377,8 +407,17 @@ bool CControlTray::SendTrayMessage(DWORD dwMessage, HICON hIcon, const std::opti
 	return ::Shell_NotifyIconW(dwMessage, &tnd);
 }
 
-/* メッセージ処理 */
-//@@@ 2001.12.26 YAZAKI MRUリストは、CMRUに依頼する
+/*!
+ * @brief トレイウインドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ *
+ * @date 2001/12/26 YAZAKI MRUリストは、CMRUに依頼する
+ */
 LRESULT CControlTray::DispatchEvent(
 	HWND	hwnd,	// handle of window
 	UINT	uMsg,	// message identifier
@@ -924,11 +963,6 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_hInstance = lpCreateStruct->hInstance;
 	assert(m_hInstance);
 
-	m_hWnd = hWnd;
-
-	// Modified by KEITA for WIN64 2003.9.6
-	::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(this));
-
 	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
 
 	m_hIcons.Create(m_hInstance);
@@ -995,11 +1029,6 @@ void CControlTray::OnDestroy(HWND hWnd)
 	if (const auto hWndExitingDlg = dlgExiting.GetHwnd()) {
 		::DestroyWindow(hWndExitingDlg);
 	}
-
-	// Windows にスレッドの終了を要求します。
-	::PostQuitMessage(0);
-
-	m_hWnd = nullptr;
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
