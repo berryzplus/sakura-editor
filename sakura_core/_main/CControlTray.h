@@ -32,6 +32,7 @@
 #include "env/CPropertyManager.h"
 #include "uiparts/CImageListMgr.h"
 #include "uiparts/CMenuDrawer.h"
+#include "window/CWnd.h"
 
 struct SLoadInfo;
 struct EditInfo;
@@ -125,6 +126,7 @@ private:
 	void	OnClose(HWND hWnd) const noexcept;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noexcept;
 	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) noexcept;
+	LRESULT OnGetObject(HWND hWnd, WPARAM wParam, LONG dwObjId) const;
 	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
 	void	OnTimer(HWND hWnd, UINT id);
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
@@ -147,6 +149,8 @@ private:
 	CMenuDrawer		m_cMenuDrawer;
 
 	BOOL			m_bCreatedTrayIcon = FALSE;		//!< トレイにアイコンを作った
+
+	cxx::com_pointer<IAccessible>	m_pAccessible = nullptr;
 
 	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
 

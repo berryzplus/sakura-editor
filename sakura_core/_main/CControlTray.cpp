@@ -62,6 +62,113 @@
 // 3秒
 #define IDT_EDITCHECK_INTERVAL 3000
 
+class CControlTrayAccessible final : public CAccessible
+{
+private:
+	static constexpr auto& kTrayAccessibleName = L"Sakura Editor Tray Icon";
+	static constexpr auto& kTrayAccessibleDefaultAction = L"Notify Icon Left Click";
+
+	using Base = CAccessible;
+	using Me = CControlTrayAccessible;
+
+public:
+	// 生成関数
+	static com_pointer_type make_instance(CControlTray* owner)
+	{
+		return to_com_pointer(std::make_unique<Me>(owner));
+	}
+
+	explicit CControlTrayAccessible(CControlTray* owner)
+		: m_owner(owner)
+	{
+	}
+
+	~CControlTrayAccessible() override = default;
+
+	STDMETHODIMP get_accName(VARIANT varChild, BSTR* pszName) override
+	{
+		if (const auto hr = Base::get_accName(varChild, pszName); FAILED(hr)) return hr;
+
+		*pszName = ::SysAllocString(kTrayAccessibleName);
+
+		return S_OK;
+	}
+
+	STDMETHODIMP get_accRole(VARIANT varChild, VARIANT* pvarRole) override
+	{
+		if (const auto hr = Base::get_accRole(varChild, pvarRole); FAILED(hr)) return hr;
+
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_PUSHBUTTON;
+
+		return S_OK;
+	}
+
+	STDMETHODIMP get_accState(VARIANT varChild, VARIANT* pvarState) override
+	{
+		if (const auto hr = Base::get_accState(varChild, pvarState); FAILED(hr)) return hr;
+
+		pvarState->vt = VT_I4;
+		pvarState->lVal = STATE_SYSTEM_OFFSCREEN;
+
+		return S_OK;
+	}
+
+	STDMETHODIMP get_accDefaultAction(VARIANT varChild, BSTR* pszDefaultAction) override
+	{
+		if (const auto hr = Base::get_accDefaultAction(varChild, pszDefaultAction); FAILED(hr)) return hr;
+
+		*pszDefaultAction = ::SysAllocString(kTrayAccessibleDefaultAction);
+
+		return S_OK;
+	}
+
+	STDMETHODIMP accLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild) override
+	{
+		if (const auto hr = Base::accLocation(pxLeft, pyTop, pcxWidth, pcyHeight, varChild); FAILED(hr)) return hr;
+
+		const auto hWnd = m_owner ? m_owner->GetHwnd() : nullptr;
+
+		NOTIFYICONIDENTIFIER id{ sizeof(NOTIFYICONIDENTIFIER) };
+		id.hWnd = hWnd;	// Shell_NotifyIcon に渡した HWND
+		id.uID  = 0;	// Shell_NotifyIcon に渡した ID
+
+		RECT rc{};
+		::Shell_NotifyIconGetRect(&id, &rc);
+
+		*pxLeft = rc.left;
+		*pyTop = rc.top;
+		*pcxWidth = rc.right - rc.left;
+		*pcyHeight = rc.bottom - rc.top;
+
+		return S_OK;
+	}
+
+	STDMETHODIMP accHitTest(long xLeft, long yTop, VARIANT* pvarChild) override
+	{
+		if (const auto hr = Base::accHitTest(xLeft, yTop, pvarChild); FAILED(hr)) return hr;
+
+		pvarChild->vt = VT_I4;
+		pvarChild->lVal = CHILDID_SELF;
+
+		return S_OK;
+	}
+
+	STDMETHODIMP accDoDefaultAction(VARIANT varChild) override
+	{
+		if (!m_owner || !m_owner->GetHwnd()) return E_FAIL;
+
+		if (const auto hr = Base::accDoDefaultAction(varChild); FAILED(hr)) return hr;
+
+		::PostMessageW(m_owner->GetHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONUP);
+
+		return S_OK;
+	}
+
+private:
+	CControlTray* m_owner;
+};
+
 WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 {
 	WORD wMods = 0;
@@ -448,6 +555,9 @@ LRESULT CControlTray::DispatchEvent(
 	case WM_ENDSESSION:
 		OnEndSession(hWnd, wParam, UINT(lParam));
 		return 0;	//	もうこのプロセスに制御が戻ることはない
+
+	case WM_GETOBJECT:
+		return OnGetObject(hWnd, wParam, LONG(lParam));
 
 	case WM_HELP:
 		OnHelp(hWnd, LPHELPINFO(lParam));
@@ -892,6 +1002,8 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_hIcons.Create(m_hInstance);
 	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
 
+	m_pAccessible = CControlTrayAccessible::make_instance(this);
+
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	// タスクトレイアイコン作成
@@ -1021,6 +1133,20 @@ void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlag
 	//	もしWindowsの終了が中断されたのなら何もしない
 	if (bEndSession)
 		OnDestroy(hWnd);	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
+}
+
+/*!
+ * WM_GETOBJECTハンドラ
+ *
+ * @note windowsx.h に定義がないので独自に定義
+ */
+LRESULT CControlTray::OnGetObject(HWND hWnd, WPARAM dwFlags, LONG dwObjId) const
+{
+	if (dwObjId == OBJID_CLIENT) {
+		return ::LresultFromObject(IID_IAccessible, dwFlags, m_pAccessible);
+	}
+
+	return ::DefWindowProcW(hWnd, WM_GETOBJECT, dwFlags, dwObjId);
 }
 
 /*!

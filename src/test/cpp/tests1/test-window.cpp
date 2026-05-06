@@ -388,6 +388,12 @@ TEST_F(TrayWndTest, OnEndSession101)
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_ENDSESSION, TRUE, 0L), IsFalse());
 }
 
+TEST_F(TrayWndTest, OnGetObject101)
+{
+	HWND hWndTray = nullptr;
+	pcTrayWnd->DispatchEvent(hWndTray, WM_GETOBJECT, 0L, LPARAM(OBJID_WINDOW));
+}
+
 TEST_F(TrayWndTest, OnHelp101)
 {
 	HWND hWndTray = nullptr;
