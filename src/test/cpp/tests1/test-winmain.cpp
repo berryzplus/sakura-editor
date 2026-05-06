@@ -777,30 +777,36 @@ TEST_P(WinMainTest, DoGrep001)
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
 
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 標準機能をできるだけ動かすために設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+		u8"bDarkMode=1"sv,		// ダークモードをONにする
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
 	// コントロールプロセスを起動する
 	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
 
 	std::array args{
 		LR"(-GREPMODE)"s,
-		LR"(-GKEY="test")"s,
-		LR"(-GFILE="*.*;#.git;#.svn;#.vs;!*.msi;!*.exe;!*.obj;!*.pdb;!*.ilk;!*.res;!*.pch;!*.iobj;!*.ipdb")"s,
-		std::format(LR"(-GFOLDER="{}")", iniPath.parent_path().c_str()),
+		LR"(-GKEY="localhost")"s,
+		LR"(-GFILE="*.*;#en-US;!*.sys;!*.dll;!*.exe;!*.mui;!*.nls;!*.chm;!*.dat;!*.tmp")"s,
+		LR"(-GFOLDER="C:\WINDOWS\System32\Drivers")"s,
 		LR"(-GOPT=SP1)"s
 	};
 
 	// エディタープロセスを起動する
 	const auto ep = testing::CreateEditorProcess(args, profileName);
 
-	// Grepダイアログが表示されるのを待って閉じる
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(GSTR_EDITWINDOWNAME, nullptr); hWndFound) {
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
-
 	// 編集ウインドウを閉じる
-	const auto hWndFound = cxx::FindWindowW(GSTR_EDITWINDOWNAME);
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
 	testing::RequestForeignWindowClose(hWndFound);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
@@ -854,14 +860,8 @@ TEST_P(WinMainTest, ShowDlgGrep101)
 	const auto ep = testing::CreateEditorProcess(std::array{ LR"(-GREPDLG)", LR"(-GREPMODE)" }, profileName);
 
 	// Grepダイアログが表示されるのを待って閉じる
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); hWndFound) {
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
-	const auto hWndDlgGrep = WaitForWindow(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep");
-	EmulateInvokeButton(hWndDlgGrep, L"キャンセル(X)");
+	const auto hDlgGrep = WaitForDialog(L"Grep", 30000);
+	EmulateInvokeButton(hDlgGrep, L"キャンセル(X)");
 
 	bool dlgClosed = false;
 	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
@@ -875,7 +875,7 @@ TEST_P(WinMainTest, ShowDlgGrep101)
 	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
 
 	// 編集ウインドウを閉じる
-	const auto hWndFound = cxx::FindWindowW(GSTR_EDITWINDOWNAME);
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
 	testing::RequestForeignWindowClose(hWndFound);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
