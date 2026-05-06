@@ -28,7 +28,6 @@
 #include "StdAfx.h"
 #include "_main/CControlTray.h"
 
-#include "env/CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
@@ -211,15 +210,11 @@ static LRESULT CALLBACK CControlTrayWndProc(
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CControlTray::CControlTray()
 {
-	/* 共有データ構造体のアドレスを返す */
-	m_pShareData = &GetDllShareData();
-
 	return;
 }
 
 CControlTray::~CControlTray()
 {
-	delete m_pcPropertyManager;
 	return;
 }
 
@@ -232,67 +227,50 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
 	//同名同クラスのウィンドウが既に存在していたら、失敗
-	m_hInstance = hInstance;
+	SFilePath szTrayWndName{ GSTR_CEDITAPP };
+
 	const auto pszProfileName = GetProfileName();
-	std::wstring strCEditAppName = GSTR_CEDITAPP;
-	strCEditAppName += pszProfileName;
-	HWND hwndWork = ::FindWindow( strCEditAppName.c_str(), strCEditAppName.c_str() );
-	if( nullptr != hwndWork ){
+	szTrayWndName.append(pszProfileName);
+	if (::FindWindowW(szTrayWndName, szTrayWndName)) {
 		return nullptr;
 	}
 
 	//ウィンドウクラス登録
-	WNDCLASS	wc;
-	{
-		wc.style			=	CS_HREDRAW |
-								CS_VREDRAW |
-								CS_DBLCLKS |
-								CS_BYTEALIGNCLIENT |
-								CS_BYTEALIGNWINDOW;
-		wc.lpfnWndProc		= CControlTrayWndProc;
-		wc.cbClsExtra		= 0;
-		wc.cbWndExtra		= 0;
-		wc.hInstance		= m_hInstance;
-		wc.hIcon			= LoadIcon( nullptr, IDI_APPLICATION );
-		wc.hCursor			= LoadCursor( nullptr, IDC_ARROW );
-		wc.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
-		wc.lpszMenuName		= nullptr;
-		wc.lpszClassName	= strCEditAppName.c_str();
-		ATOM	atom = RegisterClass( &wc );
-		if( 0 == atom ){
+	WNDCLASSEXW wc{ sizeof(WNDCLASSEXW) };
+	wc.style			= CS_DBLCLKS;
+	wc.lpfnWndProc		= CControlTrayWndProc;
+	wc.cbClsExtra		= 0;
+	wc.cbWndExtra		= 0;
+	wc.hInstance		= hInstance;
+	wc.hIcon			= ::LoadIconW(nullptr, IDI_APPLICATION);
+	wc.hCursor			= ::LoadCursorW(nullptr, IDC_ARROW);
+	wc.hbrBackground	= HBRUSH(COLOR_WINDOW + 1);
+	wc.lpszMenuName		= nullptr;
+	wc.lpszClassName	= szTrayWndName;
+	wc.hIconSm			= nullptr;
+
+	if (!::RegisterClassExW(&wc)) {
 			ErrorMessage( nullptr, LS(STR_TRAY_CREATE) );
 		}
-	}
 
 	// ウィンドウ作成 (WM_CREATEで、GetHwnd() に HWND が格納される)
-	::CreateWindow(
-		strCEditAppName.c_str(),			// pointer to registered class name
-		strCEditAppName.c_str(),			// pointer to window name
-		WS_OVERLAPPEDWINDOW/*WS_VISIBLE *//*| WS_CHILD *//* | WS_CLIPCHILDREN*/	,	// window style
-		CW_USEDEFAULT,						// horizontal position of window
-		0,									// vertical position of window
-		100,								// window width
-		100,								// window height
-		nullptr,								// handle to parent or owner window
-		nullptr,								// handle to menu or child-window identifier
-		m_hInstance,						// handle to application instance
-		(LPVOID)this						// pointer to window-creation data(lpCreateParams)
+	::CreateWindowExW(
+		0,
+		szTrayWndName,			// pointer to registered class name
+		szTrayWndName,			// pointer to window name
+		WS_OVERLAPPEDWINDOW,	// window style
+		CW_USEDEFAULT,			// horizontal position of window
+		SW_HIDE,				// vertical position of window
+		100,					// window width
+		100,					// window height
+		HWND(nullptr),			// handle to parent or owner window
+		HMENU(nullptr),			// handle to menu or child-window identifier
+		hInstance,				// handle to application instance
+		LPVOID(this)			// pointer to window-creation data(lpCreateParams)
 	);
 
 	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
 	::SetWindowPos( GetTrayHwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
-	
-	// タスクトレイアイコン作成
-	m_hIcons.Create( m_hInstance );	//	Oct. 16, 2000 genta
-	m_cMenuDrawer.Create( CSelectLang::getLangRsrcInstance(), GetTrayHwnd(), &m_hIcons );
-	if( GetTrayHwnd() ){
-		CreateTrayIcon( GetTrayHwnd() );
-	}
-
-	m_pcPropertyManager = new CPropertyManager();
-	m_pcPropertyManager->Create( GetTrayHwnd(), &m_hIcons, &m_cMenuDrawer );
-
-	wcscpy(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
 
 	return GetTrayHwnd();
 }
@@ -947,6 +925,16 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	// Modified by KEITA for WIN64 2003.9.6
 	::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(this));
+
+	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
+
+	m_hIcons.Create(m_hInstance);
+	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+
+	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
+
+	// タスクトレイアイコン作成
+	CreateTrayIcon(hWnd);
 
 	// タスクトレイ左クリックメニューへのショートカットキー登録
 	RegisterHotKey(hWnd);
