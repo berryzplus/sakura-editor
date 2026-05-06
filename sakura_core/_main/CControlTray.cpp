@@ -28,7 +28,6 @@
 #include "StdAfx.h"
 #include "_main/CControlTray.h"
 
-#include "env/CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
@@ -211,15 +210,11 @@ static LRESULT CALLBACK CControlTrayWndProc(
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CControlTray::CControlTray()
 {
-	/* 共有データ構造体のアドレスを返す */
-	m_pShareData = &GetDllShareData();
-
 	return;
 }
 
 CControlTray::~CControlTray()
 {
-	delete m_pcPropertyManager;
 	return;
 }
 
