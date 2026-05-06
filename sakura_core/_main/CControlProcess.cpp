@@ -191,7 +191,6 @@ bool CControlProcess::InitializeProcess()
 		return false;
 	}
 	SetMainWindow(hwnd);
-	GetDllShareData().m_sHandles.m_hwndTray = hwnd;
 
 	// 初期化完了イベントをシグナル状態にする
 	if( !::SetEvent( m_hEventCPInitialized ) ){

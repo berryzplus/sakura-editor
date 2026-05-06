@@ -111,6 +111,8 @@ public:
 	static void DoGrepCreateWindow(HINSTANCE hinst, HWND, CDlgGrep& cDlgGrep);
 protected:
 	void	DoGrep();	//Stonee, 2001/03/21
+	void	RegisterHotKey(HWND hWnd) noexcept;
+
 	BOOL TrayMessage(HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip);	/*!< タスクトレイのアイコンに関する処理 */
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
@@ -122,6 +124,8 @@ protected:
 	);
 
 private:
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+
 	bool	OnSetTypeSetting(size_t index);
 	bool	OnGetTypeSetting(size_t index);
 	bool	OnAddTypeSetting(size_t index);

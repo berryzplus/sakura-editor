@@ -52,6 +52,7 @@
 using namespace std::literals::string_literals;
 using namespace std::literals::string_view_literals;
 
+WORD convertHotKeyMods(WORD wHotKeyMods) noexcept;
 void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& optOutDir);
 
 namespace window {
@@ -93,6 +94,17 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 		pcTrayWnd = nullptr;
 	}
 };
+
+TEST_F(TrayWndTest, convertHotKeyMods001)
+{
+	EXPECT_THAT(convertHotKeyMods(HOTKEYF_SHIFT) & MOD_SHIFT, IsTrue());
+}
+
+TEST_F(TrayWndTest, OnCreate101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+}
 
 TEST_F(TrayWndTest, OnGetTypeSetting001)
 {

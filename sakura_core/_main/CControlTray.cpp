@@ -65,6 +65,21 @@
 /////////////////////////////////////////////////////////////////////////
 static LRESULT CALLBACK CControlTrayWndProc( HWND, UINT, WPARAM, LPARAM );
 
+WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
+{
+	WORD wMods = 0;
+	if (HOTKEYF_SHIFT & wHotKeyMods) {
+		wMods |= MOD_SHIFT;
+	}
+	if (HOTKEYF_CONTROL & wHotKeyMods) {
+		wMods |= MOD_CONTROL;
+	}
+	if (HOTKEYF_ALT & wHotKeyMods) {
+		wMods |= MOD_ALT;
+	}
+	return wMods;
+}
+
 //Stonee, 2001/03/21
 //Stonee, 2001/07/01  多重起動された場合は前回のダイアログを前面に出すようにした。
 void CControlTray::DoGrep()
@@ -217,69 +232,50 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
 	//同名同クラスのウィンドウが既に存在していたら、失敗
-	m_hInstance = hInstance;
-	const auto pszProfileName = GetProfileName();
-	std::wstring strCEditAppName = GSTR_CEDITAPP;
-	strCEditAppName += pszProfileName;
-	HWND hwndWork = ::FindWindow( strCEditAppName.c_str(), strCEditAppName.c_str() );
-	if( nullptr != hwndWork ){
+	SFilePath szTrayWndName{ GSTR_CEDITAPP };
+
+	std::wstring_view profileName{ GetProfileName() };
+	szTrayWndName.append(profileName);
+	if (::FindWindowW(szTrayWndName, szTrayWndName)) {
 		return nullptr;
 	}
 
 	//ウィンドウクラス登録
-	WNDCLASS	wc;
-	{
-		wc.style			=	CS_HREDRAW |
-								CS_VREDRAW |
-								CS_DBLCLKS |
-								CS_BYTEALIGNCLIENT |
-								CS_BYTEALIGNWINDOW;
-		wc.lpfnWndProc		= CControlTrayWndProc;
-		wc.cbClsExtra		= 0;
-		wc.cbWndExtra		= 0;
-		wc.hInstance		= m_hInstance;
-		wc.hIcon			= LoadIcon( nullptr, IDI_APPLICATION );
-		wc.hCursor			= LoadCursor( nullptr, IDC_ARROW );
-		wc.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
-		wc.lpszMenuName		= nullptr;
-		wc.lpszClassName	= strCEditAppName.c_str();
-		ATOM	atom = RegisterClass( &wc );
-		if( 0 == atom ){
+	WNDCLASSEXW wc{ sizeof(WNDCLASSEXW) };
+
+	wc.style			= CS_DBLCLKS;
+	wc.lpfnWndProc		= CControlTrayWndProc;
+	wc.cbClsExtra		= 0;
+	wc.cbWndExtra		= 0;
+	wc.hInstance		= hInstance;
+	wc.hIcon			= ::LoadIconW(nullptr, IDI_APPLICATION);
+	wc.hCursor			= ::LoadCursorW(nullptr, IDC_ARROW);
+	wc.hbrBackground	= HBRUSH(COLOR_WINDOW + 1);
+	wc.lpszMenuName		= nullptr;
+	wc.lpszClassName	= szTrayWndName;
+	wc.hIconSm			= nullptr;
+
+	const auto atom = ::RegisterClassExW(&wc);
+	if (!atom) {
 			ErrorMessage( nullptr, LS(STR_TRAY_CREATE) );
-		}
 	}
 
 	// ウィンドウ作成 (WM_CREATEで、GetHwnd() に HWND が格納される)
-	::CreateWindow(
-		strCEditAppName.c_str(),			// pointer to registered class name
-		strCEditAppName.c_str(),			// pointer to window name
-		WS_OVERLAPPEDWINDOW/*WS_VISIBLE *//*| WS_CHILD *//* | WS_CLIPCHILDREN*/	,	// window style
-		CW_USEDEFAULT,						// horizontal position of window
-		0,									// vertical position of window
-		100,								// window width
-		100,								// window height
-		nullptr,								// handle to parent or owner window
-		nullptr,								// handle to menu or child-window identifier
-		m_hInstance,						// handle to application instance
-		(LPVOID)this						// pointer to window-creation data(lpCreateParams)
+	return ::CreateWindowExW(
+		0L,
+		MAKEINTATOM(atom),		// pointer to registered class name
+		szTrayWndName,			// pointer to window name
+		WS_OVERLAPPEDWINDOW,	// window style
+		CW_USEDEFAULT,			// horizontal position of window
+		SW_HIDE,				// vertical position of window
+		100,					// window width
+		100,					// window height
+		HWND(nullptr),			// handle to parent or owner window
+		HMENU(nullptr),			// handle to menu or child-window identifier
+		hInstance,				// handle to application instance
+		LPVOID(this)			// pointer to window-creation data(lpCreateParams)
 	);
 
-	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
-	::SetWindowPos( GetTrayHwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
-	
-	// タスクトレイアイコン作成
-	m_hIcons.Create( m_hInstance );	//	Oct. 16, 2000 genta
-	m_cMenuDrawer.Create( CSelectLang::getLangRsrcInstance(), GetTrayHwnd(), &m_hIcons );
-	if( GetTrayHwnd() ){
-		CreateTrayIcon( GetTrayHwnd() );
-	}
-
-	m_pcPropertyManager = new CPropertyManager();
-	m_pcPropertyManager->Create( GetTrayHwnd(), &m_hIcons, &m_cMenuDrawer );
-
-	wcscpy(m_szLanguageDll, GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
-
-	return GetTrayHwnd();
 }
 
 //! タスクトレイにアイコンを登録する
@@ -337,6 +333,23 @@ void CControlTray::MessageLoop( void )
 	return;
 }
 
+//! ホットキーを登録する
+void CControlTray::RegisterHotKey(HWND hWnd) noexcept
+{
+	wHotKeyMods = convertHotKeyMods(m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods);
+	wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
+
+	if (wHotKeyCode) {
+		// タスクトレイ左クリックメニューへのショートカットキー登録
+		::RegisterHotKey(
+			hWnd,
+			ID_HOTKEY_TRAYMENU,
+			wHotKeyMods,
+			wHotKeyCode
+		);
+	}
+}
+
 /* タスクトレイのアイコンに関する処理 */
 BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip )
 {
@@ -379,6 +392,10 @@ LRESULT CControlTray::DispatchEvent(
 	EditNode*	pEditNodeArr;
 
 	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
+// clang-format on
+
 	case WM_COMMAND:
 		return 0L;	//何もしない
 
@@ -515,41 +532,6 @@ LRESULT CControlTray::DispatchEvent(
 		}
 		return 0;
 
-	case WM_CREATE:
-		m_hWnd = hwnd;
-		hwndHtmlHelp = nullptr;
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( GetTrayHwnd(), GWLP_USERDATA, (LONG_PTR)this );
-
-		/* タスクトレイ左クリックメニューへのショートカットキー登録 */
-		wHotKeyMods = 0;
-		if( HOTKEYF_SHIFT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_SHIFT;
-		}
-		if( HOTKEYF_CONTROL & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_CONTROL;
-		}
-		if( HOTKEYF_ALT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_ALT;
-		}
-		wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
-		if( wHotKeyCode != 0 ){
-			::RegisterHotKey(
-				GetTrayHwnd(),
-				ID_HOTKEY_TRAYMENU,
-				wHotKeyMods,
-				wHotKeyCode
-			);
-		}
-
-		// 2006.07.09 ryoji 最後の方でシャットダウンするアプリケーションにする
-		::SetProcessShutdownParameters(0x180, 0);
-
-		// 2010.08.26 ウィンドウ存在確認
-		::SetTimer( hwnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr );
-		return 0L;
-
-//	case WM_QUERYENDSESSION:
 	case WM_HELP:
 		lphi = (LPHELPINFO) lParam;
 		switch( lphi->iContextType ){
@@ -585,26 +567,9 @@ LRESULT CControlTray::DispatchEvent(
 			}
 
 			::UnregisterHotKey( GetTrayHwnd(), ID_HOTKEY_TRAYMENU );
-			/* タスクトレイ左クリックメニューへのショートカットキー登録 */
-			wHotKeyMods = 0;
-			if( HOTKEYF_SHIFT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_SHIFT;
-			}
-			if( HOTKEYF_CONTROL & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_CONTROL;
-			}
-			if( HOTKEYF_ALT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_ALT;
-			}
-			wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
-			if( wHotKeyCode != 0 ){
-				::RegisterHotKey(
-					GetTrayHwnd(),
-					ID_HOTKEY_TRAYMENU,
-					wHotKeyMods,
-					wHotKeyCode
-				);
-			}
+
+			// タスクトレイ左クリックメニューへのショートカットキー登録
+			RegisterHotKey(hWnd);
 
 			break;
 		default:
@@ -939,6 +904,56 @@ LRESULT CControlTray::DispatchEvent(
 
 	//あとはデフォルトに任せる
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!lpCreateStruct) {
+		return false;
+	}
+
+	m_hInstance = lpCreateStruct->hInstance;
+	assert(m_hInstance);
+
+	m_hWnd = hWnd;
+
+	// Modified by KEITA for WIN64 2003.9.6
+	::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(this));
+
+	m_hIcons.Create(m_hInstance);
+	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+
+	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
+
+	m_pShareData->m_sHandles.m_hwndTray = hWnd;
+
+	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
+
+	// タスクトレイアイコン作成
+	CreateTrayIcon(hWnd);
+
+	// タスクトレイ左クリックメニューへのショートカットキー登録
+	RegisterHotKey(hWnd);
+
+	// 最後の方でシャットダウンするアプリケーションにする
+	::SetProcessShutdownParameters(0x180, 0);
+
+	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
+	::SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+	// 編集ウィンドウの終了チェックを開始する
+	::SetTimer(hWnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr);
+
+	return true;
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
