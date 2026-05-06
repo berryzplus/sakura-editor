@@ -117,6 +117,65 @@ TEST_F(TrayWndTest, OnDestroy101)
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_DESTROY, 0L, 0L), IsFalse());
 }
 
+TEST_F(TrayWndTest, OnClose101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_CLOSE, 0L, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, OnQueryEndSession101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_QUERYENDSESSION, 0L, 0L), IsTrue());
+}
+
+TEST_F(TrayWndTest, OnEndSession101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_ENDSESSION, TRUE, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, OnHelp101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_HELP, 0L, 0L), IsTrue());
+
+	HELPINFO hi{};
+	hi.iContextType = HELPINFO_WINDOW;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_HELP, 0L, LPARAM(&hi)), IsTrue());
+}
+
+TEST_F(TrayWndTest, OnCommand101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_COMMAND, 0L, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, OnTimer101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_TIMER, 2 /* IDT_EDITCHECK */, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, OnMenuChar101)
+{
+	HWND hWndTray = nullptr;
+	pcTrayWnd->DispatchEvent(hWndTray, WM_MENUCHAR, 0L, 0L);
+}
+
+TEST_F(TrayWndTest, OnExitMenuLoop101)
+{
+	HWND hWndTray = nullptr;
+	pcTrayWnd->DispatchEvent(hWndTray, WM_EXITMENULOOP, 0L, 0L);
+}
+
+TEST_F(TrayWndTest, OnHotKey101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_HOTKEY, 0L, 0L), IsFalse());
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_HOTKEY, 0x1234 /* ID_HOTKEY_TRAYMENU */, 0L), IsFalse());
+}
+
 TEST_F(TrayWndTest, OnGetTypeSetting001)
 {
 	// 受け取りバッファに値を設定

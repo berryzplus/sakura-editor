@@ -453,7 +453,6 @@ LRESULT CControlTray::DispatchEvent(
 
 	int				nId;
 	HWND			hwndWork;
-	LPHELPINFO		lphi;
 
 	int			nRowNum;
 	EditNode*	pEditNodeArr;
@@ -462,7 +461,21 @@ LRESULT CControlTray::DispatchEvent(
 // clang-format off
 	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
+	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
+	HANDLE_MSG(hWnd, WM_HOTKEY,							OnHotKey);
 // clang-format on
+
+	case WM_QUERYENDSESSION:
+		return OnQueryEndSession(hWnd, UINT(lParam));
+
+	case WM_ENDSESSION:
+		OnEndSession(hWnd, wParam, UINT(lParam));
+		return 0;	//	もうこのプロセスに制御が戻ることはない
+
+	case WM_HELP:
+		OnHelp(hWnd, LPHELPINFO(lParam));
+		return TRUE;
 
 	case WM_COMMAND:
 		return 0L;	//何もしない
@@ -470,61 +483,12 @@ LRESULT CControlTray::DispatchEvent(
 	case WM_MENUCHAR:
 		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
 		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
-	case WM_EXITMENULOOP:
+
+	default:
 		break;
+	}
 
-	/* タスクトレイ左クリックメニューへのショートカットキー登録 */
-	case WM_HOTKEY:
-		{
-			int		idHotKey = (int) wParam;				// identifier of hot key
-			UINT	fuModifiers = (UINT) LOWORD(lParam);	// key-modifier flags
-			UINT	uVirtKey = (UINT) HIWORD(lParam);		// virtual-key code
-			WCHAR	szClassName[100];
-			WCHAR	szText[256];
-
-			hwndWork = ::GetForegroundWindow();
-			szClassName[0] = L'\0';
-			::GetClassName( hwndWork, szClassName, int(std::size(szClassName)) - 1 );
-			::GetWindowText( hwndWork, szText, int(std::size(szText)) - 1 );
-			if( 0 == wcscmp( szText, LS(STR_PROPCOMMON) ) ){
-				return -1;
-			}
-
-			if( ID_HOTKEY_TRAYMENU == idHotKey
-			 &&	( wHotKeyMods )  == fuModifiers
-			 && wHotKeyCode == uVirtKey
-			){
-				// Jan. 1, 2003 AROKA
-				// タスクトレイメニューの表示タイミングをLBUTTONDOWN→LBUTTONUPに変更したことによる
-				::PostMessageAny( GetTrayHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONUP );
-			}
-		}
-		return 0;
-
-	case WM_TIMER:
-		// タイマメッセージ
-		if( IDT_EDITCHECK == wParam ){
-			// 2010.08.26 ウィンドウ存在確認。消えたウィンドウを抹消する
-			bool bDelete = false;
-			bool bDelFound;
-			do {
-				bDelFound = false;
-				for( int i = 0; i < m_pShareData->m_sNodes.m_nEditArrNum; ++i ){
-					HWND target = m_pShareData->m_sNodes.m_pEditArr[i].GetHwnd();
-					if( ! IsSakuraMainWindow( target ) ){
-						CAppNodeGroupHandle(m_pShareData->m_sNodes.m_pEditArr[i].m_nGroup).DeleteEditWndList( target );
-						bDelete = bDelFound = true;
-						// 1つ削除したらやり直し
-						break;
-					}
-				}
-			}while( bDelFound );
-			if( bDelete && m_pShareData->m_sNodes.m_nEditArrNum == 0 ){
-				PostMessageAny( hwnd, MYWM_DELETE_ME, 0, 0 );
-			}
-		}
-		return 0;
-
+	switch (uMsg) {
 	case MYWM_UIPI_CHECK:
 		/* エディタ－トレイ間でのUI特権分離の確認メッセージ */	// 2007.06.07 ryoji
 		::SendMessageW(HWND(lParam), MYWM_UIPI_CHECK, 0L, LPARAM(hWnd));	// 返事を返す
@@ -600,19 +564,6 @@ LRESULT CControlTray::DispatchEvent(
 		}
 		return 0;
 
-	case WM_HELP:
-		lphi = (LPHELPINFO) lParam;
-		switch( lphi->iContextType ){
-		case HELPINFO_MENUITEM:
-			MyWinHelp( hwnd, HELP_CONTEXT, FuncID_To_HelpContextID( (EFunctionCode)lphi->iCtrlId ) );
-			break;
-		default:
-			break;
-		}
-		return TRUE;
-
-//	case MYWM_SETFILEINFO:
-//		return 0L;
 	case MYWM_CHANGESETTING:
 		switch( (e_PM_CHANGESETTING_SELECT)lParam ){
 		case PM_CHANGESETTING_ALL:
@@ -911,35 +862,6 @@ LRESULT CControlTray::DispatchEvent(
 		}
 		break;
 
-	case WM_QUERYENDSESSION:
-		/* すべてのウィンドウを閉じる */	//Oct. 7, 2000 jepro 「編集ウィンドウの全終了」という説明を左記のように変更
-		if( CloseAllEditor( FALSE, GetTrayHwnd(), TRUE, 0 ) ){	// 2006.12.25, 2007.02.13 ryoji 引数追加
-			//	Jan. 31, 2000 genta
-			//	この時点ではWindowsの終了が確定していないので常駐解除すべきではない．
-			//	::DestroyWindow( hwnd );
-			return TRUE;
-		}else{
-			return FALSE;
-		}
-	case WM_CLOSE:
-		/* すべてのウィンドウを閉じる */	//Oct. 7, 2000 jepro 「編集ウィンドウの全終了」という説明を左記のように変更
-		if( CloseAllEditor( FALSE, GetTrayHwnd(), TRUE, 0 ) ){	// 2006.12.25, 2007.02.13 ryoji 引数追加
-			::DestroyWindow( hwnd );
-		}
-		return 0L;
-
-	//	From Here Jan. 31, 2000 genta	Windows終了時の後処理．
-	//	Windows終了時はWM_CLOSEが呼ばれない上，DestroyWindowを
-	//	呼び出す必要もない．また，メッセージループに戻らないので
-	//	メッセージループの後ろの処理をここで完了させる必要がある．
-	case WM_ENDSESSION:
-		//	もしWindowsの終了が中断されたのなら何もしない
-		if( wParam != FALSE )
-			OnDestroy(hWnd);	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
-
-		return 0;	//	もうこのプロセスに制御が戻ることはない
-	//	To Here Jan. 31, 2000 genta
-
 	case MYWM_ALLOWACTIVATE:
 		::AllowSetForegroundWindow(DWORD(wParam));
 		return 0L;
@@ -1065,6 +987,139 @@ void CControlTray::OnDestroy(HWND hWnd)
 
 	// Windows にスレッドの終了を要求します。
 	::PostQuitMessage(0);
+}
+
+/*!
+ * WM_CLOSEハンドラ
+ *
+ * ウインドウクローズが要求されたときに呼ばれる
+ * このメッセージに戻り値はありません。
+ */
+void CControlTray::OnClose(HWND hWnd) const
+{
+	//すべてのウィンドウを閉じる
+	if (!CloseAllEditor(FALSE, hWnd, TRUE, 0)) {
+		return;
+	}
+
+	//ウィンドウを破棄する(DefWindowProcと同じだが、あえて書いておく)
+	::DestroyWindow(hWnd);
+}
+
+/*!
+ * WM_QUERYENDSESSIONハンドラ
+ *
+ * WM_QUERYENDSESSIONはシステム終了が要求されたときにポストされます。
+ *
+ * @note windowsx.h の定義が微妙なので独自に定義
+ *
+ * @retval true  システム終了を続行する
+ * @retval false システム終了を中止する
+ * 
+ * @date 2000/01/31 genta Windows終了時の後処理
+ */
+bool CControlTray::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const
+{
+	UNREFERENCED_PARAMETER(endSessionFlags);
+
+	// ここの実装は要改修
+	//
+	// 5秒以内に終わらない処理を走らせるなら、ShutdownBlockReasonCreateを呼ぶ必要があります。
+
+	//すべてのウィンドウを閉じる
+	if (!CloseAllEditor(FALSE, hWnd, TRUE, 0)) {
+		return false;
+	}
+
+	return true;
+}
+
+/*!
+ * WM_ENDSESSIONハンドラ
+ *
+ * WM_ENDSESSIONはWM_QUERYENDSESSIONメッセージの処理後にポストされます。
+ * このメッセージに戻り値はありません。
+ * 
+ * @note windowsx.h の定義が微妙なので独自に定義
+ *
+ * @date 2000/01/31 genta Windows終了時の後処理
+ */
+void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags)
+{
+	UNREFERENCED_PARAMETER(endSessionFlags);
+
+	//	Windows終了時はWM_CLOSEが呼ばれない上，DestroyWindowを
+	//	呼び出す必要もない．また，メッセージループに戻らないので
+	//	メッセージループの後ろの処理をここで完了させる必要がある．
+
+	//	もしWindowsの終了が中断されたのなら何もしない
+	if (bEndSession)
+		OnDestroy(hWnd);	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
+}
+
+/*!
+ * WM_HELPハンドラ
+ *
+ * このメッセージの戻り値はTRUE固定です。
+ * 
+ * @note windowsx.h に定義がないので独自に定義
+ */
+void CControlTray::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept
+{
+	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
+		return;
+	}
+
+	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
+}
+
+/*!
+ * WM_TIMERハンドラ
+ *
+ * このメッセージの戻り値は0固定です。
+ */
+void CControlTray::OnTimer(HWND hWnd, UINT id)
+{
+	// 編集ウィンドウ存在確認。消えたウィンドウを抹消する
+	if (IDT_EDITCHECK == id) {
+		std::span nodes(m_pShareData->m_sNodes.m_pEditArr, std::min<size_t>(m_pShareData->m_sNodes.m_nEditArrNum, std::size(m_pShareData->m_sNodes.m_pEditArr)));
+		if (const auto found = std::ranges::find_if(nodes, [](const auto& node) { return !IsSakuraMainWindow(node.GetHwnd()); }); found != nodes.end()) {
+			found->GetGroup().DeleteEditWndList(found->GetHwnd());
+			if (0 == m_pShareData->m_sNodes.m_nEditArrNum) {
+				PostMessageW(hWnd, MYWM_DELETE_ME, 0, 0);
+			}
+		}
+		return;
+	}
+}
+
+/*!
+ * WM_HOTKEYハンドラ
+ *
+ * このメッセージの戻り値は0固定です。
+ */
+void CControlTray::OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const
+{
+	// タスクトレイ左クリックメニューへのショートカットキー
+	if (ID_HOTKEY_TRAYMENU != idHotKey
+		|| wHotKeyMods != fuModifiers
+		|| wHotKeyCode != vk
+	)
+	{
+		return;
+	}
+
+	const auto hWndForeground = ::GetForegroundWindow();
+	StaticString<100> szClassName;
+	::GetClassNameW(hWndForeground, szClassName, int(std::size(szClassName)) - 1);
+
+	StaticString<100> text;
+	::GetWindowTextW(hWndForeground, std::data(text), int(std::size(text)));
+	if (text == LS(STR_PROPCOMMON)) {
+		return;
+	}
+
+	::PostMessageW(hWnd, MYWM_NOTIFYICON, 0, WM_LBUTTONUP);
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
