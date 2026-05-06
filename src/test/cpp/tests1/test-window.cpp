@@ -94,6 +94,12 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	}
 };
 
+TEST_F(TrayWndTest, OnCreate101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+}
+
 TEST_F(TrayWndTest, OnGetTypeSetting001)
 {
 	// 受け取りバッファに値を設定
