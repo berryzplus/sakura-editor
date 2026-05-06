@@ -288,8 +288,6 @@ void CControlTray::CreateTrayIcon()
 	if (m_pShareData->m_Common.m_sGeneral.m_bUseTaskTray) {	/* タスクトレイのアイコンを使う */
 		const auto hIcon = GetAppIcon(m_hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
 
-		StaticString<64 + _MAX_PATH> pszTips{};
-
 		/* バージョン情報 */
 		DWORD dwVersionMS;
 		DWORD dwVersionLS;
@@ -300,15 +298,15 @@ void CControlTray::CreateTrayIcon()
 			profname = L" ";
 			profname += pszProfileName;
 		}
-		auto_snprintf_s(pszTips, std::size(pszTips), L"%s %d.%d.%d.%d%ls",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
+		const auto tipText = std::format(L"{:s} {:d}.{:d}.{:d}.{:d}{:s}",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
 			GSTR_APPNAME,
 			HIWORD( dwVersionMS ),
 			LOWORD( dwVersionMS ),
 			HIWORD( dwVersionLS ),
 			LOWORD( dwVersionLS ),
-			profname.c_str()
+			profname
 		);
-		TrayMessage(GetTrayHwnd(), NIM_ADD, 0, hIcon, pszTips);
+		SendTrayMessage(NIM_ADD, hIcon, tipText);
 
 		bCreated = true;
 	}
@@ -351,27 +349,32 @@ void CControlTray::RegisterHotKey(HWND hWnd) noexcept
 	}
 }
 
-/* タスクトレイのアイコンに関する処理 */
-BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip )
+/*!
+ * @brief タスクトレイにメッセージを送信する
+ *
+ * @param dwMessage NIM_ADD, NIM_MODIFY, NIM_DELETE のいずれか
+ * @param hIcon アイコンのハンドル
+ * @param optTip アイコンのツールチップテキスト
+ */
+bool CControlTray::SendTrayMessage(DWORD dwMessage, HICON hIcon, const std::optional<std::wstring>& optTip) const
 {
-	BOOL			res;
-	NOTIFYICONDATA	tnd;
-	tnd.cbSize				= sizeof_raw( tnd );
-	tnd.hWnd				= hDlg;
-	tnd.uID					= uID;
-	tnd.uFlags				= NIF_MESSAGE|NIF_ICON|NIF_TIP;
+	NOTIFYICONDATA tnd{ sizeof(NOTIFYICONDATA) };
+	tnd.hWnd				= GetHwnd();
+	tnd.uID					= 0;
+	tnd.uFlags				= NIF_MESSAGE;
 	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
-	tnd.hIcon				= hIcon;
-	if( pszTip ){
-		::wcsncpy_s(tnd.szTip, pszTip, _TRUNCATE);
-	}else{
-		tnd.szTip[0] = L'\0';
+
+	if (hIcon) {
+		tnd.uFlags |= NIF_ICON;
+		tnd.hIcon	= hIcon;
 	}
-	res = Shell_NotifyIcon( dwMessage, &tnd );
-	if( hIcon ){
-		DestroyIcon( hIcon );
+
+	if (optTip.has_value()) {
+		tnd.uFlags |= NIF_TIP;
+		std::ranges::copy(*optTip, tnd.szTip);
 	}
-	return res;
+
+	return ::Shell_NotifyIconW(dwMessage, &tnd);
 }
 
 /* メッセージ処理 */
@@ -966,7 +969,7 @@ void CControlTray::OnDestroy(HWND hWnd)
 	::UnregisterHotKey(hWnd, ID_HOTKEY_TRAYMENU);
 
 	if (m_bCreatedTrayIcon) {	/* トレイにアイコンを作った */
-		TrayMessage(hWnd, NIM_DELETE, 0, nullptr, nullptr);
+		SendTrayMessage(NIM_DELETE);
 	}
 
 	// 「タスクトレイに常駐しない」設定でエディタ画面（Normal Process）を立ち上げたまま

@@ -102,8 +102,8 @@ public:
 	static BOOL CloseAllEditor( BOOL bCheckConfirm, HWND hWndFrom, BOOL bExit, int nGroup );	/* すべてのウィンドウを閉じる */	//Oct. 7, 2000 jepro 「編集ウィンドウの全終了」という説明を左記のように変更	// 2006.12.25, 2007.02.13 ryoji 引数追加
 	static void TerminateApplication( HWND hWndFrom );	/* サクラエディタの全終了 */	// 2006.12.25 ryoji 引数追加
 
-public:
-	HWND GetTrayHwnd() const{ return m_hWnd; }
+	HWND	GetHwnd() const noexcept { return m_hWnd; }
+	HWND	GetTrayHwnd() const noexcept { return GetHwnd(); }
 
 	/*
 	|| 実装ヘルパ系
@@ -113,8 +113,8 @@ protected:
 	void	CreateTrayIcon();
 	void	DoGrep();	//Stonee, 2001/03/21
 	void	RegisterHotKey(HWND hWnd) noexcept;
+	bool	SendTrayMessage(DWORD dwMessage, HICON hIcon = nullptr, const std::optional<std::wstring>& optTip = std::nullopt) const;
 
-	BOOL TrayMessage(HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip);	/*!< タスクトレイのアイコンに関する処理 */
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
 private:
