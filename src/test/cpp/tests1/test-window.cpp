@@ -47,6 +47,8 @@
 #include "config/app_constants.h"
 #include "env/CommonSetting.h"
 
+#include "testing/HResultEq.hpp"
+
 #include "tests1_rc.h"
 
 using namespace std::literals::string_literals;
@@ -55,6 +57,263 @@ using namespace std::literals::string_view_literals;
 void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& optOutDir);
 
 namespace window {
+
+struct AccesibleTest : public ::testing::Test {
+	cxx::com_pointer<IAccessible> pAccessible = nullptr;
+
+	const _variant_t selfChild{ static_cast<long>(CHILDID_SELF), VT_I4 };
+	const _variant_t invalidChild{ static_cast<long>(1), VT_I4 };
+
+	/*!
+	 * テストが起動される直前に毎回呼ばれる関数
+	 */
+	void SetUp() override {
+		// テストクラスをインスタンス化する
+		pAccessible = CAccessible::to_com_pointer(std::make_unique<CAccessible>());
+	}
+	/*!
+	 * テストが実行された直後に毎回呼ばれる関数
+	 */
+	void TearDown() override {
+		pAccessible = nullptr;
+	}
+};
+
+TEST_F(AccesibleTest, GetTypeInfoCount101)
+{
+	cxx::com_pointer<IDispatch> pDispatch{ pAccessible.GetInterfacePtr() };
+
+	EXPECT_HRESULT_EQ(pDispatch->GetTypeInfoCount(nullptr), E_NOTIMPL);
+}
+
+TEST_F(AccesibleTest, GetTypeInfo101)
+{
+	cxx::com_pointer<IDispatch> pDispatch{ pAccessible.GetInterfacePtr() };
+
+	cxx::com_pointer<ITypeInfo> pTypeInfo = nullptr;
+	EXPECT_HRESULT_EQ(pDispatch->GetTypeInfo(0, LOCALE_USER_DEFAULT, &pTypeInfo), E_NOTIMPL);
+}
+
+TEST_F(AccesibleTest, GetIDsOfNames101)
+{
+	cxx::com_pointer<IDispatch> pDispatch{ pAccessible.GetInterfacePtr() };
+
+	std::array<LPOLESTR, 1> names = {
+		LPOLESTR(L"accName")
+	};
+	DISPID dispId = 0;
+	EXPECT_HRESULT_EQ(pDispatch->GetIDsOfNames(
+		IID_NULL,
+		std::data(names),
+		int(std::size(names)),
+		LOCALE_USER_DEFAULT,
+		&dispId
+	), E_NOTIMPL);
+}
+
+TEST_F(AccesibleTest, Invoke101)
+{
+	cxx::com_pointer<IDispatch> pDispatch{ pAccessible.GetInterfacePtr() };
+
+	DISPID dispId = 0;
+	DISPPARAMS* pDispParams = nullptr;
+	VARIANT    varResult{};
+	EXCEPINFO  excepInfo{};
+	UINT       uArgErr = 0;
+
+	EXPECT_HRESULT_EQ(pDispatch->Invoke(
+		dispId,
+		IID_NULL,
+		LOCALE_USER_DEFAULT,
+		DISPATCH_METHOD,
+		pDispParams,
+		&varResult,
+		&excepInfo,
+		&uArgErr
+	), E_NOTIMPL);
+}
+
+TEST_F(AccesibleTest, get_accParent101)
+{
+	cxx::com_pointer<IDispatch> pParent = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accParent(nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accParent(&pParent), S_FALSE);
+	EXPECT_THAT(pParent, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accChildCount101)
+{
+	long childCount = -1;
+	EXPECT_HRESULT_EQ(pAccessible->get_accChildCount(nullptr), E_POINTER);
+	EXPECT_HRESULT_SUCCEEDED(pAccessible->get_accChildCount(&childCount));
+	EXPECT_THAT(childCount, 0);
+}
+
+TEST_F(AccesibleTest, get_accChild101)
+{
+	cxx::com_pointer<IDispatch> pChild = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accChild(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accChild(invalidChild, &pChild), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accChild(selfChild, &pChild), S_FALSE);
+	EXPECT_THAT(pChild, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accName101)
+{
+	BSTR bstrName = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accName(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accName(invalidChild, &bstrName), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accName(selfChild, &bstrName), S_FALSE);
+	EXPECT_THAT(bstrName, IsNull());
+}
+
+TEST_F(AccesibleTest, get_accValue101)
+{
+	BSTR bstrValue = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accValue(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accValue(invalidChild, &bstrValue), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accValue(selfChild, &bstrValue), S_FALSE);
+	EXPECT_THAT(bstrValue, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accDescription101)
+{
+	BSTR bstrDescription = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accDescription(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accDescription(invalidChild, &bstrDescription), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accDescription(selfChild, &bstrDescription), S_FALSE);
+	EXPECT_THAT(bstrDescription, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accRole101)
+{
+	VARIANT varRole;
+	::VariantInit(&varRole);
+	EXPECT_HRESULT_EQ(pAccessible->get_accRole(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accRole(invalidChild, &varRole), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accRole(selfChild, &varRole), S_FALSE);
+	::VariantClear(&varRole);
+}
+
+TEST_F(AccesibleTest, get_accState101)
+{
+	VARIANT varState;
+	::VariantInit(&varState);
+	EXPECT_HRESULT_EQ(pAccessible->get_accState(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accState(invalidChild, &varState), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accState(selfChild, &varState), S_FALSE);
+	::VariantClear(&varState);
+}
+
+TEST_F(AccesibleTest, get_accHelp101)
+{
+	BSTR bstrHelp = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelp(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelp(invalidChild, &bstrHelp), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelp(selfChild, &bstrHelp), S_FALSE);
+	EXPECT_THAT(bstrHelp, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accHelpTopic101)
+{
+	BSTR bstrHelpFile = nullptr;
+	long helpTopic = -1;
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelpTopic(&bstrHelpFile, selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelpTopic(&bstrHelpFile, invalidChild, &helpTopic), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accHelpTopic(&bstrHelpFile, selfChild, &helpTopic), S_FALSE);
+	EXPECT_THAT(bstrHelpFile, nullptr);
+	EXPECT_THAT(helpTopic, 0);
+}
+
+TEST_F(AccesibleTest, get_accKeyboardShortcut101)
+{
+	BSTR bstrShortcut = nullptr;
+	EXPECT_THAT(pAccessible->get_accKeyboardShortcut(selfChild, nullptr), E_POINTER);
+	EXPECT_THAT(pAccessible->get_accKeyboardShortcut(invalidChild, &bstrShortcut), E_INVALIDARG);
+	EXPECT_THAT(pAccessible->get_accKeyboardShortcut(selfChild, &bstrShortcut), S_FALSE);
+	EXPECT_THAT(bstrShortcut, nullptr);
+}
+
+TEST_F(AccesibleTest, get_accFocus101)
+{
+	VARIANT varFocus;
+	::VariantInit(&varFocus);
+	EXPECT_HRESULT_EQ(pAccessible->get_accFocus(nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accFocus(&varFocus), S_FALSE);
+	EXPECT_THAT(varFocus.vt, VT_EMPTY);
+	::VariantClear(&varFocus);
+}
+
+TEST_F(AccesibleTest, get_accSelection101)
+{
+	VARIANT varSelection;
+	::VariantInit(&varSelection);
+	EXPECT_HRESULT_EQ(pAccessible->get_accSelection(nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accSelection(&varSelection), S_FALSE);
+	EXPECT_THAT(varSelection.vt, VT_EMPTY);
+	::VariantClear(&varSelection);
+}
+
+TEST_F(AccesibleTest, get_accDefaultAction101)
+{
+	BSTR bstrDefaultAction = nullptr;
+	EXPECT_HRESULT_EQ(pAccessible->get_accDefaultAction(selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->get_accDefaultAction(invalidChild, &bstrDefaultAction), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->get_accDefaultAction(selfChild, &bstrDefaultAction), S_FALSE);
+	EXPECT_THAT(bstrDefaultAction, IsNull());
+}
+
+TEST_F(AccesibleTest, accSelect101)
+{
+	EXPECT_THAT(pAccessible->accSelect(0, invalidChild), E_INVALIDARG);
+	EXPECT_THAT(pAccessible->accSelect(0, selfChild), S_FALSE);
+}
+
+TEST_F(AccesibleTest, accLocation101)
+{
+	long left = 0;
+	long top = 0;
+	long width = 0;
+	long height = 0;
+	EXPECT_HRESULT_EQ(pAccessible->accLocation(&left, &top, &width, nullptr, selfChild), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->accLocation(&left, &top, &width, &height, invalidChild), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->accLocation(&left, &top, &width, &height, selfChild), S_FALSE);
+}
+
+TEST_F(AccesibleTest, accNavigate101)
+{
+	VARIANT varEndUpAt;
+	::VariantInit(&varEndUpAt);
+	EXPECT_HRESULT_EQ(pAccessible->accNavigate(NAVDIR_FIRSTCHILD, selfChild, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->accNavigate(NAVDIR_FIRSTCHILD, invalidChild, &varEndUpAt), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->accNavigate(NAVDIR_FIRSTCHILD, selfChild, &varEndUpAt), E_NOTIMPL);
+	::VariantClear(&varEndUpAt);
+}
+
+TEST_F(AccesibleTest, accHitTest101)
+{
+	VARIANT varHitTest;
+	::VariantInit(&varHitTest);
+	EXPECT_HRESULT_EQ(pAccessible->accHitTest(0, 0, nullptr), E_POINTER);
+	EXPECT_HRESULT_EQ(pAccessible->accHitTest(0, 0, &varHitTest), S_FALSE);
+	::VariantClear(&varHitTest);
+}
+
+TEST_F(AccesibleTest, accDoDefaultAction101)
+{
+	EXPECT_HRESULT_EQ(pAccessible->accDoDefaultAction(invalidChild), E_INVALIDARG);
+	EXPECT_HRESULT_EQ(pAccessible->accDoDefaultAction(selfChild), S_FALSE);
+}
+
+TEST_F(AccesibleTest, put_accName101)
+{
+	EXPECT_THAT(pAccessible->put_accName(_variant_t(), _bstr_t()), E_NOTIMPL);
+}
+
+TEST_F(AccesibleTest, put_accValue101)
+{
+	EXPECT_THAT(pAccessible->put_accValue(_variant_t(), _bstr_t()), E_NOTIMPL);
+}
 
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;

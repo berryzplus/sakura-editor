@@ -478,6 +478,7 @@ target_link_libraries(sakura_core
     mpr
     msimg32
     ole32
+    oleacc
     oleaut32
     shlwapi
     uuid

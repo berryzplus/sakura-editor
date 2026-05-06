@@ -9,13 +9,15 @@
 	Copyright (C) 2000, genta
 	Copyright (C) 2003, MIK, KEITA
 	Copyright (C) 2006, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
 #include "window/CWnd.h"
+
+#pragma comment(lib, "Oleacc.lib")
 
 /* CWndウィンドウメッセージのコールバック関数 */
 LRESULT CALLBACK CWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )

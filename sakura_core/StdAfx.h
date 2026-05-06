@@ -148,6 +148,7 @@
 #include <HtmlHelp.h>
 #include <imm.h>
 #include <oaidl.h>
+#include <oleacc.h>
 #include <shellapi.h>
 #include <ShlDisp.h>
 #include <ShlObj.h>
