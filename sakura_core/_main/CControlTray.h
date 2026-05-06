@@ -17,7 +17,7 @@
 	Copyright (C) 2003, genta
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -112,7 +112,6 @@ public:
 protected:
 	void	DoGrep();	//Stonee, 2001/03/21
 	BOOL TrayMessage(HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip);	/*!< タスクトレイのアイコンに関する処理 */
-	void OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);	/*!< WM_COMMANDメッセージ処理 */
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
 	static INT_PTR CALLBACK ExitingDlgProc(	/*!< 終了ダイアログ用プロシージャ */	// 2006.07.02 ryoji CControlProcess から移動

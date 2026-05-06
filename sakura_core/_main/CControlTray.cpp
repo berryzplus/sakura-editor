@@ -19,15 +19,15 @@
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2008, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holders to use this code for other purpose.
 */
 
 #include "StdAfx.h"
-#include <HtmlHelp.h>
-#include "CControlTray.h"
+#include "_main/CControlTray.h"
+
 #include "env/CPropertyManager.h"
 #include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
@@ -383,7 +383,10 @@ LRESULT CControlTray::DispatchEvent(
 	static WORD		wHotKeyCode;
 	static bool			bLDClick = false;	/* 左ダブルクリックをしたか 03/02/20 ai */
 
-	switch ( uMsg ){
+	switch (uMsg) {
+	case WM_COMMAND:
+		return 0L;	//何もしない
+
 	case WM_MENUCHAR:
 		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
 		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
@@ -562,9 +565,6 @@ LRESULT CControlTray::DispatchEvent(
 			break;
 		}
 		return TRUE;
-	case WM_COMMAND:
-		OnCommand( HIWORD(wParam), LOWORD(wParam), (HWND) lParam );
-		return 0L;
 
 //	case MYWM_SETFILEINFO:
 //		return 0L;
@@ -944,19 +944,6 @@ LRESULT CControlTray::DispatchEvent(
 
 	//あとはデフォルトに任せる
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
-}
-
-/* WM_COMMANDメッセージ処理 */
-void CControlTray::OnCommand( WORD wNotifyCode, [[maybe_unused]] WORD wID , [[maybe_unused]] HWND hwndCtl )
-{
-	switch( wNotifyCode ){
-	/* メニューからのメッセージ */
-	case 0:
-		break;
-	default:
-		break;
-	}
-	return;
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
