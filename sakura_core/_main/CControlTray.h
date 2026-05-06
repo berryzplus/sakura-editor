@@ -75,7 +75,6 @@ public:
 
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
 	void MessageLoop( void );	/* メッセージループ */
-	void OnDestroy( void );		/* WM_DESTROY 処理 */	// 2006.07.09 ryoji
 	int	CreatePopUpMenu_L( void );	/* ポップアップメニュー(トレイ左ボタン) */
 	int	CreatePopUpMenu_R( void );	/* ポップアップメニュー(トレイ右ボタン) */
 
@@ -118,15 +117,9 @@ protected:
 	BOOL TrayMessage(HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip);	/*!< タスクトレイのアイコンに関する処理 */
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
-	static INT_PTR CALLBACK ExitingDlgProc(	/*!< 終了ダイアログ用プロシージャ */	// 2006.07.02 ryoji CControlProcess から移動
-		HWND	hwndDlg,	// handle to dialog box
-		UINT	uMsg,		// message
-		WPARAM	wParam,		// first message parameter
-		LPARAM	lParam		// second message parameter
-	);
-
 private:
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+	void	OnDestroy(HWND hWnd);
 
 	bool	OnSetTypeSetting(size_t index);
 	bool	OnGetTypeSetting(size_t index);
