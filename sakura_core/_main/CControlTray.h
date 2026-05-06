@@ -122,6 +122,12 @@ protected:
 private:
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
 	void	OnDestroy(HWND hWnd);
+	void	OnClose(HWND hWnd) const noexcept;
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noexcept;
+	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) noexcept;
+	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
+	void	OnTimer(HWND hWnd, UINT id);
+	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
 
 	bool	OnSetTypeSetting(size_t index);
 	bool	OnGetTypeSetting(size_t index);
