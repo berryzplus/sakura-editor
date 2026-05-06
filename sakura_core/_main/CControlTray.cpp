@@ -425,6 +425,7 @@ LRESULT CControlTray::DispatchEvent(
 	switch (uMsg) {
 // clang-format off
 	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
+	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 // clang-format on
 
 	case WM_COMMAND:
@@ -898,16 +899,11 @@ LRESULT CControlTray::DispatchEvent(
 	case WM_ENDSESSION:
 		//	もしWindowsの終了が中断されたのなら何もしない
 		if( wParam != FALSE )
-			OnDestroy();	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
+			OnDestroy(hWnd);	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
 
 		return 0;	//	もうこのプロセスに制御が戻ることはない
 	//	To Here Jan. 31, 2000 genta
-	case WM_DESTROY:
-		OnDestroy();
 
-		/* Windows にスレッドの終了を要求します。*/
-		::PostQuitMessage( 0 );
-		return 0L;
 	case MYWM_ALLOWACTIVATE:
 		::AllowSetForegroundWindow(DWORD(wParam));
 		return 0L;
@@ -985,6 +981,61 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	::SetTimer(hWnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr);
 
 	return true;
+}
+
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ * このメッセージに戻り値はありません。
+ *
+ * @date 2006/07/09 ryoji 新規作成
+ */
+void CControlTray::OnDestroy(HWND hWnd)
+{
+	if (!GetTrayHwnd()) {
+		return;	// 既に破棄されている
+	}
+
+	// ホットキーの破棄
+	::UnregisterHotKey(hWnd, ID_HOTKEY_TRAYMENU);
+
+	if (m_bCreatedTrayIcon) {	/* トレイにアイコンを作った */
+		window::SendTrayMessage(hWnd, 0, NIM_DELETE, nullptr, std::nullopt);
+	}
+
+	// 「タスクトレイに常駐しない」設定でエディタ画面（Normal Process）を立ち上げたまま
+	// セッション終了するような場合でも共有データ保存が行われなかったり中断されることが
+	// 無いよう、ここでウィンドウが破棄される前に保存する
+	//
+
+	CDialog dlgExiting;
+
+	if (m_pShareData->m_Common.m_sGeneral.m_bDispExitingDialog) {	/* 終了ダイアログを表示する */
+		dlgExiting.DoModeless(
+			m_hInstance,
+			hWnd,
+			IDD_EXITING,
+			0L,
+			SW_SHOW
+		);
+	}
+
+	// スコープを抜けるとき閉じられるようにする
+	using WindowHolder = cxx::ResourceHolder<&::DestroyWindow>;
+	WindowHolder hWndExitingDlg{ dlgExiting.GetHwnd() };
+
+	m_pShareData->m_sHandles.m_hwndTray = nullptr;
+
+	/* 共有データの保存 */
+	CShareData_IO::SaveShareData();
+
+	hWndExitingDlg = nullptr;
+
+	// Windows にスレッドの終了を要求します。
+	::PostQuitMessage(0);
+
+	m_hWnd = nullptr;
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
@@ -1722,73 +1773,4 @@ int	CControlTray::CreatePopUpMenu_R( void )
 	m_bUseTrayMenu = false;
 
 	return nId;
-}
-
-/*!
-	@brief WM_DESTROY 処理
-	@date 2006.07.09 ryoji 新規作成
-*/
-void CControlTray::OnDestroy()
-{
-	HWND hwndExitingDlg = nullptr;
-
-	if (GetTrayHwnd() == nullptr)
-		return;	// 既に破棄されている
-
-	// ホットキーの破棄
-	::UnregisterHotKey( GetTrayHwnd(), ID_HOTKEY_TRAYMENU );
-
-	// 2006.07.09 ryoji 共有データ保存を CControlProcess::Terminate() から移動
-	//
-	// 「タスクトレイに常駐しない」設定でエディタ画面（Normal Process）を立ち上げたまま
-	// セッション終了するような場合でも共有データ保存が行われなかったり中断されることが
-	// 無いよう、ここでウィンドウが破棄される前に保存する
-	//
-
-	/* 終了ダイアログを表示する */
-	if( m_pShareData->m_Common.m_sGeneral.m_bDispExitingDialog ){
-		/* 終了中ダイアログの表示 */
-		hwndExitingDlg = ::CreateDialog(
-			m_hInstance,
-			MAKEINTRESOURCE( IDD_EXITING ),
-			GetTrayHwnd()/*::GetDesktopWindow()*/,
-			ExitingDlgProc
-		);
-		::ShowWindow( hwndExitingDlg, SW_SHOW );
-	}
-
-	/* 共有データの保存 */
-	CShareData_IO::SaveShareData();
-
-	/* 終了ダイアログを表示する */
-	if( m_pShareData->m_Common.m_sGeneral.m_bDispExitingDialog ){
-		/* 終了中ダイアログの破棄 */
-		::DestroyWindow( hwndExitingDlg );
-	}
-
-	if( m_bCreatedTrayIcon ){	/* トレイにアイコンを作った */
-		window::SendTrayMessage(GetTrayHwnd(), 0, NIM_DELETE, nullptr, std::nullopt);
-	}
-
-	m_hWnd = nullptr;
-}
-
-/*!
-	@brief 終了ダイアログ用プロシージャ
-	@date 2006.07.02 ryoji CControlProcess から移動
-*/
-INT_PTR CALLBACK CControlTray::ExitingDlgProc(
-	[[maybe_unused]] HWND	hwndDlg,	// handle to dialog box
-	UINT	uMsg,		// message
-	[[maybe_unused]] WPARAM	wParam,		// first message parameter
-	[[maybe_unused]] LPARAM	lParam		// second message parameter
-)
-{
-	switch( uMsg ){
-	case WM_INITDIALOG:
-		return TRUE;
-	default:
-		break;
-	}
-	return FALSE;
 }

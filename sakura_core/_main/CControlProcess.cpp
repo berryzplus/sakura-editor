@@ -226,7 +226,7 @@ bool CControlProcess::MainLoop()
 */
 void CControlProcess::OnExitProcess()
 {
-	GetDllShareData().m_sHandles.m_hwndTray = nullptr;
+	return;
 }
 
 CControlProcess::~CControlProcess()
