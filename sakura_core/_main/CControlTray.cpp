@@ -377,11 +377,6 @@ LRESULT CControlTray::DispatchEvent(
 
 	int			nRowNum;
 	EditNode*	pEditNodeArr;
-	static HWND	hwndHtmlHelp;
-
-	static WORD		wHotKeyMods;
-	static WORD		wHotKeyCode;
-	static bool			bLDClick = false;	/* 左ダブルクリックをしたか 03/02/20 ai */
 
 	switch (uMsg) {
 	case WM_COMMAND:
