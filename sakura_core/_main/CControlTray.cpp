@@ -65,6 +65,21 @@
 /////////////////////////////////////////////////////////////////////////
 static LRESULT CALLBACK CControlTrayWndProc( HWND, UINT, WPARAM, LPARAM );
 
+WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
+{
+	WORD wMods = 0;
+	if (HOTKEYF_SHIFT & wHotKeyMods) {
+		wMods |= MOD_SHIFT;
+	}
+	if (HOTKEYF_CONTROL & wHotKeyMods) {
+		wMods |= MOD_CONTROL;
+	}
+	if (HOTKEYF_ALT & wHotKeyMods) {
+		wMods |= MOD_ALT;
+	}
+	return wMods;
+}
+
 //Stonee, 2001/03/21
 //Stonee, 2001/07/01  多重起動された場合は前回のダイアログを前面に出すようにした。
 void CControlTray::DoGrep()
@@ -337,6 +352,23 @@ void CControlTray::MessageLoop( void )
 	return;
 }
 
+//! ホットキーを登録する
+void CControlTray::RegisterHotKey(HWND hWnd) noexcept
+{
+	wHotKeyMods = convertHotKeyMods(m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods);
+	wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
+
+	if (wHotKeyCode) {
+		// タスクトレイ左クリックメニューへのショートカットキー登録
+		::RegisterHotKey(
+			hWnd,
+			ID_HOTKEY_TRAYMENU,
+			wHotKeyMods,
+			wHotKeyCode
+		);
+	}
+}
+
 /* タスクトレイのアイコンに関する処理 */
 BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip )
 {
@@ -379,6 +411,10 @@ LRESULT CControlTray::DispatchEvent(
 	EditNode*	pEditNodeArr;
 
 	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
+// clang-format on
+
 	case WM_COMMAND:
 		return 0L;	//何もしない
 
@@ -515,41 +551,6 @@ LRESULT CControlTray::DispatchEvent(
 		}
 		return 0;
 
-	case WM_CREATE:
-		m_hWnd = hwnd;
-		hwndHtmlHelp = nullptr;
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( GetTrayHwnd(), GWLP_USERDATA, (LONG_PTR)this );
-
-		/* タスクトレイ左クリックメニューへのショートカットキー登録 */
-		wHotKeyMods = 0;
-		if( HOTKEYF_SHIFT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_SHIFT;
-		}
-		if( HOTKEYF_CONTROL & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_CONTROL;
-		}
-		if( HOTKEYF_ALT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-			wHotKeyMods |= MOD_ALT;
-		}
-		wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
-		if( wHotKeyCode != 0 ){
-			::RegisterHotKey(
-				GetTrayHwnd(),
-				ID_HOTKEY_TRAYMENU,
-				wHotKeyMods,
-				wHotKeyCode
-			);
-		}
-
-		// 2006.07.09 ryoji 最後の方でシャットダウンするアプリケーションにする
-		::SetProcessShutdownParameters(0x180, 0);
-
-		// 2010.08.26 ウィンドウ存在確認
-		::SetTimer( hwnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr );
-		return 0L;
-
-//	case WM_QUERYENDSESSION:
 	case WM_HELP:
 		lphi = (LPHELPINFO) lParam;
 		switch( lphi->iContextType ){
@@ -585,26 +586,9 @@ LRESULT CControlTray::DispatchEvent(
 			}
 
 			::UnregisterHotKey( GetTrayHwnd(), ID_HOTKEY_TRAYMENU );
-			/* タスクトレイ左クリックメニューへのショートカットキー登録 */
-			wHotKeyMods = 0;
-			if( HOTKEYF_SHIFT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_SHIFT;
-			}
-			if( HOTKEYF_CONTROL & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_CONTROL;
-			}
-			if( HOTKEYF_ALT & m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyMods ){
-				wHotKeyMods |= MOD_ALT;
-			}
-			wHotKeyCode = m_pShareData->m_Common.m_sGeneral.m_wTrayMenuHotKeyCode;
-			if( wHotKeyCode != 0 ){
-				::RegisterHotKey(
-					GetTrayHwnd(),
-					ID_HOTKEY_TRAYMENU,
-					wHotKeyMods,
-					wHotKeyCode
-				);
-			}
+
+			// タスクトレイ左クリックメニューへのショートカットキー登録
+			RegisterHotKey(hWnd);
 
 			break;
 		default:
@@ -939,6 +923,41 @@ LRESULT CControlTray::DispatchEvent(
 
 	//あとはデフォルトに任せる
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!lpCreateStruct) {
+		return false;
+	}
+
+	m_hInstance = lpCreateStruct->hInstance;
+	assert(m_hInstance);
+
+	m_hWnd = hWnd;
+
+	// Modified by KEITA for WIN64 2003.9.6
+	::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(this));
+
+	// タスクトレイ左クリックメニューへのショートカットキー登録
+	RegisterHotKey(hWnd);
+
+	// 最後の方でシャットダウンするアプリケーションにする
+	::SetProcessShutdownParameters(0x180, 0);
+
+	// 編集ウィンドウの終了チェックを開始する
+	::SetTimer(hWnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr);
+
+	return true;
 }
 
 bool CControlTray::OnSetTypeSetting(size_t index)
