@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 2002, aroka 新規作成, YAZAKI
 	Copyright (C) 2006, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -17,12 +17,8 @@
 #define SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_
 #pragma once
 
-#include <filesystem>
-
-#include "global.h"
-#include "CProcess.h"
-
-class CControlTray;
+#include "_main/CControlTray.h"
+#include "_main/CProcess.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -56,6 +52,8 @@ private:
 	HANDLE			m_hMutex = nullptr;					//!< アプリケーション実行検出用ミューテックス
 	HANDLE			m_hMutexCP = nullptr;				//!< コントロールプロセスミューテックス
 	HANDLE			m_hEventCPInitialized = nullptr;	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
-	CControlTray*	m_pcTray = nullptr;
+
+	std::unique_ptr<CControlTray>	m_pcTray = nullptr;
 };
+
 #endif /* SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_ */

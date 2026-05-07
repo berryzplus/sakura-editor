@@ -9,7 +9,7 @@
 	Copyright (C) 2002, aroka CProcessより分離, YAZAKI
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -170,6 +170,8 @@ bool CControlProcess::InitializeProcess()
 		CShareData_IO::SaveShareData();
 	}
 
+	m_pcTray = std::make_unique<CControlTray>();
+
 	/* ダークモード設定を反映する */
 	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
 
@@ -180,10 +182,6 @@ bool CControlProcess::InitializeProcess()
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	m_pcTray = new CControlTray;
-
-	MY_TRACETIME( cRunningTimer, L"After new CControlTray" );
-
 	HWND hwnd = m_pcTray->Create( GetProcessInstance() );
 	if( !hwnd ){
 		ErrorBeep();
@@ -232,7 +230,7 @@ void CControlProcess::OnExitProcess()
 
 CControlProcess::~CControlProcess()
 {
-	delete m_pcTray;
+	m_pcTray = nullptr;
 
 	if( m_hEventCPInitialized ){
 		::ResetEvent( m_hEventCPInitialized );
