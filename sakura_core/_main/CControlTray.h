@@ -154,8 +154,6 @@ private:
 
 	cxx::com_pointer<IClassFactory>	m_pClassFactory = nullptr;
 
-	cxx::com_pointer<IAccessible>	m_pAccessible = nullptr;
-
 	cxx::com_pointer<ITrayWnd>		m_pTrayWnd = nullptr;
 
 	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
