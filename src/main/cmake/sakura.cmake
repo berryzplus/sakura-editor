@@ -49,6 +49,13 @@ else()
   set(GENERATOR_ARGS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 endif()
 
+# マニフェスト用にCPUアーキテクチャを編集する
+if(ARCH STREQUAL "x64")
+  set(EXE_ARCH "amd64")
+else()
+  set(EXE_ARCH "${ARCH}")
+endif()
+
 # ホストツールのプラットフォームとCPUを決める
 if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64")
   set(HOST_PLATFORM "x64")
@@ -113,6 +120,23 @@ if(VISUAL_STUDIO_VERSION)
     message(STATUS "Found VsDevCmd: ${CMD_VS_DEV}")
   endif()
 endif(VISUAL_STUDIO_VERSION)
+
+# Find mt.exe (Windows SDK manifest tool)
+find_program(MT_EXECUTABLE mt.exe
+  HINTS
+    "$ENV{WindowsSdkDir}bin/$ENV{WindowsSdkVer}"
+    "$ENV{WindowsSdkDir}bin"
+  PATHS
+    "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0"
+    "C:/Program Files (x86)/Windows Kits/10/bin"
+  PATH_SUFFIXES
+    "${ARCH}"
+  REQUIRED
+  DOC "Windows SDK Manifest Tool"
+)
+if(MT_EXECUTABLE)
+  message(STATUS "Found mt.exe: ${MT_EXECUTABLE}")
+endif()
 
 # Find Git with additional search paths
 find_program(GIT_EXECUTABLE git
@@ -233,6 +257,24 @@ add_custom_command(
 add_custom_target(generate_funccode_enum
   DEPENDS
     "${CMAKE_BINARY_DIR}/Funccode_enum.h"
+)
+
+# Create a custom command for sakura.exe.manifest generation
+add_custom_command(
+  OUTPUT "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
+  COMMAND ${CMAKE_COMMAND} 
+    -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+    -DEXE_NAME=sakura.exe
+    -DEXE_ARCH=${EXE_ARCH}
+    -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/sakura.exe.manifest
+    -P ${CMAKE_SOURCE_DIR}/src/main/cmake/manifest.cmake
+  COMMENT "Generating sakura.exe.manifest"
+)
+
+# Create a custom target that depends on the generated file
+add_custom_target(generate_sakura_exe_manifest
+  DEPENDS
+    "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
 )
 
 # Include darkmodelib.cmake
@@ -475,6 +517,7 @@ add_dependencies(sakura_core
   generate_version_header
   generate_funccode_define
   generate_funccode_enum
+  generate_sakura_exe_manifest
   generate_darkmodelib
   generate_bregonig
   generate_cmigemo
@@ -517,5 +560,38 @@ if(MINGW)
       -municode
       -static
       $<$<CONFIG:Release>:-s>
+  )
+
+  set(SAKURA_MANIFEST_INPUTS
+    "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
+  )
+  set(SAKURA_MERGED_MANIFEST "${CMAKE_BINARY_DIR}/sakura.merged.manifest")
+
+  add_custom_command(
+    OUTPUT "${SAKURA_MERGED_MANIFEST}"
+    COMMAND "${MT_EXECUTABLE}"
+      -manifest ${SAKURA_MANIFEST_INPUTS}
+      -out:${SAKURA_MERGED_MANIFEST}
+      -nologo
+    DEPENDS ${SAKURA_MANIFEST_INPUTS}
+    COMMENT "Generating merged manifest for sakura.exe"
+    VERBATIM
+  )
+
+  add_custom_target(generate_sakura_merged_manifest
+    DEPENDS "${SAKURA_MERGED_MANIFEST}"
+  )
+
+  set(SAKURA_MANIFEST_RC "${CMAKE_BINARY_DIR}/sakura_manifest.rc")
+
+  # Create a custom command for sakura_manifest.rc generation
+  add_custom_command(
+    OUTPUT "${SAKURA_MANIFEST_RC}"
+    COMMAND ${CMAKE_COMMAND} 
+      -DSOURCE_DIR="${CMAKE_SOURCE_DIR}"
+      -DOUTPUT_FILE="${SAKURA_MANIFEST_RC}"
+      -DMANIFEST_FILE="${SAKURA_MERGED_MANIFEST}"
+      -P ${CMAKE_SOURCE_DIR}/src/main/cmake/manifest_resource.cmake
+    COMMENT "Generating sakura_manifest.rc"
   )
 endif(MINGW)
