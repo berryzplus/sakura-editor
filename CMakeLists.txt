@@ -19,6 +19,17 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_LINK
   COMMAND ${CMAKE_COMMAND} -E remove -f $<TARGET_FILE:${PROJECT_NAME}>
 )
 
+if(MINGW)
+  target_sources(${PROJECT_NAME}
+    PRIVATE
+      "${SAKURA_MANIFEST_RC}"
+  )
+
+  add_dependencies(${PROJECT_NAME}
+    generate_sakura_merged_manifest
+  )
+endif(MINGW)
+
 # Create language DLL projects
 # en-US: 1033 (0x0409) - English (United States)
 # zh-CN: 2052 (0x0804) - Chinese (Simplified, PRC)

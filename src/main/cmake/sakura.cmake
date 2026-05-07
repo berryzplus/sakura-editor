@@ -114,6 +114,23 @@ if(VISUAL_STUDIO_VERSION)
   endif()
 endif(VISUAL_STUDIO_VERSION)
 
+# Find mt.exe (Windows SDK manifest tool)
+find_program(MT_EXECUTABLE mt.exe
+  HINTS
+    "$ENV{WindowsSdkDir}bin/$ENV{WindowsSdkVer}"
+    "$ENV{WindowsSdkDir}bin"
+  PATHS
+    "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0"
+    "C:/Program Files (x86)/Windows Kits/10/bin"
+  PATH_SUFFIXES
+    "${ARCH}"
+  REQUIRED
+  DOC "Windows SDK Manifest Tool"
+)
+if(MT_EXECUTABLE)
+  message(STATUS "Found mt.exe: ${MT_EXECUTABLE}")
+endif()
+
 # Find Git with additional search paths
 find_program(GIT_EXECUTABLE git
   PATHS
@@ -517,5 +534,38 @@ if(MINGW)
       -municode
       -static
       $<$<CONFIG:Release>:-s>
+  )
+
+  set(SAKURA_MANIFEST_INPUTS
+    "${CMAKE_SOURCE_DIR}/src/main/resources/sakura.mingw.manifest.xml"
+  )
+  set(SAKURA_MERGED_MANIFEST "${CMAKE_BINARY_DIR}/sakura.merged.manifest")
+
+  add_custom_command(
+    OUTPUT "${SAKURA_MERGED_MANIFEST}"
+    COMMAND "${MT_EXECUTABLE}"
+      -manifest ${SAKURA_MANIFEST_INPUTS}
+      -out:${SAKURA_MERGED_MANIFEST}
+      -nologo
+    DEPENDS ${SAKURA_MANIFEST_INPUTS}
+    COMMENT "Generating merged manifest for sakura.exe"
+    VERBATIM
+  )
+
+  add_custom_target(generate_sakura_merged_manifest
+    DEPENDS "${SAKURA_MERGED_MANIFEST}"
+  )
+
+  set(SAKURA_MANIFEST_RC "${CMAKE_BINARY_DIR}/sakura_manifest.rc")
+
+  # Create a custom command for sakura_manifest.rc generation
+  add_custom_command(
+    OUTPUT "${SAKURA_MANIFEST_RC}"
+    COMMAND ${CMAKE_COMMAND} 
+      -DSOURCE_DIR="${CMAKE_SOURCE_DIR}"
+      -DOUTPUT_FILE="${SAKURA_MANIFEST_RC}"
+      -DMANIFEST_FILE="${SAKURA_MERGED_MANIFEST}"
+      -P ${CMAKE_SOURCE_DIR}/src/main/cmake/manifest_resource.cmake
+    COMMENT "Generating sakura_manifest.rc"
   )
 endif(MINGW)
