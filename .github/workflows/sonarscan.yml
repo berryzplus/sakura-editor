@@ -99,6 +99,16 @@ jobs:
         echo "${LEExpandDir}" >> $env:GITHUB_PATH
       shell: pwsh
 
+    - name: Run pytest with coverage
+      run: |
+        python -m pip install -r requirements.txt
+        python -m pytest `
+          --ignore=externals `
+          --cov `
+          --cov-config=src/test/py/.coveragerc `
+          --cov-report=xml:pytest-coverage.xml `
+          --cov-fail-under=80
+
     - name: Run the normal MSBuild process
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -155,6 +165,7 @@ jobs:
       with:
         files: |
           *-googletest.xml
+          pytest-coverage.xml
 
     - name: Analyze with SonarQube Scan action
       uses: SonarSource/sonarqube-scan-action@v7.1.0
@@ -174,6 +185,7 @@ jobs:
           "-Dsonar.cfamily.compile-commands=bw-output/compile_commands.json"
           "-Dsonar.cfamily.cppunit.reportPath=*-googletest.xml"
           "-Dsonar.cfamily.cobertura.reportPaths=tests1-coverage.xml"
+          "-Dsonar.python.coverage.reportPaths=pytest-coverage.xml"
           "-Dsonar.verbose=true"
 
     - name: Upload Sonar CFamily failure reproducer (if present)
