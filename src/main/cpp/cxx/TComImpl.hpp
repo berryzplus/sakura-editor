@@ -37,6 +37,7 @@ private:
 	LONG		_RefCount	= 0;
 
 public:
+	using com_type = TargetInterface;
 	using com_pointer_type = com_pointer<TargetInterface>;
 
 	/*!
