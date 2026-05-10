@@ -85,7 +85,6 @@ bool CNormalProcess::InitializeProcess()
 	/* コマンドラインオプション */
 	bool			bViewMode = false;
 	bool			bGrepMode;
-	bool			bGrepDlg;
 	EditInfo		fi;
 	
 	/* コマンドラインで受け取ったファイルが開かれている場合は */
@@ -152,6 +151,8 @@ bool CNormalProcess::InitializeProcess()
 	// CEditAppを作成
 	m_pcEditApp = std::make_unique<CEditApp>();
 
+	const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
+
 	// メインウインドウを作成
 	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
 	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
@@ -162,7 +163,6 @@ bool CNormalProcess::InitializeProcess()
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
 	bGrepMode  = CCommandLine::getInstance()->IsGrepMode();
-	bGrepDlg   = CCommandLine::getInstance()->IsGrepDlg();
 
 	MY_TRACETIME( cRunningTimer, L"CheckFile" );
 
