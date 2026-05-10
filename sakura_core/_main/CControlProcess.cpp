@@ -170,7 +170,12 @@ bool CControlProcess::InitializeProcess()
 		CShareData_IO::SaveShareData();
 	}
 
-	m_pcTray = std::make_unique<CControlTray>();
+	auto pClassFactory = cxx::CreateControlClassFactory();
+
+	cxx::com_pointer<ITrayWnd> pTrayWnd;
+	if (FAILED(pClassFactory->CreateInstance(nullptr, IID_PPV_ARGS(&pTrayWnd)))) return false;
+
+	m_pcTray = std::make_unique<CControlTray>(*pTrayWnd);
 
 	/* ダークモード設定を反映する */
 	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);

@@ -52,15 +52,60 @@
 #include "grep/CGrepEnumKeys.h"
 #include "apiwrap/StdApi.h"
 #include "sakura_rc.h"
-#include "config/system_constants.h"
 #include "config/app_constants.h"
 #include "apiwrap/DarkMode.h"
+
+#pragma comment(lib, "Oleacc.lib")
 
 #define ID_HOTKEY_TRAYMENU	0x1234
 
 #define IDT_EDITCHECK 2
 // 3秒
 #define IDT_EDITCHECK_INTERVAL 3000
+
+#ifdef __MINGW32__
+
+HRESULT STDAPICALLTYPE RegisterTypeLibForUser(
+	ITypeLib* pTypeLib,
+	_In_ OLECHAR* szFullPath,
+	_In_opt_ OLECHAR* szHelpDir
+)
+{
+	const auto hOleAut = ::LoadLibraryW(L"oleaut32.dll");
+	if (!hOleAut) return E_FAIL;
+
+	using PFN_RegisterTypeLibForUser = decltype(&RegisterTypeLibForUser);
+
+	if (const auto fn = PFN_RegisterTypeLibForUser(::GetProcAddress(hOleAut, "RegisterTypeLibForUser"))) {
+		return fn(pTypeLib, szFullPath, szHelpDir);
+	}
+
+	// fallback
+	return ::RegisterTypeLib(pTypeLib, szFullPath, szHelpDir);
+}
+
+#endif // __MINGW32__
+
+namespace cxx {
+
+IClassFactory* CreateControlClassFactory()
+{
+	static cxx::com_pointer<IClassFactory> pClassFactory = nullptr;
+
+	if (!pClassFactory) {
+		SFilePath tlbPath{ GetExeFileName().c_str()};
+
+		cxx::com_pointer<ITypeLib> pTypeLib;
+		_com_util::CheckError(::LoadTypeLibEx(tlbPath, REGKIND_NONE, &pTypeLib));
+
+		_com_util::CheckError(::RegisterTypeLibForUser(pTypeLib, tlbPath, nullptr));
+
+		pClassFactory = CTrayWnd::factory_type::make_instance(*pTypeLib);
+	}
+	return pClassFactory;
+}
+
+} // namespace cxx
 
 WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 {
@@ -238,7 +283,8 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 /////////////////////////////////////////////////////////////////////////////
 // CControlTray
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CControlTray::CControlTray()
+CControlTray::CControlTray(ITrayWnd& refTrayWnd)
+	: m_pTrayWnd(&refTrayWnd)
 {
 	return;
 }
@@ -347,18 +393,26 @@ void CControlTray::CreateTrayIcon()
 /* メッセージループ */
 void CControlTray::MessageLoop( void )
 {
-//複数プロセス版
-	MSG	msg;
-	int ret;
-	
-	//2004.02.17 Moca GetMessageのエラーチェック
-	while ( GetTrayHwnd() != nullptr && (ret = ::GetMessage(&msg, nullptr, 0, 0 )) != 0 ){
-		if( ret == -1 ){
-			break;
-		}
-		::TranslateMessage( &msg );
-		::DispatchMessage( &msg );
+	cxx::com_pointer<IClassFactory> m_pClassFactory;
+
+	DWORD cookie = 0;
+
+	if (const auto hr = ::CoRegisterClassObject(
+		CLSID_TrayWnd,
+		cxx::CreateControlClassFactory(),
+		CLSCTX_LOCAL_SERVER,
+		REGCLS_MULTIPLEUSE,
+		&cookie
+	); FAILED(hr)) return;
+
+	MSG	msg{};
+	while (::GetMessageW(&msg, nullptr, 0, 0)) {
+		::TranslateMessage(&msg);
+		::DispatchMessageW(&msg);
 	}
+
+	::CoRevokeClassObject(cookie);
+
 	return;
 }
 
@@ -448,6 +502,9 @@ LRESULT CControlTray::DispatchEvent(
 	case WM_ENDSESSION:
 		OnEndSession(hWnd, wParam, UINT(lParam));
 		return 0;	//	もうこのプロセスに制御が戻ることはない
+
+	case WM_GETOBJECT:
+		return OnGetObject(hWnd, wParam, LONG(lParam));
 
 	case WM_HELP:
 		OnHelp(hWnd, LPHELPINFO(lParam));
@@ -1021,6 +1078,20 @@ void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlag
 	//	もしWindowsの終了が中断されたのなら何もしない
 	if (bEndSession)
 		OnDestroy(hWnd);	// 2006.07.09 ryoji WM_DESTROY と同じ処理をする（トレイアイコンの破棄などもNT系では必要）
+}
+
+/*!
+ * WM_GETOBJECTハンドラ
+ *
+ * @note windowsx.h に定義がないので独自に定義
+ */
+LRESULT CControlTray::OnGetObject(HWND hWnd, WPARAM dwFlags, LONG dwObjId) const
+{
+	if (dwObjId == OBJID_NATIVEOM) {
+		return ::LresultFromObject(IID_ITrayWnd, dwFlags, m_pTrayWnd);
+	}
+
+	return ::DefWindowProcW(hWnd, WM_GETOBJECT, dwFlags, dwObjId);
 }
 
 /*!

@@ -157,3 +157,6 @@ BEGIN
 		// See following link:
 		//  http://msdn.microsoft.com/en-us/library/dd318693.aspx
 END
+
+1 TYPELIB "sakura.tlb"
+

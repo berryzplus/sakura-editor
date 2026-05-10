@@ -73,6 +73,10 @@
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
+    <Midl>
+      <OutputDirectory>..\src\main\resources</OutputDirectory>
+      <TypeLibraryName>$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>comctl32.lib;Imm32.lib;mpr.lib;Shlwapi.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -144,7 +148,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
   </ItemDefinitionGroup>
+  <ItemGroup Label="Generation Sources">
+    <Midl Include="..\src\main\resources\sakura.idl" />
+  </ItemGroup>
   <ItemGroup Label="Generated Files">
+    <ClInclude Include="..\src\main\resources\sakura_h.h" />
     <ClInclude Include="..\build\$(Platform)\CMakeTools\version.h" />
     <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_define.h" />
     <ClInclude Include="..\build\$(Platform)\CMakeTools\Funccode_enum.h" />
@@ -508,6 +516,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\sakura_core\sakura_rc.rc" />
+  </ItemGroup>
+  <ItemGroup Label="Generated Files">
+    <ClCompile Include="..\src\main\resources\sakura_i.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sakura_core\apiwrap\StdApi.cpp" />

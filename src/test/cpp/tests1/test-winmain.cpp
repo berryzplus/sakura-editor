@@ -28,6 +28,7 @@
 #include "_main/CCommandLine.h"
 #include "_main/CControlProcess.h"
 
+#include "testing/HResultEq.hpp"
 #include "testing/StartEditorProcess.hpp"
 #include "dlg/ModalDialogCloser.hpp"
 #include "window/EditorTestSuite.hpp"
@@ -787,6 +788,22 @@ TEST_P(WinMainTest, DoGrep001)
 		u8"[Common]"sv,
 		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
 		u8"bDarkMode=1"sv,		// ダークモードをONにする
+
+		// 検索キーを出力
+		u8"[Keys]"sv,
+		u8"_SEARCHKEY_Counts=1"sv,
+		u8"SEARCHKEY[00]=localhost"sv,
+
+		// Grep設定を出力
+		u8"[Grep]"sv,
+		u8"_GREPFILE_Counts=1"sv,
+		u8"GREPFILE[00]=*.*"sv,
+		u8"_GREPFOLDER_Counts=1"sv,
+		u8"GREPFOLDER[00]=C:\\WINDOWS\\System32\\Drivers"sv,
+		u8"_GREPEXCLUDEFOLDER_Counts=1"sv,
+		u8"GREPEXCLUDEFOLDER[00]=.git;.svn;.vs"sv,
+		u8"_GREPEXCLUDEFILE_Counts=1"sv,
+		u8"GREPEXCLUDEFILE[00]=*.msi;*.exe;*.dll;*.obj;*.pdb;*.chm;*.nls;*.dat;*.sys;*.tmp"sv,
 	};
 	cxx::writeTextFile(iniPath, iniLines);
 
@@ -794,19 +811,57 @@ TEST_P(WinMainTest, DoGrep001)
 	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
 	EXPECT_THAT(dwControlProcessId, Ne(0));
 
-	std::array args{
-		LR"(-GREPMODE)"s,
-		LR"(-GKEY="localhost")"s,
-		LR"(-GFILE="*.*;#en-US;!*.sys;!*.dll;!*.exe;!*.mui;!*.nls;!*.chm;!*.dat;!*.tmp")"s,
-		LR"(-GFOLDER="C:\WINDOWS\System32\Drivers")"s,
-		LR"(-GOPT=SP1)"s
-	};
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
 
-	// エディタープロセスを起動する
-	const auto ep = testing::CreateEditorProcess(args, profileName);
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	const std::jthread t([hTrayWnd] {
+		cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+		EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+			hTrayWnd,
+			OBJID_NATIVEOM,
+			IID_PPV_ARGS(&pDispatch)
+		));
+
+		// トレイアイコン左クリックメニューを表示させる
+		DISPID dispid = 1; // ShowTrayClickMenu
+		DISPPARAMS params = {};
+		EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+			dispid,
+			IID_NULL,
+			LOCALE_USER_DEFAULT,
+			DISPATCH_METHOD,
+			&params,
+			nullptr,
+			nullptr,
+			nullptr
+		));
+	});
+
+	EmulateSelectPopupMenu(L"Grep(G)...");
+
+	// Grepダイアログが表示されるのを待って実行する
+	if(const auto hDlgGrep = WaitForDialog(L"Grep")) {
+		EmulateHitEnter();
+	}
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 編集ウインドウからプロセスIDを取得する
+	DWORD dwEditorProcessId;
+	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
+	if (!dwControlProcessId) {
+		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
+	}
+
+	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
 
 	// 編集ウインドウを閉じる
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
 	testing::RequestForeignWindowClose(hWndFound);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
@@ -834,6 +889,216 @@ TEST_P(WinMainTest, OpenDebugWindow001)
 
 	// 編集ウインドウが有効になるのを待って閉じる
 	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, OpenFile001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	const std::jthread t([hTrayWnd] {
+		cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+		EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+			hTrayWnd,
+			OBJID_NATIVEOM,
+			IID_PPV_ARGS(&pDispatch)
+		));
+
+		// トレイアイコン左クリックメニューを表示させる
+		DISPID dispid = 1; // ShowTrayClickMenu
+		DISPPARAMS params = {};
+		EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+			dispid,
+			IID_NULL,
+			LOCALE_USER_DEFAULT,
+			DISPATCH_METHOD,
+			&params,
+			nullptr,
+			nullptr,
+			nullptr
+		));
+	});
+
+	EmulateSelectPopupMenu(L"開く(O)...");
+
+	if (const auto hDlgOpenFile = WaitForDialog(L"開く")) {
+		EmulateSetValue(GetFocusedElement(), gm_TestDataPath.c_str());
+		EmulateHitEnter();
+	}
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 編集ウインドウからプロセスIDを取得する
+	DWORD dwEditorProcessId;
+	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
+	if (!dwControlProcessId) {
+		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
+	}
+
+	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, OpenNewEditor001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	const std::jthread t([hTrayWnd] {
+		cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+		EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+			hTrayWnd,
+			OBJID_NATIVEOM,
+			IID_PPV_ARGS(&pDispatch)
+		));
+
+		// トレイアイコン左クリックメニューを表示させる
+		DISPID dispid = 1; // ShowTrayClickMenu
+		DISPPARAMS params = {};
+		EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+			dispid,
+			IID_NULL,
+			LOCALE_USER_DEFAULT,
+			DISPATCH_METHOD,
+			&params,
+			nullptr,
+			nullptr,
+			nullptr
+		));
+	});
+
+	EmulateSelectPopupMenu(L"新規作成(N)");
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 編集ウインドウからプロセスIDを取得する
+	DWORD dwEditorProcessId;
+	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
+	if (!dwControlProcessId) {
+		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
+	}
+
+	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, OpenNewEditor002)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	const std::jthread t([hTrayWnd] {
+		cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+		EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+			hTrayWnd,
+			OBJID_NATIVEOM,
+			IID_PPV_ARGS(&pDispatch)
+		));
+
+		// トレイアイコンダブルクリックする
+		DISPID dispid = 3; // OpenNewEditor
+		DISPPARAMS params = {};
+		EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+			dispid,
+			IID_NULL,
+			LOCALE_USER_DEFAULT,
+			DISPATCH_METHOD,
+			&params,
+			nullptr,
+			nullptr,
+			nullptr
+		));
+	});
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 編集ウインドウからプロセスIDを取得する
+	DWORD dwEditorProcessId;
+	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
+	if (!dwControlProcessId) {
+		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
+	}
+
+	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
+
+	// 編集ウインドウを閉じる
 	testing::RequestForeignWindowClose(hWndFound);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
@@ -904,6 +1169,61 @@ TEST_P(WinMainTest, ShowDlgProfileMgr101)
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grepを実行する。
+ */
+TEST_P(WinMainTest, ShowPropCommon001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += profileName;
+
+	// トレイウインドウを検索する
+	const auto hTrayWnd = cxx::FindWindowW(trayWndClassName, trayWndClassName);
+	EXPECT_THAT(hTrayWnd, NotNull());
+
+	const std::jthread t([hTrayWnd] {
+		cxx::com_pointer<ITrayWnd> pDispatch = nullptr;
+		EXPECT_HRESULT_SUCCEEDED(::AccessibleObjectFromWindow(
+			hTrayWnd,
+			OBJID_NATIVEOM,
+			IID_PPV_ARGS(&pDispatch)
+		));
+
+		// トレイアイコン右クリックメニューを表示させる
+		DISPID dispid = 2; // ShowTrayContextMenu
+		DISPPARAMS params = {};
+		EXPECT_HRESULT_SUCCEEDED(pDispatch->Invoke(
+			dispid,
+			IID_NULL,
+			LOCALE_USER_DEFAULT,
+			DISPATCH_METHOD,
+			&params,
+			nullptr,
+			nullptr,
+			nullptr
+		));
+	});
+
+	EmulateSelectPopupMenu(L"共通設定(C)...");
+
+	// 共通設定ダイアログが表示されるのを待って閉じる
+	const auto hWndDlgPropCommon = WaitForDialog(LS(STR_PROPCOMMON));
+	EmulateInvokeButton(hWndDlgPropCommon, L"OK");
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
 }
 
 /*!

@@ -47,6 +47,8 @@
 #include "config/app_constants.h"
 #include "env/CommonSetting.h"
 
+#include "testing/HResultEq.hpp"
+
 #include "tests1_rc.h"
 
 using namespace std::literals::string_literals;
@@ -81,8 +83,13 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	 * テストが起動される直前に毎回呼ばれる関数
 	 */
 	void SetUp() override {
+		auto pClassFactory = cxx::CreateControlClassFactory();
+
+		cxx::com_pointer<ITrayWnd> pTrayWnd;
+		EXPECT_HRESULT_SUCCEEDED(pClassFactory->CreateInstance(nullptr, IID_PPV_ARGS(&pTrayWnd)));
+
 		// テストクラスをインスタンス化する
-		pcTrayWnd = std::make_unique<CControlTray>();
+		pcTrayWnd = std::make_unique<CControlTray>(*pTrayWnd);
 	}
 
 	/*!
@@ -127,6 +134,12 @@ TEST_F(TrayWndTest, OnEndSession101)
 {
 	HWND hWndTray = nullptr;
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, WM_ENDSESSION, TRUE, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, OnGetObject101)
+{
+	HWND hWndTray = nullptr;
+	pcTrayWnd->DispatchEvent(hWndTray, WM_GETOBJECT, 0L, LPARAM(OBJID_WINDOW));
 }
 
 TEST_F(TrayWndTest, OnHelp101)
@@ -303,6 +316,49 @@ TEST_F(TrayWndTest, OnChangeSetting001)
 	::wcscpy_s(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, L"");
 
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_CHANGESETTING, 0, int(PM_CHANGESETTING_ALL)), 0);
+}
+
+TEST_F(TrayWndTest, GetClassFactory101)
+{
+	auto pClassFactory = cxx::CreateControlClassFactory();
+	EXPECT_THAT(pClassFactory, NotNull());
+
+	EXPECT_HRESULT_EQ(pClassFactory->CreateInstance(nullptr, IID_IUnknown, nullptr), E_POINTER);
+
+	IUnknown* pUnknown = pClassFactory;
+	IUnknown* pOuter = pClassFactory;
+	EXPECT_HRESULT_EQ(pClassFactory->CreateInstance(pOuter, IID_PPV_ARGS(&pUnknown)), CLASS_E_NOAGGREGATION);
+
+	IAccessible* pAccessible = nullptr;
+	EXPECT_HRESULT_EQ(pClassFactory->CreateInstance(nullptr, IID_PPV_ARGS(&pAccessible)), E_NOINTERFACE);
+
+	cxx::com_pointer<ITrayWnd> pTrayWnd;
+	EXPECT_HRESULT_SUCCEEDED(pClassFactory->CreateInstance(nullptr, IID_PPV_ARGS(&pTrayWnd)));
+
+	EXPECT_HRESULT_EQ(pTrayWnd->GetTypeInfoCount(nullptr), E_POINTER);
+
+	UINT ucTInfo = INT_MAX;
+	EXPECT_HRESULT_SUCCEEDED(pTrayWnd->GetTypeInfoCount(&ucTInfo));
+
+	EXPECT_HRESULT_EQ(pTrayWnd->GetTypeInfo(0, LOCALE_USER_DEFAULT, nullptr), E_POINTER);
+
+	cxx::com_pointer<ITypeInfo> pTypeInfo;
+	EXPECT_HRESULT_EQ(pTrayWnd->GetTypeInfo(1, LOCALE_USER_DEFAULT, &pTypeInfo), DISP_E_BADINDEX);
+
+	EXPECT_HRESULT_SUCCEEDED(pTrayWnd->GetTypeInfo(0, LOCALE_USER_DEFAULT, &pTypeInfo));
+
+	std::array<LPOLESTR, 1> names = {
+		LPOLESTR(L"ShowTrayClickMenu")
+	};
+	DISPID dispId = 0;
+	EXPECT_HRESULT_SUCCEEDED(pTrayWnd->GetIDsOfNames(
+		IID_NULL,
+		std::data(names),
+		int(std::size(names)),
+		LOCALE_USER_DEFAULT,
+		&dispId
+	));
+	EXPECT_THAT(dispId, 1);
 }
 
 struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, public window::UiaTestSuite {

@@ -27,11 +27,19 @@
 #define SAKURA_CCONTROLTRAY_E9E24D69_3511_4EC1_A29A_1D119F68004A_H_
 #pragma once
 
+#include "config/system_constants.h"
+#include "cxx/TComImpl.hpp"
 #include "dlg/CDlgGrep.h"
 #include "env/DLLSHAREDATA.h"
 #include "env/CPropertyManager.h"
 #include "uiparts/CImageListMgr.h"
 #include "uiparts/CMenuDrawer.h"
+
+#include "sakura_h.h"
+
+#ifdef __MINGW32__
+#include "sakura_iid_decl.hpp"
+#endif
 
 struct SLoadInfo;
 struct EditInfo;
@@ -67,7 +75,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	CControlTray();
+	explicit CControlTray(ITrayWnd& refTrayWnd);
 	~CControlTray();
 
 	/*
@@ -125,6 +133,7 @@ private:
 	void	OnClose(HWND hWnd) const noexcept;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noexcept;
 	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) noexcept;
+	LRESULT OnGetObject(HWND hWnd, WPARAM wParam, LONG dwObjId) const;
 	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
 	void	OnTimer(HWND hWnd, UINT id);
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
@@ -148,6 +157,8 @@ private:
 
 	BOOL			m_bCreatedTrayIcon = FALSE;		//!< トレイにアイコンを作った
 
+	cxx::com_pointer<ITrayWnd>		m_pTrayWnd = nullptr;
+
 	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
 
 	// DispatchEventから切り出した変数群（そのうちリネームする）
@@ -161,5 +172,256 @@ private:
 	CDlgGrep		m_cDlgGrep;
 	int				m_nCurSearchKeySequence = -1;
 };
+
+namespace cxx {
+
+/*!
+ * @brief COMクラスファクトリーテンプレート
+ *
+ * @tparam TImplType 生成するクラス
+ *
+ * @note 仮置き。いつか移動する。
+ */
+template<typename TImplType>
+class TClassFactoryImpl final : public TComImpl<IClassFactory>
+{
+private:
+	cxx::com_pointer<ITypeInfo> m_pTypeInfo;
+
+	using Base = TComImpl<IClassFactory>;
+	using Me   = TClassFactoryImpl<TImplType>;
+
+public:
+	static com_pointer_type make_instance(
+		ITypeLib& refTypeLib
+	)
+	{
+		cxx::com_pointer<ITypeInfo> pTypeInfo;
+		_com_util::CheckError(refTypeLib.GetTypeInfoOfGuid(__uuidof(typename TImplType::com_type), &pTypeInfo));
+
+		return Base::to_com_pointer(std::make_unique<Me>(*pTypeInfo));
+	}
+
+	explicit TClassFactoryImpl(ITypeInfo& refTypeInfo)
+		: m_pTypeInfo(&refTypeInfo)
+	{
+	}
+
+#pragma region ClassFactory
+	IFACEMETHODIMP CreateInstance(
+		_In_opt_ LPUNKNOWN  pUnkOuter,
+		_In_ REFIID		 riid,
+		_COM_Outptr_ void** ppvObject) override
+	{
+		if (!ppvObject)
+		{
+			return E_POINTER;
+		}
+
+		*ppvObject = nullptr;
+
+		if (pUnkOuter)
+		{
+			return CLASS_E_NOAGGREGATION;
+		}
+
+		if (!(riid == __uuidof(typename TImplType::com_type) || riid == IID_IDispatch || riid == IID_IUnknown))
+		{
+			return E_NOINTERFACE;
+		}
+
+		auto pObject = TImplType::to_com_pointer(std::make_unique<TImplType>(*m_pTypeInfo, *this));
+
+		*ppvObject = pObject.Detach();
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP LockServer(
+		BOOL fLock) override
+	{
+		if (fLock)
+		{
+			AddRef();
+		}
+		else
+		{
+			Release();
+		}
+
+		return S_OK;
+	}
+
+#pragma endregion
+};
+
+/*!
+ * @brief COMクラス実装テンプレート
+ *
+ * @tparam TImplType 実装クラス
+ * @tparam TargetInterface 実装するインターフェース
+ *
+ * @note 仮置き。いつか移動する。
+ */
+template<typename TImplType, typename TargetInterface>
+class TClassImpl : public TComImpl<TargetInterface> {
+private:
+	ITypeInfo&		m_TypeInfo;
+	IClassFactory&	m_ClassFactory;
+
+	using Base = TComImpl<TargetInterface>;
+	using Me = TClassImpl<TImplType, TargetInterface>;
+
+public:
+	using factory_type = cxx::TClassFactoryImpl<TImplType>;
+
+	TClassImpl(
+		ITypeInfo& TypeInfo_,
+		IClassFactory& ClassFactory_
+	)
+		: m_TypeInfo(TypeInfo_)
+		, m_ClassFactory(ClassFactory_)
+	{
+	}
+
+#pragma region Unknown
+	/*!
+	 * 参照カウンターをインクリメントします。
+	 *
+	 * @returns 参照カウント
+	 */
+	IFACEMETHODIMP_(ULONG) AddRef() override
+	{
+		// 参照カウントをインクリメントする
+		const auto nRefCount = Base::AddRef();
+
+		// クラスファクトリをロックする
+		m_ClassFactory.LockServer(TRUE);
+
+		return nRefCount;
+	}
+
+	/*!
+	 * 参照カウンターをデクリメントし、不要になったオブジェクトを破棄します。
+	 *
+	 * @returns 参照カウント
+	 */
+	IFACEMETHODIMP_(ULONG) Release() override
+	{
+		// クラスファクトリをアンロックする
+		m_ClassFactory.LockServer(FALSE);
+
+		// 参照カウントをデクリメントする
+		return Base::Release();
+	}
+
+#pragma endregion
+#pragma region Dispatch
+	IFACEMETHODIMP GetTypeInfoCount(
+		UINT*		pctinfo
+	) override
+	{
+		if (!pctinfo)
+		{
+			return E_POINTER;
+		}
+
+		*pctinfo = 1;
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP GetTypeInfo(
+		UINT		iTInfo,
+		LCID		lcid [[maybe_unused]],
+		ITypeInfo**	ppTInfo
+	) override
+	{
+		if (!ppTInfo)
+		{
+			return E_POINTER;
+		}
+
+		*ppTInfo = nullptr;
+
+		if (iTInfo != 0)
+		{
+			return DISP_E_BADINDEX;
+		}
+
+		return m_TypeInfo.QueryInterface(IID_PPV_ARGS(ppTInfo));
+	}
+
+	IFACEMETHODIMP GetIDsOfNames(
+		REFIID		riid [[maybe_unused]],
+		LPOLESTR*	rgszNames,
+		UINT		cNames,
+		LCID		lcid [[maybe_unused]],
+		DISPID*		rgDispId
+	) override
+	{
+		return ::DispGetIDsOfNames(&m_TypeInfo, rgszNames, cNames, rgDispId);
+	}
+
+	IFACEMETHODIMP Invoke(
+		DISPID		dispIdMember,
+		REFIID		riid [[maybe_unused]],
+		LCID		lcid [[maybe_unused]],
+		WORD		wFlags,
+		DISPPARAMS*	pDispParams,
+		VARIANT*	pVarResult,
+		EXCEPINFO*	pExcepInfo,
+		UINT*		puArgErr
+	) override
+	{
+		// このオブジェクトのメソッドに転送する
+		return ::DispInvoke(this, &m_TypeInfo, dispIdMember, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
+	}
+
+#pragma endregion
+};
+
+} // namespace cxx
+
+class CTrayWnd final : public cxx::TClassImpl<CTrayWnd, ITrayWnd> {
+private:
+	using Base = TClassImpl<CTrayWnd, ITrayWnd>;
+	using Me = CTrayWnd;
+
+public:
+	using Base::Base;
+
+	HWND GetHwnd() const
+	{
+		return GetDllShareData().m_sHandles.m_hwndTray;
+	}
+
+	IFACEMETHODIMP ShowTrayClickMenu() override
+	{
+		if (!::SendMessageTimeoutW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONUP, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr)) return S_FALSE;
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP ShowTrayContextMenu() override
+	{
+		if (!::SendMessageTimeoutW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_RBUTTONUP, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr)) return S_FALSE;
+
+		return S_OK;
+	}
+
+	IFACEMETHODIMP OpenNewEditor() override
+	{
+		if (!::SendMessageTimeoutW(GetHwnd(), MYWM_NOTIFYICON, 0, WM_LBUTTONDBLCLK, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr)) return S_FALSE;
+
+		return S_OK;
+	}
+};
+
+namespace cxx {
+
+IClassFactory* CreateControlClassFactory();
+
+} // namespace cxx
 
 #endif /* SAKURA_CCONTROLTRAY_E9E24D69_3511_4EC1_A29A_1D119F68004A_H_ */

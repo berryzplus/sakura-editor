@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Define primary project
-project(sakura LANGUAGES CXX)
+project(sakura LANGUAGES C CXX)
 
 # Include sakura.cmake for sub-targets
 include(${CMAKE_SOURCE_DIR}/src/main/cmake/sakura.cmake)

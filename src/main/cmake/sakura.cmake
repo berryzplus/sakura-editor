@@ -121,6 +121,28 @@ if(VISUAL_STUDIO_VERSION)
   endif()
 endif(VISUAL_STUDIO_VERSION)
 
+# MSVCの場合のみMIDLを探す
+if(MSVC)
+  # Find midl.exe (Windows SDK MIDL Compiler)
+  find_program(MIDL_EXECUTABLE midl.exe
+    HINTS
+      "$ENV{WindowsSdkDir}bin/$ENV{WindowsSdkVer}"
+      "$ENV{WindowsSdkDir}bin"
+    PATHS
+      "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0"
+      "C:/Program Files (x86)/Windows Kits/10/bin"
+    PATH_SUFFIXES
+      "${ARCH}"
+    REQUIRED
+    DOC "Windows SDK MIDL Compiler"
+  )
+  if(MIDL_EXECUTABLE)
+    message(STATUS "Found midl.exe: ${MIDL_EXECUTABLE}")
+  endif()
+else()
+  set(MIDL_EXECUTABLE echo)
+endif()
+
 # Find mt.exe (Windows SDK manifest tool)
 find_program(MT_EXECUTABLE mt.exe
   HINTS
@@ -205,6 +227,39 @@ add_custom_target(show_dev_banner ALL
 # Include compiletests.cmake
 include(${CMAKE_SOURCE_DIR}/src/test/cmake/compiletests.cmake)
 
+set(SAKURA_IDL        ${CMAKE_SOURCE_DIR}/src/main/resources/sakura.idl)
+set(SAKURA_IDL_HEADER ${CMAKE_SOURCE_DIR}/src/main/resources/sakura_h.h)
+set(SAKURA_IDL_IID    ${CMAKE_SOURCE_DIR}/src/main/resources/sakura_i.c)
+set(SAKURA_TLB        ${CMAKE_SOURCE_DIR}/src/main/resources/sakura.tlb)
+
+get_filename_component(SAKURA_IDL_HEADER_NAME ${SAKURA_IDL_HEADER} NAME)
+get_filename_component(SAKURA_IDL_IID_NAME    ${SAKURA_IDL_IID}    NAME)
+
+add_custom_command(
+  OUTPUT
+    ${SAKURA_IDL_HEADER}
+    ${SAKURA_IDL_IID}
+    ${SAKURA_TLB}
+  COMMAND ${MIDL_EXECUTABLE}
+    /env ${CMAKE_GENERATOR_PLATFORM}
+    /out ${CMAKE_SOURCE_DIR}/src/main/resources
+    /h ${SAKURA_IDL_HEADER_NAME}
+    /iid ${SAKURA_IDL_IID_NAME}
+    /tlb ${SAKURA_TLB}
+    /target "NT60" /W1 /char signed /nologo
+    ${SAKURA_IDL}
+  DEPENDS
+    ${SAKURA_IDL}
+  COMMENT "Generating sakura_h.h and sakura_i.c, sakura.tlb"
+)
+
+add_custom_target(generate_sakura_idl
+  DEPENDS
+    ${SAKURA_IDL_HEADER}
+    ${SAKURA_IDL_IID}
+    ${SAKURA_TLB}
+)
+
 # Create a custom command for version.h generation
 add_custom_command(
   OUTPUT "${CMAKE_BINARY_DIR}/version.h"
@@ -276,6 +331,34 @@ add_custom_target(generate_sakura_exe_manifest
   DEPENDS
     "${CMAKE_BINARY_DIR}/sakura.exe.manifest"
 )
+
+if(MINGW)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+  set(SAKURA_IID_DECL   ${CMAKE_BINARY_DIR}/sakura_iid_decl.hpp)
+  add_custom_command(
+    OUTPUT "${SAKURA_IID_DECL}"
+    COMMAND ${Python3_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/src/main/py/make_iid_decl.py
+      ${SAKURA_IDL_IID}
+      ${SAKURA_IID_DECL}
+    DEPENDS
+      ${SAKURA_IDL_IID}
+      ${CMAKE_SOURCE_DIR}/src/main/py/make_iid_decl.py
+    COMMENT "Generating sakura_iid_decl.hpp"
+    VERBATIM
+  )
+
+  add_custom_target(generate_sakura_iid_decl
+    DEPENDS
+      "${SAKURA_IID_DECL}"
+  )
+
+  set_source_files_properties(${SAKURA_IID_DECL}
+    PROPERTIES
+      GENERATED TRUE
+  )
+endif(MINGW)
 
 # Include darkmodelib.cmake
 include(${CMAKE_SOURCE_DIR}/src/main/cmake/darkmodelib.cmake)
@@ -442,6 +525,7 @@ endif(MINGW)
 file(GLOB_RECURSE HEADERS
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.hpp
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.h
+  ${SAKURA_IDL_HEADER}
   ${CMAKE_SOURCE_DIR}/sakura_core/*.hpp
   ${CMAKE_SOURCE_DIR}/sakura_core/*.h
 )
@@ -449,7 +533,19 @@ file(GLOB_RECURSE HEADERS
 # define source files of sakura_core
 file(GLOB_RECURSE SOURCES
   ${CMAKE_SOURCE_DIR}/src/main/cpp/*.cpp
+  ${SAKURA_IDL_IID}
   ${CMAKE_SOURCE_DIR}/sakura_core/*.cpp
+)
+
+set_source_files_properties(${SAKURA_IDL_HEADER}
+  PROPERTIES
+    GENERATED TRUE
+)
+
+set_source_files_properties(${SAKURA_IDL_IID}
+  PROPERTIES
+    GENERATED TRUE
+    SKIP_PRECOMPILE_HEADERS ON
 )
 
 set(RESOURCE_SCRIPTS
@@ -503,6 +599,7 @@ target_link_libraries(sakura_core
     mpr
     msimg32
     ole32
+    oleacc
     oleaut32
     shlwapi
     uuid
@@ -511,6 +608,12 @@ target_link_libraries(sakura_core
     winmm
     winspool
 )
+
+if(MSVC)
+  add_dependencies(sakura_core
+    generate_sakura_idl
+  )
+endif(MSVC)
 
 # Add dependencies for sakura_core
 add_dependencies(sakura_core
@@ -522,6 +625,12 @@ add_dependencies(sakura_core
   generate_bregonig
   generate_cmigemo
 )
+
+if(MINGW)
+  add_dependencies(sakura_core
+    generate_sakura_iid_decl
+  )
+endif(MINGW)
 
 if(MSVC)
   target_sources(sakura_core
@@ -553,6 +662,12 @@ if(MINGW)
   target_include_directories(sakura_core
     PRIVATE
       "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/sakura_rc_ja-JP>"
+  )
+
+  # add definitions for sakura_core
+  target_compile_definitions(sakura_core
+    PUBLIC
+      _MIDL_USE_GUIDDEF_
   )
 
   target_link_options(sakura_core
