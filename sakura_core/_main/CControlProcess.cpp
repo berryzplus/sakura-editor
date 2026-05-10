@@ -227,22 +227,3 @@ void CControlProcess::OnExitProcess()
 {
 	GetDllShareData().m_sHandles.m_hwndTray = nullptr;
 }
-
-CControlProcess::~CControlProcess()
-{
-	m_pcTray = nullptr;
-
-	if( m_hEventCPInitialized ){
-		::ResetEvent( m_hEventCPInitialized );
-	}
-	::CloseHandle( m_hEventCPInitialized );
-	if( m_hMutexCP ){
-		::ReleaseMutex( m_hMutexCP );
-	}
-	::CloseHandle( m_hMutexCP );
-	// 旧バージョン（1.2.104.1以前）との互換性：「異なるバージョン...」が二回出ないように
-	if( m_hMutex ){
-		::ReleaseMutex( m_hMutex );
-	}
-	::CloseHandle( m_hMutex );
-};

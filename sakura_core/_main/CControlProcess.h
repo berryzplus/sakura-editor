@@ -23,6 +23,55 @@
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
+
+namespace cxx {
+
+struct MutexHolder : public cxx::ResourceHolder<&::CloseHandle> {
+	using MutexReleaser = cxx::ResourceHolder<&::ReleaseMutex>;
+
+	using Base = cxx::ResourceHolder<&::ReleaseMutex>;
+	using Me = MutexHolder;
+
+	MutexReleaser m_Releaser;
+
+	explicit MutexHolder(HANDLE hMutex)
+		: ResourceHolder(hMutex)
+		, m_Releaser(hMutex)
+	{
+	}
+
+	Me& operator = (HANDLE t)
+	{
+		ResourceHolder::operator=(t);
+		m_Releaser = t;
+		return *this;
+	}
+};
+
+struct EventHolder : public cxx::ResourceHolder<&::CloseHandle> {
+	using EventReleaser = cxx::ResourceHolder<&::ResetEvent>;
+
+	using Base = cxx::ResourceHolder<&::ResetEvent>;
+	using Me = EventHolder;
+
+	EventReleaser m_Releaser;
+
+	explicit EventHolder(HANDLE hEvent)
+		: ResourceHolder(hEvent)
+		, m_Releaser(hEvent)
+	{
+	}
+
+	Me& operator = (HANDLE t)
+	{
+		ResourceHolder::operator=(t);
+		m_Releaser = t;
+		return *this;
+	}
+};
+
+} // namespace cxx
+
 /*!
 	@brief コントロールプロセスクラス
 	
@@ -31,12 +80,16 @@
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
 class CControlProcess final : public CProcess {
+private:
+	using Base = CProcess;
+	using Me = CControlProcess;
+
 public:
 	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
 		CProcess( hInstance, lpCmdLine )
 	{}
 
-	~CControlProcess();
+	~CControlProcess() override = default;
 
 	std::filesystem::path GetIniFileName() const override;
 
@@ -49,9 +102,9 @@ protected:
 private:
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 
-	HANDLE			m_hMutex = nullptr;					//!< アプリケーション実行検出用ミューテックス
-	HANDLE			m_hMutexCP = nullptr;				//!< コントロールプロセスミューテックス
-	HANDLE			m_hEventCPInitialized = nullptr;	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
+	cxx::MutexHolder	m_hMutex{ nullptr };				//!< アプリケーション実行検出用ミューテックス
+	cxx::MutexHolder	m_hMutexCP{ nullptr };				//!< コントロールプロセスミューテックス
+	cxx::EventHolder	m_hEventCPInitialized{ nullptr };	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
 
 	std::unique_ptr<CControlTray>	m_pcTray = nullptr;
 };
