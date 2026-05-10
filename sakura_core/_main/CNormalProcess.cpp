@@ -84,7 +84,6 @@ bool CNormalProcess::InitializeProcess()
 
 	/* コマンドラインオプション */
 	bool			bViewMode = false;
-	bool			bDebugMode;
 	bool			bGrepMode;
 	bool			bGrepDlg;
 	EditInfo		fi;
@@ -161,7 +160,7 @@ bool CNormalProcess::InitializeProcess()
 	}
 
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
-	bDebugMode = CCommandLine::getInstance()->IsDebugMode();
+	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
 	bGrepMode  = CCommandLine::getInstance()->IsGrepMode();
 	bGrepDlg   = CCommandLine::getInstance()->IsGrepDlg();
 
