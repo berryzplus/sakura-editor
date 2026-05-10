@@ -85,21 +85,17 @@ private:
 	using Me = CControlProcess;
 
 public:
-	CControlProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine ) : 
-		CProcess( hInstance, lpCmdLine )
-	{}
+	using Base::Base;
 
 	~CControlProcess() override = default;
 
 	std::filesystem::path GetIniFileName() const override;
 
-protected:
-	CControlProcess();
+private:
 	bool InitializeProcess() override;
 	bool MainLoop() override;
 	void OnExitProcess() override;
 
-private:
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 
 	cxx::MutexHolder	m_hMutex{ nullptr };				//!< アプリケーション実行検出用ミューテックス
