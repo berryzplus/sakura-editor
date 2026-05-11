@@ -55,7 +55,6 @@ public:
 
 	// イベント
 	ECallbackResult OnBeforeClose() override;
-	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 	static void CreateFolders( const WCHAR* pszPath, std::vector<std::wstring>& vPaths );
 	static std::wstring ChopYen( const std::wstring& str );

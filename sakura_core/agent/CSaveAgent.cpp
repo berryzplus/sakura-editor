@@ -18,6 +18,8 @@
 #include "_main/CAppMode.h"
 #include "env/CShareData.h"
 
+#include "agent/CGrepAgent.h"
+
 CSaveAgent::CSaveAgent()
 {
 }
@@ -125,6 +127,17 @@ void CSaveAgent::OnAfterSave(const SSaveInfo& sSaveInfo)
 		int newIndex = CDocTypeManager().GetDocumentTypeOfPath( sSaveInfo.cFilePath ).GetIndex();
 		if(newIndex != prevIndex)
 			pcDoc->OnChangeSetting();
+	}
+
+	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
+	CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode = false;	// grepウィンドウは通常ウィンドウ化
+	CAppMode::getInstance()->m_szGrepKey[0] = L'\0';
+
+	CAppMode::getInstance()->SetViewMode(false);	/* ビューモード */
+
+	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
+	if (CAppMode::getInstance()->IsDebugMode()) {
+		CAppMode::getInstance()->SetDebugModeOFF();	// アウトプットウィンドウは通常ウィンドウ化
 	}
 }
 
