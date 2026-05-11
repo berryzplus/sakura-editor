@@ -34,8 +34,6 @@ struct EditorTestSuite : public env::ShareDataTestSuite
 	static inline std::unique_ptr<CSaveAgent> pcSaveAgent = nullptr;
 	static inline std::unique_ptr<CVisualProgress> pcVisualProgress = nullptr;
 	static inline std::unique_ptr<CGrepAgent> pcGrepAgent = nullptr;
-	static inline std::unique_ptr<CMruListener> pcMruListener = nullptr;
-	static inline std::unique_ptr<CPropertyManager> pcPropertyManager = nullptr;
 
 	static void SetUpEditor();
 	static void TearDownEditor();

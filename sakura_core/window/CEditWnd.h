@@ -17,7 +17,7 @@
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2008, ryoji
 	Copyright (C) 2009, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -45,13 +45,17 @@
 #include "env/CHokanMgr.h"
 #include "util/design_template.h"
 #include "doc/CDocListener.h"
+#include "uiparts/CImageListMgr.h"
 #include "uiparts/CMenuDrawer.h"
+#include "uiparts/CSoundSet.h"
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 
 #include "cxx/ResourceHolder.hpp"
 
+#include "env/CPropertyManager.h"
 #include "print/CPrintPreview.h"
+#include "recent/CMruListener.h"
 
 static const int MENUBAR_MESSAGE_MAX_LEN = 30;
 
@@ -89,7 +93,9 @@ private:
 	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
 	using CEditViewHolder = std::unique_ptr<CEditView>;
 	using CEditViewsArray = std::array<CEditViewHolder, 4>;
+	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
+	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 	using CViewFontHolder = std::unique_ptr<CViewFont>;
 	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
@@ -359,6 +365,12 @@ private:
 	HWND			m_hWnd = nullptr;
 
 public:
+	//GUIオブジェクト
+	CImageListMgr	m_hIcons;
+
+	//サウンド管理
+	CSoundSet		m_cSoundSet;
+
 	//子ウィンドウ
 	CMainToolBar	m_cToolbar{ this };			//!< ツールバー
 	CTabWnd			m_cTabWnd;			//!< タブウインドウ	//@@@ 2003.05.31 MIK
@@ -423,6 +435,9 @@ private:
 
 public:
 	ESelectCountMode	m_nSelectCountMode = SELECT_COUNT_TOGGLE; // 選択文字カウント方法
+
+	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
+	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
 };
 
 CEditWnd* GetEditWndPtr() noexcept;

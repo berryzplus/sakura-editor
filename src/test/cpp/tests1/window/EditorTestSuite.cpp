@@ -101,16 +101,11 @@ namespace window {
 
 #pragma endregion CanBeMove
 
-	//MRU管理
-	pcMruListener = std::make_unique<CMruListener>();
-	CEditApp::getInstance()->m_pcMruListener = pcMruListener.get();
-
 	//プロパティ管理
-	pcPropertyManager = std::make_unique<CPropertyManager>();
-	CEditApp::getInstance()->m_pcPropertyManager = pcPropertyManager.get();
+	CEditApp::getInstance()->m_pcPropertyManager = pcEditWnd->m_pcPropertyManager.get();
 	CEditApp::getInstance()->m_pcPropertyManager->Create(
 		pcEditWnd->GetHwnd(),
-		&CEditApp::getInstance()->m_cIcons,
+		&pcEditWnd->m_hIcons,
 		&pcEditWnd->GetMenuDrawer()
 	);
 }
@@ -122,7 +117,6 @@ namespace window {
 {
 	CEditApp::getInstance()->m_pcSMacroMgr = nullptr;
 	CEditApp::getInstance()->m_pcPropertyManager = nullptr;
-	CEditApp::getInstance()->m_pcMruListener = nullptr;
 	CEditApp::getInstance()->m_pcGrepAgent = nullptr;
 	CEditApp::getInstance()->m_pcVisualProgress = nullptr;
 	CEditApp::getInstance()->m_pcSaveAgent = nullptr;
@@ -130,8 +124,6 @@ namespace window {
 	CEditApp::getInstance()->m_pcEditWnd = nullptr;
 	CEditApp::getInstance()->m_pcEditDoc = nullptr;
 
-	pcPropertyManager = nullptr;
-	pcMruListener = nullptr;
 	pcGrepAgent = nullptr;
 	pcVisualProgress = nullptr;
 	pcSaveAgent = nullptr;
