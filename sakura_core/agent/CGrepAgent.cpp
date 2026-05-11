@@ -315,37 +315,25 @@ int GetHwndTitle(HWND& hWndTarget, CNativeW* pmemTitle, WCHAR* pszWindowName, WC
 	return 1;
 }
 
-
-/*! Grep実行
-
-  @param[in] pcmGrepKey 検索パターン
-  @param[in] pcmGrepFile 検索対象ファイルパターン(!で除外指定))
-  @param[in] pcmGrepFolder 検索対象フォルダー
-
-  @date 2008.12.07 nasukoji	ファイル名パターンのバッファオーバラン対策
-  @date 2008.12.13 genta 検索パターンのバッファオーバラン対策
-  @date 2012.10.13 novice 検索オプションをクラスごと代入
-*/
+/*!
+ * Grep実行
+ *
+ * @param vcViewDst 出力先ビュー
+ * @param cDlgGrep Grepダイアログ
+ * @param bGrepCurFolder カレントフォルダーを検索するか
+ * @param bGrepStdout 結果を標準出力に出力
+ * @param bGrepHeader ヘッダーを出力するか
+ *
+ * @date 2008.12.07 nasukoji	ファイル名パターンのバッファオーバラン対策
+ * @date 2008.12.13 genta 検索パターンのバッファオーバラン対策
+ * @date 2012.10.13 novice 検索オプションをクラスごと代入
+ */
 DWORD CGrepAgent::DoGrep(
-	CEditView*				pcViewDst,
-	bool					bGrepReplace,
-	const CNativeW*			pcmGrepKey,
-	const CNativeW*			pcmGrepReplace,
-	const CNativeW*			pcmGrepFile,
-	const CNativeW*			pcmGrepFolder,
-	bool					bGrepCurFolder,
-	BOOL					bGrepSubFolder,
-	bool					bGrepStdout,
-	bool					bGrepHeader,
-	const SSearchOption&	sSearchOption,
-	ECodeType				nGrepCharSet,	// 2002/09/21 Moca 文字コードセット選択
-	int						nGrepOutputLineType,
-	int						nGrepOutputStyle,
-	bool					bGrepOutputFileOnly,
-	bool					bGrepOutputBaseFolder,
-	bool					bGrepSeparateFolder,
-	bool					bGrepPaste,
-	bool					bGrepBackup
+	CEditView*	pcViewDst,
+	CDlgGrep&	cDlgGrep,
+	bool		bGrepHeader,
+	bool		bGrepStdout,
+	bool		bGrepCurFolder
 )
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditView::DoGrep" );
@@ -357,6 +345,35 @@ DWORD CGrepAgent::DoGrep(
 	}
 
 	this->m_bGrepRunning = true;
+
+	CNativeW cmWork1( cDlgGrep.m_strText.c_str() );
+	CNativeW cmWork2 = cDlgGrep.GetPackedGFileString();
+	CNativeW cmWork3( cDlgGrep.m_szFolder );
+
+	CNativeW cmWork4;
+	bool bGrepPaste = false;
+	bool bGrepBackup = false;
+	bool bGrepReplace = false;
+
+	if (const auto pDlgGrepRep = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+		bGrepReplace = true;
+		cmWork4.SetString(pDlgGrepRep->m_strText2.c_str());
+		bGrepPaste = pDlgGrepRep->m_bPaste;
+		bGrepBackup = pDlgGrepRep->m_bBackup;
+	}
+
+	auto pcmGrepKey				= &cmWork1;
+	auto pcmGrepReplace			= &cmWork4;
+	auto pcmGrepFile			= &cmWork2;
+	auto pcmGrepFolder			= &cmWork3;
+	auto bGrepSubFolder			= cDlgGrep.m_bSubFolder;
+	auto sSearchOption			= cDlgGrep.m_sSearchOption;
+	auto nGrepCharSet			= cDlgGrep.m_nGrepCharSet;
+	auto nGrepOutputLineType	= cDlgGrep.m_nGrepOutputLineType;
+	auto nGrepOutputStyle		= cDlgGrep.m_nGrepOutputStyle;
+	auto bGrepOutputFileOnly	= cDlgGrep.m_bGrepOutputFileOnly;
+	auto bGrepOutputBaseFolder	= cDlgGrep.m_bGrepOutputBaseFolder;
+	auto bGrepSeparateFolder	= cDlgGrep.m_bGrepSeparateFolder;
 
 	int			nHitCount = 0;
 	CDlgCancel	cDlgCancel;
@@ -442,14 +459,6 @@ DWORD CGrepAgent::DoGrep(
 		return 0;
 	}
 
-	//2014.06.13 別ウィンドウで検索したとき用にGrepダイアログの検索キーを設定
-	GetEditWnd().m_cDlgGrep.m_strText = pcmGrepKey->GetStringPtr();
-	GetEditWnd().m_cDlgGrep.m_bSetText = true;
-	GetEditWnd().m_cDlgGrepReplace.m_strText = pcmGrepKey->GetStringPtr();
-	if( bGrepReplace ){
-		GetEditWnd().m_cDlgGrepReplace.m_strText2 = pcmGrepReplace->GetStringPtr();
-	}
-	GetEditWnd().m_cDlgGrepReplace.m_bSetText = true;
 	hwndCancel = cDlgCancel.DoModeless( G_AppInstance(), pcViewDst->m_hwndParent, IDD_GREPRUNNING );
 
 	::SetDlgItemInt( hwndCancel, IDC_STATIC_HITCOUNT, 0, FALSE );

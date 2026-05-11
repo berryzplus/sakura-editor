@@ -872,33 +872,27 @@ void CShareData::ConvertLangValues(std::vector<std::wstring>& values, bool bSetV
 */
 BOOL CShareData::IsPathOpened( const WCHAR* pszPath, HWND* phwndOwner )
 {
-	EditInfo*	pfi;
 	*phwndOwner = nullptr;
 
 	//	2007.10.01 genta 相対パスを絶対パスに変換
 	//	変換しないとIsPathOpenedで正しい結果が得られず，
 	//	同一ファイルを複数開くことがある．
-	WCHAR	szBuf[_MAX_PATH];
-	if( GetLongFileName( pszPath, szBuf )){
+	SFilePath szBuf;
+	if (GetLongFileName(pszPath, szBuf)) {
 		pszPath = szBuf;
 	}
 
-	// 現在の編集ウィンドウの数を調べる
-	if( 0 == CAppNodeGroupHandle(0).GetEditorWindowsNum() ){
-		return FALSE;
-	}
-	
-	for( int i = 0; i < m_pShareData->m_sNodes.m_nEditArrNum; ++i ){
-		if( IsSakuraMainWindow( m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd ) ){
-			// トレイからエディタへの編集ファイル名要求通知
-			::SendMessageAny( m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd, MYWM_GETFILEINFO, 1, 0 );
-			pfi = (EditInfo*)&m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
+	for (const auto& fi : std::span(m_pShareData->m_sNodes.m_pEditArr, m_pShareData->m_sNodes.m_nEditArrNum)) {
+		if (!IsSakuraMainWindow(fi.m_hWnd)) continue;
 
-			// 同一パスのファイルが既に開かれているか
-			if( 0 == _wcsicmp( pfi->m_szPath, pszPath ) ){
-				*phwndOwner = m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd;
-				return TRUE;
-			}
+		// トレイからエディタへの編集ファイル名要求通知
+		if (!::SendMessageTimeoutW(fi.m_hWnd, MYWM_GETFILEINFO, 1, 0L, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr)) continue;
+		const auto pfi = &m_pShareData->m_sWorkBuffer.m_EditInfo_MYWM_GETFILEINFO;
+
+		// 同一パスのファイルが既に開かれているか
+		if (0 == ::_wcsicmp(pfi->m_szPath, pszPath)) {
+			*phwndOwner = fi.m_hWnd;
+			return TRUE;
 		}
 	}
 	return FALSE;

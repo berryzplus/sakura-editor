@@ -281,7 +281,7 @@ void CEditWnd::_GetWindowRectForInit(CMyRect* rcResult, [[maybe_unused]] int nGr
 
 	/* ウィンドウサイズ指定 */
 	EditInfo fi;
-	CCommandLine::getInstance()->GetEditInfo(&fi);
+	fi = CCommandLine::getInstance()->GetEditInfoRef();
 	if( fi.m_nWindowSizeX >= 0 ){
 		nWinCX = fi.m_nWindowSizeX;
 	}
@@ -472,8 +472,8 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 			CTypeConfig cTypeOld, cTypeNew(-1);
 			cTypeOld = GetDocument()->m_cDocType.GetDocumentType();	// 現在のタイプ
 			{
-				EditInfo ei, mruei;
-				CCommandLine::getInstance()->GetEditInfo( &ei );
+				EditInfo ei = CCommandLine::getInstance()->GetEditInfoRef();
+				EditInfo mruei;
 				if( ei.m_szDocType[0] != '\0' ){
 					cTypeNew = CDocTypeManager().GetDocumentTypeOfExt( ei.m_szDocType );
 				}else{

@@ -192,6 +192,10 @@ TEST(CCommandLine, ParseMacroType)
 	cCommandLine.ParseCommandLine(L"-MTYPE=" TESTLOCAL_MACRO_TYPE, false);
 	ASSERT_STREQ(TESTLOCAL_MACRO_TYPE, cCommandLine.GetMacroType());
 #undef TESTLOCAL_MACRO_TYPE
+
+	EXPECT_THAT(cCommandLine.GetMacroType(), NotNull());
+	cCommandLine.ParseCommandLine(L"-MTYPE=file", false);
+	EXPECT_THAT(cCommandLine.GetMacroType(), IsNull());
 }
 
 /*!

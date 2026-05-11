@@ -64,13 +64,14 @@ public:
 	bool IsGrepDlg() const noexcept { return m_bGrepDlg; }
 	bool IsDebugMode() const noexcept { return m_bDebugMode; }
 	bool IsViewMode() const noexcept { return m_bViewMode; }
-	bool GetEditInfo(EditInfo* fi) const noexcept { *fi = m_fi; return true; }
 	const EditInfo& GetEditInfoRef() const noexcept { return m_fi; }
-	bool GetGrepInfo(GrepInfo* gi) const noexcept { *gi = m_gi; return true; }
 	const GrepInfo& GetGrepInfoRef() const noexcept { return m_gi; }
 	int GetGroupId() const noexcept { return m_nGroup; }	// 2007.06.26 ryoji
 	LPCWSTR GetMacro() const noexcept { return m_cmMacro.GetStringPtr(); }
-	LPCWSTR GetMacroType() const noexcept { return m_cmMacroType.GetStringPtr(); }
+	LPCWSTR GetMacroType() const noexcept {
+		const auto pszMacroType = m_cmMacroType.GetStringPtr();
+		return pszMacroType && pszMacroType[0] != L'\0' && 0 != ::_wcsicmp(pszMacroType, L"file") ? pszMacroType : nullptr;	// タイプ指定"file"は「指定なし」とみなす。
+	}
 	LPCWSTR GetProfileName() const noexcept { return m_cmProfile.GetStringPtr(); }
 	bool IsSetProfile() const noexcept { return m_bSetProfile; }
 	void SetProfileName(LPCWSTR s){

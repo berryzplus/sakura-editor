@@ -771,7 +771,62 @@ TEST_P(WinMainTest, runEditorProcess)
 /*!
  * @brief WinMainを起動してみるテスト
  *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
- *  Grepを実行する。
+ *  既に開いているウインドウをアクティブにする。
+ */
+TEST_P(WinMainTest, ActivateOpenedWindow001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 標準機能をできるだけ動かすために設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+		u8"bDarkMode=1"sv,		// ダークモードをONにする
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	std::array args{
+		gm_TestDataPath.native(),
+		LR"(-Y=3)"s,
+		std::format(LR"( -PROF="{}")", profileName)
+	};
+
+	// 1つ目のエディタープロセスを起動する
+	const auto ep1 = testing::CreateEditorProcess(args, profileName);
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 2つ目のエディタープロセスを起動する
+	const auto ep2 = testing::CreateEditorProcess(args, profileName);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep2);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep1);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  トレイアイコンクリックメニューからGrepを実行する。
  */
 TEST_P(WinMainTest, DoGrep001)
 {
@@ -801,7 +856,7 @@ TEST_P(WinMainTest, DoGrep001)
 		u8"_GREPFOLDER_Counts=1"sv,
 		u8"GREPFOLDER[00]=C:\\WINDOWS\\System32\\Drivers"sv,
 		u8"_GREPEXCLUDEFOLDER_Counts=1"sv,
-		u8"GREPEXCLUDEFOLDER[00]=.git;.svn;.vs"sv,
+		u8"GREPEXCLUDEFOLDER[00]=.git;en-US"sv,
 		u8"_GREPEXCLUDEFILE_Counts=1"sv,
 		u8"GREPEXCLUDEFILE[00]=*.msi;*.exe;*.dll;*.obj;*.pdb;*.chm;*.nls;*.dat;*.sys;*.tmp"sv,
 	};
@@ -849,6 +904,18 @@ TEST_P(WinMainTest, DoGrep001)
 		EmulateHitEnter();
 	}
 
+	// Grepダイアログが閉じられるのを待つ
+	bool dlgClosed = false;
+	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
+		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
+			dlgClosed = true;
+			break;
+		}
+		Sleep(10);  // 10msスリープしてリトライ
+	}
+
+	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
 
@@ -860,6 +927,75 @@ TEST_P(WinMainTest, DoGrep001)
 	}
 
 	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  コマンドラインからGrepダイアログを表示してGrepを実行する。
+ */
+TEST_P(WinMainTest, DoGrep002)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 標準機能をできるだけ動かすために設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+		u8"bDarkMode=1"sv,		// ダークモードをONにする
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+	EXPECT_THAT(dwControlProcessId, Ne(0));
+
+	std::array args{
+		LR"(-GREPDLG)"s,
+		LR"(-GKEY="localhost")"s,
+		LR"(-GREPR="local")"s,
+		LR"(-GFILE="*.*;#en-US;!*.msi;!*.exe;!*.dll;!*.obj;!*.pdb;!*.chm;!*.nls;!*.dat;!*.sys;!*.tmp")"s,
+		LR"(-GFOLDER="C:\WINDOWS\System32\Drivers")"s,
+		LR"(-GOPT=SP1)"s
+	};
+
+	// エディタープロセスを起動する
+	const auto ep = testing::CreateEditorProcess(args, profileName);
+
+	// Grepダイアログが表示されるのを待って実行する
+	if(const auto hDlgGrep = WaitForDialog(L"Grep")) {
+		EmulateHitEnter();
+	}
+
+	// Grepダイアログが閉じられるのを待つ
+	bool dlgClosed = false;
+	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
+		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
+			dlgClosed = true;
+			break;
+		}
+		Sleep(10);  // 10msスリープしてリトライ
+	}
+
+	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
 
 	// 編集ウインドウを閉じる
 	testing::RequestForeignWindowClose(hWndFound);
@@ -893,6 +1029,41 @@ TEST_P(WinMainTest, OpenDebugWindow001)
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  2つ目のアウトプットウインドウを表示しようとしてみる。
+ */
+TEST_P(WinMainTest, OpenDebugWindow002)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+
+	// エディタープロセスを起動する
+	const auto ep1 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
+
+	// アウトプットウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 2つ目のエディタープロセスを起動する
+	const auto ep2 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
+
+	// テキトーな待機を入れる
+	::Sleep(3000);
+
+	// 編集ウインドウが有効になるのを待って閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep1);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1123,6 +1294,57 @@ TEST_P(WinMainTest, ShowDlgGrep101)
 
 	// エディタープロセスを起動する
 	const auto ep = testing::CreateEditorProcess(std::array{ LR"(-GREPDLG)", LR"(-GREPMODE)" }, profileName);
+
+	// Grepダイアログが表示されるのを待って閉じる
+	const auto hDlgGrep = WaitForDialog(L"Grep", 30000);
+	EmulateInvokeButton(hDlgGrep, L"キャンセル(X)");
+
+	bool dlgClosed = false;
+	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
+		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
+			dlgClosed = true;
+			break;
+		}
+		Sleep(10);  // 10msスリープしてリトライ
+	}
+
+	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+
+	// 編集ウインドウを閉じる
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName, dwControlProcessId);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  Grep置換ダイアログを表示してキャンセルで閉じる。
+ */
+TEST_P(WinMainTest, ShowDlgGrep102)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// コントロールプロセスを起動する
+	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
+
+	std::array args{
+		LR"(-GREPDLG)"s,
+		LR"(-GKEY="localhost")"s,
+		LR"(-GREPR="local")"s,
+		LR"(-GFILE="*.*;#en-US;!*.msi;!*.exe;!*.dll;!*.obj;!*.pdb;!*.chm;!*.nls;!*.dat;!*.sys;!*.tmp")"s,
+		LR"(-GFOLDER="C:\WINDOWS\System32\Drivers")"s,
+		LR"(-GOPT=SP1)"s
+	};
+
+	// エディタープロセスを起動する
+	const auto ep = testing::CreateEditorProcess(args, profileName);
 
 	// Grepダイアログが表示されるのを待って閉じる
 	const auto hDlgGrep = WaitForDialog(L"Grep", 30000);

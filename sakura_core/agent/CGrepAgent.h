@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -10,7 +10,9 @@
 #pragma once
 
 #include "doc/CDocListener.h"
+
 class CDlgCancel;
+class CDlgGrep;
 class CEditView;
 class CSearchStringPattern;
 class CGrepEnumKeys;
@@ -63,24 +65,10 @@ public:
 	// Grep実行
 	DWORD DoGrep(
 		CEditView*				pcViewDst,
-		bool					bGrepReplace,
-		const CNativeW*			pcmGrepKey,
-		const CNativeW*			pcmGrepReplace,
-		const CNativeW*			pcmGrepFile,
-		const CNativeW*			pcmGrepFolder,
-		bool					bGrepCurFolder,
-		BOOL					bGrepSubFolder,
-		bool					bGrepStdout,
-		bool					bGrepHeader,
-		const SSearchOption&	sSearchOption,
-		ECodeType				nGrepCharSet,	// 2002/09/21 Moca 文字コードセット選択
-		int						nGrepOutputLineType,
-		int						nGrepOutputStyle,
-		bool					bGrepOutputFileOnly,	//!< [in] ファイル毎最初のみ出力
-		bool					bGrepOutputBaseFolder,	//!< [in] ベースフォルダー表示
-		bool					bGrepSeparateFolder,	//!< [in] フォルダー毎に表示
-		bool					bGrepPaste,
-		bool					bGrepBackup
+		CDlgGrep&				cDlgGrep,
+		bool					bGrepHeader = true,
+		bool					bGrepStdout = false,
+		bool					bGrepCurFolder = false
 	);
 
 private:

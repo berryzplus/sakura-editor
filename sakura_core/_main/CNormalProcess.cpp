@@ -83,44 +83,37 @@ bool CNormalProcess::InitializeProcess()
 	CSelectLang::ChangeLang( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
 
 	/* コマンドラインオプション */
-	bool			bViewMode = false;
-	EditInfo		fi;
-	
-	/* コマンドラインで受け取ったファイルが開かれている場合は */
-	/* その編集ウィンドウをアクティブにする */
-	CCommandLine::getInstance()->GetEditInfo(&fi); // 2002/2/8 aroka ここに移動
-	if( fi.m_szPath[0] != L'\0' ){
-		//	Oct. 27, 2000 genta
-		//	MRUからカーソル位置を復元する操作はCEditDoc::FileLoadで
-		//	行われるのでここでは必要なし．
+	const auto& fi = CCommandLine::getInstance()->GetEditInfoRef(); // 2002/2/8 aroka ここに移動
 
-		HWND hwndOwner;
-		/* 指定ファイルが開かれているか調べる */
-		// 2007.03.13 maru 文字コードが異なるときはワーニングを出すように
-		if( GetShareData().ActiveAlreadyOpenedWindow( fi.m_szPath, &hwndOwner, fi.m_nCharCode ) ){
-			//	From Here Oct. 19, 2001 genta
-			//	カーソル位置が引数に指定されていたら指定位置にジャンプ
-			if( fi.m_ptCursor.y >= 0 ){	//	行の指定があるか
-				CLogicPoint& pt = GetDllShareData().m_sWorkBuffer.m_LogicPoint;
-				if( fi.m_ptCursor.x < 0 ){
-					//	桁の指定が無い場合
-					::SendMessageAny( hwndOwner, MYWM_GETCARETPOS, 0, 0 );
-				}
-				else {
-					pt.x = fi.m_ptCursor.x;
-				}
-				pt.y = fi.m_ptCursor.y;
-				::SendMessageAny( hwndOwner, MYWM_SETCARETPOS, 0, 0 );
+	// ファイルが既に開かれていたらアクティブにして抜ける
+	if (HWND hwndOwner; fi.m_szPath[0] != L'\0' && GetShareData().ActiveAlreadyOpenedWindow(fi.m_szPath, &hwndOwner, fi.m_nCharCode)) {
+		//カーソル位置が引数に指定されていたら指定位置にジャンプ
+		if (0 <= fi.m_ptCursor.y) {	//	行の指定があるか
+			//行桁情報の連携用バッファを参照する
+			auto& pt = GetDllShareData().m_sWorkBuffer.m_LogicPoint;
+
+			//桁指定をバッファに反映する
+			pt.x = fi.m_ptCursor.x;
+
+			//桁の指定が無い場合、エディタから取得する
+			if (fi.m_ptCursor.x < 0) {
+				::SendMessageTimeoutW(hwndOwner, MYWM_GETCARETPOS, 0, 0, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr);
 			}
-			//	To Here Oct. 19, 2001 genta
-			/* アクティブにする */
-			ActivateFrameWindow( hwndOwner );
 
-			// 複数ファイル読み込み
-			OpenFiles( hwndOwner );
+			//行指定をバッファに反映する
+			pt.y = fi.m_ptCursor.y;
 
-			return false;
+			//行桁指定をエディタに反映する
+			::SendMessageTimeoutW(hwndOwner, MYWM_SETCARETPOS, 0, 0, SMTO_ABORTIFHUNG | SMTO_NOTIMEOUTIFNOTHUNG, 0, nullptr);
 		}
+
+		//エディタをアクティブにする
+		ActivateFrameWindow(hwndOwner);
+
+		//複数ファイル読み込み
+		OpenFiles(hwndOwner);
+
+		return false;
 	}
 
 	// プラグイン読み込み
@@ -151,14 +144,73 @@ bool CNormalProcess::InitializeProcess()
 	m_pcEditApp = std::make_unique<CEditApp>();
 
 	const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
-	const auto bGrepMode = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
+	auto bGrepMode = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
+
+	const auto gi = CCommandLine::getInstance()->GetGrepInfoRef();
+
+	auto& cDlgGrep = gi.bGrepReplace
+		? GetEditWnd().m_cDlgGrepReplace
+		: GetEditWnd().m_cDlgGrep;
+
+	if (bGrepMode) {
+		if (gi.cmGrepKey.GetStringLength() < _MAX_PATH) {
+			CSearchKeywordManager().AddToSearchKeyArr(gi.cmGrepKey.GetStringPtr());
+		}
+		if (gi.cmGrepFile.GetStringLength() < MAX_GREP_PATH) {
+			CSearchKeywordManager().AddToGrepFileArr(gi.cmGrepFile.GetStringPtr());
+		}
+		if (gi.cmGrepFolder.GetStringLength() < MAX_GREP_PATH) {
+			CSearchKeywordManager().AddToGrepFolderArr(gi.cmGrepFolder.GetStringPtr());
+		}
+
+		GetDllShareData().m_Common.m_sSearch.m_bGrepSubFolder = gi.bGrepSubFolder;
+		GetDllShareData().m_Common.m_sSearch.m_sSearchOption = gi.sGrepSearchOption;
+		GetDllShareData().m_Common.m_sSearch.m_nGrepCharSet = gi.nGrepCharSet;
+		GetDllShareData().m_Common.m_sSearch.m_nGrepOutputLineType = gi.nGrepOutputLineType;
+		GetDllShareData().m_Common.m_sSearch.m_nGrepOutputStyle = gi.nGrepOutputStyle;
+		GetDllShareData().m_Common.m_sSearch.m_bGrepOutputFileOnly = gi.bGrepOutputFileOnly;
+		GetDllShareData().m_Common.m_sSearch.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
+		GetDllShareData().m_Common.m_sSearch.m_bGrepSeparateFolder = gi.bGrepSeparateFolder;
+
+		if (auto pDlgGrepRep = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+			pDlgGrepRep->m_strText2 = gi.cmGrepRep.GetStringPtr();		/* 検索文字列 */
+			pDlgGrepRep->m_bPaste = gi.bGrepPaste;
+			pDlgGrepRep->m_bBackup = gi.bGrepBackup;
+		}
+
+		if (bGrepDlg) {
+			//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
+			cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();		/* 検索文字列 */
+			cDlgGrep.m_bSetText = true;
+
+			cDlgGrep.m_bSubFolder = gi.bGrepSubFolder;
+			cDlgGrep.m_sSearchOption = gi.sGrepSearchOption;
+			cDlgGrep.m_nGrepCharSet = gi.nGrepCharSet;
+			cDlgGrep.m_nGrepOutputLineType = gi.nGrepOutputLineType;
+			cDlgGrep.m_nGrepOutputStyle = gi.nGrepOutputStyle;
+			cDlgGrep.m_bGrepOutputFileOnly = gi.bGrepOutputFileOnly;
+			cDlgGrep.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
+			cDlgGrep.m_bGrepSeparateFolder = gi.bGrepSeparateFolder;
+
+			//GREPダイアログを表示する前にMutexを解放する
+			hMutex = nullptr;
+
+			if (!cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
+				bGrepMode = false;
+			}
+		}
+	}
 
 	// メインウインドウを作成
 	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
-	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
-	if( nullptr == pEditWnd->GetHwnd() ){
+	auto pEditWnd = GetEditWndPtr();
+	auto hEditWnd = pEditWnd->GetHwnd();
+	if (!hEditWnd) {
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
+
+	SetMainWindow(hEditWnd);
+	hMutex = nullptr;
 
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
@@ -174,7 +226,7 @@ bool CNormalProcess::InitializeProcess()
 		CAppMode::getInstance()->SetDebugModeON();
 		if( !CAppMode::getInstance()->IsDebugMode() ){
 			// デバッグではなくて(無題)
-			CAppNodeManager::getInstance()->GetNoNameNumber( pEditWnd->GetHwnd() );
+			CAppNodeManager::getInstance()->GetNoNameNumber(hEditWnd);
 			pEditWnd->UpdateCaption();
 		}
 		// 2004.09.20 naoh アウトプット用タイプ別設定
@@ -183,120 +235,29 @@ bool CNormalProcess::InitializeProcess()
 		pEditWnd->SetDocumentTypeWhenCreate( fi.m_nCharCode, false, nType );
 		pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを表示する
 	}
-	else if( bGrepMode ){
-		/* GREP */
+	else if (bGrepMode) {
 		// 2010.06.16 Moca Grepでもオプション指定を適用
 		pEditWnd->SetDocumentTypeWhenCreate( fi.m_nCharCode, false, nType );
 		pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを予め表示しておく
-		HWND hEditWnd = pEditWnd->GetHwnd();
-		if( !::IsIconic( hEditWnd ) && pEditWnd->m_cDlgFuncList.GetHwnd() ){
-			RECT rc;
-			::GetClientRect( hEditWnd, &rc );
-			::SendMessageAny( hEditWnd, WM_SIZE, ::IsZoomed( hEditWnd )? SIZE_MAXIMIZED: SIZE_RESTORED, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ) );
-		}
-		GrepInfo gi;
-		CCommandLine::getInstance()->GetGrepInfo(&gi); // 2002/2/8 aroka ここに移動
-		if( !bGrepDlg ){
-			// Grepでは対象パス解析に現在のカレントディレクトリを必要とする
-			// pEditWnd->GetDocument()->SetCurDirNotitle();
-			// 2003.06.23 Moca GREP実行前にMutexを解放
-			//	こうしないとGrepが終わるまで新しいウィンドウを開けない
-			SetMainWindow( pEditWnd->GetHwnd() );
-			hMutex = nullptr;
 
-			this->m_pcEditApp->m_pcGrepAgent->DoGrep(
+		if (bGrepDlg) {
+			pEditWnd->GetActiveView().GetCommander().HandleCommand(F_GREP, true, 0, 0, 0, 0);
+		} else {
+			CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
 				&pEditWnd->GetActiveView(),
-				gi.bGrepReplace,
-				&gi.cmGrepKey,
-				&gi.cmGrepRep,
-				&gi.cmGrepFile,
-				&gi.cmGrepFolder,
-				gi.bGrepCurFolder,
-				gi.bGrepSubFolder,
-				gi.bGrepStdout,
+				cDlgGrep,
 				gi.bGrepHeader,
-				gi.sGrepSearchOption,
-				gi.nGrepCharSet,	//	2002/09/21 Moca
-				gi.nGrepOutputLineType,
-				gi.nGrepOutputStyle,
-				gi.bGrepOutputFileOnly,
-				gi.bGrepOutputBaseFolder,
-				gi.bGrepSeparateFolder,
-				gi.bGrepPaste,
-				gi.bGrepBackup
+				gi.bGrepStdout,
+				gi.bGrepCurFolder
 			);
-			pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
-		}
-		else{
-			CAppNodeManager::getInstance()->GetNoNameNumber( pEditWnd->GetHwnd() );
-			pEditWnd->UpdateCaption();
-			
-			//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
-			if( gi.cmGrepKey.GetStringLength() < _MAX_PATH ){
-				CSearchKeywordManager().AddToSearchKeyArr( gi.cmGrepKey.GetStringPtr() );
-			}
-			if( gi.cmGrepFile.GetStringLength() < MAX_GREP_PATH ){
-				CSearchKeywordManager().AddToGrepFileArr( gi.cmGrepFile.GetStringPtr() );
-			}
-			CNativeW cmemGrepFolder = gi.cmGrepFolder;
-			if( gi.cmGrepFolder.GetStringLength() < MAX_GREP_PATH ){
-				CSearchKeywordManager().AddToGrepFolderArr( gi.cmGrepFolder.GetStringPtr() );
-				// 2013.05.21 指定なしの場合はカレントフォルダーにする
-				if( cmemGrepFolder.GetStringLength() == 0 ){
-					WCHAR szCurDir[_MAX_PATH];
-					::GetCurrentDirectory( int(std::size(szCurDir)), szCurDir );
-					cmemGrepFolder.SetString( szCurDir );
-				}
-			}
-			GetDllShareData().m_Common.m_sSearch.m_bGrepSubFolder = gi.bGrepSubFolder;
-			GetDllShareData().m_Common.m_sSearch.m_sSearchOption = gi.sGrepSearchOption;
-			GetDllShareData().m_Common.m_sSearch.m_nGrepCharSet = gi.nGrepCharSet;
-			GetDllShareData().m_Common.m_sSearch.m_nGrepOutputLineType = gi.nGrepOutputLineType;
-			GetDllShareData().m_Common.m_sSearch.m_nGrepOutputStyle = gi.nGrepOutputStyle;
-			// 2003.06.23 Moca GREPダイアログ表示前にMutexを解放
-			//	こうしないとGrepが終わるまで新しいウィンドウを開けない
-			SetMainWindow( pEditWnd->GetHwnd() );
-			hMutex = nullptr;
-			
-			//	Oct. 9, 2003 genta コマンドラインからGERPダイアログを表示させた場合に
-			//	引数の設定がBOXに反映されない
-			pEditWnd->m_cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();		/* 検索文字列 */
-			pEditWnd->m_cDlgGrep.m_bSetText = true;
-			int nSize = std::size(pEditWnd->m_cDlgGrep.m_szFile);
-			wcsncpy( pEditWnd->m_cDlgGrep.m_szFile, gi.cmGrepFile.GetStringPtr(), nSize );	/* 検索ファイル */
-			pEditWnd->m_cDlgGrep.m_szFile[nSize-1] = L'\0';
-			nSize = std::size(pEditWnd->m_cDlgGrep.m_szFolder);
-			wcsncpy( pEditWnd->m_cDlgGrep.m_szFolder, cmemGrepFolder.GetStringPtr(), nSize );	/* 検索フォルダー */
-			pEditWnd->m_cDlgGrep.m_szFolder[nSize-1] = L'\0';
-
-			// Feb. 23, 2003 Moca Owner windowが正しく指定されていなかった
-			int nRet = pEditWnd->m_cDlgGrep.DoModal( GetProcessInstance(), pEditWnd->GetHwnd(),  nullptr);
-			if( FALSE != nRet ){
-				pEditWnd->GetActiveView().GetCommander().HandleCommand(F_GREP, true, 0, 0, 0, 0);
-			}else{
-				// 自分はGrepでない
-				pEditWnd->GetDocument()->SetCurDirNotitle();
-			}
-			pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
 		}
 
-		//プラグイン：EditorStartイベント実行
-		CJackManager::getInstance()->InvokePlugins( PP_EDITOR_START, &pEditWnd->GetActiveView() );
-
-		//プラグイン：DocumentOpenイベント実行
-		CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
-
-		if( !bGrepDlg && gi.bGrepStdout ){
-			// 即時終了
-			PostMessageCmd( pEditWnd->GetHwnd(), MYWM_CLOSE, PM_CLOSE_GREPNOCONFIRM | PM_CLOSE_EXIT, (LPARAM)nullptr );
-		}
-
-		return true; // 2003.06.23 Moca
+		pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
 	}
 	else{
 		// 2004.05.13 Moca さらにif分の中から前に移動
 		// ファイル名が与えられなくてもReadOnly指定を有効にするため．
-		bViewMode = CCommandLine::getInstance()->IsViewMode(); // 2002/2/8 aroka ここに移動
+		const auto bViewMode = CCommandLine::getInstance()->IsViewMode(); // 2002/2/8 aroka ここに移動
 		if( fi.m_szPath[0] != L'\0' ){
 			//	Mar. 9, 2002 genta 文書タイプ指定
 			pEditWnd->OpenDocumentWhenStart(
@@ -374,19 +335,16 @@ bool CNormalProcess::InitializeProcess()
 		}
 		if( !pEditWnd->GetDocument()->m_cDocFile.GetFilePathClass().IsValidPath() ){
 			pEditWnd->GetDocument()->SetCurDirNotitle();	// (無題)ウィンドウ
-			CAppNodeManager::getInstance()->GetNoNameNumber( pEditWnd->GetHwnd() );
+			CAppNodeManager::getInstance()->GetNoNameNumber(hEditWnd);
 			pEditWnd->UpdateCaption();
 		}
 	}
-
-	SetMainWindow( pEditWnd->GetHwnd() );
 
 	//	YAZAKI 2002/05/30 IMEウィンドウの位置がおかしいのを修正。
 	pEditWnd->GetActiveView().SetIMECompFormPos();
 
 	//WM_SIZEをポスト
 	{	// ファイル読み込みしなかった場合にはこの WM_SIZE がアウトライン画面を配置する
-		HWND hEditWnd = pEditWnd->GetHwnd();
 		if( !::IsIconic( hEditWnd ) ){
 			RECT rc;
 			::GetClientRect( hEditWnd, &rc );
@@ -395,9 +353,8 @@ bool CNormalProcess::InitializeProcess()
 	}
 
 	//再描画
-	::InvalidateRect( pEditWnd->GetHwnd(), nullptr, TRUE );
-
-	hMutex = nullptr;
+	::InvalidateRect(hEditWnd, nullptr, TRUE);
+	::UpdateWindow(hEditWnd);
 
 	//プラグイン：EditorStartイベント実行
 	CJackManager::getInstance()->InvokePlugins(PP_EDITOR_START, &pEditWnd->GetActiveView());
@@ -406,24 +363,25 @@ bool CNormalProcess::InitializeProcess()
 	if( !( bDebugMode || bGrepMode ) )
 		pEditWnd->GetDocument()->RunAutoMacro( GetDllShareData().m_Common.m_sMacro.m_nMacroOnOpened );
 
-	// 起動時マクロオプション
-	LPCWSTR pszMacro = CCommandLine::getInstance()->GetMacro();
-	if( pEditWnd->GetHwnd()  &&  pszMacro  &&  pszMacro[0] != L'\0' ){
-		LPCWSTR pszMacroType = CCommandLine::getInstance()->GetMacroType();
-		if( pszMacroType == nullptr || pszMacroType[0] == L'\0' || _wcsicmp(pszMacroType, L"file") == 0 ){
-			pszMacroType = nullptr;
+	if (!bGrepMode) {
+		// 起動時マクロオプション
+		if (LPCWSTR pszMacro = CCommandLine::getInstance()->GetMacro(); pszMacro && pszMacro[0] != L'\0') {
+			LPCWSTR pszMacroType = CCommandLine::getInstance()->GetMacroType();
+			pEditWnd->GetActiveView().GetCommander().HandleCommand( F_EXECEXTMACRO, true, (LPARAM)pszMacro, (LPARAM)pszMacroType, 0, 0 );
 		}
-		CEditView& view = pEditWnd->GetActiveView();
-		view.GetCommander().HandleCommand( F_EXECEXTMACRO, true, (LPARAM)pszMacro, (LPARAM)pszMacroType, 0, 0 );
 	}
 
 	//プラグイン：DocumentOpenイベント実行
 	CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
 
-	// 複数ファイル読み込み
-	OpenFiles( pEditWnd->GetHwnd() );
+	if (bGrepMode && (!bGrepDlg && gi.bGrepStdout)) {
+		return false;	// 即時終了
+	}
 
-	return pEditWnd->GetHwnd() ? true : false;
+	// 複数ファイル読み込み
+	OpenFiles(hEditWnd);
+
+	return hEditWnd;
 }
 
 /*!
@@ -499,7 +457,7 @@ HANDLE CNormalProcess::_GetInitializeMutex() const
 void CNormalProcess::OpenFiles( HWND hwnd )
 {
 	EditInfo fi;
-	CCommandLine::getInstance()->GetEditInfo( &fi );
+	fi = CCommandLine::getInstance()->GetEditInfoRef();
 	bool bViewMode = CCommandLine::getInstance()->IsViewMode();
 
 	int fileNum = CCommandLine::getInstance()->GetFileNum();
