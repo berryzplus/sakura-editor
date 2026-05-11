@@ -11,17 +11,10 @@
 
 //2007.10.23 kobake 作成
 
+#include "doc/CEditDoc.h"
 #include "types/CType.h"
 #include "util/design_template.h"
 #include "window/CEditWnd.h"
-
-class CEditDoc;
-class CLoadAgent;
-class CSaveAgent;
-class CVisualProgress;
-class CSMacroMgr;
-class CGrepAgent;
-enum EFunctionCode;
 
 //!エディタ部分アプリケーションクラス。CNormalProcess1個につき、1個存在。
 class CEditApp : public TSingleton<CEditApp>{
@@ -48,22 +41,20 @@ public:
 	HINSTANCE			m_hInst;
 
 	//ドキュメント
-	CEditDoc*			m_pcEditDoc;
+	CEditDoc*			m_pcEditDoc = new CEditDoc();
 
 	//ウィンドウ
 	CEditWnd*			m_pcEditWnd = new CEditWnd();
 
 	//IO管理
-	CLoadAgent*			m_pcLoadAgent;
-	CSaveAgent*			m_pcSaveAgent;
-	CVisualProgress*	m_pcVisualProgress;
+	CVisualProgress*	m_pcVisualProgress = m_pcEditDoc->m_pcVisualProgress.get();
 
 	//その他ヘルパ
-	CSMacroMgr*			m_pcSMacroMgr;			//マクロ管理
+	CSMacroMgr*			m_pcSMacroMgr = m_pcEditDoc->m_pcSMacroMgr.get();			//マクロ管理
 
 	CPropertyManager*	m_pcPropertyManager = m_pcEditWnd->m_pcPropertyManager.get();
 
-	CGrepAgent*			m_pcGrepAgent;			//GREPモード
+	CGrepAgent*			m_pcGrepAgent = m_pcEditDoc->m_pcGrepAgent.get();			//GREPモード
 
 	CSoundSet&			m_cSoundSet = m_pcEditWnd->m_cSoundSet;
 

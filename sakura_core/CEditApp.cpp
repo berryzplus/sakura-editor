@@ -10,11 +10,6 @@
 #include "CEditApp.h"
 #include "doc/CEditDoc.h"
 #include "window/CEditWnd.h"
-#include "agent/CLoadAgent.h"
-#include "agent/CSaveAgent.h"
-#include "uiparts/CVisualProgress.h"
-#include "macro/CSMacroMgr.h"
-#include "agent/CGrepAgent.h"
 #include "_main/CCommandLine.h"
 #include "util/module.h"
 #include "util/shell.h"
@@ -25,20 +20,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 
 	//ヘルパ作成
 	m_cIcons.Create( m_hInst );	//	CreateImage List
-
-	//ドキュメントの作成
-	m_pcEditDoc = new CEditDoc(this);
-
-	//IO管理
-	m_pcLoadAgent = new CLoadAgent();
-	m_pcSaveAgent = new CSaveAgent();
-	m_pcVisualProgress = new CVisualProgress();
-
-	//GREPモード管理
-	m_pcGrepAgent = new CGrepAgent();
-
-	//マクロ
-	m_pcSMacroMgr = new CSMacroMgr();
 
 	//ドキュメントの作成
 	m_pcEditDoc->Create();
@@ -56,11 +37,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 
 CEditApp::~CEditApp()
 {
-	delete m_pcSMacroMgr;
-	delete m_pcGrepAgent;
-	delete m_pcVisualProgress;
-	delete m_pcSaveAgent;
-	delete m_pcLoadAgent;
 	delete m_pcEditWnd;
 	delete m_pcEditDoc;
 }

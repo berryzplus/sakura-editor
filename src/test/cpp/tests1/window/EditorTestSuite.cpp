@@ -69,21 +69,15 @@ namespace window {
 #pragma endregion CanBeMove
 
 	//IO管理
-	pcLoadAgent = std::make_unique<CLoadAgent>();
-	CEditApp::getInstance()->m_pcLoadAgent = pcLoadAgent.get();
-	pcSaveAgent = std::make_unique<CSaveAgent>();
-	CEditApp::getInstance()->m_pcSaveAgent = pcSaveAgent.get();
-	pcVisualProgress = std::make_unique<CVisualProgress>();
-	CEditApp::getInstance()->m_pcVisualProgress = pcVisualProgress.get();
+	CEditApp::getInstance()->m_pcVisualProgress = GetDocument()->m_pcVisualProgress.get();
 
 	//GREPモード管理
-	pcGrepAgent = std::make_unique<CGrepAgent>();
-	CEditApp::getInstance()->m_pcGrepAgent = pcGrepAgent.get();
+	CEditApp::getInstance()->m_pcGrepAgent = GetDocument()->m_pcGrepAgent.get();
 
 	// SMacroMgrを用意する
-	pcSMacroMgr = std::make_unique<CSMacroMgr>();
+	pcSMacroMgr = GetDocument()->m_pcSMacroMgr.get();
 
-	CEditApp::getInstance()->m_pcSMacroMgr = pcSMacroMgr.get();
+	CEditApp::getInstance()->m_pcSMacroMgr = pcSMacroMgr;
 
 	//ドキュメントの作成
 	pcEditDoc->Create();
@@ -119,15 +113,8 @@ namespace window {
 	CEditApp::getInstance()->m_pcPropertyManager = nullptr;
 	CEditApp::getInstance()->m_pcGrepAgent = nullptr;
 	CEditApp::getInstance()->m_pcVisualProgress = nullptr;
-	CEditApp::getInstance()->m_pcSaveAgent = nullptr;
-	CEditApp::getInstance()->m_pcLoadAgent = nullptr;
 	CEditApp::getInstance()->m_pcEditWnd = nullptr;
 	CEditApp::getInstance()->m_pcEditDoc = nullptr;
-
-	pcGrepAgent = nullptr;
-	pcVisualProgress = nullptr;
-	pcSaveAgent = nullptr;
-	pcLoadAgent = nullptr;
 
 	pcSMacroMgr = nullptr;
 
