@@ -40,16 +40,8 @@ namespace window {
 
 #pragma endregion CanBeMove
 
-	const auto hInst = G_AppInstance();
-
-	CEditApp::getInstance()->m_hInst = hInst;
-
-	//ヘルパ作成
-	CEditApp::getInstance()->m_cIcons.Create(hInst);
-
 	// CEditViewをインスタンス化するにはドキュメントのインスタンスが必要
-	pcEditDoc = std::make_unique<CEditDoc>(nullptr);
-	CEditApp::getInstance()->m_pcEditDoc = pcEditDoc.get();
+	pcEditDoc = std::make_unique<CEditDoc>();
 
 #pragma region CanBeMove
 	// ドキュメントがあるので値を返す
@@ -68,23 +60,8 @@ namespace window {
 
 #pragma endregion CanBeMove
 
-	//IO管理
-	CEditApp::getInstance()->m_pcVisualProgress = GetDocument()->m_pcVisualProgress.get();
-
-	//GREPモード管理
-	CEditApp::getInstance()->m_pcGrepAgent = GetDocument()->m_pcGrepAgent.get();
-
-	// SMacroMgrを用意する
-	pcSMacroMgr = GetDocument()->m_pcSMacroMgr.get();
-
-	CEditApp::getInstance()->m_pcSMacroMgr = pcSMacroMgr;
-
-	//ドキュメントの作成
-	pcEditDoc->Create();
-
 	// CEditWndを用意する
 	pcEditWnd = std::make_unique<CEditWnd>();
-	CEditApp::getInstance()->m_pcEditWnd = pcEditWnd.get();
 
 #pragma region CanBeMove
 	// 編集ウインドウがあるので値を返す
@@ -95,8 +72,17 @@ namespace window {
 
 #pragma endregion CanBeMove
 
+	pcEditApp = std::make_unique<CEditApp>();
+
+	// SMacroMgrを用意する
+	pcSMacroMgr = GetDocument()->m_pcSMacroMgr.get();
+
+	const auto hInst = G_AppInstance();
+
+	//ドキュメントの作成
+	pcEditDoc->Create();
+
 	//プロパティ管理
-	CEditApp::getInstance()->m_pcPropertyManager = pcEditWnd->m_pcPropertyManager.get();
 	CEditApp::getInstance()->m_pcPropertyManager->Create(
 		pcEditWnd->GetHwnd(),
 		&pcEditWnd->m_hIcons,
@@ -109,12 +95,7 @@ namespace window {
  */
 /* static */ void EditorTestSuite::TearDownEditor()
 {
-	CEditApp::getInstance()->m_pcSMacroMgr = nullptr;
-	CEditApp::getInstance()->m_pcPropertyManager = nullptr;
-	CEditApp::getInstance()->m_pcGrepAgent = nullptr;
-	CEditApp::getInstance()->m_pcVisualProgress = nullptr;
-	CEditApp::getInstance()->m_pcEditWnd = nullptr;
-	CEditApp::getInstance()->m_pcEditDoc = nullptr;
+	pcEditApp = nullptr;
 
 	pcSMacroMgr = nullptr;
 

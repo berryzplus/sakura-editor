@@ -143,8 +143,17 @@ bool CNormalProcess::InitializeProcess()
 	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
 		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
+
+	//ドキュメントを作成
+	m_pcEditDoc = std::make_unique<CEditDoc>();
+
+	//メインウィンドウオブジェクトのインスタンスを作成
+	m_pcEditWnd = std::make_unique<CEditWnd>();
+
 	// CEditAppを作成
-	m_pcEditApp = CEditApp::getInstance();
+	m_pcEditApp = std::make_unique<CEditApp>();
+
+	// メインウインドウを作成
 	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
 	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
 	if( nullptr == pEditWnd->GetHwnd() ){

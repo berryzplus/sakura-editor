@@ -1,6 +1,6 @@
 ﻿/*! @file */
 /*
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -85,6 +85,12 @@ std::wstring FormatPathList( const ContainerType& containter )
 		}
 	}
 	return strPatterns;
+}
+
+CGrepAgent* GetGrepAgent()
+{
+	const auto doc = GetDocument();
+	return doc ? doc->m_pcGrepAgent.get() : nullptr;
 }
 
 class CFileLoadOrWnd{

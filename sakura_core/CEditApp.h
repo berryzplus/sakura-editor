@@ -16,14 +16,20 @@
 #include "util/design_template.h"
 #include "window/CEditWnd.h"
 
-//!エディタ部分アプリケーションクラス。CNormalProcess1個につき、1個存在。
-class CEditApp : public TSingleton<CEditApp>{
-	friend class TSingleton<CEditApp>;
-	CEditApp(){}
-	virtual ~CEditApp();
-
+/*!
+ * @brief エディタ部分アプリケーションクラス
+ *
+ * @note CNormalProcess1個につき、1個存在。
+ *
+ * @author kobake
+ * @date 2007.10.23 作成
+ */
+class CEditApp : public TSingleInstance<CEditApp> {
 public:
-	void Create(HINSTANCE hInst, int);
+	CEditApp();
+	~CEditApp() override = default;
+
+	void	Create(HINSTANCE hInst [[maybe_unused]], int nGroupId);
 
 	//モジュール情報
 	HINSTANCE GetAppInstance() const{ return m_hInst; }	//!< インスタンスハンドル取得
@@ -37,14 +43,13 @@ public:
 	bool OpenPropertySheet( int nPageNum );
 	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );
 
-public:
-	HINSTANCE			m_hInst;
+	HINSTANCE			m_hInst = ::GetModuleHandleW(nullptr);
 
 	//ドキュメント
-	CEditDoc*			m_pcEditDoc = new CEditDoc();
+	CEditDoc*			m_pcEditDoc = &::GetEditDoc();
 
 	//ウィンドウ
-	CEditWnd*			m_pcEditWnd = new CEditWnd();
+	CEditWnd*			m_pcEditWnd = &::GetEditWnd();
 
 	//IO管理
 	CVisualProgress*	m_pcVisualProgress = m_pcEditDoc->m_pcVisualProgress.get();
