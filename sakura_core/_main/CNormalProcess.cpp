@@ -161,6 +161,15 @@ bool CNormalProcess::InitializeProcess()
 
 	hMutex = nullptr;
 
+	//ドキュメントを作成
+	m_pcEditDoc = std::make_unique<CEditDoc>();
+
+	//メインウィンドウオブジェクトのインスタンスを作成
+	m_pcEditWnd = std::make_unique<CEditWnd>();
+
+	// エディタアプリケーションを作成。2007.10.23 kobake
+	m_pcEditApp = std::make_unique<CEditApp>();
+
 	// プラグイン読み込み
 	MY_TRACETIME( cRunningTimer, L"Before Init Jack" );
 	/* ジャック初期化 */
@@ -171,22 +180,6 @@ bool CNormalProcess::InitializeProcess()
 	/* プラグイン読み込み */
 	CPluginManager::getInstance()->LoadAllPlugin();
 	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
-
-	// エディタアプリケーションを作成。2007.10.23 kobake
-	// グループIDを取得
-	int nGroupId = CCommandLine::getInstance()->GetGroupId();
-	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
-		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
-	}
-
-	//ドキュメントを作成
-	m_pcEditDoc = std::make_unique<CEditDoc>();
-
-	//メインウィンドウオブジェクトのインスタンスを作成
-	m_pcEditWnd = std::make_unique<CEditWnd>();
-
-	// CEditAppを作成
-	m_pcEditApp = std::make_unique<CEditApp>();
 
 	const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
 	auto bGrepMode = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
@@ -241,6 +234,12 @@ bool CNormalProcess::InitializeProcess()
 				bGrepMode = false;
 			}
 		}
+	}
+
+	// グループIDを取得
+	int nGroupId = CCommandLine::getInstance()->GetGroupId();
+	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
+		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
 
 	// メインウインドウを作成
