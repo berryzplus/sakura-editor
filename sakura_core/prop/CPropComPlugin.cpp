@@ -13,6 +13,10 @@
 #include "StdAfx.h"
 #include <shellapi.h>
 #include "prop/CPropCommon.h"
+
+#include "_main/CCommandLine.h"
+#include "_main/CProcess.h"
+
 #include "CEditApp.h"
 #include "plugin/CJackManager.h"
 #include "uiparts/CMenuDrawer.h"
@@ -551,49 +555,24 @@ std::wstring CPropPlugin::GetReadMeFile(const std::wstring& sName)
 */
 bool CPropPlugin::BrowseReadMe(const std::wstring& sReadMeName)
 {
-	// -- -- -- -- コマンドライン文字列を生成 -- -- -- -- //
-	CCommandLineString cCmdLineBuf;
-
-	//アプリケーションパス
-	WCHAR szExePath[MAX_PATH + 1];
-	::GetModuleFileName( nullptr, szExePath, int(std::size(szExePath)) );
-	cCmdLineBuf.AppendF( L"\"%s\"", szExePath );
-
 	// ファイル名
-	cCmdLineBuf.AppendF( L" \"%s\"", sReadMeName.c_str() );
+	const auto filePath = std::filesystem::path{ sReadMeName };
 
 	// コマンドラインオプション
-	cCmdLineBuf.AppendF(L" -R -CODE=99");
+	std::vector<std::wstring> args{
+		L"-R",
+		L"-CODE=99",
+	};
 
 	// グループID
-	int nGroup = GetDllShareData().m_sNodes.m_nGroupSequences;
-	if( nGroup > 0 ){
-		cCmdLineBuf.AppendF( L" -GROUP=%d", nGroup+1 );
+	if (const auto nGroup = GetDllShareData().m_sNodes.m_nGroupSequences; 0 < nGroup) {
+		args.emplace_back(std::format(L"-GROUP={}", nGroup + 1));
 	}
 
-	//CreateProcessに渡すSTARTUPINFOを作成
-	STARTUPINFO	sui;
-	::GetStartupInfo(&sui);
+	// プロセスの起動
+	const auto ep = CProcess::CreateEditorProcess(filePath, args, CCommandLine::getInstance()->IsSetProfile() ? std::optional<std::wstring>(GetProfileName()) : std::nullopt);
 
-	PROCESS_INFORMATION	pi;
-	ZeroMemory( &pi, sizeof(pi) );
-
-	WCHAR	szCmdLine[1024];
-	wcscpy_s(szCmdLine, std::size(szCmdLine), cCmdLineBuf.c_str());
-	//リソースリーク対策
-	BOOL bRet = ::CreateProcess( nullptr, szCmdLine, nullptr, nullptr, TRUE,
-		CREATE_NEW_CONSOLE, nullptr, nullptr, &sui, &pi );
-
-	//プロセス作成に成功した場合
-	if ( bRet )
-	{
-		//スレッドハンドルは使わないので閉じておく
-		::CloseHandle( pi.hThread );
-		//プロセスハンドルは使わないので閉じておく
-		::CloseHandle( pi.hProcess );
-	}
-
-	return ( bRet != FALSE );
+	return ep;
 }
 
 static void LoadPluginTemp(CommonSetting& common, CMenuDrawer& cMenuDrawer)

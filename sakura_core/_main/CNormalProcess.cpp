@@ -71,6 +71,16 @@ bool CNormalProcess::InitializeProcess()
 		return false;
 	}
 
+	// トレイウインドウのクラス名を組み立てる
+	std::wstring trayWndClassName{ GSTR_CEDITAPP };
+	trayWndClassName += GetProfileName();
+
+	// トレイウインドウを検索する
+	if (!cxx::FindWindowW(trayWndClassName, trayWndClassName)) {
+		// コントロールプロセスを起動する
+		CProcess::CreateControlProcess(GetProfileName());
+	}
+
 	/* 共有メモリを初期化する */
 	if ( !CProcess::InitializeProcess() ){
 		return false;

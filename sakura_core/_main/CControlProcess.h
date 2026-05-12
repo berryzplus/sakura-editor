@@ -26,45 +26,45 @@
 
 namespace cxx {
 
-struct MutexHolder : public cxx::ResourceHolder<&::CloseHandle> {
+struct MutexHolder final : public cxx::HandleHolder {
 	using MutexReleaser = cxx::ResourceHolder<&::ReleaseMutex>;
 
-	using Base = cxx::ResourceHolder<&::ReleaseMutex>;
+	using Base = cxx::HandleHolder;
 	using Me = MutexHolder;
 
 	MutexReleaser m_Releaser;
 
 	explicit MutexHolder(HANDLE hMutex)
-		: ResourceHolder(hMutex)
+		: HandleHolder(hMutex)
 		, m_Releaser(hMutex)
 	{
 	}
 
 	Me& operator = (HANDLE t)
 	{
-		ResourceHolder::operator=(t);
+		HandleHolder::operator=(t);
 		m_Releaser = t;
 		return *this;
 	}
 };
 
-struct EventHolder : public cxx::ResourceHolder<&::CloseHandle> {
+struct EventHolder final : public cxx::HandleHolder {
 	using EventReleaser = cxx::ResourceHolder<&::ResetEvent>;
 
-	using Base = cxx::ResourceHolder<&::ResetEvent>;
+	using Base = cxx::HandleHolder;
 	using Me = EventHolder;
 
 	EventReleaser m_Releaser;
 
 	explicit EventHolder(HANDLE hEvent)
-		: ResourceHolder(hEvent)
+		: HandleHolder(hEvent)
 		, m_Releaser(hEvent)
 	{
 	}
 
 	Me& operator = (HANDLE t)
 	{
-		ResourceHolder::operator=(t);
+		HandleHolder::operator=(t);
 		m_Releaser = t;
 		return *this;
 	}

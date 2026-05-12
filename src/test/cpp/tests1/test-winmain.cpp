@@ -43,37 +43,6 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 namespace cxx {
 
 /*!
- * @brief システムエラーを例外として発生させる
- *
- * @param message 追加のエラーメッセージ
- * @throw std::system_error システムエラー例外
- * @note 使い物になるかどうか試作してみただけ
- */
-NORETURN void raise_system_error(const std::string& message) {
-	throw std::system_error(int(::GetLastError()), std::system_category(), message);
-}
-
-/*!
- * @brief トップレベルウインドウを検索する
- */
-HWND FindWindowW(std::wstring_view className, const std::optional<std::wstring>& optWindowName = std::nullopt)
-{
-	return ::FindWindowW(std::data(std::wstring(className)), optWindowName.has_value() ? std::data(*optWindowName) : nullptr);
-}
-
-/*!
- * @brief システムディレクトリのパスを取得する
- *
- * @return システムディレクトリのパス
- */
-std::filesystem::path GetSystemDirectoryW()
-{
-	SFilePath buf;
-	::GetSystemDirectoryW(buf, int(std::size(buf)));
-	return LPCWSTR(buf);
-}
-
-/*!
  * @brief テキストファイルを書き出す
  *
  * @param outPath 出力先パス
@@ -108,108 +77,9 @@ void writeTextFile(
 	fs.close();
 }
 
-//! HANDLE型のスマートポインタ
-class HandleHolder final : public cxx::ResourceHolder<&::CloseHandle>
-{
-private:
-	using Base = cxx::ResourceHolder<&::CloseHandle>;
-	using Me = HandleHolder;
-
-public:
-	/*!
-	 * コンストラクタは流用する
-	 */
-	using Base::ResourceHolder;
-
-	void lock() const noexcept
-	{
-		Lock(INFINITE);	//無限に待つ
-	}
-
-	bool try_lock() const noexcept
-	{
-		return Lock(0);	//ロック取得を試行
-	}
-
-	template<class Rep, class Period>
-	bool try_lock_for(const std::chrono::duration<Rep, Period>& rel_time) const noexcept
-	{
-		const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(rel_time);
-		return Lock(DWORD(milliseconds.count()));
-	}
-
-	bool Lock(DWORD dwTimeout = INFINITE) const noexcept
-	{
-		// ロック取得を試行
-		const auto dwRet = ::WaitForSingleObject(get(), dwTimeout);
-
-		return WAIT_OBJECT_0 == dwRet || WAIT_ABANDONED == dwRet;
-	}
-};
-
 } // namespace cxx
 
 namespace testing {
-
-/*!
- * @brief サクラエディタのプロセスを起動する
- *
- * @tparam T コマンドライン引数のコンテナ型
- * @param si スタートアップ情報
- * @param args コマンドライン引数
- * @param optWorkingDir カレントディレクトリ（省略した場合は起動元と同じ）
- * @param optProfileName プロファイル名（省略した場合は指定なし）
- * @return 起動したプロセスのハンドルオブジェクト
- * @note 使い物になるかどうか試作してみた
- */
-template<class T>
-	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
-cxx::HandleHolder _CreateSakuraProcess(
-	STARTUPINFO& si,
-	const T& args,
-	const std::optional<std::filesystem::path>& optWorkingDir = std::nullopt,
-	const std::optional<std::wstring_view>& optProfileName = std::nullopt
-)
-{
-	const auto exePath = GetExeFileName();
-
-	auto strCommandLine = std::format(LR"("{}")", exePath.native());
-	strCommandLine = std::accumulate(std::begin(args), std::end(args), strCommandLine, [](const std::wstring& a, std::wstring_view b) { return std::format(LR"({} {})", a, b); });
-	if (optProfileName.has_value()) {
-		strCommandLine += std::format(LR"( -PROF="{}")", *optProfileName);
-	}
-
-	auto lpszCommandLine = std::data(strCommandLine);
-
-	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
-
-	LPCWSTR lpszWorkingDir = optWorkingDir.has_value() ? optWorkingDir.value().c_str() : nullptr;
-
-	// プロセス情報（出力用構造体なので値は入れない）
-	PROCESS_INFORMATION pi{};
-
-	// コントロールプロセスを起動する
-	if (!::CreateProcessW(
-		exePath.c_str(),	// 実行可能モジュールパス
-		lpszCommandLine,	// コマンドラインバッファ
-		nullptr,			// プロセスのセキュリティ記述子
-		nullptr,			// スレッドのセキュリティ記述子
-		FALSE,				// ハンドルの継承オプション(継承させない)
-		dwCreationFlag,		// 作成のフラグ
-		nullptr,			// 環境変数(変更しない)
-		lpszWorkingDir,		// カレントディレクトリ(変更しない)
-		&si,				// スタートアップ情報
-		&pi					// プロセス情報(作成されたプロセス情報を格納する構造体)
-	))
-	{
-		cxx::raise_system_error("create process failed.");
-	}
-
-	// 開いたハンドルは使わないので閉じておく
-	::CloseHandle(pi.hThread);
-
-	return cxx::HandleHolder(pi.hProcess);
-}
 
 /*!
  * @brief コントロールプロセスを起動する
@@ -220,34 +90,7 @@ cxx::HandleHolder _CreateSakuraProcess(
  */
 DWORD CreateControlProcess(std::wstring_view profileName)
 {
-	// 初期化完了イベントの名前を決める
-	SFilePath initEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
-	initEventName += profileName;
-
-	// プロセス起動前に初期化完了イベントを作成する
-	cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
-	if (!hEvent) {
-		cxx::raise_system_error("create event failed.");
-	}
-
-	std::wstring title{ L"sakura control process" };
-
-	// スタートアップ情報（入力用構造体なので値を入れる）
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.lpTitle = std::data(title);
-	si.wShowWindow = SW_SHOWDEFAULT;
-
-	// コントロールプロセスを起動する
-	const auto cp = _CreateSakuraProcess(si, std::array{ LR"(-NOWIN)" }, cxx::GetSystemDirectoryW(), profileName);
-
-	// 初期化完了を待つ
-	if (!hEvent.try_lock_for(std::chrono::milliseconds(60000))){
-		cxx::raise_system_error("waitEvent is timeout.");
-	}
-
-	// プロセスIDを取得して返す
-	return ::GetProcessId(cp);
+	return CProcess::CreateControlProcess(profileName);
 }
 
 /*!
@@ -257,11 +100,11 @@ DWORD CreateControlProcess(std::wstring_view profileName)
  * @param args コマンドライン引数
  * @param profileName プロファイル名
  * @return 起動したプロセスのハンドルオブジェクト
- * @note 使い物になるかどうか試作してみた
  */
 template<class T>
 	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
 cxx::HandleHolder CreateEditorProcess(
+	const std::optional<std::filesystem::path>& optFilePath,
 	const T& args,
 	std::wstring_view profileName
 )
@@ -274,12 +117,25 @@ cxx::HandleHolder CreateEditorProcess(
 		commandArgs.emplace_back(std::format(LR"(-CODE={})", static_cast<int>(CODE_AUTODETECT)));
 	}
 
-	// スタートアップ情報（入力用構造体なので値を入れる）
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_SHOWDEFAULT;
+	return CProcess::CreateEditorProcess(optFilePath, commandArgs, std::optional<std::wstring>(profileName));
+}
 
-	return _CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+/*!
+ * @brief エディタープロセスを起動する
+ *
+ * @tparam T コマンドライン引数のコンテナ型
+ * @param args コマンドライン引数
+ * @param profileName プロファイル名
+ * @return 起動したプロセスのハンドルオブジェクト
+ */
+template<class T>
+	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
+cxx::HandleHolder CreateEditorProcess(
+	const T& args,
+	std::wstring_view profileName
+)
+{
+	return CreateEditorProcess(std::nullopt, args, profileName);
 }
 
 //! 外部ウインドウにクローズを要求する
@@ -631,9 +487,6 @@ TEST_P(WinMainTest, runEditorProcess)
 		fs.close();
 	}
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-
 	// 起動時実行マクロの中身を作る
 	constexpr std::array macroCommands = {
 		L"Down();"sv,
@@ -762,7 +615,7 @@ TEST_P(WinMainTest, runEditorProcess)
 	EXPECT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(0), ".*" );
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 
 	// コントロールプロセスが終了すると、INIファイルが作成される
 	EXPECT_THAT(fexist(iniPath), IsTrue());
@@ -795,20 +648,14 @@ TEST_P(WinMainTest, ActivateOpenedWindow001)
 	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
 	EXPECT_THAT(dwControlProcessId, Ne(0));
 
-	std::array args{
-		gm_TestDataPath.native(),
-		LR"(-Y=3)"s,
-		std::format(LR"( -PROF="{}")", profileName)
-	};
-
 	// 1つ目のエディタープロセスを起動する
-	const auto ep1 = testing::CreateEditorProcess(args, profileName);
+	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
 
 	// 2つ目のエディタープロセスを起動する
-	const auto ep2 = testing::CreateEditorProcess(args, profileName);
+	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep2);

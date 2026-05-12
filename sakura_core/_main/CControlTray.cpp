@@ -28,6 +28,8 @@
 #include "StdAfx.h"
 #include "_main/CControlTray.h"
 
+#include "_main/CControlProcess.h"
+
 #include "typeprop/CDlgTypeList.h"
 #include "debug/CRunningTimer.h"
 #include "dlg/CDlgOpenFile.h"
@@ -1323,200 +1325,39 @@ bool CControlTray::OpenNewEditor(
 	}
 
 	// -- -- -- -- コマンドライン文字列を生成 -- -- -- -- //
-	CCommandLineString cCmdLineBuf;
-
-	//アプリケーションパス
-	WCHAR szEXE[MAX_PATH + 1];
-	::GetModuleFileName( nullptr, szEXE, int(std::size(szEXE)) );
-	cCmdLineBuf.AppendF( L"\"%s\"", szEXE );
+	std::optional<std::filesystem::path> optFilePath = std::nullopt;
+	std::vector<std::wstring> args;
 
 	// ファイル名
-	if( sLoadInfo.cFilePath.c_str()[0] != L'\0' )	cCmdLineBuf.AppendF( L" \"%s\"", sLoadInfo.cFilePath.c_str() );
+	if (!sLoadInfo.cFilePath.empty()) optFilePath = sLoadInfo.cFilePath.c_str();
 
 	// コード指定
-	if( IsValidCodeOrCPType(sLoadInfo.eCharCode) )cCmdLineBuf.AppendF( L" -CODE=%d", sLoadInfo.eCharCode );
+	if (IsValidCodeOrCPType(sLoadInfo.eCharCode)) args.emplace_back(std::format(L"-CODE={}", static_cast<int>(sLoadInfo.eCharCode)));
 
 	// ビューモード指定
-	if( sLoadInfo.bViewMode )cCmdLineBuf.AppendF( L" -R" );
+	if (sLoadInfo.bViewMode) args.emplace_back(L"-R");
 
 	// グループID
-	if( false == bNewWindow ){	// 新規エディタをウインドウで開く
+	if (!bNewWindow) {	// 新規エディタをウインドウで開く
 		// グループIDを親ウィンドウから取得
 		HWND hwndAncestor = MyGetAncestor( hWndParent, GA_ROOTOWNER2 );	// 2007.10.22 ryoji GA_ROOTOWNER -> GA_ROOTOWNER2
 		int nGroup = CAppNodeManager::getInstance()->GetEditNode( hwndAncestor )->GetGroup();
 		if( nGroup > 0 ){
-			cCmdLineBuf.AppendF( L" -GROUP=%d", nGroup );
+			args.emplace_back(std::format(L"-GROUP={}", nGroup));
 		}
 	}else{
 		// 空いているグループIDを使用する
-		cCmdLineBuf.AppendF( L" -GROUP=%d", CAppNodeManager::getInstance()->GetFreeGroupId() );
-	}
-
-	if( CCommandLine::getInstance()->IsSetProfile() ){
-		cCmdLineBuf.AppendF( L" -PROF=\"%ls\"", CCommandLine::getInstance()->GetProfileName() );
-	}
-
-	// 追加のコマンドラインオプション
-	WCHAR szResponseFile[_MAX_PATH] = L"";
-	struct CResponsefileDeleter{
-		LPCWSTR fileName;
-		CResponsefileDeleter(): fileName(nullptr){}
-		CResponsefileDeleter(const CResponsefileDeleter&) = delete;
-		CResponsefileDeleter operator = (const CResponsefileDeleter&) = delete;
-		CResponsefileDeleter(CResponsefileDeleter&&) noexcept = delete;
-		CResponsefileDeleter operator = (CResponsefileDeleter&&) noexcept = delete;
-		~CResponsefileDeleter(){
-			if( fileName && fileName[0] ){
-				::DeleteFile( fileName );
-				fileName = nullptr;
-			}
-		}
-	};
-	CResponsefileDeleter respDeleter;
-	if( szCmdLineOption ){
-		// Grepなどで入りきらない場合はレスポンスファイルを利用する
-		if( cCmdLineBuf.max_size() < cCmdLineBuf.size() + wcslen(szCmdLineOption) ){
-			WCHAR szIniDir[_MAX_PATH];
-			GetInidir(szIniDir);
-			LPWSTR pszTempFile = _wtempnam(szIniDir, L"skr_resp");
-			if( !pszTempFile ){
-				ErrorMessage(hWndParent, LS(STR_TRAY_RESPONSEFILE));
-				return false;
-			}
-			wcscpy(szResponseFile, pszTempFile);
-			free(pszTempFile);
-			CTextOutputStream output(szResponseFile);
-			if( !output ){
-				ErrorMessage(hWndParent, LS(STR_TRAY_RESPONSEFILE));
-				return false;
-			}
-			respDeleter.fileName = szResponseFile;
-			// 出力
-			output.WriteString(szCmdLineOption);
-			output.Close();
-			sync = true;
-			cCmdLineBuf.AppendF(L" -@=\"%s\"", szResponseFile);
-		}else{
-			cCmdLineBuf.AppendF(L" %s", szCmdLineOption);
-		}
-	}
-	// -- -- -- -- プロセス生成 -- -- -- -- //
-
-	// 無効なディレクトリのときはNULLに変更
-	if( pszCurDir ){
-		DWORD attr = GetFileAttributes( pszCurDir );
-		if( ( attr != -1) && ( attr & FILE_ATTRIBUTE_DIRECTORY ) != 0 ){
-		} else {
-			pszCurDir = nullptr;
-		}
+		args.emplace_back(std::format(L"-GROUP={}", CAppNodeManager::getInstance()->GetFreeGroupId()));
 	}
 
 	//	プロセスの起動
-	PROCESS_INFORMATION p;
-	STARTUPINFO s;
-
-	s.cb = sizeof_raw( s );
-	s.lpReserved = nullptr;
-	s.lpDesktop = nullptr;
-	s.lpTitle = nullptr;
-
-	s.dwFlags = STARTF_USESHOWWINDOW;
-	s.wShowWindow = SW_SHOWDEFAULT;
-	s.cbReserved2 = 0;
-	s.lpReserved2 = nullptr;
-
-	//	May 30, 2003 genta カレントディレクトリ指定を可能に
-	//エディタプロセスを起動
-	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
-#ifdef _DEBUG
-//	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
-#endif
-	WCHAR szCmdLine[1024]; wcscpy_s(szCmdLine, std::size(szCmdLine), cCmdLineBuf.c_str());
-	BOOL bCreateResult = CreateProcess(
-		szEXE,					// 実行可能モジュールの名前
-		szCmdLine,				// コマンドラインの文字列
-		nullptr,					// セキュリティ記述子
-		nullptr,					// セキュリティ記述子
-		FALSE,					// ハンドルの継承オプション
-		dwCreationFlag,			// 作成のフラグ
-		nullptr,					// 新しい環境ブロック
-		pszCurDir,				// カレントディレクトリの名前
-		&s,						// スタートアップ情報
-		&p						// プロセス情報
+	CProcess::CreateEditorProcess(
+		optFilePath, args,
+		CCommandLine::getInstance()->IsSetProfile() ? std::optional<std::wstring>(GetProfileName()) : std::nullopt,
+		pszCurDir ? std::optional<std::filesystem::path>(pszCurDir) : std::nullopt
 	);
-	if( !bCreateResult ){
-		//	失敗
-		WCHAR* pMsg;
-		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
-						FORMAT_MESSAGE_IGNORE_INSERTS |
-						FORMAT_MESSAGE_FROM_SYSTEM,
-						nullptr,
-						GetLastError(),
-						MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-						(LPWSTR)&pMsg,
-						0,
-						nullptr
-		);
-		ErrorMessage(
-			hWndParent,
-			LS(STR_TRAY_CREATEPROC1),
-			szEXE,
-			pMsg
-		);
-		::LocalFree( (HLOCAL)pMsg );	//	エラーメッセージバッファを解放
-		return false;
-	}
 
-	bool bRet = true;
-	if( sync ){
-		//	起動したプロセスが完全に立ち上がるまでちょっと待つ．
-		int nResult = WaitForInputIdle( p.hProcess, 10000 );	//	最大10秒間待つ
-		if( nResult != 0 ){
-			ErrorMessage(
-				hWndParent,
-				LS(STR_TRAY_CREATEPROC2),
-				szEXE
-			);
-			bRet = false;
-		}
-	}
-	else{
-		// タブまとめ時は起動したプロセスが立ち上がるまでしばらくタイトルバーをアクティブに保つ	// 2007.02.03 ryoji
-		if( pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin ){
-			WaitForInputIdle( p.hProcess, 3000 );
-			sync = true;
-		}
-	}
-
-	// MYWM_FIRST_IDLE が届くまでちょっとだけ余分に待つ	// 2008.04.19 ryoji
-	// Note. 起動先プロセスが初期化処理中に COM 関数（SHGetFileInfo API なども含む）を実行すると、
-	//       その時点で COM の同期機構が動いて WaitForInputIdle は終了してしまう可能性がある（らしい）。
-	if( sync && bRet )
-	{
-		int i;
-		for( i = 0; i < 200; i++ ){
-			MSG msg;
-			DWORD dwExitCode;
-			if( ::PeekMessage( &msg, nullptr, MYWM_FIRST_IDLE, MYWM_FIRST_IDLE, PM_REMOVE ) ){
-				if( msg.message == WM_QUIT ){	// 指定範囲外でも WM_QUIT は取り出される
-					::PostQuitMessage( int(msg.wParam) );
-					break;
-				}
-				// 監視対象プロセスからのメッセージなら抜ける
-				// そうでなければ破棄して次を取り出す
-				if( msg.wParam == p.dwProcessId ){
-					break;
-				}
-			}
-			if( ::GetExitCodeProcess( p.hProcess, &dwExitCode ) && dwExitCode != STILL_ACTIVE ){
-				break;	// 監視対象プロセスが終了した
-			}
-			::Sleep(10);
-		}
-	}
-
-	CloseHandle( p.hThread );
-	CloseHandle( p.hProcess );
+	BOOL bRet = TRUE;
 
 	return bRet;
 }
@@ -1547,18 +1388,18 @@ bool CControlTray::OpenNewEditor2(
 	}
 
 	// 追加のコマンドラインオプション
-	CCommandLineString cCmdLine;
+	std::wstring cmdline;
 	if( pfi != nullptr ){
-		if( pfi->m_ptCursor.x >= 0					)cCmdLine.AppendF( L" -X=%d", int(pfi->m_ptCursor.x) + 1 );
-		if( pfi->m_ptCursor.y >= 0					)cCmdLine.AppendF( L" -Y=%d", int(pfi->m_ptCursor.y) + 1 );
-		if( pfi->m_nViewLeftCol >= CLayoutInt(0)	)cCmdLine.AppendF( L" -VX=%d", (Int)pfi->m_nViewLeftCol + 1 );
-		if( pfi->m_nViewTopLine >= CLayoutInt(0)	)cCmdLine.AppendF( L" -VY=%d", (Int)pfi->m_nViewTopLine + 1 );
+		if( pfi->m_ptCursor.x >= 0					) cmdline += std::format(L" -X={:d}", int(pfi->m_ptCursor.x) + 1);
+		if( pfi->m_ptCursor.y >= 0					) cmdline += std::format(L" -Y={:d}", int(pfi->m_ptCursor.y) + 1);
+		if( pfi->m_nViewLeftCol >= CLayoutInt(0)	) cmdline += std::format(L" -VX={:d}", int(pfi->m_nViewLeftCol) + 1);
+		if( pfi->m_nViewTopLine >= CLayoutInt(0)	) cmdline += std::format(L" -VY={:d}", int(pfi->m_nViewTopLine) + 1);
 	}
 	SLoadInfo sLoadInfo;
 	sLoadInfo.cFilePath = pfi ? pfi->m_szPath : L"";
 	sLoadInfo.eCharCode = pfi ? pfi->m_nCharCode : CODE_NONE;
 	sLoadInfo.bViewMode = bViewMode;
-	return OpenNewEditor( hInstance, hWndParent, sLoadInfo, cCmdLine.c_str(), sync, nullptr, bNewWindow );
+	return OpenNewEditor( hInstance, hWndParent, sLoadInfo, cmdline.c_str(), sync, nullptr, bNewWindow );
 }
 //	To Here Oct. 24, 2000 genta
 
