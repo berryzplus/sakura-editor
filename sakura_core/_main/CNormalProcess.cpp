@@ -65,20 +65,33 @@ bool CNormalProcess::InitializeProcess()
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
 
+	const auto pszProfileName = GetProfileName();
+
+	// 初期化ミューテックスの名前を組み立てる
+	std::wstring strMutexInitName = GSTR_MUTEX_SAKURA_INIT;
+	strMutexInitName += pszProfileName;
+
 	/* プロセス初期化の目印 */
-	cxx::MutexHolder hMutex{ _GetInitializeMutex() };
+	cxx::MutexHolder hMutex{ ::CreateMutexW(nullptr, TRUE, strMutexInitName.c_str()) };
 	if (!hMutex) {
+		//ErrorBeep();
+		//TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
+		return false;
+	}
+
+	if (!hMutex.try_lock_for(std::chrono::seconds(15))){// 別の誰かが起動中
+		//TopErrorMessage( nullptr, L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。" );
 		return false;
 	}
 
 	// トレイウインドウのクラス名を組み立てる
 	std::wstring trayWndClassName{ GSTR_CEDITAPP };
-	trayWndClassName += GetProfileName();
+	trayWndClassName += pszProfileName;
 
 	// トレイウインドウを検索する
 	if (!cxx::FindWindowW(trayWndClassName, trayWndClassName)) {
 		// コントロールプロセスを起動する
-		CProcess::CreateControlProcess(GetProfileName());
+		CProcess::CreateControlProcess(pszProfileName);
 	}
 
 	/* 共有メモリを初期化する */
@@ -145,6 +158,8 @@ bool CNormalProcess::InitializeProcess()
 
 		return false;
 	}
+
+	hMutex = nullptr;
 
 	// プラグイン読み込み
 	MY_TRACETIME( cRunningTimer, L"Before Init Jack" );
@@ -222,9 +237,6 @@ bool CNormalProcess::InitializeProcess()
 			cDlgGrep.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
 			cDlgGrep.m_bGrepSeparateFolder = gi.bGrepSeparateFolder;
 
-			//GREPダイアログを表示する前にMutexを解放する
-			hMutex = nullptr;
-
 			if (!cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
 				bGrepMode = false;
 			}
@@ -240,7 +252,6 @@ bool CNormalProcess::InitializeProcess()
 	}
 
 	SetMainWindow(hEditWnd);
-	hMutex = nullptr;
 
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
@@ -437,41 +448,4 @@ void CNormalProcess::OnExitProcess()
 {
 	/* プラグイン解放 */
 	CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
-}
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                         実装補助                            //
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-/*!
-	@brief Mutex(プロセス初期化の目印)を取得する
-
-	多数同時に起動するとウィンドウが表に出てこないことがある。
-	
-	@date 2002/2/8 aroka InitializeProcessから移動
-	@retval Mutex のハンドルを返す
-	@retval 失敗した時はリリースしてから NULL を返す
-*/
-HANDLE CNormalProcess::_GetInitializeMutex() const
-{
-	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::_GetInitializeMutex" );
-	HANDLE hMutex;
-	const auto pszProfileName = GetProfileName();
-	std::wstring strMutexInitName = GSTR_MUTEX_SAKURA_INIT;
-	strMutexInitName += pszProfileName;
-	hMutex = ::CreateMutex( nullptr, TRUE, strMutexInitName.c_str() );
-	if( nullptr == hMutex ){
-		ErrorBeep();
-		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
-		return nullptr;
-	}
-	if( ::GetLastError() == ERROR_ALREADY_EXISTS ){
-		DWORD dwRet = ::WaitForSingleObject( hMutex, 15000 );	// 2002/2/8 aroka 少し長くした
-		if( WAIT_TIMEOUT == dwRet ){// 別の誰かが起動中
-			TopErrorMessage( nullptr, L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。" );
-			::CloseHandle( hMutex );
-			return nullptr;
-		}
-	}
-	return hMutex;
 }
