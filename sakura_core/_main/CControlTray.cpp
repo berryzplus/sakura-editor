@@ -1376,13 +1376,8 @@ bool CControlTray::OpenNewEditor2(
 	bool			bNewWindow			//!< [in] 新規エディタを新しいウインドウで開く
 )
 {
-	DLLSHAREDATA*	pShareData;
-
-	/* 共有データ構造体のアドレスを返す */
-	pShareData = &GetDllShareData();
-
 	/* 編集ウィンドウの上限チェック */
-	if( pShareData->m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//最大値修正	//@@@ 2003.05.31 MIK
+	if (const auto pShareData = &::GetDllShareData(); MAX_EDITWINDOWS <= pShareData->m_sNodes.m_nEditArrNum) {	//最大値修正	//@@@ 2003.05.31 MIK
 		OkMessage( nullptr, LS(STR_MAXWINDOW), MAX_EDITWINDOWS );
 		return false;
 	}
@@ -1401,7 +1396,6 @@ bool CControlTray::OpenNewEditor2(
 	sLoadInfo.bViewMode = bViewMode;
 	return OpenNewEditor( hInstance, hWndParent, sLoadInfo, cmdline.c_str(), sync, nullptr, bNewWindow );
 }
-//	To Here Oct. 24, 2000 genta
 
 void CControlTray::ActiveNextWindow(HWND hwndParent)
 {

@@ -84,9 +84,8 @@ public:
 	tagSIZE GetWindowSize() const noexcept { return { m_fi.m_nWindowSizeX, m_fi.m_nWindowSizeY }; }
 	tagPOINT GetWindowOrigin() const noexcept { return { m_fi.m_nWindowOriginX, m_fi.m_nWindowOriginY }; }
 	LPCWSTR GetOpenFile() const noexcept { return m_fi.m_szPath; }
-	int GetFileNum(void) const noexcept { return static_cast<int>(m_vFiles.size()); }
-	const WCHAR* GetFileName(int i) const noexcept { return i < GetFileNum() ? m_vFiles[i].c_str() : nullptr; }
-	void ClearFile(void) noexcept { m_vFiles.clear(); }
+	std::span<std::wstring> GetFiles() noexcept { return m_vFiles; }
+
 	LPCWSTR GetDocType() const noexcept { return m_fi.m_szDocType; }
 	ECodeType GetDocCode() const noexcept { return m_fi.m_nCharCode; }
 	void ParseKanjiCodeFromFileName( LPWSTR pszExeFileName, int cchExeFileName );
@@ -109,4 +108,5 @@ private:
 	CNativeW	m_cmProfile;		//! プロファイル名
 	std::vector<std::wstring> m_vFiles;	//!< ファイル名(複数)
 };
+
 #endif /* SAKURA_CCOMMANDLINE_DF7E2E03_76E1_458C_82AC_7C485EECF677_H_ */

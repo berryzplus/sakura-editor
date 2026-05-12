@@ -95,6 +95,29 @@ bool CNormalProcess::InitializeProcess()
 	/* コマンドラインオプション */
 	const auto& fi = CCommandLine::getInstance()->GetEditInfoRef(); // 2002/2/8 aroka ここに移動
 
+	//複数ファイル読み込み
+	auto files = CCommandLine::getInstance()->GetFiles();
+	if (auto fileNum = std::ssize(files); 0 < fileNum) {
+		// ファイルドロップ数の上限に合わせる
+		if (const auto nDropFileNumMax = GetDllShareData().m_Common.m_sFile.m_nDropFileNumMax - 1; nDropFileNumMax < fileNum) {
+			files = files.subspan(0, nDropFileNumMax);
+		}
+
+		const auto bViewMode = CCommandLine::getInstance()->IsViewMode();
+
+		EditInfo ei{ fi };
+
+		CControlTray::OpenNewEditor2(GetProcessInstance(), HWND(nullptr), &ei, bViewMode);
+
+		for (const auto& file: files) {
+			if (STRUNCATE == ::wcscpy_s(ei.m_szPath, file.c_str()) || !CControlTray::OpenNewEditor2(GetProcessInstance(), HWND(nullptr), &ei, bViewMode)) {
+				break;
+			}
+		}
+
+		return false;
+	}
+
 	// ファイルが既に開かれていたらアクティブにして抜ける
 	if (HWND hwndOwner; fi.m_szPath[0] != L'\0' && GetShareData().ActiveAlreadyOpenedWindow(fi.m_szPath, &hwndOwner, fi.m_nCharCode)) {
 		//カーソル位置が引数に指定されていたら指定位置にジャンプ
@@ -119,9 +142,6 @@ bool CNormalProcess::InitializeProcess()
 
 		//エディタをアクティブにする
 		ActivateFrameWindow(hwndOwner);
-
-		//複数ファイル読み込み
-		OpenFiles(hwndOwner);
 
 		return false;
 	}
@@ -388,9 +408,6 @@ bool CNormalProcess::InitializeProcess()
 		return false;	// 即時終了
 	}
 
-	// 複数ファイル読み込み
-	OpenFiles(hEditWnd);
-
 	return hEditWnd;
 }
 
@@ -457,38 +474,4 @@ HANDLE CNormalProcess::_GetInitializeMutex() const
 		}
 	}
 	return hMutex;
-}
-
-/*!
-	@brief 複数ファイル読み込み
-
-	@date 2015.03.14 novice 新規作成
-*/
-void CNormalProcess::OpenFiles( HWND hwnd )
-{
-	EditInfo fi;
-	fi = CCommandLine::getInstance()->GetEditInfoRef();
-	bool bViewMode = CCommandLine::getInstance()->IsViewMode();
-
-	int fileNum = CCommandLine::getInstance()->GetFileNum();
-	if( fileNum > 0 ){
-		int nDropFileNumMax = GetDllShareData().m_Common.m_sFile.m_nDropFileNumMax - 1;
-		// ファイルドロップ数の上限に合わせる
-		if( fileNum > nDropFileNumMax ){
-			fileNum = nDropFileNumMax;
-		}
-
-		int i;
-		for( i = 0; i < fileNum; i++ ){
-			// ファイル名差し替え
-			wcscpy( fi.m_szPath, CCommandLine::getInstance()->GetFileName(i) );
-			bool ret = CControlTray::OpenNewEditor2( GetProcessInstance(), hwnd, &fi, bViewMode );
-			if( ret == false ){
-				break;
-			}
-		}
-
-		// 用済みなので削除
-		CCommandLine::getInstance()->ClearFile();
-	}
 }
