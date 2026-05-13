@@ -36,6 +36,7 @@ private:
 	using CEditAppHolder = std::unique_ptr<CEditApp>;
 	using CEditDocHolder = std::unique_ptr<CEditDoc>;
 	using CEditWndHolder = std::unique_ptr<CEditWnd>;
+	using COleInitHolder = std::unique_ptr<cxx::COleInit>;
 
 	using Base = CProcess;
 	using Me = CNormalProcess;
@@ -45,13 +46,13 @@ public:
 	using Base::Base;
 	~CNormalProcess() override = default;
 
-protected:
-	//プロセスハンドラ
-	bool InitializeProcess() override;
-	bool MainLoop() override;
-	void OnExitProcess() override;
-
 private:
+	//プロセスハンドラ
+	bool	InitializeProcess(int nCmdShow) override;
+	bool	MainLoop() override;
+
+	COleInitHolder		m_OleInit = std::make_unique<cxx::COleInit>();
+
 	CEditDocHolder		m_pcEditDoc = nullptr;
 
 	CEditWndHolder		m_pcEditWnd = nullptr;

@@ -61,9 +61,11 @@
 	@date 2007.06.26 ryoji グループIDを指定して編集ウィンドウを作成する
 	@date 2012.02.25 novice 複数ファイル読み込み
 */
-bool CNormalProcess::InitializeProcess()
+bool CNormalProcess::InitializeProcess(int nCmdShow)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
+
+	if (!*m_OleInit) return false;
 
 	const auto pszProfileName = GetProfileName();
 
@@ -95,7 +97,7 @@ bool CNormalProcess::InitializeProcess()
 	}
 
 	/* 共有メモリを初期化する */
-	if ( !CProcess::InitializeProcess() ){
+	if (!GetShareData().InitShareData()) {
 		return false;
 	}
 
@@ -434,17 +436,4 @@ bool CNormalProcess::MainLoop()
 		return true;
 	}
 	return false;
-}
-
-/*!
-	@brief エディタプロセスを終了する
-	
-	@author aroka
-	@date 2002/01/07
-	こいつはなにもしない。後始末はdtorで。
-*/
-void CNormalProcess::OnExitProcess()
-{
-	/* プラグイン解放 */
-	CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
 }

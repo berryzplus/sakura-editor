@@ -982,6 +982,8 @@ void CControlTray::OnDestroy(HWND hWnd)
 		return;	// 既に破棄されている
 	}
 
+	m_pShareData->m_sHandles.m_hwndTray = nullptr;
+
 	// ホットキーの破棄
 	::UnregisterHotKey(hWnd, ID_HOTKEY_TRAYMENU);
 

@@ -21,7 +21,8 @@
 #include <string>
 #include <string_view>
 
-#include "global.h"
+#include "_main/global.h"
+#include "_main/CCommandLine.h"
 #include "config/system_constants.h"
 #include "env/CShareData.h"
 #include "util/design_template.h"
@@ -98,6 +99,56 @@ public:
 	}
 };
 
+class COleInit final
+{
+private:
+	using Me = COleInit;
+
+	bool m_initialized = false;
+
+public:
+	COleInit() noexcept
+		: m_initialized(SUCCEEDED(::OleInitialize(nullptr)))
+	{
+	}
+
+	COleInit(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	~COleInit() noexcept {
+		if (m_initialized) ::OleUninitialize();
+	}
+
+	explicit operator bool() const noexcept {
+		return m_initialized;
+	}
+};
+
+class CComInit final
+{
+private:
+	using Me = CComInit;
+
+	bool m_initialized = false;
+
+public:
+	CComInit() noexcept
+		: m_initialized(SUCCEEDED(::CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+	{
+	}
+
+	CComInit(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	~CComInit() noexcept {
+		if (m_initialized) ::CoUninitialize();
+	}
+
+	explicit operator bool() const noexcept {
+		return m_initialized;
+	}
+};
+
 } // namespace cxx
 
 /*-----------------------------------------------------------------------
@@ -107,6 +158,12 @@ public:
 	@brief プロセス基底クラス
 */
 class CProcess : public TSingleInstance<CProcess> {
+private:
+	using CCommandLineHolder = std::unique_ptr<CCommandLine>;
+
+	using Base = TSingleInstance<CProcess>;
+	using Me = CProcess;
+
 public:
 	/*!
 	 * @brief サクラエディタのプロセスを起動する
@@ -248,21 +305,19 @@ public:
 		return CreateSakuraProcess(optFilePath, args, si, optWorkingDir.has_value() ? optWorkingDir : optFileDir, optProfileName);
 	}
 
-	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
+	CProcess(HINSTANCE hInstance, CCommandLineHolder&& pCommandLine);
 	~CProcess() override = default;
 
-	bool Run();
+	int		Run(int nCmdShow);
+
 	virtual void RefreshString();
 
 	virtual std::filesystem::path GetIniFileName() const;
 
 protected:
-	CProcess();
-	virtual bool InitializeProcess();
-	virtual bool MainLoop() = 0;
-	virtual void OnExitProcess() = 0;
+	virtual bool	InitializeProcess(int nCmdShow) = 0;
+	virtual bool	MainLoop() = 0;
 
-protected:
 	void			SetMainWindow(HWND hwnd){ m_hWnd = hwnd; }
 
 public:
@@ -274,6 +329,9 @@ public:
 
 private:
 	HINSTANCE	m_hInstance;
+
+	CCommandLineHolder m_pCommandLine;
+
 	HWND		m_hWnd = nullptr;
 	CShareData		m_cShareData;
 };

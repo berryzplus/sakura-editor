@@ -81,6 +81,8 @@ struct EventHolder final : public cxx::HandleHolder {
 */
 class CControlProcess final : public CProcess {
 private:
+	using CComInitHolder = std::unique_ptr<cxx::CComInit>;
+
 	using Base = CProcess;
 	using Me = CControlProcess;
 
@@ -92,11 +94,12 @@ public:
 	std::filesystem::path GetIniFileName() const override;
 
 private:
-	bool InitializeProcess() override;
-	bool MainLoop() override;
-	void OnExitProcess() override;
+	bool	InitializeProcess(int nCmdShow [[maybe_unused]]) override;
+	bool	MainLoop() override;
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
+
+	CComInitHolder		m_ComInit = std::make_unique<cxx::CComInit>();
 
 	cxx::MutexHolder	m_hMutex{ nullptr };				//!< アプリケーション実行検出用ミューテックス
 	cxx::MutexHolder	m_hMutexCP{ nullptr };				//!< コントロールプロセスミューテックス

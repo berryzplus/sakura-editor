@@ -31,10 +31,11 @@
 	@date 2002/01/07
 */
 CProcess::CProcess(
-	HINSTANCE	hInstance,		//!< handle to process instance
-	[[maybe_unused]] LPCWSTR		lpCmdLine		//!< pointer to command line
+	HINSTANCE				hInstance,		//!< handle to process instance
+	CCommandLineHolder&&	pCommandLine	//!< pointer to command line
 )
-: m_hInstance( hInstance )
+	: m_hInstance(hInstance)
+	, m_pCommandLine(std::move(pCommandLine))
 {
 }
 
@@ -51,42 +52,19 @@ std::filesystem::path CProcess::GetIniFileName() const
 }
 
 /*!
-	@brief プロセスを初期化する
-
-	共有メモリを初期化する
-*/
-bool CProcess::InitializeProcess()
-{
-	/* 共有データ構造体のアドレスを返す */
-	if( !GetShareData().InitShareData() ){
-		//	適切なデータを得られなかった
-		::MYMESSAGEBOX( nullptr, MB_OK | MB_ICONERROR,
-			GSTR_APPNAME, L"異なるバージョンのエディタを同時に起動することはできません。" );
-		return false;
-	}
-
-	/* リソースから製品バージョンの取得 */
-	//	2004.05.13 Moca 共有データのバージョン情報はコントロールプロセスだけが
-	//	ShareDataで設定するように変更したのでここからは削除
-
-	return true;
-}
-
-/*!
 	@brief プロセス実行
 	
 	@author aroka
 	@date 2002/01/16
-*/
-bool CProcess::Run()
+ */
+int CProcess::Run(int nCmdShow)
 {
-	if( InitializeProcess() )
-	{
-			MainLoop() ;
-			OnExitProcess();
-		return true;
+	if (!InitializeProcess(nCmdShow)) {
+		return 0L;
 	}
-	return false;
+			MainLoop() ;
+
+	return 0L;
 }
 
 /*!

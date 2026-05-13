@@ -59,6 +59,7 @@
 #include "recent/CRecentFile.h"
 #include "recent/CRecentFolder.h"
 #include "apiwrap/DarkMode.h"
+#include "plugin/CPluginManager.h"
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
 //	定義を削除
@@ -1516,6 +1517,9 @@ LRESULT CEditWnd::DispatchEvent(
 			m_pShareData->m_sHandles.m_hwndDebug = nullptr;
 		}
 		m_hWnd = nullptr;
+
+		/* プラグイン解放 */
+		CPluginManager::getInstance()->UnloadAllPlugin();
 
 		/* 編集ウィンドウオブジェクトからのオブジェクト削除要求 */
 		::PostMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_DELETE_ME, 0, 0 );

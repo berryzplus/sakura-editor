@@ -21,18 +21,10 @@
 */
 
 #include "StdAfx.h"
-#include <Ole2.h>
-#include <locale.h>
-#include "_main/CCommandLine.h"
-#include "CProcessFactory.h"
-#include "CProcess.h"
-#include "util/os.h"
-#include "util/module.h"
+#include "_main/CProcessFactory.h"
+
 #include "debug/CRunningTimer.h"
-#include "version.h"
-#include "util/std_macro.h"
 #include "env/DLLSHAREDATA.h"
-#include "apiwrap/DarkMode.h"
 
 /*!
 	Windows Entry point
@@ -47,52 +39,34 @@
 		+----------+---------------------------+---------------------------+
 */
 int WINAPI wWinMain(
-	HINSTANCE	hInstance,		//!< handle to current instance
-	[[maybe_unused]] HINSTANCE	hPrevInstance,	//!< handle to previous instance
-	LPWSTR		lpCmdLine,		//!< pointer to command line
-	[[maybe_unused]] int			nCmdShow		//!< show state of window
+	_In_	 HINSTANCE	hInstance,		//!< handle to current instance
+	_In_opt_ HINSTANCE	hPrevInstance,	//!< handle to previous instance
+	_In_	 LPWSTR		lpCmdLine,		//!< pointer to command line
+	_In_	 int		nCmdShow		//!< show state of window
 )
 {
+	(void)hPrevInstance;	//未使用
+
 #ifdef USE_LEAK_CHECK_WITH_CRTDBG
 	// 2009.9.10 syat メモリリークチェックを追加
 	::_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF);
 #endif
 
 	MY_RUNNINGTIMER(cRunningTimer, L"WinMain" );
-	{
-		// 2014.04.24 DLLの検索パスからカレントディレクトリを削除する
-		::SetDllDirectory( L"" );
-		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
-
-		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
-		::OleInitialize( nullptr );	// 2009.01.07 ryoji 追加
-	}
 	
 	//開発情報
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
 	DEBUG_TRACE(L"sizeof(DLLSHAREDATA) = %d\n",sizeof(DLLSHAREDATA));
 
-	DarkMode::initDarkMode();
-	DarkMode::setDarkModeConfig();
-	DarkMode::setDefaultColors(true);
-
-	//コマンドラインクラスのインスタンスを確保する
-	CCommandLine cCommandLine;
-
 	//プロセスの生成とメッセージループ
-	CProcessFactory aFactory;
-	CProcess *process = nullptr;
 	try{
-		process = aFactory.Create( hInstance, lpCmdLine );
-		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
+		auto process = CProcessFactory(hInstance).CreateInstance(lpCmdLine);
+		return process->Run(nCmdShow);
 	}
-	catch(...){
-	}
-	if( nullptr != process ){
-		process->Run();
-		delete process;
+	catch (const std::exception& e) {
+		ErrorBeep();
+		TopErrorMessage(nullptr, L"%hs", e.what());
 	}
 
-	::OleUninitialize();	// 2009.01.07 ryoji 追加
 	return 0;
 }

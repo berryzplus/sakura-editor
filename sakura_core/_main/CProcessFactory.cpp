@@ -17,19 +17,36 @@
 */
 
 #include "StdAfx.h"
-#include "CProcessFactory.h"
-#include "CControlProcess.h"
-#include "CNormalProcess.h"
-#include "CCommandLine.h"
-#include "CControlTray.h"
+#include "_main/CProcessFactory.h"
+#include "_main/CControlProcess.h"
+#include "_main/CNormalProcess.h"
+#include "_main/CControlTray.h"
 #include "dlg/CDlgProfileMgr.h"
 #include "debug/CRunningTimer.h"
 #include "util/os.h"
 #include <tchar.h>
 #include "CSelectLang.h"
 #include "config/system_constants.h"
+#include "apiwrap/DarkMode.h"
 
-class CProcess;
+class CSelectProfile final : public CProcess
+{
+private:
+	using Base = CProcess;
+	using Me = CSelectProfile;
+
+public:
+	using Base::Base;
+
+	bool InitializeProcess(int nCmdShow [[maybe_unused]]) override {
+		if (CDlgProfileMgr dlgProf; dlgProf.DoModal( G_AppInstance(), nullptr, 0)) {
+			CProcess::CreateEditorProcess(std::nullopt, std::array<std::wstring, 0>(), dlgProf.m_strProfileName);
+		}
+		return false; // プロファイルマネージャで「閉じる」を選んだ。プロセス終了
+	}
+
+	bool	MainLoop() override { return false; }
+};
 
 /*!
 	@brief プロセスクラスを生成する
@@ -43,19 +60,41 @@ class CProcess;
 	@author aroka
 	@date 2002/01/08
 	@date 2006/04/10 ryoji
-*/
-CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
+ */
+std::unique_ptr<CProcess> CProcessFactory::CreateInstance(std::wstring_view cmdline)
 {
+	::setlocale(LC_ALL, "Japanese_Japan.932");
+
+	{
+		// 2014.04.24 DLLの検索パスからカレントディレクトリを削除する
+		::SetDllDirectoryW( L"" );
+		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
+	}
+
+	auto oleInit = std::make_unique<cxx::COleInit>();
+
 	// 言語環境を初期化する
 	CSelectLang::InitializeLanguageEnvironment();
 
-	if( !ProfileSelect( hInstance, lpCmdLine ) ){
-		return nullptr;
-	}
+	DarkMode::initDarkMode();
+	DarkMode::setDarkModeConfig();
+	DarkMode::setDefaultColors(true);
 
-	CProcess* process = nullptr;
-	if( !IsValidVersion() ){
-		return nullptr;
+	auto lpCmdLine = std::data(cmdline);
+
+	//コマンドラインクラスのインスタンスを確保する
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	SFilePath szExeFileName(GetExeFileName().c_str());
+	pCommandLine->ParseKanjiCodeFromFileName(szExeFileName, szExeFileName.Length());
+
+	pCommandLine->ParseCommandLine(lpCmdLine);
+
+	oleInit.reset();
+
+	// コマンドラインオプションから起動プロファイルを判定する
+	if (const auto profileSelected = CDlgProfileMgr::TrySelectProfile(CCommandLine::getInstance()); !profileSelected) {
+		return std::make_unique<CSelectProfile>(m_hInstance, std::move(pCommandLine));
 	}
 
 	// プロセスクラスを生成する
@@ -68,51 +107,11 @@ CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 	// しかし、そのような場合でもミューテックスを最初に確保したコントロールプロセスが唯一生き残る。
 	//
 	if( IsStartingControlProcess() ){
-			process = new CControlProcess( hInstance, lpCmdLine );
+		return std::make_unique<CControlProcess>(m_hInstance, std::move(pCommandLine));
 	}
-	else{
-			process = new CNormalProcess( hInstance, lpCmdLine );
+	else {
+		return std::make_unique<CNormalProcess>(m_hInstance, std::move(pCommandLine));
 	}
-	return process;
-}
-
-bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCWSTR lpCmdLine )
-{
-	//	May 30, 2000 genta
-	//	実行ファイル名をもとに漢字コードを固定する．
-	WCHAR szExeFileName[MAX_PATH];
-	const int cchExeFileName = ::GetModuleFileName(nullptr, szExeFileName, int(std::size(szExeFileName)));
-	CCommandLine::getInstance()->ParseKanjiCodeFromFileName(szExeFileName, cchExeFileName);
-
-	CCommandLine::getInstance()->ParseCommandLine(lpCmdLine);
-
-	// コマンドラインオプションから起動プロファイルを判定する
-	bool profileSelected = CDlgProfileMgr::TrySelectProfile( CCommandLine::getInstance() );
-	if( !profileSelected ){
-		CDlgProfileMgr dlgProf;
-		if( dlgProf.DoModal( hInstance, nullptr, 0 ) ){
-			CCommandLine::getInstance()->SetProfileName( dlgProf.m_strProfileName.c_str() );
-		}else{
-			return false; // プロファイルマネージャで「閉じる」を選んだ。プロセス終了
-		}
-	}
-	return true;
-}
-
-/*!
-	@brief Windowsバージョンのチェック
-	
-	Windows 95以上，Windows NT4.0以上であることを確認する．
-	Windows 95系では残りリソースのチェックも行う．
-	
-	@author aroka
-	@date 2002/01/03
-*/
-bool CProcessFactory::IsValidVersion()
-{
-	// Windowsバージョンは廃止。
-	// 動作可能バージョン(=windows7以降)でなければ起動できない。
-	return true;
 }
 
 /*!
