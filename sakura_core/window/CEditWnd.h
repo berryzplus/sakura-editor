@@ -54,6 +54,7 @@
 #include "cxx/ResourceHolder.hpp"
 
 #include "env/CPropertyManager.h"
+#include "extmodule/CMigemo.h"
 #include "print/CPrintPreview.h"
 #include "recent/CMruListener.h"
 
@@ -93,6 +94,7 @@ private:
 	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
 	using CEditViewHolder = std::unique_ptr<CEditView>;
 	using CEditViewsArray = std::array<CEditViewHolder, 4>;
+	using CMigemoHolder = std::unique_ptr<CMigemo>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
@@ -438,6 +440,7 @@ public:
 
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
 	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
+	CMigemoHolder	m_pcMigemo = std::make_unique<CMigemo>();
 };
 
 CEditWnd* GetEditWndPtr() noexcept;
