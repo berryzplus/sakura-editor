@@ -58,6 +58,9 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
+CMyRect _AdjustInMonitor(LONG x, LONG y, LONG cx, LONG cy);
+CMyRect _CalcInitialRect(int nCmdShow, const CCommandLine* pCommandLine);
+
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
@@ -483,6 +486,131 @@ struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, pub
 		return hWndPage;
 	}
 };
+
+TEST_F(EditWndTest, _AdjustInMonitor001)
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	CMyRect rcWork{};
+	RECT rcMon{};
+
+	const auto hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY );
+	GetMonitorWorkRect(hMonitor, &rcWork, &rcMon);
+
+	LONG x  = rcWork.left - 1;
+	LONG y  = rcWork.top - 1;
+	LONG cx = rcWork.Width() + 1;
+	LONG cy = rcWork.Height() + 1;
+
+	const auto rc = window::_AdjustInMonitor(x, y, cx, cy);
+
+	EXPECT_THAT(rc.left,     rcWork.left);
+	EXPECT_THAT(rc.top,      rcWork.top );
+	EXPECT_THAT(rc.Width(),  rcWork.Width() );
+	EXPECT_THAT(rc.Height(), rcWork.Height());
+}
+
+TEST_F(EditWndTest, _AdjustInMonitor002)
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	CMyRect rcWork{};
+	RECT rcMon{};
+
+	const auto hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY );
+	GetMonitorWorkRect(hMonitor, &rcWork, &rcMon);
+
+	LONG x  = rcWork.right;
+	LONG y  = rcWork.bottom;
+	LONG cx = 33;
+	LONG cy = 44;
+
+	const auto rc = window::_AdjustInMonitor(x, y, cx, cy);
+
+	EXPECT_THAT(rc.left,     33 - rcWork.right );
+	EXPECT_THAT(rc.top,      44 - rcWork.bottom);
+	EXPECT_THAT(rc.Width(),  33);
+	EXPECT_THAT(rc.Height(), 44);
+}
+
+TEST_F(EditWndTest, _CalcInitialRect001)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+	pCommandLine->ParseCommandLine(L"-WX=11 -WY=22 -SX=33 -SY=44", false);
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, pCommandLine.get());
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(11, 22)));
+	EXPECT_THAT(rc.Width(), 33);
+	EXPECT_THAT(rc.Height(), 44);
+}
+
+TEST_F(EditWndTest, _CalcInitialRect002)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SET;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_MINIMIZED;
+
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, pCommandLine.get());
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, SW_SHOWMINIMIZED)));
+	EXPECT_THAT(rc.Width(), 0);
+	EXPECT_THAT(rc.Height(), 0);
+}
+
+TEST_F(EditWndTest, _CalcInitialRect003)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SAVE;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_MAXIMIZED;
+
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, pCommandLine.get());
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, SW_SHOWMAXIMIZED)));
+	EXPECT_THAT(rc.Width(), 0);
+	EXPECT_THAT(rc.Height(), 0);
+}
+
+TEST_F(EditWndTest, _CalcInitialRect004)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_SAVE;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SAVE;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
+
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosX   = 11;
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosY   = 22;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCX = 33;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCY = 44;
+
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, pCommandLine.get());
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(11, 22)));
+	EXPECT_THAT(rc.Width(), 33);
+	EXPECT_THAT(rc.Height(), 44);
+}
+
+TEST_F(EditWndTest, _CalcInitialRect005)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+	pCommandLine->ParseCommandLine(L"-SX=33 -SY=44", false);
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, pCommandLine.get());
+
+	EXPECT_THAT(rc.Width(), 33);
+	EXPECT_THAT(rc.Height(), 44);
+}
 
 /*!
  * 上書き保存時バックアップのテスト

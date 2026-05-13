@@ -72,15 +72,6 @@ struct DLLSHAREDATA;
 #define IDT_SYSMENU		1357
 #define ID_TOOLBAR		100
 
-struct STabGroupInfo {
-	HWND			hwndTop = nullptr;
-	WINDOWPLACEMENT	wpTop = {};
-
-	STabGroupInfo() = default;
-
-	bool IsValid() const noexcept { return hwndTop != nullptr; }
-};
-
 //! 編集ウィンドウ（外枠）管理クラス
 // 2002.02.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 // 2007.10.30 kobake IsFuncEnable,IsFuncCheckedをFunccode.hに移動
@@ -106,24 +97,15 @@ private:
 	using WindowDcHolder = cxx::ResourceHolder<&::ReleaseDC>;
 
 public:
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	CEditWnd();
 	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           作成                              //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	//	Mar. 7, 2002 genta 文書タイプ用引数追加
-	// 2007.06.26 ryoji グループ指定引数追加
-	//! 作成
-	HWND Create(
-		const CEditDoc*	pcEditDoc,
-		CImageListMgr*	pcIcons,
-		int				nGroup
-	);
-	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
-	void _GetWindowRectForInit(CMyRect* rcResult, int nGroup, const STabGroupInfo& sTabGroupInfo);	//!< ウィンドウ生成用の矩形を取得
-	HWND _CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo);
-	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
+	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow);
 
 	void OpenDocumentWhenStart(
 		const SLoadInfo& sLoadInfo		//!< [in]
@@ -135,17 +117,25 @@ public:
 		CTypeConfig	nDocumentType = CTypeConfig(-1)	//!< [in] 文書タイプ．-1のとき強制指定無し．
 	);
 	void UpdateCaption();
+
+	int		MessageLoop();
+
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//ドキュメントイベント
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
-	//管理
-	void MessageLoop( void );								/* メッセージループ */
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
 
 	//各種イベント
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+	void	OnDestroy(HWND hWnd);
+	void	OnClose(HWND hWnd);
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags);
+	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
+	void	OnTimer(HWND hWnd, UINT id);
+
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);

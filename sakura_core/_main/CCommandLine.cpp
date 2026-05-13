@@ -382,10 +382,10 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				m_fi.m_nViewTopLine = CLayoutInt( AtoiOptionInt( arg ) - 1 );
 				break;
 			case CMDLINEOPT_SX: //	SX
-				m_fi.m_nWindowSizeX = AtoiOptionInt( arg ) - 1;
+				m_fi.m_nWindowSizeX = AtoiOptionInt( arg );
 				break;
 			case CMDLINEOPT_SY:	//	SY
-				m_fi.m_nWindowSizeY = AtoiOptionInt( arg ) - 1;
+				m_fi.m_nWindowSizeY = AtoiOptionInt( arg );
 				break;
 			case CMDLINEOPT_WX: //	WX
 				m_fi.m_nWindowOriginX = AtoiOptionInt( arg );

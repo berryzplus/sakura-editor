@@ -229,9 +229,14 @@ namespace winmain {
  */
 struct WinMainTest : public ::testing::TestWithParam<std::wstring_view>, public window::UiaTestSuite {
 	/*!
-	 * テスト用ファイルのパス
+	 * テスト用ファイル1のパス
 	 */
-	static inline std::filesystem::path gm_TestDataPath = std::filesystem::current_path() / L"test_1000lines.txt";
+	static inline std::filesystem::path gm_TestDataPath1 = std::filesystem::current_path() / L"test_1000lines.txt";
+
+	/*!
+	 * テスト用ファイル2のパス
+	 */
+	static inline std::filesystem::path gm_TestDataPath2 = std::filesystem::current_path() / L"test_2000lines.txt";
 
 	/*!
 	 * テストスイートの開始前に1回だけ呼ばれる関数
@@ -245,11 +250,17 @@ struct WinMainTest : public ::testing::TestWithParam<std::wstring_view>, public 
 		SetUpUia();
 
 		// テスト用ファイル作成
-		std::wofstream fs(gm_TestDataPath);
+		std::wofstream fos1(gm_TestDataPath1);
 		for (int n = 1; n <= 1000; n++) {
-			fs << n << std::endl;
+			fos1 << n << std::endl;
 		}
-		fs.close();
+		fos1.close();
+
+		std::wofstream fos2(gm_TestDataPath2);
+		for (int n = 1; n <= 2000; n++) {
+			fos2 << n << std::endl;
+		}
+		fos2.close();
 	}
 
 	/*!
@@ -257,8 +268,11 @@ struct WinMainTest : public ::testing::TestWithParam<std::wstring_view>, public 
 	 */
 	static void TearDownTestSuite() {
 		// テスト用ファイルの後始末
-		if (fexist(gm_TestDataPath)) {
-			std::filesystem::remove(gm_TestDataPath);
+		if (fexist(gm_TestDataPath1)) {
+			std::filesystem::remove(gm_TestDataPath1);
+		}
+		if (fexist(gm_TestDataPath2)) {
+			std::filesystem::remove(gm_TestDataPath2);
 		}
 
 		if (const auto pluginPath = GetIniFileName().remove_filename().append(L"plugins"); fexist(pluginPath)) {
@@ -604,7 +618,7 @@ TEST_P(WinMainTest, runEditorProcess)
 	const auto strStartupMacro = std::accumulate(macroCommands.cbegin(), macroCommands.cend(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return a + std::data(b); });
 
 	// コマンドラインを組み立てる
-	std::wstring command(gm_TestDataPath);
+	std::wstring command(gm_TestDataPath1);
 	command += std::format(LR"( -PROF="{}")", profileName);
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
@@ -616,6 +630,98 @@ TEST_P(WinMainTest, runEditorProcess)
 
 	// コントロールプロセスが終了すると、INIファイルが作成される
 	EXPECT_THAT(fexist(iniPath), IsTrue());
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  タブバー有効で、別グループにしない場合、既存タブグループにフィットさせる。
+ */
+TEST_P(WinMainTest, _CalcInitialRect001)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 標準機能をできるだけ動かすために設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+		u8"bDarkMode=1"sv,		// ダークモードをONにする
+		u8"bDispTabWnd=1"sv,	// タブバーを表示する
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
+	// 1つ目のエディタープロセスを起動する
+	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	// 2つ目のエディタープロセスを起動する
+	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
+
+	::Sleep(5000); // 少し待つ
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep1);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName);
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  タブバー有効で、別グループにしない場合、既存タブグループにフィットさせる。
+ */
+TEST_P(WinMainTest, _CalcInitialRect002)
+{
+	// テスト用プロファイル名
+	const auto profileName(GetParam());
+
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 標準機能をできるだけ動かすために設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+		u8"bDarkMode=1"sv,		// ダークモードをONにする
+		u8"bDispTabWnd=1"sv,	// タブバーを表示する
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
+	// 1つ目のエディタープロセスを起動する
+	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
+
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+
+	::ShowWindow(hWndFound, SW_MINIMIZE);
+
+	// 2つ目のエディタープロセスを起動する
+	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
+
+	::Sleep(5000); // 少し待つ
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	testing::WaitForForeignProcessExit(ep1);
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -641,18 +747,14 @@ TEST_P(WinMainTest, ActivateOpenedWindow001)
 	};
 	cxx::writeTextFile(iniPath, iniLines);
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-	EXPECT_THAT(dwControlProcessId, Ne(0));
-
 	// 1つ目のエディタープロセスを起動する
-	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath, std::array{ LR"(-Y=3)"s }, profileName);
+	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
 
 	// 2つ目のエディタープロセスを起動する
-	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath, std::array{ LR"(-Y=3)"s }, profileName);
+	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep2);
@@ -664,7 +766,7 @@ TEST_P(WinMainTest, ActivateOpenedWindow001)
 	testing::WaitForForeignProcessExit(ep1);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -961,7 +1063,7 @@ TEST_P(WinMainTest, OpenFile001)
 	EmulateSelectPopupMenu(L"開く(O)...");
 
 	if (const auto hDlgOpenFile = WaitForDialog(L"開く")) {
-		EmulateSetValue(GetFocusedElement(), gm_TestDataPath.c_str());
+		EmulateSetValue(GetFocusedElement(), gm_TestDataPath1.c_str());
 		EmulateHitEnter();
 	}
 

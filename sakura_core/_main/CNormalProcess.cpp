@@ -161,8 +161,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		return false;
 	}
 
-	hMutex = nullptr;
-
 	//ドキュメントを作成
 	m_pcEditDoc = std::make_unique<CEditDoc>();
 
@@ -216,8 +214,11 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		bGrepDlg = cDlgGrep.GetData() <= 0;
 	}
 
-	//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
+	//-GREPDLGでダイアログを出す。
 	if (bGrepDlg) {
+		// ダイアログ表示前にミューテックスを解放する。
+		hMutex = nullptr;
+
 		if (cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
 			CControlTray::DoGrepCreateWindow(GetProcessInstance(), GetDllShareData().m_sHandles.m_hwndTray, cDlgGrep);
 
@@ -231,28 +232,16 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	//ドキュメントの作成
 	m_pcEditDoc->Create();
 
-	// グループIDを取得
-	int nGroupId = CCommandLine::getInstance()->GetGroupId();
-	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
-		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
-	}
-
 	//メインウインドウを作成
-	m_pcEditWnd->Create(GetDocument(), &m_pcEditApp->GetIcons(), nGroupId);
-
-	//プロパティ管理
-	m_pcEditApp->m_pcPropertyManager->Create(
-		GetEditWnd().GetHwnd(),
-		&m_pcEditApp->GetIcons(),
-		&GetEditWnd().GetMenuDrawer()
-	);
 	auto pEditWnd = GetEditWndPtr();
-	auto hEditWnd = pEditWnd->GetHwnd();
+	auto hEditWnd = pEditWnd->CreateMainWnd(GetProcessInstance(), nCmdShow);
 	if (!hEditWnd) {
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
 
 	SetMainWindow(hEditWnd);
+
+	hMutex = nullptr;
 
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	const auto bDebugMode = CCommandLine::getInstance()->IsDebugMode();
@@ -425,11 +414,7 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	@author aroka
 	@date 2002/01/07
 */
-bool CNormalProcess::MainLoop()
+int CNormalProcess::MainLoop() const
 {
-	if( GetMainWindow() ){
-		m_pcEditApp->GetEditWindow()->MessageLoop();	/* メッセージループ */
-		return true;
-	}
-	return false;
+	return GetEditWnd().MessageLoop();
 }

@@ -116,7 +116,7 @@ std::filesystem::path CControlProcess::GetPrivateIniFileName(const std::wstring&
 	@date 2006/04/10 ryoji 初期化完了イベントの処理を追加、異常時の後始末はデストラクタに任せる
 	@date 2013.03.20 novice コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
 */
-bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
+bool CControlProcess::InitializeProcess(int nCmdShow)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlProcess::InitializeProcess" );
 
@@ -189,7 +189,7 @@ bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	HWND hwnd = m_pcTray->Create( GetProcessInstance() );
+	const auto hwnd = m_pcTray->CreateMainWnd(GetProcessInstance(), nCmdShow);
 	if( !hwnd ){
 		ErrorBeep();
 		TopErrorMessage( nullptr, LS(STR_ERR_CTRLMTX3) );
@@ -214,11 +214,7 @@ bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 	@author aroka
 	@date 2002/01/07
 */
-bool CControlProcess::MainLoop()
+int CControlProcess::MainLoop() const
 {
-	if( m_pcTray && GetMainWindow() ){
-		m_pcTray->MessageLoop();	/* メッセージループ */
-		return true;
-	}
-	return false;
+	return m_pcTray->MessageLoop();
 }

@@ -81,8 +81,14 @@ public:
 	bool IsProfileMgr() const noexcept { return m_bProfileMgr; }
 	const CLogicPoint& GetCaretLocation() const noexcept { return m_fi.m_ptCursor; }
 	CLayoutPoint GetViewLocation() const noexcept { return { m_fi.m_nViewLeftCol,  m_fi.m_nViewTopLine }; }
-	tagSIZE GetWindowSize() const noexcept { return { m_fi.m_nWindowSizeX, m_fi.m_nWindowSizeY }; }
-	tagPOINT GetWindowOrigin() const noexcept { return { m_fi.m_nWindowOriginX, m_fi.m_nWindowOriginY }; }
+
+	std::optional<LONG>		GetWindowOriginX() const noexcept { return m_fi.m_nWindowOriginX != CW_USEDEFAULT ? std::optional<LONG>(m_fi.m_nWindowOriginX) : std::nullopt; }
+	std::optional<LONG>		GetWindowOriginY() const noexcept { return m_fi.m_nWindowOriginY != CW_USEDEFAULT ? std::optional<LONG>(m_fi.m_nWindowOriginY) : std::nullopt; }
+	std::optional<POINT>	GetWindowOrigin() const noexcept { return GetWindowOriginX() && GetWindowOriginY() ? std::optional<POINT>({ m_fi.m_nWindowOriginX, m_fi.m_nWindowOriginY }) : std::nullopt; }
+	std::optional<LONG>		GetWindowSizeX() const noexcept { return 0 <= m_fi.m_nWindowSizeX ? std::optional<LONG>(m_fi.m_nWindowSizeX) : std::nullopt; }
+	std::optional<LONG>		GetWindowSizeY() const noexcept { return 0 <= m_fi.m_nWindowSizeY ? std::optional<LONG>(m_fi.m_nWindowSizeY) : std::nullopt; }
+	std::optional<SIZE>		GetWindowSize() const noexcept { return GetWindowSizeX() && GetWindowSizeY() ? std::optional<SIZE>({ m_fi.m_nWindowSizeX, m_fi.m_nWindowSizeY }) : std::nullopt; }
+
 	LPCWSTR GetOpenFile() const noexcept { return m_fi.m_szPath; }
 	std::span<std::wstring> GetFiles() noexcept { return m_vFiles; }
 

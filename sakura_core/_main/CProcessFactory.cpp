@@ -44,8 +44,6 @@ public:
 		}
 		return false; // プロファイルマネージャで「閉じる」を選んだ。プロセス終了
 	}
-
-	bool	MainLoop() override { return false; }
 };
 
 /*!

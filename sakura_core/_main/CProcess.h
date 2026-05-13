@@ -316,7 +316,8 @@ public:
 
 protected:
 	virtual bool	InitializeProcess(int nCmdShow) = 0;
-	virtual bool	MainLoop() = 0;
+
+	virtual int		MainLoop() const { return 0L; }
 
 	void			SetMainWindow(HWND hwnd){ m_hWnd = hwnd; }
 

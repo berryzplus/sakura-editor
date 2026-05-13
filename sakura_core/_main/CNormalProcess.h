@@ -49,7 +49,7 @@ public:
 private:
 	//プロセスハンドラ
 	bool	InitializeProcess(int nCmdShow) override;
-	bool	MainLoop() override;
+	int		MainLoop() const override;
 
 	COleInitHolder		m_OleInit = std::make_unique<cxx::COleInit>();
 

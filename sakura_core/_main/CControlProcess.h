@@ -95,7 +95,7 @@ public:
 
 private:
 	bool	InitializeProcess(int nCmdShow [[maybe_unused]]) override;
-	bool	MainLoop() override;
+	int		MainLoop() const override;
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 

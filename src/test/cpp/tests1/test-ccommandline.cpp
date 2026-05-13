@@ -294,9 +294,9 @@ TEST(CCommandLine, ParseWindowSizeX)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(-1, cCommandLine.GetWindowSize().cx);
+	EXPECT_THAT(cCommandLine.GetWindowSizeX().has_value(), IsFalse());
 	cCommandLine.ParseCommandLine(L"-SX=123", false);
-	ASSERT_EQ(122, cCommandLine.GetWindowSize().cx);
+	EXPECT_THAT(cCommandLine.GetWindowSizeX().value(), Eq<LONG>(123));
 }
 
 /*!
@@ -308,9 +308,9 @@ TEST(CCommandLine, ParseWindowSizeY)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(-1, cCommandLine.GetWindowSize().cy);
+	EXPECT_THAT(cCommandLine.GetWindowSizeY().has_value(), IsFalse());
 	cCommandLine.ParseCommandLine(L"-SY=123", false);
-	ASSERT_EQ(122, cCommandLine.GetWindowSize().cy);
+	EXPECT_THAT(cCommandLine.GetWindowSizeY().value(), Eq<LONG>(123));
 }
 
 /*!
@@ -322,9 +322,9 @@ TEST(CCommandLine, ParseWindowOriginX)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(CW_USEDEFAULT, cCommandLine.GetWindowOrigin().x);
+	EXPECT_THAT(cCommandLine.GetWindowOriginX().has_value(), IsFalse());
 	cCommandLine.ParseCommandLine(L"-WX=123", false);
-	ASSERT_EQ(123, cCommandLine.GetWindowOrigin().x);
+	EXPECT_THAT(cCommandLine.GetWindowOriginX().value(), Eq<LONG>(123));
 }
 
 /*!
@@ -336,9 +336,9 @@ TEST(CCommandLine, ParseWindowOriginY)
 {
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(CW_USEDEFAULT, cCommandLine.GetWindowOrigin().y);
+	EXPECT_THAT(cCommandLine.GetWindowOriginY().has_value(), IsFalse());
 	cCommandLine.ParseCommandLine(L"-WY=123", false);
-	ASSERT_EQ(123, cCommandLine.GetWindowOrigin().y);
+	EXPECT_THAT(cCommandLine.GetWindowOriginY().value(), Eq<LONG>(123));
 }
 
 /*!

@@ -300,7 +300,7 @@ CControlTray::~CControlTray()
 // CControlTray メンバ関数
 
 /* 作成 */
-HWND CControlTray::Create( HINSTANCE hInstance )
+HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]])
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
@@ -332,7 +332,7 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 		}
 
 	// ウィンドウ作成 (WM_CREATEで、GetHwnd() に HWND が格納される)
-	::CreateWindowExW(
+	const auto hWnd = ::CreateWindowExW(
 		0,
 		szTrayWndName,			// pointer to registered class name
 		szTrayWndName,			// pointer to window name
@@ -348,9 +348,9 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	);
 
 	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
-	::SetWindowPos( GetTrayHwnd(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+	::SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-	return GetTrayHwnd();
+	return hWnd;
 }
 
 /*!
@@ -393,7 +393,7 @@ void CControlTray::CreateTrayIcon()
 }
 
 /* メッセージループ */
-void CControlTray::MessageLoop( void )
+int CControlTray::MessageLoop()
 {
 	cxx::com_pointer<IClassFactory> m_pClassFactory;
 
@@ -405,7 +405,7 @@ void CControlTray::MessageLoop( void )
 		CLSCTX_LOCAL_SERVER,
 		REGCLS_MULTIPLEUSE,
 		&cookie
-	); FAILED(hr)) return;
+	); FAILED(hr)) return 0L;
 
 	MSG	msg{};
 	while (::GetMessageW(&msg, nullptr, 0, 0)) {
@@ -415,7 +415,7 @@ void CControlTray::MessageLoop( void )
 
 	::CoRevokeClassObject(cookie);
 
-	return;
+	return static_cast<int>(msg.wParam);
 }
 
 //! ホットキーを登録する
