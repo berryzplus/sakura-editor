@@ -9,9 +9,17 @@
 #define SAKURA_BUILD_CONFIG_DB7D8D47_EA6A_4ABF_A081_A31875D78808_H_
 #pragma once
 
+// Windows SDKのデバッグヘルパーを参照する
+#include <DbgHelp.h>
+
 //ビルド(コンパイル)設定
 //2007.10.18 kobake 作成
 //2009.09.10 syat メモリリークチェックを追加
+
+// MSVCデバッグビルド専用コードを隔離するためのCマクロ
+#if defined(_DEBUG) && defined(_MSC_VER)
+#define USE_STACK_TRACE
+#endif
 
 /*!
 	厳格なintを使うかどうか。

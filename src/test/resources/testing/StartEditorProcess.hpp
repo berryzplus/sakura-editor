@@ -6,11 +6,6 @@
  */
 #pragma once
 
-// MSVCデバッグビルド専用コードを隔離するためのCマクロ
-#if defined(_MSC_VER) && defined(_DEBUG)
-#define USE_STACK_TRACE
-#endif
-
 namespace testing {
 
 /*!
