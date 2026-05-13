@@ -29,8 +29,6 @@ public:
 	CEditApp();
 	~CEditApp() override = default;
 
-	void	Create(HINSTANCE hInst [[maybe_unused]], int nGroupId);
-
 	//モジュール情報
 	HINSTANCE GetAppInstance() const{ return m_hInst; }	//!< インスタンスハンドル取得
 

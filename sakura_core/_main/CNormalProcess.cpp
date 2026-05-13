@@ -228,14 +228,24 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		}
 	}
 
+	//ドキュメントの作成
+	m_pcEditDoc->Create();
+
 	// グループIDを取得
 	int nGroupId = CCommandLine::getInstance()->GetGroupId();
 	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
 		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
 
-	// メインウインドウを作成
-	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
+	//メインウインドウを作成
+	m_pcEditWnd->Create(GetDocument(), &m_pcEditApp->GetIcons(), nGroupId);
+
+	//プロパティ管理
+	m_pcEditApp->m_pcPropertyManager->Create(
+		GetEditWnd().GetHwnd(),
+		&m_pcEditApp->GetIcons(),
+		&GetEditWnd().GetMenuDrawer()
+	);
 	auto pEditWnd = GetEditWndPtr();
 	auto hEditWnd = pEditWnd->GetHwnd();
 	if (!hEditWnd) {
