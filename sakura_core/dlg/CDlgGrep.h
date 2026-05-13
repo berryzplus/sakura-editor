@@ -83,8 +83,13 @@ protected:
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add
 
 	void SetData( void ) override;	/* ダイアログデータの設定 */
+
+public:
 	int GetData( void ) override;	/* ダイアログデータの取得 */
+
+protected:
 	void SetDataFromThisText(bool bChecked);	/* 現在編集中ファイルから検索チェックでの設定 */
 	static LRESULT CALLBACK OnFolderProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 };
+
 #endif /* SAKURA_CDLGGREP_01A0D5CB_326B_4C56_A527_C811F84FD8D8_H_ */

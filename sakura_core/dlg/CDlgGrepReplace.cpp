@@ -233,9 +233,6 @@ int CDlgGrepReplace::GetData( void )
 		return FALSE;
 	}
 
-	if( m_strText2.size() < _MAX_PATH ){
-		CSearchKeywordManager().AddToReplaceKeyArr( m_strText2.c_str() );
-	}
 	m_nReplaceKeySequence = GetDllShareData().m_Common.m_sSearch.m_nReplaceKeySequence;
 
 	return TRUE;

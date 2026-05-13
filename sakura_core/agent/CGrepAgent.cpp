@@ -375,6 +375,27 @@ DWORD CGrepAgent::DoGrep(
 	auto bGrepOutputBaseFolder	= cDlgGrep.m_bGrepOutputBaseFolder;
 	auto bGrepSeparateFolder	= cDlgGrep.m_bGrepSeparateFolder;
 
+	CSearchKeywordManager().AddToSearchKeyArr(cDlgGrep.m_strText.c_str());
+
+	if (const auto pDlgGrepRep = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
+		CSearchKeywordManager().AddToReplaceKeyArr(pDlgGrepRep->m_strText2.c_str());
+	}
+
+	// この編集中のテキストから検索する場合、履歴に残さない
+	if (!cDlgGrep.m_bFromThisText) {
+		/* 検索ファイル */
+		CSearchKeywordManager().AddToGrepFileArr(cDlgGrep.m_szFile);
+
+		/* 検索フォルダー */
+		CSearchKeywordManager().AddToGrepFolderArr(cDlgGrep.m_szFolder);
+
+		/* 除外ファイル */
+		CSearchKeywordManager().AddToExcludeFileArr(cDlgGrep.m_szExcludeFile);
+
+		/* 除外フォルダー */
+		CSearchKeywordManager().AddToExcludeFolderArr(cDlgGrep.m_szExcludeFolder);
+	}
+
 	int			nHitCount = 0;
 	CDlgCancel	cDlgCancel;
 	HWND		hwndCancel;

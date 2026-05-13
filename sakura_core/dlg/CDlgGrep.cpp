@@ -928,30 +928,11 @@ int CDlgGrep::GetData( void )
 			return FALSE;
 		}
 		// To Here Jun. 26, 2001 genta 正規表現ライブラリ差し替え
-		if( m_strText.size() < _MAX_PATH ){
-			CSearchKeywordManager().AddToSearchKeyArr( m_strText.c_str() );
-			m_pShareData->m_Common.m_sSearch.m_sSearchOption = m_sSearchOption;		// 検索オプション
-		}
-	}else{
-		// 2014.07.01 空キーも登録する
-		CSearchKeywordManager().AddToSearchKeyArr( L"" );
 	}
 
 	// この編集中のテキストから検索する場合、履歴に残さない	Uchi 2008/5/23
 	// 2016.03.08 Moca 「このファイルから検索」の場合はサブフォルダー共通設定を更新しない
 	if (!m_bFromThisText) {
-		/* 検索ファイル */
-		CSearchKeywordManager().AddToGrepFileArr( m_szFile );
-
-		/* 検索フォルダー */
-		CSearchKeywordManager().AddToGrepFolderArr( m_szFolder );
-
-		/* 除外ファイル */
-		CSearchKeywordManager().AddToExcludeFileArr(m_szExcludeFile);
-
-		/* 除外フォルダー */
-		CSearchKeywordManager().AddToExcludeFolderArr(m_szExcludeFolder);
-
 		// Grep：サブフォルダーも検索
 		m_pShareData->m_Common.m_sSearch.m_bGrepSubFolder = m_bSubFolder;
 	}

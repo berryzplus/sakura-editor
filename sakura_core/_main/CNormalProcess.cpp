@@ -183,7 +183,7 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	CPluginManager::getInstance()->LoadAllPlugin();
 	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
 
-	const auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
+	auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
 	auto bGrepMode = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
 
 	const auto gi = CCommandLine::getInstance()->GetGrepInfoRef();
@@ -193,15 +193,10 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		: GetEditWnd().m_cDlgGrep;
 
 	if (bGrepMode) {
-		if (gi.cmGrepKey.GetStringLength() < _MAX_PATH) {
-			CSearchKeywordManager().AddToSearchKeyArr(gi.cmGrepKey.GetStringPtr());
-		}
-		if (gi.cmGrepFile.GetStringLength() < MAX_GREP_PATH) {
-			CSearchKeywordManager().AddToGrepFileArr(gi.cmGrepFile.GetStringPtr());
-		}
-		if (gi.cmGrepFolder.GetStringLength() < MAX_GREP_PATH) {
-			CSearchKeywordManager().AddToGrepFolderArr(gi.cmGrepFolder.GetStringPtr());
-		}
+		cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();
+		cDlgGrep.m_bSetText = true;
+		cDlgGrep.m_szFile = gi.cmGrepFile.GetStringPtr();
+		cDlgGrep.m_szFolder = gi.cmGrepFolder.GetStringPtr();
 
 		GetDllShareData().m_Common.m_sSearch.m_bGrepSubFolder = gi.bGrepSubFolder;
 		GetDllShareData().m_Common.m_sSearch.m_sSearchOption = gi.sGrepSearchOption;
@@ -213,28 +208,23 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		GetDllShareData().m_Common.m_sSearch.m_bGrepSeparateFolder = gi.bGrepSeparateFolder;
 
 		if (auto pDlgGrepRep = dynamic_cast<CDlgGrepReplace*>(&cDlgGrep)) {
-			pDlgGrepRep->m_strText2 = gi.cmGrepRep.GetStringPtr();		/* 検索文字列 */
+			pDlgGrepRep->m_strText2 = gi.cmGrepRep.GetStringPtr();
 			pDlgGrepRep->m_bPaste = gi.bGrepPaste;
 			pDlgGrepRep->m_bBackup = gi.bGrepBackup;
 		}
 
-		if (bGrepDlg) {
-			//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
-			cDlgGrep.m_strText = gi.cmGrepKey.GetStringPtr();		/* 検索文字列 */
-			cDlgGrep.m_bSetText = true;
+		bGrepDlg = cDlgGrep.GetData() <= 0;
+	}
 
-			cDlgGrep.m_bSubFolder = gi.bGrepSubFolder;
-			cDlgGrep.m_sSearchOption = gi.sGrepSearchOption;
-			cDlgGrep.m_nGrepCharSet = gi.nGrepCharSet;
-			cDlgGrep.m_nGrepOutputLineType = gi.nGrepOutputLineType;
-			cDlgGrep.m_nGrepOutputStyle = gi.nGrepOutputStyle;
-			cDlgGrep.m_bGrepOutputFileOnly = gi.bGrepOutputFileOnly;
-			cDlgGrep.m_bGrepOutputBaseFolder = gi.bGrepOutputBaseFolder;
-			cDlgGrep.m_bGrepSeparateFolder = gi.bGrepSeparateFolder;
+	//-GREPDLGでダイアログを出す。　引数も反映（2002/03/24 YAZAKI）
+	if (bGrepDlg) {
+		if (cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
+			CControlTray::DoGrepCreateWindow(GetProcessInstance(), GetDllShareData().m_sHandles.m_hwndTray, cDlgGrep);
 
-			if (!cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
-				bGrepMode = false;
-			}
+			return false;
+
+		} else {
+			bGrepMode = false;
 		}
 	}
 
@@ -282,17 +272,13 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		pEditWnd->SetDocumentTypeWhenCreate( fi.m_nCharCode, false, nType );
 		pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを予め表示しておく
 
-		if (bGrepDlg) {
-			pEditWnd->GetActiveView().GetCommander().HandleCommand(F_GREP, true, 0, 0, 0, 0);
-		} else {
-			CEditApp::getInstance()->m_pcGrepAgent->DoGrep(
-				&pEditWnd->GetActiveView(),
-				cDlgGrep,
-				gi.bGrepHeader,
-				gi.bGrepStdout,
-				gi.bGrepCurFolder
-			);
-		}
+		GetGrepAgent()->DoGrep(
+			&pEditWnd->GetActiveView(),
+			cDlgGrep,
+			gi.bGrepHeader,
+			gi.bGrepStdout,
+			gi.bGrepCurFolder
+		);
 
 		pEditWnd->m_cDlgFuncList.Refresh();	// アウトラインを再解析する
 	}
