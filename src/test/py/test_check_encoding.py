@@ -94,7 +94,8 @@ def test_check_encoding_detects_utf16_le(tmp_path, check_encoding_module):
     encoding = check_encoding_module.check_encoding(str(file_path))
     # chardet should detect UTF-16 or UTF-16-LE
     # Some configs may return None; allow flexible detection
-    assert encoding in ("UTF-16", "UTF-16LE", "UTF-16-LE", "UTF-16LE", None)
+    normalized = encoding.upper() if encoding is not None else None
+    assert normalized in ("UTF-16", "UTF-16LE", "UTF-16-LE", "UTF-16LE", None)
 
 
 def test_check_encoding_detects_ascii(tmp_path, check_encoding_module):
