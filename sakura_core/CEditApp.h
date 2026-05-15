@@ -36,7 +36,6 @@ public:
 	CEditWnd* GetEditWindow(){ return m_pcEditWnd; }		//!< ウィンドウ取得
 
 	CEditDoc*		GetDocument(){ return m_pcEditDoc; }
-	CImageListMgr&	GetIcons(){ return m_cIcons; }
 
 	bool OpenPropertySheet( int nPageNum );
 	bool OpenPropertySheetTypes( int nPageNum, CTypeConfig nSettingType );

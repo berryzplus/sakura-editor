@@ -85,7 +85,7 @@ namespace window {
 	//プロパティ管理
 	CEditApp::getInstance()->m_pcPropertyManager->Create(
 		pcEditWnd->GetHwnd(),
-		&pcEditWnd->m_hIcons,
+		&pcEditWnd->GetIcons(),
 		&pcEditWnd->GetMenuDrawer()
 	);
 }

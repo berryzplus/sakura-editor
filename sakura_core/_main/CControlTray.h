@@ -60,7 +60,8 @@ struct CAppMainWnd
 
 	HWND	GetHwnd() const noexcept { return m_hWnd; }
 
-	CMenuDrawer& GetMenuDrawer() { return m_cMenuDrawer; }
+	CImageListMgr&	GetIcons() { return m_hIcons; }
+	CMenuDrawer&	GetMenuDrawer() { return m_cMenuDrawer; }
 
 	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
 	virtual void	OnDestroy(HWND hWnd) = 0;

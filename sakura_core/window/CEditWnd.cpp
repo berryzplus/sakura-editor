@@ -18,7 +18,7 @@
 	Copyright (C) 2010, ryoji, Moca、Uchi
 	Copyright (C) 2011, ryoji
 	Copyright (C) 2013, Uchi
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -45,6 +45,7 @@
 #include "util/window.h"
 #include "util/shell.h"
 #include "util/string_ex2.h"
+#include "util/tchar_convert.h"
 #include "plugin/CJackManager.h"
 #include "agent/CGrepAgent.h"
 #include "env/CMarkMgr.h"
@@ -335,6 +336,29 @@ CMyRect _CalcInitialRect(int nCmdShow, const CCommandLine* pCommandLine)
 	}
 }
 
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool OnNcCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	//ウィンドウ数制限
+	if (MAX_EDITWINDOWS <= GetDllShareData().m_sNodes.m_nEditArrNum) {
+		throw std::domain_error(cxx::to_string(strprintf(LS(STR_MAXWINDOW), MAX_EDITWINDOWS), CP_ACP));
+	}
+
+	if (const auto& optWindowOriginY = CCommandLine::getInstance()->GetWindowOriginY(); optWindowOriginY.has_value()) {
+		lpCreateStruct->y = *optWindowOriginY;
+	}
+
+	return true;
+}
+
 } // namespace window
 
 CEditWnd::CEditWnd()
@@ -418,20 +442,8 @@ HWND CEditWnd::CreateMainWnd(
 	// 2009.01.17 nasukoji	ホイールスクロール有無状態をクリア
 	ClearMouseState();
 
-	//ウィンドウ数制限
-	if( m_pShareData->m_sNodes.m_nEditArrNum >= MAX_EDITWINDOWS ){	//最大値修正	//@@@ 2003.05.31 MIK
-		OkMessage( nullptr, LS(STR_MAXWINDOW), MAX_EDITWINDOWS );
-		return nullptr;
-	}
-
 	//コモンコントロール初期化
 	MyInitCommonControls();
-
-	auto pcIcons = &CEditApp::getInstance()->GetIcons();
-
-	//イメージ、ヘルパなどの作成
-	m_cMenuDrawer.Create( G_AppInstance(), GetHwnd(), pcIcons );
-	m_cToolbar.Create( pcIcons );
 
 	// ウィンドウ毎にアクセラレータテーブルを作成する
 	CreateAccelTbl();
@@ -859,7 +871,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 	switch (uMsg) {
 // clang-format off
-	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
+	HANDLE_MSG(hWnd, WM_NCCREATE,						window::OnNcCreate);
 // clang-format on
 
 	default:
@@ -1802,6 +1814,8 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 			return false;
 		}
 	}
+
+	m_cToolbar.Create(&GetIcons());
 
 	SelectCharWidthCache(CWM_FONT_MINIMAP, CWM_CACHE_LOCAL); // Init
 	InitCharWidthCache(m_pcViewFontMiniMap->GetLogfont(), CWM_FONT_MINIMAP);
