@@ -87,7 +87,7 @@ def checkAll():
 # 指定したファイルの文字コードが期待通りか確認する
 def checkEncodingResult(fileName, encoding):
 	base, ext = os.path.splitext(fileName)
-	encoding = encoding.upper()
+	encoding = encoding.lower()
 	if encoding in expectEncoding.get(ext, ()):
 		return True
 	return False
