@@ -890,6 +890,12 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_NCCREATE,						window::OnNcCreate);
 // clang-format on
 
+	case WM_PAINT:
+		if (PAINTSTRUCT ps; ::BeginPaint(hWnd, &ps)) {
+			::EndPaint(hWnd, &ps);
+		}
+		return 0L;
+
 	default:
 		break;
 	}
@@ -918,10 +924,6 @@ LRESULT CEditWnd::DispatchEvent(
 		return OnLButtonUp( wParam, lParam );
 	case WM_MOUSEWHEEL:
 		return OnMouseWheel( wParam, lParam );
-	case WM_HSCROLL:
-		return OnHScroll( wParam, lParam );
-	case WM_VSCROLL:
-		return OnVScroll( wParam, lParam );
 
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
@@ -995,8 +997,6 @@ LRESULT CEditWnd::DispatchEvent(
 			return 0;
 		}
 		return FALSE;
-	case WM_PAINT:
-		return OnPaint( hwnd, uMsg, wParam, lParam );
 
 	case WM_PASTE:
 		return GetActiveView().GetCommander().HandleCommand( F_PASTE, true, 0, 0, 0, 0 );
@@ -1087,11 +1087,6 @@ LRESULT CEditWnd::DispatchEvent(
 		//	Feb. 11, 2007 genta 動作を選べるように(MDI風と従来動作)
 		// 2007.02.22 ryoji Alt+F4 のデフォルト機能でモード毎の動作が得られるようになった
 		if( wParam == SC_CLOSE ){
-			// 印刷プレビューモードでウィンドウを閉じる操作のときはプレビューを閉じる	// 2007.03.04 ryoji
-			if( m_pPrintPreview ){
-				PrintPreviewModeONOFF();	// 印刷プレビューモードのオン/オフ
-				return 0L;
-			}
 			OnCommand( 0, (WORD)CKeyBind::GetDefFuncCode( VK_F4, _ALT ), nullptr );
 			return 0L;
 		}
@@ -1127,18 +1122,9 @@ LRESULT CEditWnd::DispatchEvent(
 		m_nTimerCount = 9;
 
 		// ビューにフォーカスを移動する	// 2007.10.16 ryoji
-		if( !m_pPrintPreview ){
-			::SetFocus( GetActiveView().GetHwnd() );
-		}
-		lRes = 0;
+		::SetFocus(GetActiveView().GetHwnd());
 
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-		/* 印刷プレビューモードのときは、キー操作は全部PrintPreviewBarへ転送 */
-		if( m_pPrintPreview ){
-			m_pPrintPreview->SetFocusToPrintPreviewBar();
-		}
-
-		return lRes;
+		return 0L;
 
 	case WM_NOTIFY:
 		pnmh = (LPNMHDR) lParam;
@@ -1518,31 +1504,17 @@ LRESULT CEditWnd::DispatchEvent(
 				}
 			}
 			break;
-		case PM_PRINTSETTING:
-			{
-				if( m_pPrintPreview ){
-					m_pPrintPreview->OnChangeSetting();
-				}
-			}
-			break;
+
 		default:
 			break;
 		}
 		return 0L;
+
 	case MYWM_SAVEEDITSTATE:
-		{
-			if( m_pPrintPreview ){
-				// 一時的に設定を戻す
-				SelectCharWidthCache( CWM_FONT_EDIT, CWM_CACHE_NEUTRAL );
-			}
-			// フォント変更前の座標の保存
-			m_posSaveAry = SavePhysPosOfAllView();
-			if( m_pPrintPreview ){
-				// 設定を戻す
-				SelectCharWidthCache( CWM_FONT_PRINT, CWM_CACHE_LOCAL );
-			}
-		}
+		// フォント変更前の座標の保存
+		m_posSaveAry = SavePhysPosOfAllView();
 		return 0L;
+
 	case MYWM_SETACTIVEPANE:
 		if( -1 == (int)wParam ){
 			if( 0 == lParam ){
@@ -2792,6 +2764,10 @@ void CEditWnd::OnSysMenuTimer( void ) //by 鬼(2)
 /* 印刷プレビューモードのオン/オフ */
 void CEditWnd::PrintPreviewModeONOFF( void )
 {
+	const auto hWnd = GetHwnd();
+
+	constexpr UINT_PTR uIdSubclass = 0;
+
 	HMENU	hMenu;
 	HWND	hwndToolBar;
 
@@ -2803,6 +2779,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 	if( m_pPrintPreview ){
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		/*	印刷プレビューモードを解除します。	*/
+		::RemoveWindowSubclass(hWnd, &CPrintPreview::SubclassProc, uIdSubclass);
 		m_pPrintPreview = nullptr;	//	NULLか否かで、プリントプレビューモードか判断するため。
 
 		/*	通常モードに戻す	*/
@@ -2857,6 +2834,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		m_pPrintPreview = std::make_unique<CPrintPreview>(this);
+		::SetWindowSubclass(hWnd, &CPrintPreview::SubclassProc, uIdSubclass, DWORD_PTR(m_pPrintPreview.get()));
 		/* 現在の印刷設定 */
 		m_pPrintPreview->SetPrintSetting(
 			&m_pShareData->m_PrintSettingArr[
@@ -3188,54 +3166,7 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 	);
 	//@@@ To 2003.05.31 MIK
 
-	/* 印刷プレビューモードか */
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	if( !m_pPrintPreview ){
-		return 0L;
-	}
-	return m_pPrintPreview->OnSize(wParam, lParam);
-}
-
-/* WM_PAINT 描画処理 */
-LRESULT CEditWnd::OnPaint(
-	HWND			hwnd,	// handle of window
-	UINT			uMsg,	// message identifier
-	WPARAM			wParam,	// first message parameter
-	LPARAM			lParam 	// second message parameter
-)
-{
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	/* 印刷プレビューモードか */
-	if( !m_pPrintPreview ){
-		PAINTSTRUCT		ps;
-		::BeginPaint( hwnd, &ps );
-		::EndPaint( hwnd, &ps );
-		return 0L;
-	}
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	return m_pPrintPreview->OnPaint(hwnd, uMsg, wParam, lParam);
-}
-
-/* 印刷プレビュー 垂直スクロールバーメッセージ処理 WM_VSCROLL */
-LRESULT CEditWnd::OnVScroll( WPARAM wParam, LPARAM lParam )
-{
-	/* 印刷プレビューモードか */
-	if( !m_pPrintPreview ){
-		return 0;
-	}
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	return m_pPrintPreview->OnVScroll(wParam, lParam);
-}
-
-/* 印刷プレビュー 水平スクロールバーメッセージ処理 */
-LRESULT CEditWnd::OnHScroll( WPARAM wParam, LPARAM lParam )
-{
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	/* 印刷プレビューモードか */
-	if( !m_pPrintPreview ){
-		return 0;
-	}
-	return m_pPrintPreview->OnHScroll( wParam, lParam );
+	return 0L;
 }
 
 LRESULT CEditWnd::OnLButtonDown( [[maybe_unused]] WPARAM wParam, LPARAM lParam )
@@ -3302,21 +3233,10 @@ LRESULT CEditWnd::OnMouseMove( WPARAM wParam, LPARAM lParam )
 		}
 		return 0;
 	}
-
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	if (!m_pPrintPreview){
-		return 0;
-	}
-	else {
-		return m_pPrintPreview->OnMouseMove( wParam, lParam );
-	}
 }
 
 LRESULT CEditWnd::OnMouseWheel( WPARAM wParam, LPARAM lParam )
 {
-	if( m_pPrintPreview ){
-		return m_pPrintPreview->OnMouseWheel( wParam, lParam );
-	}
 	return Views_DispatchEvent( GetHwnd(), WM_MOUSEWHEEL, wParam, lParam );
 }
 
@@ -3326,9 +3246,7 @@ LRESULT CEditWnd::OnMouseWheel( WPARAM wParam, LPARAM lParam )
 */
 BOOL CEditWnd::DoMouseWheel( WPARAM wParam, LPARAM lParam )
 {
-//@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
-	/* 印刷プレビューモードか */
-	if( !m_pPrintPreview ){
+	{
 		// 2006.03.26 ryoji by assitance with John タブ上ならウィンドウ切り替え
 		if( m_pShareData->m_Common.m_sTabBar.m_bChgWndByWheel && nullptr != m_cTabWnd.m_hwndTab )
 		{
