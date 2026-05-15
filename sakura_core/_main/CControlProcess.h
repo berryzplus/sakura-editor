@@ -94,7 +94,7 @@ public:
 	std::filesystem::path GetIniFileName() const override;
 
 private:
-	bool	InitializeProcess(int nCmdShow [[maybe_unused]]) override;
+	bool	InitializeProcess(int nCmdShow) override;
 	int		MainLoop() const override;
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
@@ -102,8 +102,6 @@ private:
 	CComInitHolder		m_ComInit = std::make_unique<cxx::CComInit>();
 
 	cxx::MutexHolder	m_hMutex{ nullptr };				//!< アプリケーション実行検出用ミューテックス
-	cxx::MutexHolder	m_hMutexCP{ nullptr };				//!< コントロールプロセスミューテックス
-	cxx::EventHolder	m_hEventCPInitialized{ nullptr };	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
 
 	std::unique_ptr<CControlTray>	m_pcTray = nullptr;
 };

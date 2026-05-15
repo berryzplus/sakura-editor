@@ -41,6 +41,7 @@
 #include "io/CTextStream.h"
 #include "util/module.h"
 #include "util/shell.h"
+#include "util/tchar_convert.h"
 #include "util/window.h"
 #include "util/string_ex2.h"
 #include "env/CShareData.h"
@@ -451,9 +452,6 @@ HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unuse
 		hInstance,				// handle to application instance
 		LPVOID(this)			// pointer to window-creation data(lpCreateParams)
 	);
-
-	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
-	::SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 	return hWnd;
 }
@@ -1030,6 +1028,16 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		return false;
 	}
 
+	// 初期化完了イベントのイベント名を組み立てる
+	SFilePath szInitEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
+	szInitEventName.append(GetProfileName());
+
+	// 初期化完了イベントを作成する
+	cxx::EventHolder hEvent{ ::CreateEventW(nullptr, TRUE, FALSE, szInitEventName) };
+	if (!hEvent) {
+		throw std::domain_error(cxx::to_string(L"CreateEvent()失敗。\n終了します。", CP_ACP));
+	}
+
 	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
 
 	// タスクトレイアイコン作成
@@ -1038,8 +1046,18 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	// タスクトレイ左クリックメニューへのショートカットキー登録
 	RegisterHotKey(hWnd);
 
+	m_pShareData->m_sHandles.m_hwndTray = hWnd;
+
 	// 最後の方でシャットダウンするアプリケーションにする
 	::SetProcessShutdownParameters(0x180, 0);
+
+	// 初期化完了イベントをシグナル状態にする
+	if (!::SetEvent(hEvent)) {
+		throw std::domain_error(cxx::to_string(LS(STR_ERR_CTRLMTX4), CP_ACP));
+	}
+
+	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
+	::SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 	// 編集ウィンドウの終了チェックを開始する
 	::SetTimer(hWnd, IDT_EDITCHECK, IDT_EDITCHECK_INTERVAL, nullptr);

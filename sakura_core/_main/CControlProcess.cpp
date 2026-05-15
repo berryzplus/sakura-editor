@@ -131,21 +131,10 @@ bool CControlProcess::InitializeProcess(int nCmdShow)
 
 	const auto pszProfileName = GetProfileName();
 
-	// 初期化完了イベントを作成する
-	std::wstring strInitEvent = GSTR_EVENT_SAKURA_CP_INITIALIZED;
-	strInitEvent += pszProfileName;
-	m_hEventCPInitialized = ::CreateEvent( nullptr, TRUE, FALSE, strInitEvent.c_str() );
-	if( nullptr == m_hEventCPInitialized )
-	{
-		ErrorBeep();
-		TopErrorMessage( nullptr, L"CreateEvent()失敗。\n終了します。" );
-		return false;
-	}
-
 	/* コントロールプロセスの目印 */
 	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
-	strCtrlProcEvent += pszProfileName;
-	m_hMutexCP = ::CreateMutex( nullptr, TRUE, strCtrlProcEvent.c_str() );
+	strCtrlProcEvent += GetProfileName();
+	cxx::MutexHolder m_hMutexCP{ ::CreateMutexW(nullptr, TRUE, strCtrlProcEvent.c_str()) };
 	if( nullptr == m_hMutexCP ){
 		ErrorBeep();
 		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
@@ -191,14 +180,6 @@ bool CControlProcess::InitializeProcess(int nCmdShow)
 		return false;
 	}
 	SetMainWindow(hwnd);
-	GetDllShareData().m_sHandles.m_hwndTray = hwnd;
-
-	// 初期化完了イベントをシグナル状態にする
-	if( !::SetEvent( m_hEventCPInitialized ) ){
-		ErrorBeep();
-		TopErrorMessage( nullptr, LS(STR_ERR_CTRLMTX4) );
-		return false;
-	}
 
 	return true;
 }
