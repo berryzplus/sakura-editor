@@ -578,20 +578,12 @@ bool CControlTray::SendTrayMessage(DWORD dwMessage, HICON hIcon, const std::opti
  * @date 2001/12/26 YAZAKI MRUリストは、CMRUに依頼する
  */
 LRESULT CControlTray::DispatchEvent(
-	HWND	hwnd,	// handle of window
+	HWND	hWnd,	// handle of window
 	UINT	uMsg,	// message identifier
 	WPARAM	wParam,	// first message parameter
 	LPARAM	lParam 	// second message parameter
 )
 {
-	const auto hWnd = hwnd;
-
-	int				nId;
-	HWND			hwndWork;
-
-	int			nRowNum;
-	EditNode*	pEditNodeArr;
-
 	switch (uMsg) {
 // clang-format off
 	HANDLE_MSG(hWnd, WM_HOTKEY,							OnHotKey);
@@ -604,11 +596,19 @@ LRESULT CControlTray::DispatchEvent(
 		return 0L;	//何もしない
 
 	case WM_EXITMENULOOP:
-		break;
+		return 0L;	//何もしない
 
 	default:
 		break;
 	}
+
+	const auto hwnd = hWnd;
+
+	int				nId;
+	HWND			hwndWork;
+
+	int			nRowNum;
+	EditNode*	pEditNodeArr;
 
 	switch (uMsg) {
 	case MYWM_UIPI_CHECK:
