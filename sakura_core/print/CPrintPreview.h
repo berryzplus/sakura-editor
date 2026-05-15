@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 2002, YAZAKI
 	Copyright (C) 2003, かろと
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -36,11 +36,22 @@ class CPrintPreview {
 
 /* メンバ関数宣言 */
 public:
+	static LRESULT CALLBACK SubclassProc(
+		HWND hWnd,
+		UINT uMsg,
+		WPARAM wParam,
+		LPARAM lParam,
+		UINT_PTR uIdSubclass,
+		DWORD_PTR dwRefData
+	);
+
 	/*
 	||  コンストラクタ
 	*/
 	CPrintPreview( class CEditWnd* pParentWnd );
 	~CPrintPreview();
+
+	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 	/*
 	||	イベント
@@ -261,4 +272,5 @@ protected:
 
 	DISALLOW_COPY_AND_ASSIGN(CPrintPreview);
 };
+
 #endif /* SAKURA_CPRINTPREVIEW_71FC07B8_7648_4179_81A7_0FE3299DBA0A_H_ */

@@ -142,7 +142,6 @@ public:
 	void	OnDestroy(HWND hWnd);
 	void	OnClose(HWND hWnd) const;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
-	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
 	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
@@ -151,8 +150,6 @@ public:
 	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
 	BOOL DoMouseWheel( WPARAM wParam, LPARAM lParam );	// マウスホイール処理	// 2007.10.16 ryoji
-	LRESULT OnHScroll(WPARAM wParam, LPARAM lParam);
-	LRESULT OnVScroll(WPARAM wParam, LPARAM lParam);
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
 	BOOL OnPrintPageSetting( void );/* 印刷ページ設定 */

@@ -48,6 +48,26 @@
 #define		PAGE_RANGE_X	160		/* 水平方向の１回のページスクロール幅 */
 #define		PAGE_RANGE_Y	160		/* 垂直方向の１回のページスクロール幅 */
 
+LRESULT CALLBACK CPrintPreview::SubclassProc(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam,
+	UINT_PTR uIdSubclass,
+	DWORD_PTR dwRefData
+)
+{
+	if (WM_DESTROY == uMsg) {
+		::RemoveWindowSubclass(hWnd, &SubclassProc, uIdSubclass);
+	}
+
+	if (auto pcPrintPreview = std::bit_cast<CPrintPreview*>(dwRefData)) {
+		return pcPrintPreview->DispatchEvent(hWnd, uMsg, wParam, lParam);
+	}
+
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
 CPrint CPrintPreview::m_cPrint;		//!< 現在のプリンター情報 2003.05.02 かろと
 
 /*! コンストラクタ
@@ -91,6 +111,69 @@ CPrintPreview::~CPrintPreview()
 	if( m_hdcCompatDC != nullptr ){
 		::DeleteDC( m_hdcCompatDC );
 	}
+}
+
+LRESULT CPrintPreview::DispatchEvent(
+	HWND	hWnd,	// handle of window
+	UINT	uMsg,	// message identifier
+	WPARAM	wParam,	// first message parameter
+	LPARAM	lParam 	// second message parameter
+)
+{
+	switch (uMsg) {
+	case WM_PAINT:
+		return OnPaint(hWnd, uMsg, wParam, lParam);
+
+	case WM_SIZE:
+		return OnSize(wParam, lParam);
+
+	case WM_SETFOCUS:
+		SetFocusToPrintPreviewBar();
+		return 0L;
+
+	case WM_SYSCOMMAND:
+		if (SC_CLOSE == wParam) {
+			GetEditWnd().PrintPreviewModeONOFF();	// 印刷プレビューモードのオン/オフ
+			return 0L;
+		}
+		break;
+
+	case WM_VSCROLL:
+		return OnVScroll(wParam, lParam);
+
+	case WM_HSCROLL:
+		return OnHScroll(wParam, lParam);
+
+	case WM_MOUSEMOVE:
+		return OnMouseMove(wParam, lParam);
+
+	case WM_MOUSEWHEEL:
+		return OnMouseWheel(wParam, lParam);
+
+	case MYWM_CHANGESETTING:
+		if (PM_PRINTSETTING == e_PM_CHANGESETTING_SELECT(lParam)) {
+			OnChangeSetting();
+			return 0L;
+		}
+		break;
+
+	case MYWM_SAVEEDITSTATE:
+		// 一時的に設定を戻す
+		SelectCharWidthCache(CWM_FONT_EDIT, CWM_CACHE_NEUTRAL);
+
+		// 通常の処理を実行
+		::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+
+		// 設定を戻す
+		SelectCharWidthCache(CWM_FONT_PRINT, CWM_CACHE_LOCAL);
+
+		return 0L;
+
+	default:
+		break;
+	}
+
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /*!	印刷プレビュー時の、WM_PAINTを処理
