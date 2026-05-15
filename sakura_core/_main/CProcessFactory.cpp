@@ -27,7 +27,6 @@
 #include <tchar.h>
 #include "CSelectLang.h"
 #include "config/system_constants.h"
-#include "apiwrap/DarkMode.h"
 
 class CSelectProfile final : public CProcess
 {
@@ -73,10 +72,6 @@ std::unique_ptr<CProcess> CProcessFactory::CreateInstance(std::wstring_view cmdl
 
 	// 言語環境を初期化する
 	CSelectLang::InitializeLanguageEnvironment();
-
-	DarkMode::initDarkMode();
-	DarkMode::setDarkModeConfig();
-	DarkMode::setDefaultColors(true);
 
 	auto lpCmdLine = std::data(cmdline);
 

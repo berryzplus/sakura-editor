@@ -10,6 +10,12 @@
 
 #include <DarkModeSubclass.h>
 
+namespace window {
+
+void InitDarkModeSetting();
+
+} // namespace window
+
 /*! ダークモードが有効かつ実際にダーク表示すべきかを判定する
 
 	DarkMode::isEnabled()          … ライブラリが有効化されているか (classic以外)
@@ -26,10 +32,14 @@ inline bool IsDarkModeActive()
 
 	@param bDarkMode  共有データの m_bDarkMode 値
 */
-inline void ApplyDarkModeSetting(BOOL bDarkMode)
+inline void ApplyDarkModeSetting(bool bDarkMode)
 {
+	window::InitDarkModeSetting();
+
 	const auto dmType = bDarkMode
-		? DarkMode::DarkModeType::dark : DarkMode::DarkModeType::light;
+		? DarkMode::DarkModeType::dark
+		: DarkMode::DarkModeType::light;
+
 	DarkMode::setDarkModeConfigEx(static_cast<UINT>(dmType));
 	DarkMode::setDefaultColors(true);
 }

@@ -359,6 +359,16 @@ bool OnNcCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	return true;
 }
 
+void InitDarkModeSetting()
+{
+	static std::once_flag darkModeInitOnce;
+
+	std::call_once(darkModeInitOnce, [] {
+		DarkMode::initDarkMode();
+		DarkMode::setDarkModeConfig();
+	});
+}
+
 } // namespace window
 
 CEditWnd::CEditWnd()
@@ -433,6 +443,12 @@ HWND CEditWnd::CreateMainWnd(
 )
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
+
+	/* ダークモード設定を反映する */
+	ApplyDarkModeSetting(m_pShareData->m_Common.m_sWindow.m_bDarkMode);
+
+	//ドキュメントの作成
+	GetDocument()->Create();
 
 	wmemset( m_pszMenubarMessage, L' ', MENUBAR_MESSAGE_MAX_LEN );	// null終端は不要
 

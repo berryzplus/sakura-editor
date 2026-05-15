@@ -101,9 +101,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		return false;
 	}
 
-	/* ダークモード設定を反映する */
-	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
-
 	/* 言語を選択する */
 	CSelectLang::ChangeLang( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
 
@@ -170,17 +167,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	// エディタアプリケーションを作成。2007.10.23 kobake
 	m_pcEditApp = std::make_unique<CEditApp>();
 
-	// プラグイン読み込み
-	MY_TRACETIME( cRunningTimer, L"Before Init Jack" );
-	/* ジャック初期化 */
-	CJackManager::getInstance();
-	MY_TRACETIME( cRunningTimer, L"After Init Jack" );
-
-	MY_TRACETIME( cRunningTimer, L"Before Load Plugins" );
-	/* プラグイン読み込み */
-	CPluginManager::getInstance()->LoadAllPlugin();
-	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
-
 	auto bGrepDlg = CCommandLine::getInstance()->IsGrepDlg();
 	auto bGrepMode = CCommandLine::getInstance()->IsGrepMode() || bGrepDlg;
 
@@ -219,6 +205,9 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		// ダイアログ表示前にミューテックスを解放する。
 		hMutex = nullptr;
 
+		/* ダークモード設定を反映する */
+		ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
+
 		if (cDlgGrep.DoModal(GetProcessInstance(), HWND(nullptr), nullptr)) {
 			CControlTray::DoGrepCreateWindow(GetProcessInstance(), GetDllShareData().m_sHandles.m_hwndTray, cDlgGrep);
 
@@ -229,8 +218,16 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		}
 	}
 
-	//ドキュメントの作成
-	m_pcEditDoc->Create();
+	// プラグイン読み込み
+	MY_TRACETIME( cRunningTimer, L"Before Init Jack" );
+	/* ジャック初期化 */
+	CJackManager::getInstance();
+	MY_TRACETIME( cRunningTimer, L"After Init Jack" );
+
+	MY_TRACETIME( cRunningTimer, L"Before Load Plugins" );
+	/* プラグイン読み込み */
+	CPluginManager::getInstance()->LoadAllPlugin();
+	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
 
 	//メインウインドウを作成
 	auto pEditWnd = GetEditWndPtr();

@@ -403,6 +403,9 @@ HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unuse
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
+	/* ダークモード設定を反映する */
+	ApplyDarkModeSetting(m_pShareData->m_Common.m_sWindow.m_bDarkMode);
+
 	//同名同クラスのウィンドウが既に存在していたら、失敗
 	SFilePath szTrayWndName{ GSTR_CEDITAPP };
 
@@ -691,7 +694,7 @@ LRESULT CControlTray::DispatchEvent(
 		case PM_CHANGESETTING_ALL:
 			/* ダークモード設定を反映する（変更時のみ適用） */
 			if( (GetDllShareData().m_Common.m_sWindow.m_bDarkMode != FALSE) != IsDarkModeActive() ){
-				ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
+				ApplyDarkModeSetting(m_pShareData->m_Common.m_sWindow.m_bDarkMode);
 			}
 			{
 				bool bChangeLang = wcscmp( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, m_szLanguageDll ) != 0;

@@ -25,7 +25,6 @@
 #include "env/CShareData.h"
 #include "sakura_rc.h"/// IDD_EXITTING 2002/2/10 aroka ヘッダー整理
 #include "config/system_constants.h"
-#include "apiwrap/DarkMode.h"
 
 //-------------------------------------------------
 
@@ -179,14 +178,10 @@ bool CControlProcess::InitializeProcess(int nCmdShow)
 
 	m_pcTray = std::make_unique<CControlTray>(*pTrayWnd);
 
-	/* ダークモード設定を反映する */
-	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
-
 	/* 言語を選択する */
-	CSelectLang::ChangeLang( GetDllShareData().m_Common.m_sWindow.m_szLanguageDll );
-	RefreshString();
+	CSelectLang::ChangeLang(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
 
-	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
+	RefreshString();
 
 	/* タスクトレイにアイコン作成 */
 	const auto hwnd = m_pcTray->CreateMainWnd(GetProcessInstance(), nCmdShow);
