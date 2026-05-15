@@ -923,10 +923,6 @@ LRESULT CEditWnd::DispatchEvent(
 	case WM_VSCROLL:
 		return OnVScroll( wParam, lParam );
 
-	case WM_MENUCHAR:
-		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
-		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
-
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
 		if( !wParam ){

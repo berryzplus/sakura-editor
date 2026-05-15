@@ -283,7 +283,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 }
 
 /*!
- * @brief トレイウインドウのメッセージ配送
+ * @brief メインウインドウのメッセージ配送
  *
  * @param hWnd [in] 宛先ウインドウのハンドル
  * @param uMsg [in] メッセージコード
@@ -317,6 +317,9 @@ LRESULT CAppMainWnd::DispatchEvent(
 		OnHelp(hWnd, LPHELPINFO(lParam));
 		return TRUE;
 
+	case WM_MENUCHAR:
+		return m_cMenuDrawer.OnMenuChar(hWnd, uMsg, wParam, lParam);
+
 	default:
 		break;
 	}
@@ -343,7 +346,7 @@ bool CAppMainWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_hInstance = lpCreateStruct->hInstance;
 
 	m_hIcons.Create(m_hInstance);
-	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+	m_cMenuDrawer.Create(m_hInstance, hWnd, &m_hIcons);
 
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
@@ -601,10 +604,6 @@ LRESULT CControlTray::DispatchEvent(
 
 	case WM_COMMAND:
 		return 0L;	//何もしない
-
-	case WM_MENUCHAR:
-		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
-		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
 
 	case WM_EXITMENULOOP:
 		break;
