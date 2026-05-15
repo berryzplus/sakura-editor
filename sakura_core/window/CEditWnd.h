@@ -58,6 +58,8 @@
 #include "print/CPrintPreview.h"
 #include "recent/CMruListener.h"
 
+#include "_main/CControlTray.h"
+
 static const int MENUBAR_MESSAGE_MAX_LEN = 30;
 
 class CPlug;
@@ -77,8 +79,9 @@ struct DLLSHAREDATA;
 // 2007.10.30 kobake IsFuncEnable,IsFuncCheckedをFunccode.hに移動
 // 2007.10.30 kobake OnHelp_MenuItemをCEditAppに移動
 class CEditWnd
-	: public TSingleInstance<CEditWnd>
-, public CDocListenerEx
+	: public CAppMainWnd
+	, public CDocListenerEx
+	, public TSingleInstance<CEditWnd>
 {
 private:
 	using AccelHolder = cxx::ResourceHolder<&::DestroyAcceleratorTable>;
@@ -88,7 +91,6 @@ private:
 	using CMigemoHolder = std::unique_ptr<CMigemo>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
-	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 	using CViewFontHolder = std::unique_ptr<CViewFont>;
 	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
@@ -96,16 +98,17 @@ private:
 	using SMenubarMessage = StaticString<MENUBAR_MESSAGE_MAX_LEN>;
 	using WindowDcHolder = cxx::ResourceHolder<&::ReleaseDC>;
 
-public:
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	using Base = CAppMainWnd;
+	using Me = CEditWnd;
 
+public:
 	CEditWnd();
 	~CEditWnd() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           作成                              //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow);
+	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) override;
 
 	void OpenDocumentWhenStart(
 		const SLoadInfo& sLoadInfo		//!< [in]
@@ -118,7 +121,7 @@ public:
 	);
 	void UpdateCaption();
 
-	int		MessageLoop();
+	int		MessageLoop() override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
@@ -126,15 +129,14 @@ public:
 	//ドキュメントイベント
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
-	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
+	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
 	//各種イベント
-	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
-	void	OnDestroy(HWND hWnd);
-	void	OnClose(HWND hWnd);
-	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags);
-	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
-	void	OnTimer(HWND hWnd, UINT id);
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+	void	OnDestroy(HWND hWnd) override;
+	void	OnClose(HWND hWnd) override;
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) override;
+	void	OnTimer(HWND hWnd, UINT id) override;
 
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
@@ -149,11 +151,12 @@ public:
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
 	BOOL OnPrintPageSetting( void );/* 印刷ページ設定 */
-	LRESULT OnTimer(WPARAM wParam, LPARAM lParam);	// WM_TIMER 処理	// 2007.04.03 ryoji
+
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );
 	void OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);
+
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);
 	LRESULT OnLButtonDblClk(WPARAM wp, LPARAM lp);
@@ -261,8 +264,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       各種アクセサ                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	HWND			GetHwnd()		const	{ return m_hWnd; }
-	CMenuDrawer&	GetMenuDrawer()			{ return m_cMenuDrawer; }
 	CEditDoc*		GetDocument()           { return m_pcEditDoc; }
 	const CEditDoc*	GetDocument() const     { return m_pcEditDoc; }
 
@@ -347,19 +348,10 @@ public:
 	//                        メンバ変数                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 private:
-	//共有データ
-	DLLSHAREDATA*	m_pShareData = &GetDllShareData();
-
 	//ドキュメント
 	CEditDoc* 		m_pcEditDoc = &GetEditDoc();
 
-	//自ウィンドウ
-	HWND			m_hWnd = nullptr;
-
 public:
-	//GUIオブジェクト
-	CImageListMgr	m_hIcons;
-
 	//サウンド管理
 	CSoundSet		m_cSoundSet;
 
@@ -394,9 +386,6 @@ private:
 	int				m_nEditViewCount = 1;	//!< 有効なビューの数
 	const int		m_nEditViewMaxCount = int(std::size(m_pcEditViewArr));//!< ビューの最大数=4
 
-	//ヘルパ
-	CMenuDrawer		m_cMenuDrawer;
-
 	//状態
 	bool			m_bIsActiveApp = false;		//!< 自アプリがアクティブかどうか	// 2007.03.08 ryoji
 	LPWSTR			m_pszLastCaption = nullptr;
@@ -429,7 +418,6 @@ public:
 	ESelectCountMode	m_nSelectCountMode = SELECT_COUNT_TOGGLE; // 選択文字カウント方法
 
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
-	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
 	CMigemoHolder	m_pcMigemo = std::make_unique<CMigemo>();
 };
 

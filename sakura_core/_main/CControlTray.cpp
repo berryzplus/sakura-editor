@@ -236,7 +236,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
  *
  * @date 2003/09/06 KEITA Use SetWindowLongPtr for WIN64
  */
-/* static */ LRESULT CALLBACK CControlTray::WndProc(
+/* static */ LRESULT CALLBACK CAppMainWnd::WndProc(
 	HWND	hWnd,	// handle of window
 	UINT	uMsg,	// message identifier
 	WPARAM	wParam,	// first message parameter
@@ -250,7 +250,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		lpCreateStruct->lpCreateParams)
 	{
 		// ウインドウ作成パラメーターには this ポインターが渡されている
-		auto pcWnd = std::bit_cast<CControlTray*>(lpCreateStruct->lpCreateParams);
+		auto pcWnd = std::bit_cast<CAppMainWnd*>(lpCreateStruct->lpCreateParams);
 
 		// ウインドウハンドルを関連付ける
 		pcWnd->m_hWnd = hWnd;
@@ -267,7 +267,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	}
 
 	// ウインドウに関連付けられたオブジェクトに処理を委譲
-	if (auto pcWnd = std::bit_cast<CControlTray*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
+	if (auto pcWnd = std::bit_cast<CAppMainWnd*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
 		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
 		if (WM_DESTROY == uMsg) {
 			// Windows にスレッドの終了を要求します。
@@ -280,6 +280,105 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 
 	//あとはデフォルトに任せる
 	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief トレイウインドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CAppMainWnd::DispatchEvent(
+	HWND	hWnd,	// handle of window
+	UINT	uMsg,	// message identifier
+	WPARAM	wParam,	// first message parameter
+	LPARAM	lParam 	// second message parameter
+)
+{
+	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
+	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
+	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
+// clang-format on
+
+	case WM_QUERYENDSESSION:
+		return OnQueryEndSession(hWnd, UINT(lParam));
+
+	case WM_ENDSESSION:
+		OnEndSession(hWnd, wParam, UINT(lParam));
+		return 0;	//	もうこのプロセスに制御が戻ることはない
+
+	case WM_HELP:
+		OnHelp(hWnd, LPHELPINFO(lParam));
+		return TRUE;
+
+	default:
+		break;
+	}
+
+	//あとはデフォルトに任せる
+	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CAppMainWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!lpCreateStruct || !lpCreateStruct->hInstance) {
+		return false;
+	}
+
+	m_hInstance = lpCreateStruct->hInstance;
+
+	m_hIcons.Create(m_hInstance);
+	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+
+	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
+
+	return true;
+}
+
+/*!
+ * WM_ENDSESSIONハンドラ
+ *
+ * WM_ENDSESSIONはWM_QUERYENDSESSIONメッセージの処理後にポストされます。
+ * このメッセージに戻り値はありません。
+ * 
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CAppMainWnd::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(bEndSession);
+	UNREFERENCED_PARAMETER(endSessionFlags);
+}
+
+/*!
+ * WM_HELPハンドラ
+ *
+ * このメッセージの戻り値はTRUE固定です。
+ * 
+ * @note windowsx.h に定義がないので独自に定義
+ */
+void CAppMainWnd::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo)
+{
+	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
+		return;
+	}
+
+	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -491,26 +590,11 @@ LRESULT CControlTray::DispatchEvent(
 
 	switch (uMsg) {
 // clang-format off
-	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
-	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
-	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
-	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 	HANDLE_MSG(hWnd, WM_HOTKEY,							OnHotKey);
 // clang-format on
 
-	case WM_QUERYENDSESSION:
-		return OnQueryEndSession(hWnd, UINT(lParam));
-
-	case WM_ENDSESSION:
-		OnEndSession(hWnd, wParam, UINT(lParam));
-		return 0;	//	もうこのプロセスに制御が戻ることはない
-
 	case WM_GETOBJECT:
 		return OnGetObject(hWnd, wParam, LONG(lParam));
-
-	case WM_HELP:
-		OnHelp(hWnd, LPHELPINFO(lParam));
-		return TRUE;
 
 	case WM_COMMAND:
 		return 0L;	//何もしない
@@ -518,6 +602,7 @@ LRESULT CControlTray::DispatchEvent(
 	case WM_MENUCHAR:
 		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
 		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
+
 	case WM_EXITMENULOOP:
 		break;
 
@@ -925,7 +1010,7 @@ LRESULT CControlTray::DispatchEvent(
 	}
 
 	//あとはデフォルトに任せる
-	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -939,19 +1024,11 @@ LRESULT CControlTray::DispatchEvent(
  */
 bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-	if (!lpCreateStruct) {
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
 
-	m_hInstance = lpCreateStruct->hInstance;
-	assert(m_hInstance);
-
 	m_szLanguageDll = m_pShareData->m_Common.m_sWindow.m_szLanguageDll;
-
-	m_hIcons.Create(m_hInstance);
-	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
-
-	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	// タスクトレイアイコン作成
 	CreateTrayIcon();
@@ -1022,7 +1099,7 @@ void CControlTray::OnDestroy(HWND hWnd)
  * ウインドウクローズが要求されたときに呼ばれる
  * このメッセージに戻り値はありません。
  */
-void CControlTray::OnClose(HWND hWnd) const noexcept
+void CControlTray::OnClose(HWND hWnd)
 {
 	//すべてのウィンドウを閉じる
 	if (!CloseAllEditor(FALSE, hWnd, TRUE, 0)) {
@@ -1045,7 +1122,7 @@ void CControlTray::OnClose(HWND hWnd) const noexcept
  * 
  * @date 2000/01/31 genta Windows終了時の後処理
  */
-bool CControlTray::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noexcept
+bool CControlTray::OnQueryEndSession(HWND hWnd, UINT endSessionFlags)
 {
 	UNREFERENCED_PARAMETER(endSessionFlags);
 
@@ -1071,7 +1148,7 @@ bool CControlTray::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noex
  *
  * @date 2000/01/31 genta Windows終了時の後処理
  */
-void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) noexcept
+void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags)
 {
 	UNREFERENCED_PARAMETER(endSessionFlags);
 
@@ -1096,22 +1173,6 @@ LRESULT CControlTray::OnGetObject(HWND hWnd, WPARAM dwFlags, LONG dwObjId) const
 	}
 
 	return ::DefWindowProcW(hWnd, WM_GETOBJECT, dwFlags, dwObjId);
-}
-
-/*!
- * WM_HELPハンドラ
- *
- * このメッセージの戻り値はTRUE固定です。
- * 
- * @note windowsx.h に定義がないので独自に定義
- */
-void CControlTray::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept
-{
-	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
-		return;
-	}
-
-	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
 }
 
 /*!

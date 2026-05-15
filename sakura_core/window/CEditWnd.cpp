@@ -337,63 +337,6 @@ CMyRect _CalcInitialRect(int nCmdShow, const CCommandLine* pCommandLine)
 
 } // namespace window
 
-/*!
- * @brief Windowsと直接やり取りするコールバックプロシージャ
- *
- * @param hWnd [in] 宛先ウインドウのハンドル
- * @param uMsg [in] メッセージコード
- * @param wParam [in, opt] 第1パラメーター
- * @param lParam [in, opt] 第2パラメーター
- * @returns 処理結果 メッセージコードにより異なる
- *
- * @date 2003/09/06 KEITA Use SetWindowLongPtr for WIN64
- */
-/* static */ LRESULT CALLBACK CEditWnd::WndProc(
-	HWND	hWnd,	// handle of window
-	UINT	uMsg,	// message identifier
-	WPARAM	wParam,	// first message parameter
-	LPARAM	lParam 	// second message parameter
-) /* noexcept */
-{
-	// WM_CREATEが来たらウインドウに作成パラメーターを関連付ける
-	if (auto lpCreateStruct = LPCREATESTRUCTW(lParam);
-		WM_CREATE == uMsg &&
-		lpCreateStruct &&
-		lpCreateStruct->lpCreateParams)
-	{
-		// ウインドウ作成パラメーターには this ポインターが渡されている
-		auto pcWnd = std::bit_cast<CEditWnd*>(lpCreateStruct->lpCreateParams);
-
-		// ウインドウハンドルを関連付ける
-		pcWnd->m_hWnd = hWnd;
-
-		// ウインドウハンドルにクラスオブジェクトを関連付ける
-		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(lpCreateStruct->lpCreateParams));
-
-		return pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
-	}
-
-	// GetWindowLongPtr する都合、NULLを弾く
-	if (!hWnd) {
-		return 0L;
-	}
-
-	// ウインドウに関連付けられたオブジェクトに処理を委譲
-	if (auto pcWnd = std::bit_cast<CEditWnd*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
-		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
-		if (WM_DESTROY == uMsg) {
-			// Windows にスレッドの終了を要求します。
-			::PostQuitMessage(0);
-
-			pcWnd->m_hWnd = nullptr;
-		}
-		return ret;
-	}
-
-	//あとはデフォルトに任せる
-	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
-}
-
 CEditWnd::CEditWnd()
 {
 	const auto& cTypeConfig = GetEditDoc().m_cDocType.GetDocumentAttribute();
@@ -916,18 +859,8 @@ LRESULT CEditWnd::DispatchEvent(
 
 	switch (uMsg) {
 // clang-format off
-	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
-	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
-	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
-
-	case WM_QUERYENDSESSION:
-		return OnQueryEndSession(hWnd, UINT(lParam));
-
-	case WM_HELP:
-		OnHelp(hWnd, LPHELPINFO(lParam));
-		return TRUE;
 
 	default:
 		break;
@@ -1814,7 +1747,7 @@ LRESULT CEditWnd::DispatchEvent(
 	}
 
 	//あとはデフォルトに任せる
-	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -1828,7 +1761,7 @@ LRESULT CEditWnd::DispatchEvent(
  */
 bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-	if (!lpCreateStruct) {
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
 
@@ -1947,15 +1880,6 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	//デフォルトのIMEモード設定
 	GetDocument()->m_cDocEditor.SetImeMode( GetDocument()->m_cDocType.GetDocumentAttribute().m_nImeState );
 
-	auto pcIcons = &CEditApp::getInstance()->GetIcons();
-
-	//プロパティ管理
-	m_pcPropertyManager->Create(
-		hWnd,
-		pcIcons,
-		&GetMenuDrawer()
-	);
-
 	// 初回アイドリング検出用のゼロ秒タイマーをセットする	// 2008.04.19 ryoji
 	// ゼロ秒タイマーが発動（初回アイドリング検出）したら MYWM_FIRST_IDLE を起動元プロセスにポストする。
 	// ※起動元での起動先アイドリング検出については CControlTray::OpenNewEditor を参照
@@ -2065,30 +1989,48 @@ bool CEditWnd::OnQueryEndSession(HWND hWnd, UINT endSessionFlags)
 }
 
 /*!
- * WM_HELPハンドラ
- *
- * このメッセージの戻り値はTRUE固定です。
- * 
- * @note windowsx.h に定義がないので独自に定義
- */
-void CEditWnd::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept
-{
-	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
-		return;
-	}
-
-	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
-}
-
-/*!
  * WM_TIMERハンドラ
  *
  * このメッセージの戻り値は0固定です。
+ *
+ * @date 2007.04.03 ryoji 新規
+ * @date 2008.04.19 ryoji IDT_FIRST_IDLE での MYWM_FIRST_IDLE ポスト処理を追加
+ * @date 2013.06.09 novice コントロールプロセスへの MYWM_FIRST_IDLE ポスト処理を追加
  */
-void CEditWnd::OnTimer(HWND hWnd [[maybe_unused]], UINT id)
+void CEditWnd::OnTimer(HWND hWnd, UINT id)
 {
-	OnTimer(WPARAM(id), 0L);
+	// タイマー ID で処理を振り分ける
+	switch (id) {
+	case IDT_EDIT:
+		OnEditTimer();
+		break;
+
+	case IDT_TOOLBAR:
+		m_cToolbar.OnToolbarTimer();
+		break;
+
+	case IDT_CAPTION:
+		OnCaptionTimer();
+		break;
+
+	case IDT_SYSMENU:
+		OnSysMenuTimer();
+		break;
+
+	case IDT_FIRST_IDLE:
+		m_cDlgFuncList.m_bEditWndReady = true;	// エディタ画面の準備完了
+		CAppNodeGroupHandle(0).PostMessageToAllEditors( MYWM_FIRST_IDLE, ::GetCurrentProcessId(), 0, nullptr );	// プロセスの初回アイドリング通知	// 2008.04.19 ryoji
+
+		::PostMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), (LPARAM)0 );
+
+		::KillTimer(hWnd, id);
+		break;
+
+	default:
+		break;
+	}
 }
+
 
 /*! WM_COMMAND処理
 	@date 2000.11.15 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行(F_HELP_CONTENTS,F_HELP_SEARCH)を修正・復活
@@ -2773,41 +2715,6 @@ void CEditWnd::OnDropFiles( HDROP hDrop )
 	}
 	::DragFinish( hDrop );
 	return;
-}
-
-/*! WM_TIMER 処理
-	@date 2007.04.03 ryoji 新規
-	@date 2008.04.19 ryoji IDT_FIRST_IDLE での MYWM_FIRST_IDLE ポスト処理を追加
-	@date 2013.06.09 novice コントロールプロセスへの MYWM_FIRST_IDLE ポスト処理を追加
-*/
-LRESULT CEditWnd::OnTimer( WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	// タイマー ID で処理を振り分ける
-	switch( wParam )
-	{
-	case IDT_EDIT:
-		OnEditTimer();
-		break;
-	case IDT_TOOLBAR:
-		m_cToolbar.OnToolbarTimer();
-		break;
-	case IDT_CAPTION:
-		OnCaptionTimer();
-		break;
-	case IDT_SYSMENU:
-		OnSysMenuTimer();
-		break;
-	case IDT_FIRST_IDLE:
-		m_cDlgFuncList.m_bEditWndReady = true;	// エディタ画面の準備完了
-		CAppNodeGroupHandle(0).PostMessageToAllEditors( MYWM_FIRST_IDLE, ::GetCurrentProcessId(), 0, nullptr );	// プロセスの初回アイドリング通知	// 2008.04.19 ryoji
-		::PostMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), (LPARAM)0 );
-		::KillTimer( m_hWnd, wParam );
-		break;
-	default:
-		return 1L;
-	}
-
-	return 0L;
 }
 
 /*! キャプション更新用タイマーの処理

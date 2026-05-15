@@ -44,6 +44,43 @@
 struct SLoadInfo;
 struct EditInfo;
 
+struct CAppMainWnd
+{
+	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
+
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
+	virtual ~CAppMainWnd() = default;
+
+	virtual HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) = 0;
+
+	virtual int		MessageLoop() = 0;
+
+	virtual LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
+
+	HWND	GetHwnd() const noexcept { return m_hWnd; }
+
+	CMenuDrawer& GetMenuDrawer() { return m_cMenuDrawer; }
+
+	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+	virtual void	OnDestroy(HWND hWnd) = 0;
+	virtual void	OnClose(HWND hWnd) = 0;
+	virtual bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) = 0;
+	virtual void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags);
+	virtual void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo);
+	virtual void	OnTimer(HWND hWnd, UINT id) = 0;
+
+	HINSTANCE		m_hInstance = nullptr;
+	HWND			m_hWnd = nullptr;
+
+	DLLSHAREDATA*	m_pShareData = &GetDllShareData();
+
+	CImageListMgr	m_hIcons;
+	CMenuDrawer		m_cMenuDrawer;
+
+	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
+};
+
 //!	常駐部の管理
 /*!
 	タスクトレイアイコンの管理，タスクトレイメニューのアクション，
@@ -51,11 +88,9 @@ struct EditInfo;
 	
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
-class CControlTray
+class CControlTray final : public CAppMainWnd
 {
 private:
-	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
-
 	/*!
 	 * トレイアイコン再登録要求のメッセージID。
 	 *
@@ -69,23 +104,24 @@ private:
 	 */
 	static inline const UINT gm_uMsgTaskbarCreated = ::RegisterWindowMessageW(L"TaskbarCreated");
 
-public:
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+	using Base = CAppMainWnd;
+	using Me = CControlTray;
 
+public:
 	/*
 	||  Constructors
 	*/
 	explicit CControlTray(ITrayWnd& refTrayWnd);
-	~CControlTray();
+	~CControlTray() override;
 
 	/*
 	|| メンバ関数
 	*/
-	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow);
+	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]] ) override;
 
-	int		MessageLoop();
+	int		MessageLoop() override;
 
-	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
+	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
 	int	CreatePopUpMenu_L( void );	/* ポップアップメニュー(トレイ左ボタン) */
 	int	CreatePopUpMenu_R( void );	/* ポップアップメニュー(トレイ右ボタン) */
@@ -114,7 +150,6 @@ public:
 	static BOOL CloseAllEditor( BOOL bCheckConfirm, HWND hWndFrom, BOOL bExit, int nGroup );	/* すべてのウィンドウを閉じる */	//Oct. 7, 2000 jepro 「編集ウィンドウの全終了」という説明を左記のように変更	// 2006.12.25, 2007.02.13 ryoji 引数追加
 	static void TerminateApplication( HWND hWndFrom );	/* サクラエディタの全終了 */	// 2006.12.25 ryoji 引数追加
 
-	HWND	GetHwnd() const noexcept { return m_hWnd; }
 	HWND	GetTrayHwnd() const noexcept { return GetHwnd(); }
 
 	/*
@@ -130,14 +165,13 @@ protected:
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
 private:
-	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
-	void	OnDestroy(HWND hWnd);
-	void	OnClose(HWND hWnd) const noexcept;
-	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const noexcept;
-	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) noexcept;
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+	void	OnDestroy(HWND hWnd) override;
+	void	OnClose(HWND hWnd) override;
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) override;
+	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags) override;
 	LRESULT OnGetObject(HWND hWnd, WPARAM wParam, LONG dwObjId) const;
-	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
-	void	OnTimer(HWND hWnd, UINT id);
+	void	OnTimer(HWND hWnd, UINT id) override;
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
 
 	bool	OnSetTypeSetting(size_t index);
@@ -148,20 +182,11 @@ private:
 	/*
 	|| メンバ変数
 	*/
-	HINSTANCE		m_hInstance = nullptr;
-	HWND			m_hWnd = nullptr;
-
-	DLLSHAREDATA*	m_pShareData = GetDllShareDataPtr();
 	SFilePath		m_szLanguageDll;
-
-	CImageListMgr	m_hIcons;
-	CMenuDrawer		m_cMenuDrawer;
 
 	BOOL			m_bCreatedTrayIcon = FALSE;		//!< トレイにアイコンを作った
 
 	cxx::com_pointer<ITrayWnd>		m_pTrayWnd = nullptr;
-
-	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
 
 	// DispatchEventから切り出した変数群（そのうちリネームする）
 	HWND			hwndHtmlHelp = nullptr;
