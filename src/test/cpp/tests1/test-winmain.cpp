@@ -660,12 +660,18 @@ TEST_P(WinMainTest, _CalcInitialRect001)
 	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
-	WaitForEditor();
+	const auto hWndFound1 = WaitForEditor();
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
 
-	WaitForThread(ep2.dwThreadId);
+	const auto hWndFound2 = GetThreadWindow(ep2.dwThreadId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound1);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound2);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -699,14 +705,20 @@ TEST_P(WinMainTest, _CalcInitialRect002)
 	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForEditor();
+	const auto hWndFound1 = WaitForEditor();
 
-	::ShowWindow(hWndFound, SW_MINIMIZE);
+	::ShowWindow(hWndFound1, SW_MINIMIZE);
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
 
-	WaitForThread(ep2.dwThreadId);
+	const auto hWndFound2 = GetThreadWindow(ep2.dwThreadId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound1);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound2);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -935,12 +947,18 @@ TEST_P(WinMainTest, OpenDebugWindow002)
 	const auto ep1 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
 
 	// アウトプットウインドウが有効になるのを待つ
-	WaitForEditor();
+	const auto hWndFound1 = WaitForEditor();
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
 
-	WaitForThread(ep2.dwThreadId);
+	const auto hWndFound2 = GetThreadWindow(ep2.dwThreadId);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound1);
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound2);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);

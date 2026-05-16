@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include "_main/CProcess.h"
 #include "config/system_constants.h"
 #include "cxx/com_pointer.hpp"
 #include "dlg/ModalDialogCloser.hpp"
@@ -50,11 +51,40 @@ struct UiaTestSuite
 		_com_util::CheckError(pValuePattern->SetValue(val));
 	}
 
-	static BOOL CALLBACK MyEnumThreadWindowProc( HWND hWnd, LPARAM lParam)
+	struct SEnumWindowParams
 	{
-		auto phWndFound = std::bit_cast<HWND*>(lParam);
-		*phWndFound = hWnd;
-		return FALSE; // 列挙終了
+		HWND hWnd;
+		DWORD dwProcessId;
+	};
+
+	static BOOL CALLBACK MyEnumWindowProc(HWND hWnd, LPARAM lParam)
+	{
+		if (!hWnd || !lParam)
+		{
+			return TRUE;
+		}
+
+		auto pParams = std::bit_cast<SEnumWindowParams*>(lParam);
+
+		DWORD pid = 0;
+		DWORD tid = 0;
+
+		if (tid = ::GetWindowThreadProcessId(hWnd, &pid))
+		{
+			const auto str = std::format("  EnumWindow : {:x} (pid: {:d}, tid:{:d})\n", size_t(hWnd), pid, tid);
+			::OutputDebugStringA(str.c_str());
+		}
+
+		if (pid == pParams->dwProcessId)
+		{
+			std::wcout << "->EnumWindow : " << size_t(hWnd) << std::endl;
+
+			pParams->hWnd = hWnd;
+
+			return FALSE; // 列挙終了
+		}
+
+		return TRUE; // 列挙続行
 	}
 
 	/*!
@@ -176,6 +206,13 @@ struct UiaTestSuite
 		return pFocusedElement;
 	}
 
+	HWND GetThreadWindow(DWORD dwThreadId) const
+	{
+		HWND hWndFound = nullptr;
+		::EnumThreadWindows(dwThreadId, CProcess::MyEnumThreadWndProc, LPARAM(&hWndFound));
+		return hWndFound;
+	}
+
 	INPUT MakeMouseInputMove(LONG x, LONG y) const
 	{
 		const auto vx = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -280,28 +317,6 @@ struct UiaTestSuite
 	HWND WaitForEditor(const std::optional<std::wstring>& title = std::nullopt, ULONGLONG timeoutMillis = 30000) const
 	{
 		return WaitForWindow(GSTR_EDITWINDOWNAME, title, timeoutMillis);
-	}
-
-	HWND WaitForThread(DWORD dwThreadId, ULONGLONG timeoutMillis = 30000) const
-	{
-		HWND hWndFound = nullptr;
-
-		const auto startTick = ::GetTickCount64();
-
-		do {
-			// ウィンドウがVisibleかつEnabledになるのを待つ
-			::EnumThreadWindows(dwThreadId, &MyEnumThreadWindowProc, LPARAM(&hWndFound));
-
-			if (hWndFound && ::IsWindowEnabled(hWndFound) && ::IsWindowVisible(hWndFound)) {
-				WaitForFocus(startTick, timeoutMillis);
-				break;
-			}
-
-			Sleep(10);  // 10msスリープしてリトライ
-		}
-		while (::GetTickCount64() - startTick < timeoutMillis);
-
-		return hWndFound;
 	}
 
 	template<typename... Conditions>

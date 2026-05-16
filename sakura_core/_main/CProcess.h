@@ -298,6 +298,18 @@ public:
 		return cp.dwProcessId;
 	}
 
+	static BOOL CALLBACK MyEnumThreadWndProc(
+		_In_ HWND   hWnd,
+		_In_ LPARAM lParam
+	)
+	{
+		auto phWndFound = std::bit_cast<HWND*>(lParam);
+
+		*phWndFound = hWnd;
+
+		return FALSE;
+	}
+
 	/*!
 	 * @brief エディタープロセスを起動する
 	 *
@@ -324,7 +336,32 @@ public:
 
 		const auto optFileDir = optFilePath.has_value() ? std::optional(std::filesystem::path(*optFilePath).remove_filename()) : std::nullopt;
 
-		return CreateSakuraProcess(optFilePath, args, si, optWorkingDir.has_value() ? optWorkingDir : optFileDir, optProfileName);
+		// エディタープロセスを起動する
+		auto ep = CreateSakuraProcess(optFilePath, args, si, optWorkingDir.has_value() ? optWorkingDir : optFileDir, optProfileName);
+		if (!ep) return ep;
+
+		HWND hWndFound = nullptr;
+
+		const auto startTick = ::GetTickCount64();
+
+		// メインウインドウを取得する
+		do {
+			// スレッドに含まれるウインドウを列挙する
+			::EnumThreadWindows(ep.dwThreadId, MyEnumThreadWndProc, LPARAM(&hWndFound));
+
+			// ウィンドウがVisibleかつEnabledになるのを待つ
+			if (hWndFound &&
+				::IsWindowEnabled(hWndFound) &&
+				::IsWindowVisible(hWndFound))
+			{
+				break;
+			}
+
+			Sleep(10);  // 10msスリープしてリトライ
+		}
+		while (::GetTickCount64() - startTick < 5000);
+
+		return ep;
 	}
 
 	CProcess(HINSTANCE hInstance, CCommandLineHolder&& pCommandLine);
