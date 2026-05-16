@@ -99,6 +99,28 @@ public:
 	}
 };
 
+class ProcessHolder : public cxx::HandleHolder
+{
+private:
+	using Base = cxx::HandleHolder;
+	using Me = ProcessHolder;
+
+public:
+	explicit ProcessHolder(
+		HANDLE hProcess,
+		DWORD dwProcessId,
+		DWORD dwThreadId
+	)
+		: Base(hProcess)
+		, dwProcessId(dwProcessId)
+		, dwThreadId(dwThreadId)
+	{
+	}
+
+	DWORD dwProcessId;
+	DWORD dwThreadId;
+};
+
 class COleInit final
 {
 private:
@@ -179,7 +201,7 @@ public:
 	 */
 	template<class T>
 		requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
-	static cxx::HandleHolder CreateSakuraProcess(
+	static cxx::ProcessHolder CreateSakuraProcess(
 		const std::optional<std::filesystem::path>& optFilePath,
 		const T& args,
 		STARTUPINFO& si,
@@ -235,7 +257,7 @@ public:
 		// 開いたハンドルは使わないので閉じておく
 		::CloseHandle(pi.hThread);
 
-		return cxx::HandleHolder(pi.hProcess);
+		return cxx::ProcessHolder(pi.hProcess, pi.dwProcessId, pi.dwThreadId);
 	}
 
 	/*!
@@ -272,8 +294,8 @@ public:
 			cxx::raise_system_error("waitEvent is timeout.");
 		}
 
-		// プロセスIDを取得して返す
-		return ::GetProcessId(cp);
+		// プロセスIDを返す
+		return cp.dwProcessId;
 	}
 
 	/*!
@@ -288,7 +310,7 @@ public:
 	 */
 	template<class T>
 		requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
-	static cxx::HandleHolder CreateEditorProcess(
+	static cxx::ProcessHolder CreateEditorProcess(
 		const std::optional<std::filesystem::path>& optFilePath,
 		const T& args,
 		const std::optional<std::wstring>& optProfileName = std::nullopt,

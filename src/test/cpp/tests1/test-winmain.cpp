@@ -103,7 +103,7 @@ DWORD CreateControlProcess(std::wstring_view profileName)
  */
 template<class T>
 	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
-cxx::HandleHolder CreateEditorProcess(
+cxx::ProcessHolder CreateEditorProcess(
 	const std::optional<std::filesystem::path>& optFilePath,
 	const T& args,
 	std::wstring_view profileName
@@ -130,7 +130,7 @@ cxx::HandleHolder CreateEditorProcess(
  */
 template<class T>
 	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
-cxx::HandleHolder CreateEditorProcess(
+cxx::ProcessHolder CreateEditorProcess(
 	const T& args,
 	std::wstring_view profileName
 )
@@ -660,18 +660,12 @@ TEST_P(WinMainTest, _CalcInitialRect001)
 	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	WaitForEditor();
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
 
-	::Sleep(5000); // 少し待つ
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep1);
+	WaitForThread(ep2.dwThreadId);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -705,20 +699,14 @@ TEST_P(WinMainTest, _CalcInitialRect002)
 	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	const auto hWndFound = WaitForEditor();
 
 	::ShowWindow(hWndFound, SW_MINIMIZE);
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath2, std::array{ LR"(-Y=3)"s }, profileName);
 
-	::Sleep(5000); // 少し待つ
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep1);
+	WaitForThread(ep2.dwThreadId);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -751,19 +739,13 @@ TEST_P(WinMainTest, ActivateOpenedWindow001)
 	const auto ep1 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	const auto hWndFound = WaitForEditor();
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(gm_TestDataPath1, std::array{ LR"(-Y=3)"s }, profileName);
 
 	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
 	testing::WaitForForeignProcessExit(ep2);
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep1);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -863,7 +845,7 @@ TEST_P(WinMainTest, DoGrep001)
 	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	const auto hWndFound = WaitForEditor();
 
 	// 編集ウインドウからプロセスIDを取得する
 	DWORD dwEditorProcessId;
@@ -941,7 +923,7 @@ TEST_P(WinMainTest, DoGrep002)
 	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	const auto hWndFound = WaitForEditor();
 
 	// 編集ウインドウを閉じる
 	testing::RequestForeignWindowClose(hWndFound);
@@ -963,21 +945,14 @@ TEST_P(WinMainTest, OpenDebugWindow001)
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-
 	// エディタープロセスを起動する
 	const auto ep = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
 
 	// 編集ウインドウが有効になるのを待って閉じる
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -990,29 +965,19 @@ TEST_P(WinMainTest, OpenDebugWindow002)
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-
 	// エディタープロセスを起動する
 	const auto ep1 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
 
 	// アウトプットウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
+	WaitForEditor();
 
 	// 2つ目のエディタープロセスを起動する
 	const auto ep2 = testing::CreateEditorProcess(std::array{ LR"(-DEBUGMODE)" }, profileName);
 
-	// テキトーな待機を入れる
-	::Sleep(3000);
-
-	// 編集ウインドウが有効になるのを待って閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep1);
+	WaitForThread(ep2.dwThreadId);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -1068,22 +1033,7 @@ TEST_P(WinMainTest, OpenFile001)
 	}
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
-
-	// 編集ウインドウからプロセスIDを取得する
-	DWORD dwEditorProcessId;
-	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
-	if (!dwControlProcessId) {
-		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
-	}
-
-	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1137,22 +1087,7 @@ TEST_P(WinMainTest, OpenNewEditor001)
 	EmulateSelectPopupMenu(L"新規作成(N)");
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
-
-	// 編集ウインドウからプロセスIDを取得する
-	DWORD dwEditorProcessId;
-	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
-	if (!dwControlProcessId) {
-		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
-	}
-
-	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1204,22 +1139,7 @@ TEST_P(WinMainTest, OpenNewEditor002)
 	});
 
 	// 編集ウインドウが有効になるのを待つ
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME, std::nullopt, 30000);
-
-	// 編集ウインドウからプロセスIDを取得する
-	DWORD dwEditorProcessId;
-	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
-	if (!dwControlProcessId) {
-		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
-	}
-
-	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
-
-	// 編集ウインドウを閉じる
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1257,11 +1177,7 @@ TEST_P(WinMainTest, ShowDlgGrep101)
 	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
 
 	// 編集ウインドウを閉じる
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1308,11 +1224,7 @@ TEST_P(WinMainTest, ShowDlgGrep102)
 	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
 
 	// 編集ウインドウを閉じる
-	const auto hWndFound = WaitForWindow(GSTR_EDITWINDOWNAME);
-	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
+	WaitForEditor();
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);

@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include "config/system_constants.h"
 #include "cxx/com_pointer.hpp"
 #include "dlg/ModalDialogCloser.hpp"
 
@@ -47,6 +48,13 @@ struct UiaTestSuite
 		IUIAutomationValuePatternPtr pValuePattern;
 		_com_util::CheckError(pElement->GetCurrentPatternAs(UIA_ValuePatternId, IID_PPV_ARGS(&pValuePattern)));
 		_com_util::CheckError(pValuePattern->SetValue(val));
+	}
+
+	static BOOL CALLBACK MyEnumThreadWindowProc( HWND hWnd, LPARAM lParam)
+	{
+		auto phWndFound = std::bit_cast<HWND*>(lParam);
+		*phWndFound = hWnd;
+		return FALSE; // 列挙終了
 	}
 
 	/*!
@@ -253,6 +261,33 @@ struct UiaTestSuite
 		while (::GetTickCount64() - startTick < timeoutMillis);
 
 		return nullptr;
+	}
+
+	HWND WaitForEditor(const std::optional<std::wstring>& title = std::nullopt, ULONGLONG timeoutMillis = 30000) const
+	{
+		return WaitForWindow(GSTR_EDITWINDOWNAME, title, timeoutMillis);
+	}
+
+	HWND WaitForThread(DWORD dwThreadId, ULONGLONG timeoutMillis = 30000) const
+	{
+		HWND hWndFound = nullptr;
+
+		const auto startTick = ::GetTickCount64();
+
+		do {
+			// ウィンドウがVisibleかつEnabledになるのを待つ
+			::EnumThreadWindows(dwThreadId, &MyEnumThreadWindowProc, LPARAM(&hWndFound));
+
+			if (hWndFound && ::IsWindowEnabled(hWndFound) && ::IsWindowVisible(hWndFound)) {
+				WaitForFocus(startTick, timeoutMillis);
+				break;
+			}
+
+			Sleep(10);  // 10msスリープしてリトライ
+		}
+		while (::GetTickCount64() - startTick < timeoutMillis);
+
+		return hWndFound;
 	}
 
 	template<typename... Conditions>
