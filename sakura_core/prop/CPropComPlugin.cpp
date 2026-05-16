@@ -570,7 +570,7 @@ bool CPropPlugin::BrowseReadMe(const std::wstring& sReadMeName)
 	}
 
 	// プロセスの起動
-	const auto ep = CProcess::CreateEditorProcess(filePath, args, CCommandLine::getInstance()->IsSetProfile() ? std::optional<std::wstring>(GetProfileName()) : std::nullopt);
+	const auto ep = CProcess::CreateEditorProcess(filePath, args);
 
 	return ep;
 }

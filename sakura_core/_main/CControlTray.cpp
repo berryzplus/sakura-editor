@@ -1434,11 +1434,7 @@ bool CControlTray::OpenNewEditor(
 	}
 
 	//	プロセスの起動
-	CProcess::CreateEditorProcess(
-		optFilePath, args,
-		CCommandLine::getInstance()->IsSetProfile() ? std::optional<std::wstring>(GetProfileName()) : std::nullopt,
-		pszCurDir ? std::optional<std::filesystem::path>(pszCurDir) : std::nullopt
-	);
+	CProcess::CreateEditorProcess(optFilePath, args, std::nullopt, pszCurDir ? std::optional<std::filesystem::path>(pszCurDir) : std::nullopt);
 
 	BOOL bRet = TRUE;
 

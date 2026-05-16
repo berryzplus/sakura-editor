@@ -90,7 +90,7 @@ namespace testing {
  */
 DWORD CreateControlProcess(std::wstring_view profileName)
 {
-	return CProcess::CreateControlProcess(profileName);
+	return CProcess::CreateControlProcess(std::wstring(profileName));
 }
 
 /*!
@@ -117,7 +117,7 @@ cxx::ProcessHolder CreateEditorProcess(
 		commandArgs.emplace_back(std::format(LR"(-CODE={})", static_cast<int>(CODE_AUTODETECT)));
 	}
 
-	return CProcess::CreateEditorProcess(optFilePath, commandArgs, std::optional<std::wstring>(profileName));
+	return CProcess::CreateEditorProcess(optFilePath, commandArgs, std::wstring(profileName));
 }
 
 /*!

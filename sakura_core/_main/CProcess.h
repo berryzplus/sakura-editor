@@ -212,11 +212,13 @@ public:
 		const auto exePath = GetExeFileName();
 
 		auto strCommandLine = std::format(LR"("{}")", exePath.native());
+
 		if (optFilePath.has_value()) {
 			strCommandLine += std::format(LR"( "{}")", optFilePath->native());
 		}
-		if (optProfileName.has_value()) {
-			strCommandLine += std::format(LR"( -PROF="{}")", *optProfileName);
+
+		if (const auto pCommandLine = CCommandLine::getInstance(); optProfileName.has_value() || pCommandLine->IsSetProfile()) {
+			strCommandLine += std::format(LR"( -PROF="{}")", optProfileName.value_or(GetProfileName()));
 		}
 
 		strCommandLine = std::accumulate(std::begin(args), std::end(args), strCommandLine, [](const std::wstring& a, std::wstring_view b) { return std::format(LR"({} {})", a, b); });
@@ -266,11 +268,15 @@ public:
 	 * @param profileName プロファイル名
 	 * @return コントロールプロセスのプロセスID
 	 */
-	static DWORD CreateControlProcess(std::wstring_view profileName)
+	static DWORD CreateControlProcess(
+		const std::optional<std::wstring>& optProfileName = std::nullopt
+	)
 	{
 		// 初期化完了イベントの名前を決める
 		SFilePath initEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
-		initEventName += profileName;
+		if (optProfileName.has_value()) {
+			initEventName += *optProfileName;
+		}
 
 		// プロセス起動前に初期化完了イベントを作成する
 		cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
@@ -287,7 +293,7 @@ public:
 		si.wShowWindow = SW_SHOWDEFAULT;
 
 		// コントロールプロセスを起動する
-		const auto cp = CreateSakuraProcess(std::nullopt, std::array{ LR"(-NOWIN)" }, si, cxx::GetSystemDirectoryW(), std::optional<std::wstring>(profileName));
+		const auto cp = CreateSakuraProcess(std::nullopt, std::array{ LR"(-NOWIN)" }, si, cxx::GetSystemDirectoryW(), optProfileName);
 
 		// 初期化完了を待つ
 		if (!hEvent.try_lock_for(std::chrono::milliseconds(60000))){
