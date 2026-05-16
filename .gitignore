@@ -47,6 +47,8 @@ SONAR_TOKEN
 
 # SonarScanローカル実行用したときに生成されるテスト結果ファイル
 tests1-googletest.xml
+tests1-coverage.xml
+LastCoverageResults.log
 
 # SonarScanローカル実行の失敗再現用アーカイブ
 sonar-cfamily-reproducer.tar.xz
