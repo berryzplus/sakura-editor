@@ -833,34 +833,13 @@ TEST_P(WinMainTest, DoGrep001)
 	}
 
 	// Grepダイアログが閉じられるのを待つ
-	bool dlgClosed = false;
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
-			dlgClosed = true;
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
-
-	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+	WaitForClose(L"Grep");
 
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForEditor();
 
-	// 編集ウインドウからプロセスIDを取得する
-	DWORD dwEditorProcessId;
-	::GetWindowThreadProcessId(hWndFound, &dwEditorProcessId);
-	if (!dwControlProcessId) {
-		cxx::raise_system_error("dwEditorProcessId can't be retrived.");
-	}
-
-	cxx::HandleHolder ep = ::OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, dwEditorProcessId);
-
 	// 編集ウインドウを閉じる
 	testing::RequestForeignWindowClose(hWndFound);
-
-	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-	testing::WaitForForeignProcessExit(ep);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -889,10 +868,6 @@ TEST_P(WinMainTest, DoGrep002)
 	};
 	cxx::writeTextFile(iniPath, iniLines);
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-	EXPECT_THAT(dwControlProcessId, Ne(0));
-
 	std::array args{
 		LR"(-GREPDLG)"s,
 		LR"(-GKEY="localhost")"s,
@@ -911,16 +886,7 @@ TEST_P(WinMainTest, DoGrep002)
 	}
 
 	// Grepダイアログが閉じられるのを待つ
-	bool dlgClosed = false;
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
-			dlgClosed = true;
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
-
-	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+	WaitForClose(L"Grep");
 
 	// 編集ウインドウが有効になるのを待つ
 	const auto hWndFound = WaitForEditor();
@@ -932,7 +898,7 @@ TEST_P(WinMainTest, DoGrep002)
 	testing::WaitForForeignProcessExit(ep);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -1027,13 +993,20 @@ TEST_P(WinMainTest, OpenFile001)
 
 	EmulateSelectPopupMenu(L"開く(O)...");
 
+	// ファイルを開くダイアログを待つ
 	if (const auto hDlgOpenFile = WaitForDialog(L"開く")) {
 		EmulateSetValue(GetFocusedElement(), gm_TestDataPath1.c_str());
 		EmulateHitEnter();
 	}
 
+	// ファイルを開くダイアログが閉じられるのを待つ
+	WaitForClose(L"開く");
+
 	// 編集ウインドウが有効になるのを待つ
-	WaitForEditor();
+	const auto hWndFound = WaitForEditor();
+
+	// 編集ウインドウを閉じる
+	testing::RequestForeignWindowClose(hWndFound);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName, dwControlProcessId);
@@ -1155,32 +1128,24 @@ TEST_P(WinMainTest, ShowDlgGrep101)
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
 
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
-
 	// エディタープロセスを起動する
-	const auto ep = testing::CreateEditorProcess(std::array{ LR"(-GREPDLG)", LR"(-GREPMODE)" }, profileName);
+	const auto ep = testing::CreateEditorProcess(std::array{ LR"(-GREPDLG)" }, profileName);
 
 	// Grepダイアログが表示されるのを待って閉じる
 	const auto hDlgGrep = WaitForDialog(L"Grep", 30000);
 	EmulateInvokeButton(hDlgGrep, L"キャンセル(X)");
 
-	bool dlgClosed = false;
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
-			dlgClosed = true;
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
+	// Grepダイアログが閉じられるのを待つ
+	WaitForClose(L"Grep");
 
-	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForEditor();
 
 	// 編集ウインドウを閉じる
-	WaitForEditor();
+	testing::RequestForeignWindowClose(hWndFound);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!
@@ -1192,9 +1157,6 @@ TEST_P(WinMainTest, ShowDlgGrep102)
 {
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
-
-	// コントロールプロセスを起動する
-	const auto dwControlProcessId = testing::CreateControlProcess(profileName);
 
 	std::array args{
 		LR"(-GREPDLG)"s,
@@ -1212,22 +1174,17 @@ TEST_P(WinMainTest, ShowDlgGrep102)
 	const auto hDlgGrep = WaitForDialog(L"Grep", 30000);
 	EmulateInvokeButton(hDlgGrep, L"キャンセル(X)");
 
-	bool dlgClosed = false;
-	for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-		if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
-			dlgClosed = true;
-			break;
-		}
-		Sleep(10);  // 10msスリープしてリトライ
-	}
+	// Grepダイアログが閉じられるのを待つ
+	WaitForClose(L"Grep");
 
-	EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+	// 編集ウインドウが有効になるのを待つ
+	const auto hWndFound = WaitForEditor();
 
 	// 編集ウインドウを閉じる
-	WaitForEditor();
+	testing::RequestForeignWindowClose(hWndFound);
 
 	// コントロールプロセスに終了指示を出して終了を待つ
-	testing::TerminateControlProcess(profileName, dwControlProcessId);
+	testing::TerminateControlProcess(profileName);
 }
 
 /*!

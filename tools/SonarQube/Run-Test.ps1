@@ -23,6 +23,9 @@ $openCppCoverageArgs = @(
   "--gtest_output=xml:$testName-googletest.xml"
 )
 
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = $OutputEncoding
+
 # Invoke command with OpenCppCoverage.
 $p = Start-Process `
   -FilePath "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" `

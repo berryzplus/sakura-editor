@@ -217,6 +217,20 @@ struct UiaTestSuite
 		return input;
 	}
 
+	void WaitForClose(const std::wstring& title, ULONGLONG timeoutMillis = defaultTimeoutMillis) const
+	{
+		bool dlgClosed = false;
+		for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < timeoutMillis;) {
+			if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), title.c_str()); !hWndFound) {
+				dlgClosed = true;
+				break;
+			}
+			Sleep(10);  // 10msスリープしてリトライ
+		}
+
+		EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+	}
+
 	HWND WaitForDialog(const std::wstring& title, ULONGLONG timeoutMillis = defaultTimeoutMillis) const
 	{
 		return WaitForWindow(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), title, timeoutMillis);
