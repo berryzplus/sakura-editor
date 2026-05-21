@@ -803,7 +803,7 @@ LRESULT CTabWnd::ExecTabCommand( int nId, POINTS pts )
 }
 
 CTabWnd::CTabWnd()
-	: COriginalWnd(L"::CTabWnd")
+	: COriginalWnd(L"CTabWnd")
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -821,7 +821,7 @@ CTabWnd::~CTabWnd()
 /* ウィンドウ オープン */
 HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 {
-	LPCWSTR pszClassName = L"CTabWnd";
+	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	/* 初期化 */
 	m_hwndTab    = nullptr;

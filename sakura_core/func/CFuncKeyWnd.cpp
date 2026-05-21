@@ -35,7 +35,7 @@
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CFuncKeyWnd::CFuncKeyWnd()
-	: COriginalWnd(L"::CFuncKeyWnd")
+	: COriginalWnd(L"CFuncKeyWnd")
 {
 	int		i;
 	LOGFONT	lf;
@@ -83,7 +83,7 @@ CFuncKeyWnd::~CFuncKeyWnd()
 /* ウィンドウ オープン */
 HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDoc, bool bSizeBox )
 {
-	LPCWSTR pszClassName = L"CFuncKeyWnd";
+	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	m_pcEditDoc = pCEditDoc;
 	m_bSizeBox = bSizeBox;

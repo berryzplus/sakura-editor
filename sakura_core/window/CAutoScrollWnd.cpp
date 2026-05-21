@@ -11,40 +11,76 @@
 #include "view/CEditView.h"
 #include "sakura_rc.h"
 
-CAutoScrollWnd::CAutoScrollWnd()
-	: COriginalWnd(L"::CAutoScrollWnd")
+namespace window {
+
+std::wstring AutoScrollClassName(bool bVertical, bool bHorizontal)
 {
-	m_hCenterImg = nullptr;
+	if (bVertical && bHorizontal) {
+		return L"SakuraAutoScrollCWnd";
+	} else if (bVertical) {
+		return L"SakuraAutoScrollVWnd";
+	} else {
+		return L"SakuraAutoScrollHWnd";
+	}
+}
+
+int AutoScrollBitmapId(bool bVertical, bool bHorizontal)
+{
+	if (bVertical && bHorizontal) {
+		return IDB_SCROLL_CENTER;
+	} else if (bVertical) {
+		return IDB_SCROLL_VERTICAL;
+	} else {
+		return IDB_SCROLL_HORIZONTAL;
+	}
+}
+
+int AutoScrollCursorId(bool bVertical, bool bHorizontal)
+{
+	if (bVertical && bHorizontal) {
+		return IDC_CURSOR_AUTOSCROLL_CENTER;
+	} else if (bVertical) {
+		return IDC_CURSOR_AUTOSCROLL_VERTICAL;
+	} else {
+		return IDC_CURSOR_AUTOSCROLL_HORIZONTAL;
+	}
+}
+
+} // namespace window
+
+/* static */ std::unique_ptr<CAutoScrollWnd> CAutoScrollWnd::CreateInstance(bool bVertical, bool bHorizontal)
+{
+	if (bVertical && bHorizontal) {
+		return std::make_unique<CAutoScrollCWnd>();
+	} else if (bVertical) {
+		return std::make_unique<CAutoScrollVWnd>();
+	} else {
+		return std::make_unique<CAutoScrollHWnd>();
+	}
+}
+
+CAutoScrollWnd::CAutoScrollWnd(bool bVertical, bool bHorizontal)
+	: COriginalWnd(window::AutoScrollClassName(bVertical, bHorizontal))
+	, m_BitMapId(window::AutoScrollBitmapId(bVertical, bHorizontal))
+	, m_CursorId(window::AutoScrollCursorId(bVertical, bHorizontal))
+{
 	return;
 }
 
 CAutoScrollWnd::~CAutoScrollWnd()
 {
+	return;
 }
 
 HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal, const CMyPoint& point, CEditView* view )
 {
-	LPCWSTR pszClassName;
+	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	m_cView = view;
-	int idb, idc;
-	if( bVertical ){
-		if( bHorizontal ){
-			idb = IDB_SCROLL_CENTER;
-			idc = IDC_CURSOR_AUTOSCROLL_CENTER;
-			pszClassName = L"SakuraAutoScrollCWnd";
-		}else{
-			idb = IDB_SCROLL_VERTICAL;
-			idc = IDC_CURSOR_AUTOSCROLL_VERTICAL;
-			pszClassName = L"SakuraAutoScrollVWnd";
-		}
-	}else{
-		idb = IDB_SCROLL_HORIZONTAL;
-		idc = IDC_CURSOR_AUTOSCROLL_HORIZONTAL;
-		pszClassName = L"SakuraAutoScrollHWnd";
-	}
-	m_hCenterImg = (HBITMAP)::LoadImage(hInstance, MAKEINTRESOURCE(idb), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	HCURSOR hCursor = ::LoadCursor(GetModuleHandle(nullptr), MAKEINTRESOURCE(idc));
+
+	m_hCenterImg = (HBITMAP)::LoadImageW(hInstance, MAKEINTRESOURCE(m_BitMapId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+
+	const auto hCursor = ::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId));
 
 	/* ウィンドウクラス作成 */
 	RegisterWC(

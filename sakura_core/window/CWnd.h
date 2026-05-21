@@ -34,7 +34,7 @@ private:
 
 public:
 	/* Constructors */
-	CWnd(const WCHAR* pszInheritanceAppend = L"");
+	CWnd();
 	CWnd(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CWnd(Me&&) noexcept = delete;
@@ -58,10 +58,6 @@ public:
 	void		_SetHwnd(HWND hwnd) { m_hWnd = hwnd; }
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
-
-#ifdef _DEBUG
-	WCHAR		m_szClassInheritances[1024];
-#endif
 };
 
 /*!
@@ -84,8 +80,8 @@ private:
 public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	COriginalWnd(LPCWSTR pszInheritanceAppend)
-		: CWnd(pszInheritanceAppend)
+	explicit COriginalWnd(std::wstring_view className)
+		: m_ClassName(className)
 	{
 	}
 
@@ -160,6 +156,7 @@ public:
 	//ウィンドウ標準操作
 	void	DestroyWindow() const;
 
+	std::wstring	m_ClassName;
 	HINSTANCE		m_hInstance = G_AppInstance();	//!< アプリケーションインスタンスのハンドル
 	HWND			m_hwndParent = nullptr;			//!< 親ウィンドウのハンドル
 };

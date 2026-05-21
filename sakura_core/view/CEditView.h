@@ -54,10 +54,10 @@
 #include "util/container.h"		// vector_ex
 #include "util/design_template.h"
 #include "_os/CClipboard.h"
+#include "window/CSplitBoxWnd.h"
 
 class CDropTarget; /// 2002/2/3 aroka ヘッダー軽量化
 class COpeBlk;///
-class CSplitBoxWnd;///
 class CRegexKeyword;///
 class CLayout;	//	2002/5/13 YAZAKI ヘッダー軽量化
 class CMigemo;	// 2004.09.14 isearch
@@ -103,9 +103,12 @@ class CEditView
 {
 private:
 	using CAutoMarkMgrHolder = std::unique_ptr<CAutoMarkMgr>;
+	using CAutoScrollWndHolder = std::unique_ptr<CAutoScrollWnd>;
 	using CCaretHolder = std::unique_ptr<CCaret>;
+	using CHSplitBoxWndHolder = std::unique_ptr<CHSplitBoxWnd>;
 	using CRulerHolder = std::unique_ptr<CRuler>;
 	using CTextAreaHolder = std::unique_ptr<CTextArea>;
+	using CVSplitBoxWndHolder = std::unique_ptr<CVSplitBoxWnd>;
 
 public:
 	const CEditDoc* GetDocument() const
@@ -648,9 +651,9 @@ public:
 	HWND			m_hwndHScrollBar = nullptr;	/* 水平スクロールバーウィンドウハンドル */
 	HWND			m_hwndSizeBox;		/* サイズボックスウィンドウハンドル */
 	HWND			m_hwndSizeBoxPlaceholder;	/* サイズボックス代替スタティックウィンドウハンドル */
-	CSplitBoxWnd*	m_pcsbwVSplitBox = nullptr;	/* 垂直分割ボックス */
-	CSplitBoxWnd*	m_pcsbwHSplitBox = nullptr;	/* 水平分割ボックス */
-	CAutoScrollWnd	m_cAutoScrollWnd;	//!< オートスクロール
+	CVSplitBoxWndHolder	m_pcsbwVSplitBox = nullptr;	/* 垂直分割ボックス */
+	CHSplitBoxWndHolder	m_pcsbwHSplitBox = nullptr;	/* 水平分割ボックス */
+	CAutoScrollWndHolder	m_pAutoScrollWnd = nullptr;	//!< オートスクロール
 
 public:
 	//描画

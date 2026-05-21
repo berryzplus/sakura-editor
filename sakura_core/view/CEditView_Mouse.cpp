@@ -697,13 +697,14 @@ void CEditView::AutoScrollEnter()
 	if( m_bMiniMap ){
 		m_bAutoScrollHorizontal = false;
 	}
+	m_pAutoScrollWnd = CAutoScrollWnd::CreateInstance(m_bAutoScrollVertical, m_bAutoScrollHorizontal);
 	if( !m_bAutoScrollHorizontal && !m_bAutoScrollVertical ){
 		m_nAutoScrollMode = 0;
 		::ReleaseCapture();
 		return;
 	}
 	m_nAutoScrollMode = 2;
-	m_cAutoScrollWnd.Create(G_AppInstance(), GetHwnd(), m_bAutoScrollVertical, m_bAutoScrollHorizontal, m_cAutoScrollMousePos, this);
+	m_pAutoScrollWnd->Create(G_AppInstance(), GetHwnd(), m_bAutoScrollVertical, m_bAutoScrollHorizontal, m_cAutoScrollMousePos, this);
 	::SetTimer(GetHwnd(), 2, 200, AutoScrollTimerProc);
 	HCURSOR hCursor;
 	hCursor = ::LoadCursor(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDC_CURSOR_AUTOSCROLL_CENTER));
@@ -717,7 +718,7 @@ void CEditView::AutoScrollExit()
 	}
 	if( 2 == m_nAutoScrollMode ){
 		KillTimer(GetHwnd(), 2);
-		m_cAutoScrollWnd.Close();
+		m_pAutoScrollWnd->Close();
 	}
 	m_nAutoScrollMode = 0;
 }

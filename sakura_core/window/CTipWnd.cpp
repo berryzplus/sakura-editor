@@ -35,7 +35,7 @@ const WCHAR* UnEscapeInfoText( CNativeW& cInfo )
 
 /* CTipWndクラス デストラクタ */
 CTipWnd::CTipWnd()
-	: COriginalWnd(L"::CTipWnd")
+	: COriginalWnd(L"CTipWnd")
 {
 	return;
 }
@@ -53,7 +53,7 @@ CTipWnd::~CTipWnd()
 /* 初期化 */
 void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 {
-	LPCWSTR pszClassName = L"CTipWnd";
+	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	/* ウィンドウクラス作成 */
 	RegisterWC(

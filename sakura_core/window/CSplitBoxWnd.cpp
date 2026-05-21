@@ -20,10 +20,32 @@
 #include "apiwrap/DarkMode.h"
 #include "config/system_constants.h"
 
-CSplitBoxWnd::CSplitBoxWnd()
-	: COriginalWnd(L"::CSplitBoxWnd")
+namespace window {
+
+std::wstring SplitBoxClassName(bool bVertical)
 {
-	m_bVertical = TRUE;	/* 垂直分割ボックスか */
+	if (bVertical) {
+		return L"VSplitBoxWnd";
+	} else {
+		return L"HSplitBoxWnd";
+	}
+}
+
+LPCWSTR SplitBoxCursorName(bool bVertical){
+	if (bVertical) {
+		return IDC_SIZENS;
+	} else {
+		return IDC_SIZEWE;
+	}
+}
+
+} // namespace window
+
+CSplitBoxWnd::CSplitBoxWnd(bool bVertical)
+	: COriginalWnd(window::SplitBoxClassName(bVertical))
+	, m_bVertical(bVertical)
+	, m_CursorName(window::SplitBoxCursorName(bVertical))
+{
 	return;
 }
 
@@ -33,21 +55,14 @@ CSplitBoxWnd::~CSplitBoxWnd()
 
 HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 {
+	LPCWSTR pszClassName = m_ClassName.c_str();
+	HCURSOR hCursor = ::LoadCursorW(nullptr, m_CursorName);
+	
 	int			nCyHScroll;
 	int			nCxVScroll;
 	RECT		rc;
-	HCURSOR		hCursor;
-	LPCWSTR		pszClassName;
 
 	/* ウィンドウクラス作成 */
-	if( bVertical ){
-		pszClassName = L"VSplitBoxWnd";
-		hCursor = ::LoadCursor( nullptr, IDC_SIZENS );
-	}
-	else{
-		pszClassName = L"HSplitBoxWnd";
-		hCursor = ::LoadCursor( nullptr, IDC_SIZEWE );
-	}
 	RegisterWC(
 		hInstance,
 		nullptr,	// Handle to the class icon.

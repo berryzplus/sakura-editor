@@ -24,17 +24,19 @@
 /*!
 	@brief 分割ボックスウィンドウクラス
 */
-class CSplitBoxWnd final : public COriginalWnd
+class CSplitBoxWnd : public COriginalWnd
 {
 private:
 	using Base = COriginalWnd;
 	using Me = CSplitBoxWnd;
 
-public:
 	/*
 	||  Constructors
 	*/
-	CSplitBoxWnd();
+protected:
+	explicit CSplitBoxWnd(bool bVertical);
+
+public:
 	~CSplitBoxWnd() override;
 
 	HWND Create(HINSTANCE hInstance, HWND hwndParent, int bVertical);
@@ -44,10 +46,6 @@ public:
 
 //	LRESULT DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* メッセージディスパッチャ */
 
-private:
-	int			m_bVertical;	/* 垂直分割ボックスか */
-	int			m_nDragPosY;
-	int			m_nDragPosX;
 protected:
 	/* 仮想関数 */
 
@@ -57,6 +55,22 @@ protected:
 	LRESULT OnMouseMove(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;// WM_MOUSEMOVE
 	LRESULT OnLButtonUp(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONUP
 	LRESULT OnLButtonDblClk(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONDBLCLK
+
+private:
+	int			m_bVertical;	/* 垂直分割ボックスか */
+	LPCWSTR		m_CursorName;
+	int			m_nDragPosY = 0;
+	int			m_nDragPosX = 0;
+};
+
+struct CVSplitBoxWnd final : public CSplitBoxWnd
+{
+	CVSplitBoxWnd() : CSplitBoxWnd(true) {}
+};
+
+struct CHSplitBoxWnd final : public CSplitBoxWnd
+{
+	CHSplitBoxWnd() : CSplitBoxWnd(false) {}
 };
 
 #endif /* SAKURA_CSPLITBOXWND_D85ABC4D_AF8F_4B42_B1E5_BA066925314E_H_ */

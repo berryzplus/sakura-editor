@@ -9,28 +9,33 @@
 #define SAKURA_CAUTOSCROLLWND_F588E196_7D77_4DFA_AAB0_A2D95FFB8849_H_
 #pragma once
 
-#include "CWnd.h"
+#include "cxx/ResourceHolder.hpp"
+#include "window/CWnd.h"
 
 class CEditView;
 class CMyPoint;
 
-class CAutoScrollWnd final: public COriginalWnd
+class CAutoScrollWnd : public COriginalWnd
 {
 private:
+	using BitmapHolder = cxx::ResourceHolder<&::DeleteObject, HBITMAP>;
+
 	using Base = COriginalWnd;
 	using Me = CAutoScrollWnd;
 
 public:
-	CAutoScrollWnd();
+	static std::unique_ptr<CAutoScrollWnd> CreateInstance(bool bVertical, bool bHorizontal);
+
+protected:
+	CAutoScrollWnd(bool bVertical, bool bHorizontal);
+
+public:
 	~CAutoScrollWnd() override;
 
 	HWND Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal,
 				 const CMyPoint& point, CEditView* view );
 	void Close();
 
-private:
-	HBITMAP	m_hCenterImg;
-	CEditView*	m_cView;
 protected:
 	/* 仮想関数 */
 
@@ -39,6 +44,27 @@ protected:
 	LRESULT OnRButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT OnMButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
+
+private:
+	int				m_BitMapId;
+	int				m_CursorId;
+	BitmapHolder	m_hCenterImg = nullptr;
+	CEditView*		m_cView = nullptr;
+};
+
+struct CAutoScrollCWnd final : public CAutoScrollWnd
+{
+	CAutoScrollCWnd() : CAutoScrollWnd(true, true) {}
+};
+
+struct CAutoScrollVWnd final : public CAutoScrollWnd
+{
+	CAutoScrollVWnd() : CAutoScrollWnd(true, false) {}
+};
+
+struct CAutoScrollHWnd final : public CAutoScrollWnd
+{
+	CAutoScrollHWnd() : CAutoScrollWnd(false, false) {}
 };
 
 #endif /* SAKURA_CAUTOSCROLLWND_F588E196_7D77_4DFA_AAB0_A2D95FFB8849_H_ */

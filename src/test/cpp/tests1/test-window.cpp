@@ -1113,6 +1113,16 @@ TEST_F(EditWndTest, FileSaveWithBackupAgent001)
 	std::filesystem::remove(backupPath, ec);
 }
 
+TEST_F(EditWndTest, AutoScrollEnter)
+{
+	const auto center = CAutoScrollWnd::CreateInstance(true, true);
+	const auto vertical = CAutoScrollWnd::CreateInstance(true, false);
+	const auto horizontal = CAutoScrollWnd::CreateInstance(false, true);
+	EXPECT_THAT(center, NotNull());
+	EXPECT_THAT(vertical, NotNull());
+	EXPECT_THAT(horizontal, NotNull());
+}
+
 /*!
  * CEditDoc::GetDataObjectのテスト
  */
