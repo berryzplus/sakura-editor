@@ -1667,15 +1667,23 @@ LRESULT CTabWnd::OnTimer( HWND hwnd, [[maybe_unused]] UINT uMsg, WPARAM wParam, 
 	return 0L;
 }
 
-/*! WM_NOTIFY処理
-
-	@date 2005.09.01 ryoji ウィンドウ切り替えは OnTabLButtonUp() に移動
-	@date 2007.12.06 ryoji タブのツールチップ処理をOnTabNotify()から移動（タブをTCS_TOOLTIPSスタイル化）
-*/
-LRESULT CTabWnd::OnNotify( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+/*!
+ * @brief WM_NOTIFYハンドラ
+ *
+ * WM_NOTIFYは子ウィンドウからポストされます。
+ *
+ * @returns 処理結果 メッセージコードにより異なる
+ *
+ * @date 2005/09/01 ryoji ウィンドウ切り替えは OnTabLButtonUp() に移動
+ * @date 2007/12/06 ryoji タブのツールチップ処理をOnTabNotify()から移動（タブをTCS_TOOLTIPSスタイル化）
+ */
+LRESULT CTabWnd::OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(idFrom);
+
 	// 2005.09.01 ryoji ウィンドウ切り替えは OnTabLButtonUp() に移動
-	NMHDR* pnmh = (NMHDR*)lParam;
+	auto pnmh = pNMHDR;
 	if( pnmh->hwndFrom == TabCtrl_GetToolTips( m_hwndTab ) )
 	{
 		switch( pnmh->code )
@@ -1695,10 +1703,12 @@ LRESULT CTabWnd::OnNotify( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMs
 				((NMTTDISPINFO*)pnmh)->hinst = nullptr;
 			}
 			return 0L;
+
 		default:
 			break;
 		}
 	}
+
 	return 0L;
 }
 

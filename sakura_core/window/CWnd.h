@@ -24,6 +24,26 @@
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
+
+struct SLresult
+{
+	LRESULT result = 0L;
+	bool handled = false;
+
+	SLresult() = default;
+
+	explicit SLresult(LRESULT result)
+		: result(result)
+		, handled(true)
+	{
+	}
+
+	explicit operator bool() const noexcept
+	{
+		return handled;
+	}
+};
+
 /*!
  * @brief ウィンドウの基底クラス
  */
@@ -60,6 +80,8 @@ public:
 	virtual void	OnDestroy(HWND hWnd);
 	virtual void	OnSize(HWND hWnd, UINT state, int cx, int cy);
 	virtual void	OnPaint(HWND hWnd, PAINTSTRUCT& ps);
+
+	virtual LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -140,7 +162,6 @@ public:
 	virtual DECLH( OnTimer			);	// WM_TIMER
 
 	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
-	virtual DECLH( OnNotify			);	// WM_NOTIFY	//@@@ 2003.05.31 MIK
 	virtual DECLH( OnDrawItem		);	// WM_DRAWITEM	// 2006.02.01 ryoji
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
 

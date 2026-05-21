@@ -55,6 +55,12 @@ LRESULT CWnd::DispatchEvent(
 		}
 		return 0L;
 
+	case WM_NOTIFY:
+		if (auto pNMHDR = LPNMHDR(lParam)) {
+			return OnNotify(hWnd, pNMHDR->idFrom, pNMHDR);
+		}
+		break;
+
 	default:
 		break;
 	}
@@ -101,6 +107,18 @@ void CWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 	UNREFERENCED_PARAMETER(ps);
 
 	// 何もしない
+}
+
+/*!
+ * @brief WM_NOTIFYハンドラ
+ *
+ * WM_NOTIFYは子ウィンドウからポストされます。
+ *
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CWnd::OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR)
+{
+	return FORWARD_WM_NOTIFY(hWnd, idFrom, pNMHDR, DefWndProcW);
 }
 
 /*!
@@ -263,7 +281,6 @@ LRESULT COriginalWnd::DispatchEvent(
 	CALLH( WM_TIMER				, OnTimer			);
 
 	CALLH( WM_MEASUREITEM		, OnMeasureItem		);
-	CALLH( WM_NOTIFY			, OnNotify			);	//@@@ 2003.05.31 MIK
 	CALLH( WM_DRAWITEM			, OnDrawItem		);	// 2006.02.01 ryoji
 	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji
 
