@@ -44,6 +44,17 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
 // clang-format on
 
+	case WM_PAINT:
+		// 描画処理を開始する
+		if (PAINTSTRUCT ps; ::BeginPaint(hWnd, &ps)) {
+			// 更新領域が空でない場合、描画を行う
+			OnPaint(hWnd, ps);
+
+			// 描画処理を終了する
+			::EndPaint(hWnd, &ps);
+		}
+		return 0L;
+
 	default:
 		break;
 	}
@@ -74,6 +85,22 @@ void CWnd::OnDestroy(HWND hWnd)
 void CWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 {
 	FORWARD_WM_SIZE(hWnd, state, cx, cy, DefWndProcW);
+}
+
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(ps);
+
+	// 何もしない
 }
 
 /*!
@@ -233,7 +260,6 @@ LRESULT COriginalWnd::DispatchEvent(
 	CALLH( WM_RBUTTONDOWN		, OnRButtonDown		);
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);
 	CALLH( WM_MOUSEMOVE			, OnMouseMove		);
-	CALLH( WM_PAINT				, OnPaint			);
 	CALLH( WM_TIMER				, OnTimer			);
 
 	CALLH( WM_MEASUREITEM		, OnMeasureItem		);

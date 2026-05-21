@@ -1121,6 +1121,65 @@ void CTabWnd::OnSize(
 	::InvalidateRect(hWnd, nullptr, TRUE);
 }
 
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ *
+ * @date 2005.09.01 ryoji タブの上に境界線を追加
+ * @date 2006.01.30 ryoji 背景描画処理を追加（背景ブラシは NULL に変更）
+ * @date 2006.02.01 ryoji 一覧ボタンの描画処理を追加
+ * @date 2006.10.21 ryoji 閉じるボタンの描画処理を追加
+ * @date 2007.03.27 ryoji Windowsクラシックスタイルの場合はアクティブタブの上部にトップバンドを描画する
+ */
+void CTabWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+
+	RECT rc;
+	::GetClientRect(hWnd, &rc);
+
+	HDC hdc = ps.hdc;
+
+	//描画対象
+	CGraphics gr(hdc);
+
+	// 背景を描画する
+	if( IsDarkModeActive() ){
+		::MyFillRect( gr, rc, DarkMode::getDlgBackgroundColor() );
+	}else{
+		::MyFillRect( gr, rc, COLOR_3DFACE );
+	}
+
+	// ボタンを描画する
+	DrawListBtn( gr, &rc );
+	DrawCloseBtn( gr, &rc );	// 2006.10.21 ryoji 追加
+
+	// 上側に境界線を描画する
+	if( IsDarkModeActive() ){
+		gr.SetPen( DarkMode::getEdgeColor() );
+		::MoveToEx( gr, rc.left, rc.top, nullptr );
+		::LineTo( gr, rc.right, rc.top );
+	}else{
+		::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
+	}
+
+	// トップバンドを描画する
+	if( auto nCurSel = TabCtrl_GetCurSel( m_hwndTab ); 0 <= nCurSel ){
+		DrawTopBand( gr, rc, nCurSel );
+	}
+
+	// サイズボックスを描画する
+	if (!m_pShareData->m_Common.m_sWindow.m_bDispSTATUSBAR 
+		&& !m_pShareData->m_Common.m_sWindow.m_bDispFUNCKEYWND
+		&& m_pShareData->m_Common.m_sTabBar.m_eTabPosition == TabPosition_Bottom) {
+		SizeBox_ONOFF(true);
+	}
+}
+
 /*! WM_LBUTTONDBLCLK処理
 	@date 2006.03.26 ryoji 新規作成
 */
@@ -1604,62 +1663,6 @@ LRESULT CTabWnd::OnTimer( HWND hwnd, [[maybe_unused]] UINT uMsg, WPARAM wParam, 
 		if( !::PtInRect( &rc, pt ) )
 			::SendMessageAny( hwnd, WM_MOUSEMOVE, 0, MAKELONG( pt.x, pt.y ) );
 	}
-
-	return 0L;
-}
-
-/*!	WM_PAINT処理
-
-	@date 2005.09.01 ryoji タブの上に境界線を追加
-	@date 2006.01.30 ryoji 背景描画処理を追加（背景ブラシは NULL に変更）
-	@date 2006.02.01 ryoji 一覧ボタンの描画処理を追加
-	@date 2006.10.21 ryoji 閉じるボタンの描画処理を追加
-	@date 2007.03.27 ryoji Windowsクラシックスタイルの場合はアクティブタブの上部にトップバンドを描画する
-*/
-LRESULT CTabWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	HDC hdc;
-	PAINTSTRUCT ps;
-	RECT rc;
-
-	//描画対象
-	hdc = ::BeginPaint( hwnd, &ps );
-	CGraphics gr(hdc);
-
-	// 背景を描画する
-	::GetClientRect( hwnd, &rc );
-	if( IsDarkModeActive() ){
-		::MyFillRect( gr, rc, DarkMode::getDlgBackgroundColor() );
-	}else{
-		::MyFillRect( gr, rc, COLOR_3DFACE );
-	}
-
-	// ボタンを描画する
-	DrawListBtn( gr, &rc );
-	DrawCloseBtn( gr, &rc );	// 2006.10.21 ryoji 追加
-
-	// 上側に境界線を描画する
-	if( IsDarkModeActive() ){
-		gr.SetPen( DarkMode::getEdgeColor() );
-		::MoveToEx( gr, rc.left, rc.top, nullptr );
-		::LineTo( gr, rc.right, rc.top );
-	}else{
-		::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
-	}
-
-	// トップバンドを描画する
-	if( auto nCurSel = TabCtrl_GetCurSel( m_hwndTab ); 0 <= nCurSel ){
-		DrawTopBand( gr, rc, nCurSel );
-	}
-
-	// サイズボックスを描画する
-	if (!m_pShareData->m_Common.m_sWindow.m_bDispSTATUSBAR 
-		&& !m_pShareData->m_Common.m_sWindow.m_bDispFUNCKEYWND
-		&& m_pShareData->m_Common.m_sTabBar.m_eTabPosition == TabPosition_Bottom) {
-		SizeBox_ONOFF(true);
-	}
-
-	::EndPaint( hwnd, &ps );
 
 	return 0L;
 }

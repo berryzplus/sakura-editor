@@ -76,7 +76,7 @@ protected:
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnDestroy(HWND hWnd) override;
-	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;/* 描画処理 */
+	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 
 public:
 	/* Tipの内容データを取得する */

@@ -129,6 +129,30 @@ void CAutoScrollWnd::OnDestroy(HWND hWnd)
 	Base::OnDestroy(hWnd);
 }
 
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CAutoScrollWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+
+	HDC hdc = ps.hdc;
+
+	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+	MemDcHolder hCompDc{ ::CreateCompatibleDC(hdc) };
+
+	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
+	SelectionHolder hBitmap_Old{ hCompDc };
+	hBitmap_Old = ::SelectObject(hCompDc, m_hCenterImg);
+
+	::BitBlt(hdc, 0, 0, 32, 32, hCompDc, 0, 0, SRCCOPY);
+}
+
 LRESULT CAutoScrollWnd::OnLButtonDown( [[maybe_unused]] HWND hWnd, [[maybe_unused]] UINT Msg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
 	if( m_cView->m_nAutoScrollMode ){
@@ -150,18 +174,5 @@ LRESULT CAutoScrollWnd::OnMButtonDown( [[maybe_unused]] HWND hWnd, [[maybe_unuse
 	if( m_cView->m_nAutoScrollMode ){
 		m_cView->AutoScrollExit();
 	}
-	return 0;
-}
-
-LRESULT CAutoScrollWnd::OnPaint( HWND hwnd, UINT, WPARAM, LPARAM )
-{
-	PAINTSTRUCT ps;
-	HDC hdc = ::BeginPaint( hwnd, &ps );
-	HDC hdcBmp = ::CreateCompatibleDC( hdc );
-	HBITMAP hBbmpOld = (HBITMAP)::SelectObject( hdcBmp, m_hCenterImg );
-	::BitBlt( hdc, 0, 0, 32, 32, hdcBmp, 0, 0, SRCCOPY );
-	::SelectObject( hdcBmp, hBbmpOld );
-	::DeleteObject( hdcBmp );
-	::EndPaint(hwnd, &ps);
 	return 0;
 }

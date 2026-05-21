@@ -96,8 +96,8 @@ protected:
 	/* 仮想関数 メッセージ処理 */
 	void	OnDestroy(HWND hWnd) override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
+	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	LRESULT OnNotify( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_NOTIFY処理 */
-	LRESULT OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_PAINT処理 */
 	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
 	LRESULT OnLButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONDOWN処理 */
 	LRESULT OnLButtonUp( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONUP処理 */

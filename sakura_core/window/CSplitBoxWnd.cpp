@@ -122,11 +122,19 @@ void CSplitBoxWnd::FillSolidRect( HDC hdc, int x, int y, int cx, int cy, COLORRE
 	return;
 }
 
-// WM_PAINT
-LRESULT CSplitBoxWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CSplitBoxWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 {
-	PAINTSTRUCT	ps;
-	const auto hdc = ::BeginPaint(hwnd, &ps);
+	UNREFERENCED_PARAMETER(hWnd);
+
+	const auto hdc = ps.hdc;
 
 	const auto cxBorder  = ::GetSystemMetrics(SM_CXBORDER);
 	const auto cyBorder  = ::GetSystemMetrics(SM_CYBORDER);
@@ -179,9 +187,6 @@ LRESULT CSplitBoxWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_un
 		::SetRect(&rc, cxEdge, 0, cxHSplit, cyEdge);
 		::MyFillRect(hdc, rc, cBR1);
 	}
-
-	::EndPaint(hwnd, &ps);
-	return 0L;
 }
 
 //WM_LBUTTONDOWN

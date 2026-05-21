@@ -59,6 +59,7 @@ public:
 
 	virtual void	OnDestroy(HWND hWnd);
 	virtual void	OnSize(HWND hWnd, UINT state, int cx, int cy);
+	virtual void	OnPaint(HWND hWnd, PAINTSTRUCT& ps);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -130,7 +131,6 @@ public:
 #define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
 
 	virtual DECLH( OnCommand		);	// WM_COMMAND
-	virtual DECLH( OnPaint			);	// WM_PAINT
 	virtual DECLH( OnLButtonDown	);	// WM_LBUTTONDOWN
 	virtual DECLH( OnLButtonUp		);	// WM_LBUTTONUP
 	virtual DECLH( OnLButtonDblClk	);	// WM_LBUTTONDBLCLK

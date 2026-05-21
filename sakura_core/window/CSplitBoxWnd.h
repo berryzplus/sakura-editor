@@ -50,7 +50,8 @@ protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
-	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;/* 描画処理 */
+	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+
 	LRESULT OnLButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;// WM_LBUTTONDOWN
 	LRESULT OnMouseMove(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;// WM_MOUSEMOVE
 	LRESULT OnLButtonUp(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONUP

@@ -781,40 +781,6 @@ int CSplitterWnd::GetLastPane( void )
 	return nPane;
 }
 
-/* 描画処理 */
-LRESULT CSplitterWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	HDC			hdc;
-	PAINTSTRUCT	ps;
-	RECT		rc;
-	RECT		rcFrame;
-	const int	nFrameWidth = DpiScaleX(SPLITTER_FRAME_WIDTH);
-	hdc = ::BeginPaint( hwnd, &ps );
-	::GetClientRect( GetHwnd(), &rc );
-	if( m_nAllSplitRows > 1 ){
-		::SetRect( &rcFrame, rc.left, m_nVSplitPos, rc.right, m_nVSplitPos + nFrameWidth );
-		if( IsDarkModeActive() ){
-			HBRUSH hBrush = ::CreateSolidBrush( DarkMode::getViewBackgroundColor() );
-			::FillRect( hdc, &rcFrame, hBrush );
-			::DeleteObject( hBrush );
-		}else{
-			::MyFillRect( hdc, rcFrame, COLOR_3DFACE );
-		}
-	}
-	if( m_nAllSplitCols > 1 ){
-		::SetRect( &rcFrame, m_nHSplitPos, rc.top, m_nHSplitPos + nFrameWidth, rc.bottom );
-		if( IsDarkModeActive() ){
-			HBRUSH hBrush = ::CreateSolidBrush( DarkMode::getViewBackgroundColor() );
-			::FillRect( hdc, &rcFrame, hBrush );
-			::DeleteObject( hBrush );
-		}else{
-			::MyFillRect( hdc, rcFrame, COLOR_3DFACE );
-		}
-	}
-	::EndPaint(hwnd, &ps);
-	return 0L;
-}
-
 /*!
  * @brief WM_SIZEハンドラ(ウィンドウサイズの変更処理)
  *
@@ -930,6 +896,46 @@ void CSplitterWnd::OnSize(
 	}
 	//デスクトップがちらつくのでだめ!
 	//::InvalidateRect( GetHwnd(), NULL, TRUE );	//再描画してね。	//@@@ 2003.06.11 MIK
+}
+
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CSplitterWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	HDC hdc = ps.hdc;
+
+	RECT rc{};
+	::GetClientRect(hWnd, &rc);
+
+	const auto nFrameWidth = DpiScaleX(SPLITTER_FRAME_WIDTH);
+
+	RECT rcFrame{};
+
+	if (m_nAllSplitRows > 1) {
+		::SetRect( &rcFrame, rc.left, m_nVSplitPos, rc.right, m_nVSplitPos + nFrameWidth );
+		if (IsDarkModeActive()) {
+			const auto color = DarkMode::getViewBackgroundColor();
+			MyFillRect(hdc, rcFrame, color);
+		} else {
+			MyFillRect(hdc, rcFrame, COLOR_3DFACE);
+		}
+	}
+
+	if (m_nAllSplitCols > 1) {
+		::SetRect( &rcFrame, m_nHSplitPos, rc.top, m_nHSplitPos + nFrameWidth, rc.bottom );
+		if (IsDarkModeActive()) {
+			const auto color = DarkMode::getViewBackgroundColor();
+			MyFillRect(hdc, rcFrame, color);
+		} else {
+			MyFillRect(hdc, rcFrame, COLOR_3DFACE);
+		}
+	}
 }
 
 /* マウス移動時の処理 */

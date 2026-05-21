@@ -276,19 +276,6 @@ void CTipWnd::Hide( void )
 	return;
 }
 
-/* 描画処理 */
-LRESULT CTipWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM l_Param )
-{
-	PAINTSTRUCT	ps;
-	HDC			hdc = ::BeginPaint(	hwnd, &ps );
-
-	/* ウィンドウのテキストを表示 */
-	DrawTipText( hdc, ps.rcPaint );
-
-	::EndPaint(	hwnd, &ps );
-	return 0L;
-}
-
 // 2001/06/19 Start by asa-o: ウィンドウのサイズを得る
 void CTipWnd::GetWindowSize(LPRECT pRect)
 {
@@ -320,4 +307,22 @@ void CTipWnd::OnDestroy(HWND hWnd)
 	m_hFont = nullptr;
 
 	Base::OnDestroy(hWnd);
+}
+
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CTipWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+
+	HDC hdc = ps.hdc;
+
+	/* ウィンドウのテキストを表示 */
+	DrawTipText(hdc, ps.rcPaint);
 }
