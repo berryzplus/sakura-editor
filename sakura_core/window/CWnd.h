@@ -24,23 +24,14 @@
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
-//!	ウィンドウの基本クラス
 /*!
-	@par CWndクラスの基本的な機能
-	@li ウィンドウ作成
-	@li ウィンドウメッセージ配送
-
-	@par 普通?のウィンドウの使用方法は以下の手順
-	@li RegisterWC()	ウィンドウクラス登録
-	@li Create()		ウィンドウ作成
-*/
+ * @brief ウィンドウの基底クラス
+ */
 class CWnd
 {
-
+private:
 	using Me = CWnd;
 
-protected:
-	friend LRESULT CALLBACK CWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 public:
 	/* Constructors */
 	CWnd(const WCHAR* pszInheritanceAppend = L"");
@@ -48,11 +39,57 @@ public:
 	Me& operator = (const Me&) = delete;
 	CWnd(Me&&) noexcept = delete;
 	Me& operator = (Me&&) noexcept = delete;
-	virtual ~CWnd();
+	virtual ~CWnd() = default;
 
 	/*
 	||  Attributes & Operations
 	*/
+	virtual LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	virtual LRESULT DefWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const
+	{
+		return ::SendMessageW(hWnd, uMsg, wParam, lParam);
+	}
+
+	//インターフェース
+	HWND		GetHwnd() const noexcept { return m_hWnd; }
+
+	//特殊インターフェース (使用は好ましくない)
+	void		_SetHwnd(HWND hwnd) { m_hWnd = hwnd; }
+
+	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
+
+#ifdef _DEBUG
+	WCHAR		m_szClassInheritances[1024];
+#endif
+};
+
+/*!
+ * @brief 独自ウィンドウの基本クラス
+ * 
+ * @par CWndクラスの基本的な機能
+ * @li ウィンドウ作成
+ * @li ウィンドウメッセージ配送
+ * 
+ * @par 独自ウィンドウの使用方法は以下の手順
+ * @li RegisterWC()	ウィンドウクラス登録
+ * @li Create()		ウィンドウ作成
+ */
+class COriginalWnd : public CWnd
+{
+private:
+	using Base = CWnd;
+	using Me = COriginalWnd;
+
+public:
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	COriginalWnd(LPCWSTR pszInheritanceAppend)
+		: CWnd(pszInheritanceAppend)
+	{
+	}
+
+	~COriginalWnd() override;
 
 	// ウィンドウクラス登録
 	ATOM RegisterWC(
@@ -79,13 +116,20 @@ public:
 		HMENU		hMenu			// handle to menu, or child-window identifier
 	);
 
-	virtual LRESULT DispatchEvent( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );/* メッセージ配送 */
-protected:
+	HINSTANCE	GetAppInstance() const noexcept { return m_hInstance; }
+	HWND		GetParentHwnd() const noexcept { return m_hwndParent; }
+
 	/* 仮想関数 */
-	virtual LRESULT DispatchEvent_WM_APP( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	virtual LRESULT DispatchEvent_WM_APP(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/* 仮想関数 メッセージ処理(デフォルト動作) */
-	#define DECLH(method) LRESULT method( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp ){return CallDefWndProc( hwnd, msg, wp, lp );}
+
+#pragma push_macro("DECLH")
+
+#define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
+
 	virtual DECLH( OnCommand		);	// WM_COMMAND
 	virtual DECLH( OnPaint			);	// WM_PAINT
 	virtual DECLH( OnLButtonDown	);	// WM_LBUTTONDOWN
@@ -103,27 +147,21 @@ protected:
 	virtual DECLH( OnDrawItem		);	// WM_DRAWITEM	// 2006.02.01 ryoji
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
 
+#pragma pop_macro("DECLH")
+
 	/* デフォルトメッセージ処理 */
-	virtual LRESULT CallDefWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp );
+	virtual LRESULT CallDefWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
 
-public:
-	//インターフェース
-	HWND GetHwnd() const{ return m_hWnd; }
-	HWND GetParentHwnd() const{ return m_hwndParent; }
-	HINSTANCE GetAppInstance() const{ return m_hInstance; }
-
-	//特殊インターフェース (使用は好ましくない)
-	void _SetHwnd(HWND hwnd){ m_hWnd = hwnd; }
+	LRESULT DefWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const override
+	{
+		return CallDefWndProc(hWnd, uMsg, wParam, lParam);
+	}
 
 	//ウィンドウ標準操作
-	void DestroyWindow();
+	void	DestroyWindow() const;
 
-private: // 2002/2/10 aroka アクセス権変更
-	HINSTANCE	m_hInstance = nullptr;	// アプリケーションインスタンスのハンドル
-	HWND		m_hwndParent = nullptr;	// オーナーウィンドウのハンドル
-	HWND		m_hWnd = nullptr;		// このダイアログのハンドル
-#ifdef _DEBUG
-	WCHAR		m_szClassInheritances[1024];
-#endif
+	HINSTANCE		m_hInstance = G_AppInstance();	//!< アプリケーションインスタンスのハンドル
+	HWND			m_hwndParent = nullptr;			//!< 親ウィンドウのハンドル
 };
+
 #endif /* SAKURA_CWND_86C8E4DA_7921_4D79_A481_E3AB0557D767_H_ */

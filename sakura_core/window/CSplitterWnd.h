@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, aroka, YAZAKI
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -33,14 +33,19 @@ struct DLLSHAREDATA;
 	
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
-class CSplitterWnd final : public CWnd
+class CSplitterWnd final : public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CSplitterWnd;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CSplitterWnd();
-	~CSplitterWnd();
+	~CSplitterWnd() override;
+
 private: // 2002/2/3 aroka
 	/*
 	||  Attributes & Operations
@@ -92,4 +97,5 @@ protected:
 	int HitTestSplitter(int xPos, int yPos);	/* 分割バーへのヒットテスト */
 	void DrawSplitter(int xPos, int yPos, int bEraseOld);	/* 分割トラッカーの表示 */
 };
+
 #endif /* SAKURA_CSPLITTERWND_8F27B39C_B96B_4964_ACD8_E157A146F892_H_ */

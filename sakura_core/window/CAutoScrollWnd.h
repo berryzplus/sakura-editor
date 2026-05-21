@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2012, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -14,11 +14,16 @@
 class CEditView;
 class CMyPoint;
 
-class CAutoScrollWnd final: public CWnd
+class CAutoScrollWnd final: public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CAutoScrollWnd;
+
 public:
 	CAutoScrollWnd();
-	virtual ~CAutoScrollWnd();
+	~CAutoScrollWnd() override;
+
 	HWND Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal,
 				 const CMyPoint& point, CEditView* view );
 	void Close();
@@ -35,4 +40,5 @@ protected:
 	LRESULT OnMButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 };
+
 #endif /* SAKURA_CAUTOSCROLLWND_F588E196_7D77_4DFA_AAB0_A2D95FFB8849_H_ */

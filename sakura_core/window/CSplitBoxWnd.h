@@ -6,7 +6,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, aroka
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -16,8 +16,6 @@
 #define SAKURA_CSPLITBOXWND_D85ABC4D_AF8F_4B42_B1E5_BA066925314E_H_
 #pragma once
 
-class CSplitBoxWnd;
-
 #include "CWnd.h"
 
 /*-----------------------------------------------------------------------
@@ -26,14 +24,19 @@ class CSplitBoxWnd;
 /*!
 	@brief 分割ボックスウィンドウクラス
 */
-class CSplitBoxWnd final : public CWnd
+class CSplitBoxWnd final : public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CSplitBoxWnd;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CSplitBoxWnd();
-	virtual ~CSplitBoxWnd();
+	~CSplitBoxWnd() override;
+
 	HWND Create(HINSTANCE hInstance, HWND hwndParent, int bVertical);
 
 	static void Draw3dRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight);
@@ -55,4 +58,5 @@ protected:
 	LRESULT OnLButtonUp(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONUP
 	LRESULT OnLButtonDblClk(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONDBLCLK
 };
+
 #endif /* SAKURA_CSPLITBOXWND_D85ABC4D_AF8F_4B42_B1E5_BA066925314E_H_ */

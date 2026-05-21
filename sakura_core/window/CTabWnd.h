@@ -12,7 +12,7 @@
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2012, Moca, syat
 	Copyright (C) 2013, Uchi, aroka, novice, syat, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -21,23 +21,27 @@
 #define SAKURA_CTABWND_E95D57BD_51E6_467A_9F6D_2C68BF122449_H_
 #pragma once
 
-#include "CWnd.h"
-#include "util/design_template.h"
 #include "env/CommonSetting.h"
+#include "util/design_template.h"
+#include "window/CWnd.h"
 
 class CGraphics;
 struct EditNode;
 struct DLLSHAREDATA;
 
 //! タブバーウィンドウ
-class CTabWnd final : public CWnd
+class CTabWnd final : public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CTabWnd;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CTabWnd();
-	virtual ~CTabWnd();
+	~CTabWnd() override;
 
 	/*
 	|| メンバ関数
@@ -191,4 +195,5 @@ private:
 
 	DISALLOW_COPY_AND_ASSIGN(CTabWnd);
 };
+
 #endif /* SAKURA_CTABWND_E95D57BD_51E6_467A_9F6D_2C68BF122449_H_ */

@@ -14,7 +14,7 @@
 	Copyright (C) 2009, ryoji
 	Copyright (C) 2012, Moca, syat, novice, uchi
 	Copyright (C) 2013, Moca, Uchi, aroka, novice, syat, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -803,7 +803,7 @@ LRESULT CTabWnd::ExecTabCommand( int nId, POINTS pts )
 }
 
 CTabWnd::CTabWnd()
-: CWnd(L"::CTabWnd")
+	: COriginalWnd(L"::CTabWnd")
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -853,7 +853,7 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 	::GetWindowRect( hwndParent, &rcParent );
 
 	/* 基底クラスメンバ呼び出し */
-	CWnd::Create(
+	Base::Create(
 		hwndParent,
 		0,									// extended window style
 		pszClassName,						// Pointer to a null-terminated string or is an atom.

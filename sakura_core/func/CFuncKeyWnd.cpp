@@ -12,7 +12,7 @@
 	Copyright (C) 2006, aroka, ryoji
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -35,7 +35,7 @@
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CFuncKeyWnd::CFuncKeyWnd()
-: CWnd(L"::CFuncKeyWnd")
+	: COriginalWnd(L"::CFuncKeyWnd")
 {
 	int		i;
 	LOGFONT	lf;
@@ -108,7 +108,7 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	);
 
 	/* 基底クラスメンバ呼び出し */
-	CWnd::Create(
+	Base::Create(
 		hwndParent,
 		0, // extended window style
 		pszClassName,	// Pointer to a null-terminated string or is an atom.

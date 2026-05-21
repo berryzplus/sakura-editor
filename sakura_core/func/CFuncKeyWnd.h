@@ -8,7 +8,7 @@
 	Copyright (C) 2002, YAZAKI, aroka
 	Copyright (C) 2006, aroka
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -25,14 +25,19 @@ class CEditDoc; // 2002/2/10 aroka
 
 //! ファンクションキーウィンドウ
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-class CFuncKeyWnd final : public CWnd
+class CFuncKeyWnd final : public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CFuncKeyWnd;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CFuncKeyWnd();
-	virtual ~CFuncKeyWnd();
+	~CFuncKeyWnd() override;
+
 	/*
 	|| メンバ関数
 	*/
@@ -71,4 +76,5 @@ protected:
 	LRESULT OnSize(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;// WM_SIZE処理
 	LRESULT OnDestroy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;// WM_DESTROY処理
 };
+
 #endif /* SAKURA_CFUNCKEYWND_2EB0FD88_ABBB_4280_BEEA_46E8468E4550_H_ */

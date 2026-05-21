@@ -10,7 +10,7 @@
 	Copyright (C) 2002, GAE
 	Copyright (C) 2005, D.S.Koba
 	Copyright (C) 2006, ryoji, genta
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -35,7 +35,7 @@ const WCHAR* UnEscapeInfoText( CNativeW& cInfo )
 
 /* CTipWndクラス デストラクタ */
 CTipWnd::CTipWnd()
-: CWnd(L"::CTipWnd")
+	: COriginalWnd(L"::CTipWnd")
 {
 	return;
 }
@@ -70,7 +70,7 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 	/* 基底クラスメンバ呼び出し */
 	// 2006.01.09 ryoji 初期状態を不可視にする
 	//	実質的には見えないCTipWndが最前面にあると判断されてしまう場合があるため
-	CWnd::Create(
+	Base::Create(
 		hwndParent,
 		WS_EX_TOOLWINDOW, // extended window style	// 2002/2/3 GAE
 		pszClassName,	// Pointer to a null-terminated string or is an atom.

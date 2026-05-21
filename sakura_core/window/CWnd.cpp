@@ -9,74 +9,13 @@
 	Copyright (C) 2000, genta
 	Copyright (C) 2003, MIK, KEITA
 	Copyright (C) 2006, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
 #include "window/CWnd.h"
-
-/* CWndウィンドウメッセージのコールバック関数 */
-LRESULT CALLBACK CWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-	CWnd* pCWnd = (CWnd*)::GetWindowLongPtr( hwnd, GWLP_USERDATA );
-
-	if( pCWnd ){
-		/* クラスオブジェクトのポインタを使ってメッセージを配送する */
-		return pCWnd->DispatchEvent( hwnd, uMsg, wParam, lParam );
-	}
-	else{
-		/* ふつうはここには来ない */
-		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
-	}
-}
-
-//!Windowsフック(CBT)
-namespace CWindowCreationHook
-{
-	int		g_nCnt  = 0; //参照カウンタ
-	HHOOK	g_hHook = nullptr;
-
-	//!フック用コールバック
-	static LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
-	{
-		if(nCode==HCBT_CREATEWND){
-			HWND hwnd = (HWND)wParam;
-			CBT_CREATEWND* pCreateWnd = (CBT_CREATEWND*)lParam;
-			CWnd* pcWnd = static_cast<CWnd*>(pCreateWnd->lpcs->lpCreateParams);
-
-			//CWnd以外のウィンドウ生成イベントは無視する
-			WNDPROC wndproc = (WNDPROC)::GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-			if(wndproc!=CWndProc)goto next;
-
-			//ウィンドウにCWndを関連付ける
-			::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pcWnd);
-
-			//CWndにウィンドウを関連付ける
-			pcWnd->_SetHwnd(hwnd);
-		}
-next:
-		return ::CallNextHookEx(g_hHook, nCode, wParam, lParam);
-	}
-
-	//!フック開始
-	void Use()
-	{
-		if(++g_nCnt>=1 && g_hHook==nullptr){
-			g_hHook = ::SetWindowsHookEx(WH_CBT, CBTProc, nullptr, GetCurrentThreadId());
-		}
-	}
-
-	//!フック終了
-	void Unuse()
-	{
-		if(--g_nCnt<=0 && g_hHook!=nullptr){
-			::UnhookWindowsHookEx(g_hHook);
-			g_hHook=nullptr;
-		}
-	}
-} //namespace CWindowCreationHook
 
 CWnd::CWnd(const WCHAR* pszInheritanceAppend)
 {
@@ -86,20 +25,90 @@ CWnd::CWnd(const WCHAR* pszInheritanceAppend)
 #endif
 }
 
-CWnd::~CWnd()
+/*!
+ * @brief ウィンドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CWnd::DispatchEvent(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
+)
 {
-	if( ::IsWindow( m_hWnd ) ){
-		/* クラスオブジェクトのポインタをNULLにして拡張ウィンドウメモリに格納しておく */
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( m_hWnd, GWLP_USERDATA, (LONG_PTR)nullptr );
-		::DestroyWindow( m_hWnd );
+	//あとはデフォルトに任せる
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief Windowsと直接やり取りするコールバックプロシージャ
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+/* static */ LRESULT CALLBACK COriginalWnd::WndProc(
+	HWND	hWnd,	// handle of window
+	UINT	uMsg,	// message identifier
+	WPARAM	wParam,	// first message parameter
+	LPARAM	lParam 	// second message parameter
+) /* noexcept */
+{
+	// WM_CREATEが来たらウインドウに作成パラメーターを関連付ける
+	if (auto lpCreateStruct = LPCREATESTRUCTW(lParam);
+		WM_NCCREATE == uMsg &&
+		lpCreateStruct &&
+		lpCreateStruct->lpCreateParams)
+	{
+		// ウインドウ作成パラメーターには this ポインターが渡されている
+		auto pcWnd = std::bit_cast<CWnd*>(lpCreateStruct->lpCreateParams);
+
+		// ウインドウハンドルを関連付ける
+		pcWnd->_SetHwnd(hWnd);
+
+		// ウインドウハンドルにクラスオブジェクトを関連付ける
+		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(lpCreateStruct->lpCreateParams));
+
+		return pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
 	}
-	m_hWnd = nullptr;
+
+	// GetWindowLongPtr する都合、NULLを弾く
+	if (!hWnd) {
+		return 0L;
+	}
+
+	// ウインドウに関連付けられたオブジェクトに処理を委譲
+	if (auto pcWnd = std::bit_cast<CWnd*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
+		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
+		if (WM_NCDESTROY == uMsg) {
+			// クラスオブジェクトの関連付けを解除する
+			::SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0L);
+
+			// ウインドウハンドルの関連付けを解除する
+			pcWnd->_SetHwnd(nullptr);
+		}
+		return ret;
+	}
+
+	//あとはデフォルトに任せる
+	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+COriginalWnd::~COriginalWnd()
+{
+	DestroyWindow();
 	return;
 }
 
 /* ウィンドウクラス作成 */
-ATOM CWnd::RegisterWC(
+ATOM COriginalWnd::RegisterWC(
 	/* WNDCLASS用 */
 	HINSTANCE	hInstance,
 	HICON		hIcon,			// Handle to the class icon.
@@ -110,29 +119,28 @@ ATOM CWnd::RegisterWC(
 	LPCWSTR		lpszClassName	// Pointer to a null-terminated string or is an atom.
 )
 {
-	m_hInstance = hInstance;
-
 	/* ウィンドウクラスの登録 */
-	WNDCLASSEX wc;
-	wc.cbSize = sizeof(wc);
+	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
+
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
 	wc.style = CS_DBLCLKS;
-	wc.lpfnWndProc   = CWndProc;
+	wc.lpfnWndProc   = WndProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
-	wc.hInstance     = m_hInstance;
+	wc.hInstance     = hInstance;
 	wc.hIcon         = hIcon;
 	wc.hCursor       = hCursor;
 	wc.hbrBackground = hbrBackground;
 	wc.lpszMenuName  = lpszMenuName;
 	wc.lpszClassName = lpszClassName;
 	wc.hIconSm       = hIconSm;
-	return ::RegisterClassEx( &wc );
+
+	return ::RegisterClassExW(&wc);
 }
 
 /* 作成 */
-HWND CWnd::Create(
+HWND COriginalWnd::Create(
 	/* CreateWindowEx()用 */
 	HWND		hwndParent,
 	DWORD		dwExStyle,		// extended window style
@@ -148,13 +156,7 @@ HWND CWnd::Create(
 {
 	m_hwndParent = hwndParent;
 
-	/* 初期ウィンドウサイズ */
-	/* ウィンドウの作成 */
-
-	//Windowsフックにより、ウィンドウが作成されるタイミングを横取りする 2007.10.01 kobake
-	CWindowCreationHook::Use();
-
-	m_hWnd = ::CreateWindowEx(
+	const auto hWnd = ::CreateWindowExW(
 		dwExStyle, // extended window style
 		lpszClassName, // pointer to registered class name
 		lpWindowName, // pointer to window name
@@ -163,28 +165,36 @@ HWND CWnd::Create(
 		y, // vertical position of window
 		nWidth, // window width
 		nHeight, // window height
-		m_hwndParent, // handle to parent or owner window
+		hwndParent, // handle to parent or owner window
 		hMenu, // handle to menu, or child-window identifier
-		m_hInstance, // handle to application instance
+		G_AppInstance(), // handle to application instance
 		(LPVOID)this	// pointer to window-creation data
 	);
 
-	//Windowsフック解除
-	CWindowCreationHook::Unuse();
-
-	if( nullptr == m_hWnd ){
-		::MessageBox( m_hwndParent, L"CWnd::Create()\n\n::CreateWindowEx failed.", L"error", MB_OK );
-		return nullptr;
-	}
-
-	return m_hWnd;
+	return hWnd;
 }
 
-/* メッセージ配送 */
-LRESULT CWnd::DispatchEvent( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
+/*!
+ * @brief 独自ウィンドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT COriginalWnd::DispatchEvent(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
+)
 {
-	#define CALLH(message, method) case message: return method( hwnd, msg, wp, lp )
-	switch( msg ){
+#pragma push_macro("CALLH")
+
+#define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
+
+	switch (uMsg) {
 	CALLH( WM_DESTROY			, OnDestroy			);
 	CALLH( WM_SIZE				, OnSize			);
 	CALLH( WM_COMMAND			, OnCommand			);
@@ -203,32 +213,35 @@ LRESULT CWnd::DispatchEvent( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
 	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji
 
 	default:
-		if( WM_APP <= msg && msg <= 0xBFFF ){
+		if (WM_APP <= uMsg && uMsg <= 0xBFFF ){
 			/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
-			return DispatchEvent_WM_APP( hwnd, msg, wp, lp );
+			return DispatchEvent_WM_APP(hWnd, uMsg, wParam, lParam);
 		}
 		break;	/* default */
 	}
-	return CallDefWndProc( hwnd, msg, wp, lp );
+
+#pragma pop_macro("CALLH")
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
-LRESULT CWnd::DispatchEvent_WM_APP( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
+LRESULT COriginalWnd::DispatchEvent_WM_APP(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	return CallDefWndProc( hwnd, msg, wp, lp );
+	return CallDefWndProc(hWnd, uMsg, wParam, lParam);
 }
 
 /* デフォルトメッセージ処理 */
-LRESULT CWnd::CallDefWndProc( HWND hwnd, UINT msg, WPARAM wp, LPARAM lp )
+LRESULT COriginalWnd::CallDefWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const
 {
-	return ::DefWindowProc( hwnd, msg, wp, lp );
+	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 /* ウィンドウを破棄 */
-void CWnd::DestroyWindow()
+void COriginalWnd::DestroyWindow() const
 {
-	if(m_hWnd){
-		::DestroyWindow( m_hWnd );
-		m_hWnd = nullptr;
+	if (const auto hWnd = GetHwnd(); ::IsWindow(hWnd)) {
+		::DestroyWindow(hWnd);
 	}
 }

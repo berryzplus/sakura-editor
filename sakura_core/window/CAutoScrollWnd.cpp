@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2012, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -12,7 +12,7 @@
 #include "sakura_rc.h"
 
 CAutoScrollWnd::CAutoScrollWnd()
-: CWnd(L"::CAutoScrollWnd")
+	: COriginalWnd(L"::CAutoScrollWnd")
 {
 	m_hCenterImg = nullptr;
 	return;
@@ -58,7 +58,7 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 	);
 
 	/* 基底クラスメンバ呼び出し */
-	return CWnd::Create(
+	return Base::Create(
 		/* 初期化 */
 		hwndParent,
 		0,

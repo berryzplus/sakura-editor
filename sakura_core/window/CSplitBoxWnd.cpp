@@ -8,7 +8,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, aroka
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -21,7 +21,7 @@
 #include "config/system_constants.h"
 
 CSplitBoxWnd::CSplitBoxWnd()
-: CWnd(L"::CSplitBoxWnd")
+	: COriginalWnd(L"::CSplitBoxWnd")
 {
 	m_bVertical = TRUE;	/* 垂直分割ボックスか */
 	return;
@@ -67,7 +67,7 @@ HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 	::GetClientRect( GetParentHwnd(), &rc );
 
 	/* 基底クラスメンバ呼び出し */
-	return CWnd::Create(
+	return Base::Create(
 		hwndParent,
 		0, // extended window style
 		pszClassName,	// Pointer to a null-terminated string or is an atom.

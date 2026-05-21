@@ -9,7 +9,7 @@
 	Copyright (C) 2001, asa-o
 	Copyright (C) 2002, aroka
 	Copyright (C) 2006, genta, fon
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -19,22 +19,25 @@
 #define SAKURA_CTIPWND_E3DB6CF2_888C_42F5_953E_D923221F0B16_H_
 #pragma once
 
-class CTipWnd;
-
-#include "CWnd.h"
 #include "mem/CNativeW.h"
+#include "window/CWnd.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
-class CTipWnd final : public CWnd
+class CTipWnd final : public COriginalWnd
 {
+private:
+	using Base = COriginalWnd;
+	using Me = CTipWnd;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CTipWnd();
-	~CTipWnd();
+	~CTipWnd() override;
+
 	void Create( HINSTANCE hInstance, HWND hwndParent );	/* 初期化 */
 
 	/*

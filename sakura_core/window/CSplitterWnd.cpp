@@ -10,7 +10,7 @@
 	Copyright (C) 2002, aroka, YAZAKI
 	Copyright (C) 2003, MIK
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -32,7 +32,7 @@ constexpr auto SPLITTER_MARGIN = 2;
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CSplitterWnd::CSplitterWnd()
-: CWnd(L"::CSplitterWnd")
+	: COriginalWnd(L"::CSplitterWnd")
 {
 	/* 共有データ構造体のアドレスを返す */
 	m_pShareData = &GetDllShareData();
@@ -71,7 +71,7 @@ HWND CSplitterWnd::Create( HWND hwndParent )
 	}
 
 	/* 基底クラスメンバ呼び出し */
-	HWND hWnd = CWnd::Create(
+	HWND hWnd = Base::Create(
 		hwndParent,
 		0, // extended window style
 		pszClassName,	// Pointer to a null-terminated string or is an atom.
