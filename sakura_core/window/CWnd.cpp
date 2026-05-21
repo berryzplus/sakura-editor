@@ -42,6 +42,7 @@ LRESULT CWnd::DispatchEvent(
 // clang-format off
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
+	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
 // clang-format on
 
 	case WM_PAINT:
@@ -119,6 +120,18 @@ void CWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 LRESULT CWnd::OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR)
 {
 	return FORWARD_WM_NOTIFY(hWnd, idFrom, pNMHDR, DefWndProcW);
+}
+
+/*!
+ * @brief WM_COMMANDハンドラ
+ *
+ * WM_COMMANDは子孫ウィンドウからポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
+{
+	FORWARD_WM_COMMAND(hWnd, id, hWndCtl, notifyCode, DefWndProcW);
 }
 
 /*!
@@ -271,7 +284,6 @@ LRESULT COriginalWnd::DispatchEvent(
 #define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
 
 	switch (uMsg) {
-	CALLH( WM_COMMAND			, OnCommand			);
 	CALLH( WM_LBUTTONDOWN		, OnLButtonDown		);
 	CALLH( WM_LBUTTONUP			, OnLButtonUp		);
 	CALLH( WM_LBUTTONDBLCLK		, OnLButtonDblClk	);

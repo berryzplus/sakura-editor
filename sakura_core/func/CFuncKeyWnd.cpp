@@ -180,28 +180,6 @@ LRESULT CFuncKeyWnd::DispatchEvent(
 }
 #endif//////////////////////////////////////////////////////////////
 
-LRESULT CFuncKeyWnd::OnCommand( HWND hwnd, [[maybe_unused]] UINT msg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
-{
-	int		i;
-	HWND	hwndCtl;
-
-	hwndCtl = (HWND) lParam;		// handle of control
-//	switch( wNotifyCode ){
-//	case BN_PUSHED:
-		for( i = 0; i < int(std::size(m_hwndButtonArr)); ++i ){
-			if( hwndCtl == m_hwndButtonArr[i] ){
-				if( 0 != m_nFuncCodeArr[i] ){
-					::SendMessageCmd( GetParentHwnd(), WM_COMMAND, MAKELONG( m_nFuncCodeArr[i], 0 ),  (LPARAM)hwnd );
-				}
-				break;
-			}
-		}
-		::SetFocus( GetParentHwnd() );
-//		break;
-//	}
-	return 0L;
-}
-
 // WM_TIMERタイマーの処理
 LRESULT CFuncKeyWnd::OnTimer( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
@@ -477,4 +455,28 @@ void CFuncKeyWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 	}
 
 	::InvalidateRect(hWnd, nullptr, TRUE);
+}
+
+/*!
+ * @brief WM_COMMANDハンドラ
+ *
+ * WM_COMMANDは子孫ウィンドウからポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CFuncKeyWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
+{
+	UNREFERENCED_PARAMETER(id);
+	UNREFERENCED_PARAMETER(notifyCode);
+
+	const auto found = std::ranges::find_if(m_hwndButtonArr, [hWndCtl] (const auto& hWndButton) { return hWndButton == hWndCtl; });
+	if (found == std::end(m_hwndButtonArr)) {
+		return;
+	}
+
+	if (const auto i = std::distance(std::begin(m_hwndButtonArr), found); 0 != m_nFuncCodeArr[i]) {
+		FORWARD_WM_COMMAND(GetParentHwnd(), m_nFuncCodeArr[i], hWnd, BN_CLICKED, ::SendMessageW);
+	}
+
+	::SetFocus(GetParentHwnd());
 }

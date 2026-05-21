@@ -76,8 +76,8 @@ protected:
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnDestroy(HWND hWnd) override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
+	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;
 	LRESULT OnTimer(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	// WM_TIMERタイマーの処理
-	LRESULT OnCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;	// WM_COMMAND処理
 };
 
 #endif /* SAKURA_CFUNCKEYWND_2EB0FD88_ABBB_4280_BEEA_46E8468E4550_H_ */

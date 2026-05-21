@@ -83,6 +83,8 @@ public:
 
 	virtual LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR);
 
+	virtual void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
+
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
 
@@ -152,7 +154,6 @@ public:
 
 #define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
 
-	virtual DECLH( OnCommand		);	// WM_COMMAND
 	virtual DECLH( OnLButtonDown	);	// WM_LBUTTONDOWN
 	virtual DECLH( OnLButtonUp		);	// WM_LBUTTONUP
 	virtual DECLH( OnLButtonDblClk	);	// WM_LBUTTONDBLCLK
