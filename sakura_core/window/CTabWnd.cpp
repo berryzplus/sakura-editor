@@ -963,7 +963,11 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 
 		Refresh();	// タブ非表示から表示に切り替わったときに各ウィンドウの情報をタブ登録する必要がある
 
-		LayoutTab();
+		RECT rc{};
+		::GetClientRect(GetHwnd(), &rc);
+		const auto cx = rc.right - rc.left;
+		const auto cy = rc.bottom - rc.top;
+		LayoutTab(cx, cy);
 	}
 
 	return GetHwnd();
@@ -1046,27 +1050,75 @@ void CTabWnd::OnDestroy(HWND hWnd)
 	Base::OnDestroy(hWnd);
 }
  
-//WM_SIZE処理
-LRESULT CTabWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+/*!
+ * @brief WM_SIZEハンドラ
+ *
+ * WM_SIZEはWM_WINDOWPOSCHANGEDの処理中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CTabWnd::OnSize(
+	HWND hWnd,
+	UINT state,
+	int cx,
+	int cy
+)
 {
-	if( nullptr == GetHwnd() || nullptr == m_hwndTab ) return 0L;
+	UNREFERENCED_PARAMETER(state);
 
-	RECT rcWnd;
-	::GetWindowRect( GetHwnd(), &rcWnd );
+	if (!hWnd || !m_hwndTab) return;
 
-	int nSizeBoxWidth = 0;
-	if( m_hwndSizeBox ){
-		nSizeBoxWidth = ::GetSystemMetrics( SM_CXVSCROLL );
-		int nSizeBoxHeight = ::GetSystemMetrics( SM_CYHSCROLL );
-		::MoveWindow( m_hwndSizeBox,  rcWnd.right - rcWnd.left - nSizeBoxWidth,
-			rcWnd.bottom - rcWnd.top - nSizeBoxHeight, nSizeBoxWidth, nSizeBoxHeight, TRUE );
+	if (m_hwndSizeBox) {
+		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+		::SetWindowPos(
+			m_hwndSizeBox,
+			nullptr,
+			cx - cxVScroll,
+			cy - cyHScroll,
+			cxVScroll,
+			cyHScroll,
+			SWP_NOSIZE | SWP_NOZORDER | SWP_NOSENDCHANGING
+		);
+
+		cx -= cxVScroll;
 	}
 
-	LayoutTab();	// 2006.01.28 ryoji タブのレイアウト調整処理
+	::SetWindowPos(
+		m_hwndTab,
+		nullptr,
+		0,
+		0,
+		cx,
+		cy,
+		SWP_NOMOVE | SWP_NOZORDER | SWP_NOSENDCHANGING
+	);
 
-	::InvalidateRect( GetHwnd(), nullptr, FALSE );	//	2006.02.01 ryoji
+	RECT rcDisp{ 0, 0, cx, cy };
+	TabCtrl_AdjustRect(m_hwndTab, TRUE, &rcDisp);
 
-	return 0L;
+	int x = -rcDisp.left;
+	int y = -rcDisp.left;
+
+	rcDisp = RECT{ x, y, cx - x, cy - y };
+	TabCtrl_AdjustRect(m_hwndTab, TRUE, &rcDisp);
+
+	if (const auto cyTab = rcDisp.bottom - rcDisp.top; cyTab != cy) {
+		::SetWindowPos(
+			hWnd,
+			nullptr,
+			0,
+			0,
+			cx,
+			cyTab,
+			SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOSENDCHANGING
+		);
+
+		return;
+	}
+
+	::InvalidateRect(hWnd, nullptr, TRUE);
 }
 
 /*! WM_LBUTTONDBLCLK処理
@@ -2244,37 +2296,30 @@ void CTabWnd::TabWnd_ActivateFrameWindow( HWND hwnd, bool bForeground )
 	return;
 }
 
-/*! タブのレイアウト調整処理
-	@date 2006.01.28 ryoji 新規作成
-*/
-void CTabWnd::LayoutTab( void )
+/*!
+ * @brief タブのレイアウト調整
+ *
+ * @date 2006.01.28 ryoji 新規作成
+ */
+void CTabWnd::LayoutTab(int cx, int cy)
 {
+	const auto hWnd = GetHwnd();
+
 	// フォントを切り替える 2011.12.01 Moca
-	bool bChgFont = (0 != memcmp( &m_lf, &m_pShareData->m_Common.m_sTabBar.m_lf, sizeof(m_lf) ));
-	int nSizeBoxWidth = 0;
-	if( m_hwndSizeBox ){
-		nSizeBoxWidth = ::GetSystemMetrics( SM_CXVSCROLL );
-	}
-	if( bChgFont ){
+	if (const auto bChgFont = (0 != memcmp( &m_lf, &m_pShareData->m_Common.m_sTabBar.m_lf, sizeof(m_lf) ))) {
 		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
 		m_hFont = ::CreateFontIndirectW(&m_pShareData->m_Common.m_sTabBar.m_lf);
-		SetWindowFont(m_hwndTab, m_hFont, TRUE);
-		// ウィンドウの高さを修正
+		SetWindowFont(m_hwndTab, m_hFont, FALSE);
 	}
 
 	// アイコンの表示を切り替える
-	BOOL bDispTabIcon = m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon;
-	HIMAGELIST hImg = TabCtrl_GetImageList( m_hwndTab );
-	if( nullptr == hImg && bDispTabIcon )
+	const auto bDispTabIcon = m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon;
+	if (const auto hImg = TabCtrl_GetImageList(m_hwndTab); !hImg)
 	{
 		m_hIml = InitImageList();
-		if (m_hIml) {
-			Refresh( TRUE, TRUE );
+		if (bDispTabIcon && m_hIml) {
+			Refresh(TRUE, TRUE);
 		}
-	}
-	else if( nullptr != hImg && !bDispTabIcon )
-	{
-		m_hIml = InitImageList();
 	}
 
 	// 現在のウィンドウスタイルを取得する
@@ -2300,34 +2345,39 @@ void CTabWnd::LayoutTab( void )
 
 	// タブのアイテムサイズを調整する（等幅のときのサイズやフォント切替時の高さ調整）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetItemSize() を実行する
-	RECT rcTab;
-	int nCount;
-	int cx;
-	::GetClientRect( m_hwndTab, &rcTab );
-	nCount = TabCtrl_GetItemCount( m_hwndTab );
-	if( 0 < nCount )
+	const auto nCount = TabCtrl_GetItemCount(m_hwndTab);
+	if (0 < nCount)
 	{
-		cx = (rcTab.right - rcTab.left - 8) / nCount;
+		RECT rcTab;
+		::GetClientRect(m_hwndTab, &rcTab);
+
+		auto cxTab = (rcTab.right - rcTab.left - 8) / nCount;
 		int min = MIN_TABITEM_WIDTH;
 		if( m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine ){
 			min = MIN_TABITEM_WIDTH_MULTI;
 		}
 		if( MAX_TABITEM_WIDTH < cx )
-			cx = MAX_TABITEM_WIDTH;
+			cxTab = MAX_TABITEM_WIDTH;
 		else if( min > cx )
-			cx = min;
-		TabCtrl_SetItemSize( m_hwndTab, cx, TAB_ITEM_HEIGHT );
+			cxTab = min;
+
+		TabCtrl_SetItemSize(m_hwndTab, cxTab, TAB_ITEM_HEIGHT);
 	}
+
+	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
+	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+	const auto cyEdge = GetSystemMetrics(SM_CYEDGE);
+	const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
 
 	// タブ余白設定（「閉じるボタン」や「アイコン」の設定切替時の余白切替）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetPadding() を実行する
-	cx = 6;
+	int cxPadding = cxEdge * 3;
 	if( bDispTabClose == DISPTABCLOSE_ALLWAYS ){
 		// 閉じるボタンの分だけパディングを追加して横幅を広げる
-		int nWidth = rcBtnBase.right - rcBtnBase.left;
-		cx += bDispTabIcon? (nWidth + 2)/3: (nWidth + 1)/2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
+		const auto cxSmIcon = GetSystemMetrics(SM_CXSMICON);
+		cxPadding += bDispTabIcon ? (cxSmIcon + cxEdge) / 3 : (cxSmIcon + cxBorder) / 2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
-	TabCtrl_SetPadding( m_hwndTab, DpiScaleX(cx), DpiScaleY(3) );
+	TabCtrl_SetPadding(m_hwndTab, cxPadding, DpiScaleY(3));
 
 	// 新しいウィンドウスタイルを適用する
 	// ※ TabCtrl_SetPadding() の後でやらないと設定変更の直後にアイコンやテキストの描画位置がずれる場合がある
@@ -2335,34 +2385,36 @@ void CTabWnd::LayoutTab( void )
 	//           変更前：[等幅]OFF、[閉じるボタン]ON
 	//           変更後：[等幅]ON、[閉じるボタン]OFF
 	if( lStyle != lStyleOld ){
-		::SetWindowLongPtr( m_hwndTab, GWL_STYLE, lStyle );
+		::SetWindowLongPtrW(m_hwndTab, GWL_STYLE, lStyle);
 		if( bOwnerDraw ){
 			// オーナードローに切り替えるときは再度ウィンドウスタイルを設定する。
 			// ※ 設定が１度だけだと、非アクティブタブ上でマウスオーバーしてもタブがハイライト表示にならず、
 			//    何かのタイミングで ::SetWindowLongPtr() が再実行されると以後はハイライト表示される。
 			//    （Vista/7/8 で同様の症状を確認）
-			::SetWindowLongPtr( m_hwndTab, GWL_STYLE, lStyle );
+			::SetWindowLongPtrW(m_hwndTab, GWL_STYLE, lStyle);
 		}
 	}
-	RECT rcWnd;
-	::GetWindowRect( GetHwnd(), &rcWnd );
 
 	int nHeight = TAB_WINDOW_HEIGHT;
-	::GetWindowRect( m_hwndTab, &rcTab );
-	if( m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine
-		&& TabCtrl_GetItemCount( m_hwndTab ) ){
+	if (m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine && 0 < nCount) {
 		// 正確に再配置（多段タブでは段数が変わることがあるので必須）
-		RECT rcDisp = rcTab;
+		RECT rcDisp{};
 		rcDisp.left = TAB_MARGIN_LEFT;
-		rcDisp.right = rcTab.left + (rcWnd.right - rcWnd.left) - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + nSizeBoxWidth);
-		TabCtrl_AdjustRect( m_hwndTab, FALSE, &rcDisp );
-		nHeight = (rcDisp.top - rcTab.top - 2) + TAB_MARGIN_TOP;
+		rcDisp.right = rcDisp.left + cx - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + cxVScroll);
+		rcDisp.bottom = cy;
+		TabCtrl_AdjustRect(m_hwndTab, FALSE, &rcDisp);
+		nHeight = (rcDisp.bottom - rcDisp.top - cyEdge) + TAB_MARGIN_TOP;
 	}
-	::SetWindowPos( GetHwnd(), nullptr, 0, 0, rcWnd.right - rcWnd.left, nHeight, SWP_NOMOVE | SWP_NOZORDER );
-	int nWidth = (rcWnd.right - rcWnd.left) - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + nSizeBoxWidth);
-	if( (nWidth != rcTab.right - rcTab.left) || (nHeight != rcTab.bottom - rcTab.top) ){
-		::MoveWindow( m_hwndTab, TAB_MARGIN_LEFT, TAB_MARGIN_TOP, nWidth, nHeight, TRUE );
-	}
+
+	::SetWindowPos(
+		hWnd,
+		nullptr,
+		0,
+		0,
+		cx - !m_hwndSizeBox ? cxVScroll : 0,
+		nHeight,
+		SWP_NOMOVE | SWP_NOZORDER | SWP_SHOWWINDOW
+	);
 }
 
 /*! イメージリストの初期化処理

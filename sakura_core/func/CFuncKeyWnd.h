@@ -69,15 +69,15 @@ protected:
 	|| 実装ヘルパ系
 	*/
 	void CreateButtons( void );	/* ボタンの生成 */
-	int CalcButtonSize( void );	/* ボタンのサイズを計算 */
+	int		CalcButtonWidth(int cx);
 
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnDestroy(HWND hWnd) override;
+	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	LRESULT OnTimer(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	// WM_TIMERタイマーの処理
 	LRESULT OnCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;	// WM_COMMAND処理
-	LRESULT OnSize(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;// WM_SIZE処理
 };
 
 #endif /* SAKURA_CFUNCKEYWND_2EB0FD88_ABBB_4280_BEEA_46E8468E4550_H_ */

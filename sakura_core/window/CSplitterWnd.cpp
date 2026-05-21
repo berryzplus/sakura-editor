@@ -224,6 +224,8 @@ int CSplitterWnd::HitTestSplitter( int xPos, int yPos )
 */
 void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 {
+	const auto hWnd = GetHwnd();
+
 	int					nActivePane;
 	const int			nLimit = DpiScaleX(32);
 	RECT				rc;
@@ -325,7 +327,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 //		if( NULL != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize( nullptr, 0, 0, 0 );
+		OnSize(hWnd, 0, rc.right, rc.bottom);
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 		}else
@@ -397,7 +399,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		if( nullptr != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, TRUE, bSizeBox );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize( nullptr, 0, 0, 0 );
+		OnSize(hWnd, 0, rc.right, rc.bottom);
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* 上下に分割したとき */
@@ -474,7 +476,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 //		if( NULL != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize( nullptr, 0, 0, 0 );
+		OnSize(hWnd, 0, rc.right, rc.bottom);
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -526,7 +528,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		if( nullptr != pcViewArr[2] ){ pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE, FALSE );}	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 		if( nullptr != pcViewArr[3] ){ pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, bSizeBox );}	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize( nullptr, 0, 0, 0 );
+		OnSize(hWnd, 0, rc.right, rc.bottom);
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -565,7 +567,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		}
 		nActivePane = m_nActivePane;
 	}
-	OnSize( nullptr, 0, 0, 0 );
+	OnSize(hWnd, 0, rc.right, rc.bottom);
 
 	/* アクティブになったことをペインに通知 */
 	if( m_ChildWndArr[nActivePane] != nullptr ){
@@ -813,9 +815,25 @@ LRESULT CSplitterWnd::OnPaint( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_un
 	return 0L;
 }
 
-/* ウィンドウサイズの変更処理 */
-LRESULT CSplitterWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+/*!
+ * @brief WM_SIZEハンドラ(ウィンドウサイズの変更処理)
+ *
+ * WM_SIZEはWM_WINDOWPOSCHANGEDの処理中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CSplitterWnd::OnSize(
+	HWND hWnd,
+	UINT state,
+	int cx,
+	int cy
+)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(state);
+	UNREFERENCED_PARAMETER(cx);
+	UNREFERENCED_PARAMETER(cy);
+
 	CEditWnd*	pCEditWnd = &GetEditWnd();
 	CEditView*	pcViewArr[MAXCOUNTOFVIEW];
 	int					i;
@@ -912,7 +930,6 @@ LRESULT CSplitterWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT 
 	}
 	//デスクトップがちらつくのでだめ!
 	//::InvalidateRect( GetHwnd(), NULL, TRUE );	//再描画してね。	//@@@ 2003.06.11 MIK
-	return 0L;
 }
 
 /* マウス移動時の処理 */

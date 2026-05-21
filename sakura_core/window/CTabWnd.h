@@ -69,7 +69,10 @@ public:
 		return m_hwndSizeBox;
 	}
 	void OnSize(){
-		OnSize( GetHwnd(), WM_SIZE, 0, 0 );
+		const auto hWnd = GetHwnd();
+		RECT rc{};
+		GetClientRect(hWnd, &rc);
+		OnSize(hWnd, 0, rc.right, rc.bottom);
 	}
 	void UpdateStyle();
 	void UpdateTheme();		/*!< ダークモード切替時のテーマ更新 */
@@ -92,7 +95,7 @@ protected:
 
 	/* 仮想関数 メッセージ処理 */
 	void	OnDestroy(HWND hWnd) override;
-	LRESULT OnSize( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_SIZE処理 */
+	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	LRESULT OnNotify( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_NOTIFY処理 */
 	LRESULT OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_PAINT処理 */
 	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
@@ -124,7 +127,7 @@ protected:
 	void BroadcastRefreshToGroup( void );
 	BOOL SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptDrop );	/*!< タブ分離処理 */	// 2007.06.20 ryoji
 	LRESULT ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
-	void LayoutTab( void );							/*!< タブのレイアウト調整処理 */
+	void	LayoutTab(int cx, int cy);
 
 	HIMAGELIST InitImageList( void );				/*!< イメージリストの初期化処理 */
 	int GetImageIndex( EditNode* pNode );			/*!< イメージリストのインデックス取得処理 */

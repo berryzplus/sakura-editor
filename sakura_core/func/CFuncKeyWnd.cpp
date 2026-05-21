@@ -151,46 +151,6 @@ void CFuncKeyWnd::Close( void )
 	this->DestroyWindow();
 }
 
-///* WM_SIZE処理 */
-//void CFuncKeyWnd::OnSize(
-//	WPARAM	wParam,	// first message parameter
-//	LPARAM	lParam 	// second message parameter
-
-// WM_SIZE処理
-LRESULT CFuncKeyWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	int			nButtonWidth;
-	int			nButtonHeight;
-	int			i;
-	int			nX;
-//	RECT		rc;
-	int			nButtonNum;
-	RECT		rcParent;
-
-	if( nullptr == GetHwnd() ){
-		return 0L;
-	}
-
-	nButtonNum = int(std::size(m_hwndButtonArr));
-
-	/* ボタンのサイズを計算 */
-	nButtonWidth = CalcButtonSize();
-
-	::GetWindowRect( GetHwnd(), &rcParent );
-	nButtonHeight = rcParent.bottom - rcParent.top - 2;
-
-	nX = 1;
-	for( i = 0; i < nButtonNum; ++i ){
-		if( 0 < i  && 0 == ( i % m_nButtonGroupNum ) ){
-			nX += 12;
-		}
-		::MoveWindow( m_hwndButtonArr[i], nX, 1, nButtonWidth, nButtonHeight, TRUE );
-		nX += nButtonWidth + 1;
-	}
-	::InvalidateRect( GetHwnd(), nullptr, TRUE );	//再描画してね。	//@@@ 2003.06.11 MIK
-	return 0L;
-}
-
 #if 0//////////////////////////////////////////////////////////////
 LRESULT CFuncKeyWnd::DispatchEvent(
 	HWND	hwnd,	// handle of window
@@ -313,29 +273,14 @@ LRESULT CFuncKeyWnd::OnTimer( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT 
 }
 
 /*! ボタンのサイズを計算 */
-int CFuncKeyWnd::CalcButtonSize( void )
+int CFuncKeyWnd::CalcButtonWidth(int cx)
 {
-	int			nButtonNum;
-	RECT		rc;
-	int			nCyHScroll;
-	int			nCxVScroll;
-	::GetWindowRect( GetHwnd(), &rc );
+	const auto nButtonNum = int(std::size(m_hwndButtonArr));
 
-	nButtonNum = int(std::size(m_hwndButtonArr));
+	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
+	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
 
-	if( nullptr == m_hwndSizeBox ){
-//		return ( rc.right - rc.left - nButtonNum - ( (nButtonNum + m_nButtonGroupNum - 1) / m_nButtonGroupNum - 1 ) * 12 ) / nButtonNum;
-		nCxVScroll = 0;
-	}else{
-		/* サイズボックスの位置、サイズ変更 */
-		nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );
-		nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );
-		::MoveWindow( m_hwndSizeBox,  rc.right - rc.left - nCxVScroll, rc.bottom - rc.top - nCyHScroll, nCxVScroll, nCyHScroll, TRUE );
-//		::MoveWindow( m_hwndSizeBox,  0, 0, nCxVScroll, nCyHScroll, TRUE );
-
-//		return ( rc.right - rc.left - nCxVScroll = - nButtonNum -  ( (nButtonNum + m_nButtonGroupNum - 1) / m_nButtonGroupNum - 1 ) * 12 ) / nButtonNum;
-	}
-	return ( rc.right - rc.left - nCxVScroll - nButtonNum -  ( (nButtonNum + m_nButtonGroupNum - 1) / m_nButtonGroupNum - 1 ) * 12 ) / nButtonNum;
+	return (cx - nButtonNum - ((nButtonNum + m_nButtonGroupNum - cxBorder) / m_nButtonGroupNum - cxBorder) * cxEdge * 6) / nButtonNum;
 }
 
 /*! ボタンの生成
@@ -380,35 +325,41 @@ void CFuncKeyWnd::CreateButtons( void )
 /*! サイズボックスの表示／非表示切り替え */
 void CFuncKeyWnd::SizeBox_ONOFF( bool bSizeBox )
 {
-	RECT		rc;
-	::GetWindowRect( GetHwnd(), &rc );
 	if( m_bSizeBox == bSizeBox ){
 		return;
 	}
+
+	const auto hWnd = GetHwnd();
+
+	RECT rc{};
+	::GetClientRect(hWnd, &rc);
+
 	if( m_bSizeBox ){
 		::DestroyWindow( m_hwndSizeBox );
 		m_hwndSizeBox = nullptr;
 		m_bSizeBox = false;
-		OnSize( nullptr, 0, 0, 0 );
 	}else{
-		m_hwndSizeBox = ::CreateWindowEx(
+		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+		m_hwndSizeBox = ::CreateWindowExW(
 			0L, 						/* no extended styles			*/
 			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,						/* text for window title bar	*/
-			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			0,							/* horizontal position			*/
-			0,							/* vertical position			*/
-			200,						/* width of the scroll bar		*/
-			CW_USEDEFAULT,				/* default height				*/
-			GetHwnd(), 				/* handle of main window		*/
-			(HMENU) nullptr,				/* no menu for a scroll bar 	*/
-			GetAppInstance(),				/* instance owning this window	*/
+			nullptr,					/* text for window title bar	*/
+			WS_CHILD | WS_VISIBLE | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
+			rc.right - cxVScroll,		/* horizontal position			*/
+			rc.bottom - cyHScroll,		/* vertical position			*/
+			cxVScroll,					/* width of the scroll bar		*/
+			cyHScroll,					/* default height				*/
+			hWnd,		 				/* handle of main window		*/
+			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
+			GetAppInstance(),			/* instance owning this window	*/
 			(LPVOID) nullptr			/* pointer not needed				*/
 		);
-		::ShowWindow( m_hwndSizeBox, SW_SHOW );
+
 		m_bSizeBox = true;
-		OnSize( nullptr, 0, 0, 0 );
 	}
+	OnSize(hWnd, 0, rc.right, rc.bottom);
 	return;
 }
 
@@ -463,4 +414,67 @@ void CFuncKeyWnd::OnDestroy(HWND hWnd)
 	m_hFont = nullptr;
 
 	Base::OnDestroy(hWnd);
+}
+
+/*!
+ * @brief WM_SIZEハンドラ
+ *
+ * WM_SIZEはWM_WINDOWPOSCHANGEDの処理中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CFuncKeyWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
+{
+	if (!hWnd || SIZE_MINIMIZED == state) {
+		return;
+	}
+
+	if (m_hwndSizeBox) {
+		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+		::SetWindowPos(
+			m_hwndSizeBox,
+			nullptr,
+			cx - cxVScroll,
+			cy - cyHScroll,
+			cxVScroll,
+			cyHScroll,
+			SWP_NOSIZE | SWP_NOZORDER | SWP_NOSENDCHANGING
+		);
+
+		cx -= cxVScroll;
+	}
+
+	const auto nButtonNum = int(std::size(m_hwndButtonArr));
+
+	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
+	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+	const auto cyBorder = GetSystemMetrics(SM_CYBORDER);
+
+	/* ボタンのサイズを計算 */
+	const auto nButtonWidth = CalcButtonWidth(cx);
+
+	const auto nButtonHeight = cy - cyBorder * 2;
+
+	int nX = cxBorder;
+	for (int i = 0; i < nButtonNum; ++i) {
+		if( 0 < i  && 0 == ( i % m_nButtonGroupNum ) ){
+			nX += cxEdge * 6;
+		}
+
+		::SetWindowPos(
+			m_hwndButtonArr[i],
+			nullptr,
+			nX,
+			cyBorder,
+			nButtonWidth,
+			nButtonHeight,
+			SWP_NOZORDER | SWP_NOSENDCHANGING
+		);
+
+		nX += nButtonWidth + cxBorder;
+	}
+
+	::InvalidateRect(hWnd, nullptr, TRUE);
 }

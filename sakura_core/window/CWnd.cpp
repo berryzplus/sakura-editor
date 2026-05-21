@@ -41,6 +41,7 @@ LRESULT CWnd::DispatchEvent(
 	switch (uMsg) {
 // clang-format off
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
 // clang-format on
 
 	default:
@@ -61,6 +62,18 @@ LRESULT CWnd::DispatchEvent(
 void CWnd::OnDestroy(HWND hWnd)
 {
 	FORWARD_WM_DESTROY(hWnd, DefWndProcW);
+}
+
+/*!
+ * @brief WM_SIZEハンドラ
+ *
+ * WM_SIZEはWM_WINDOWPOSCHANGEDの処理中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
+{
+	FORWARD_WM_SIZE(hWnd, state, cx, cy, DefWndProcW);
 }
 
 /*!
@@ -213,7 +226,6 @@ LRESULT COriginalWnd::DispatchEvent(
 #define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
 
 	switch (uMsg) {
-	CALLH( WM_SIZE				, OnSize			);
 	CALLH( WM_COMMAND			, OnCommand			);
 	CALLH( WM_LBUTTONDOWN		, OnLButtonDown		);
 	CALLH( WM_LBUTTONUP			, OnLButtonUp		);

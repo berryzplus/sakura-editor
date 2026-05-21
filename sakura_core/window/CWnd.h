@@ -58,6 +58,8 @@ public:
 	void		_SetHwnd(HWND hwnd) { m_hWnd = hwnd; }
 
 	virtual void	OnDestroy(HWND hWnd);
+	virtual void	OnSize(HWND hWnd, UINT state, int cx, int cy);
+
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
 
@@ -136,7 +138,6 @@ public:
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
 	virtual DECLH( OnTimer			);	// WM_TIMER
-	virtual DECLH( OnSize			);	// WM_SIZE
 
 	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
 	virtual DECLH( OnNotify			);	// WM_NOTIFY	//@@@ 2003.05.31 MIK
