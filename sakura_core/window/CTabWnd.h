@@ -100,13 +100,13 @@ protected:
 
 	LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR) override;
 
+	void	OnTimer(HWND hWnd, UINT id) override;
 	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
 	LRESULT OnLButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONDOWN処理 */
 	LRESULT OnLButtonUp( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONUP処理 */
 	LRESULT OnRButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_RBUTTONDOWN処理 */
 	LRESULT OnLButtonDblClk( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONDBLCLK処理 */
 	LRESULT OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_MOUSEMOVE処理 */
-	LRESULT OnTimer( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_TIMER処理 */
 	LRESULT OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_MEASUREITEM処理 */
 	LRESULT OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_DRAWITEM処理 */
 

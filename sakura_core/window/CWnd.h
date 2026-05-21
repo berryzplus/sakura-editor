@@ -84,6 +84,7 @@ public:
 	virtual LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR);
 
 	virtual void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
+	virtual void	OnTimer(HWND hWnd, UINT id);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -160,7 +161,6 @@ public:
 	virtual DECLH( OnRButtonDown	);	// WM_RBUTTONDOWN
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
-	virtual DECLH( OnTimer			);	// WM_TIMER
 
 	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
 	virtual DECLH( OnDrawItem		);	// WM_DRAWITEM	// 2006.02.01 ryoji

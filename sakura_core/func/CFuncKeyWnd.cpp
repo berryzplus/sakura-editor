@@ -140,7 +140,7 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	CreateButtons();
 
 	Timer_ONOFF( true ); // 20060126 aroka
-	OnTimer( GetHwnd(), WM_TIMER, IDT_FUNCWND, ::GetTickCount() );	// 初回更新	// 2006.12.20 ryoji
+	OnTimer(GetHwnd(), IDT_FUNCWND);	// 初回更新
 
 	return GetHwnd();
 }
@@ -179,76 +179,6 @@ LRESULT CFuncKeyWnd::DispatchEvent(
 	}
 }
 #endif//////////////////////////////////////////////////////////////
-
-// WM_TIMERタイマーの処理
-LRESULT CFuncKeyWnd::OnTimer( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-// 	HWND hwnd,	// handle of window for timer messages
-//	UINT uMsg,	// WM_TIMER message
-//	UINT idEvent,	// timer identifier
-//	DWORD dwTime 	// current system time
-
-	//	return;
-	if( nullptr == GetHwnd() ){
-		return 0;
-	}
-
-	if( ::GetActiveWindow() != GetParentHwnd() && m_nCurrentKeyState != -1 ) {	//	2002/06/02 MIK	// 2006.12.20 ryoji 初回更新は処理する
-		return 0;
-	}
-
-	int			nIdx;
-//	int			nFuncId;
-	int			i;
-
-// novice 2004/10/10
-	/* Shift,Ctrl,Altキーが押されていたか */
-	nIdx = getCtrlKeyState();
-	/* ALT,Shift,Ctrlキーの状態が変化したか */
-	if( nIdx != m_nCurrentKeyState ){
-		m_nTimerCount = TIMER_CHECKFUNCENABLE + 1;
-
-		/* ファンクションキーの機能名を取得 */
-		for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
-			// 2007.02.22 ryoji CKeyBind::GetFuncCode()を使う
-			EFunctionCode	nFuncCode = CKeyBind::GetFuncCode(
-					(WORD)(((VK_F1 + i) | ((WORD)((BYTE)(nIdx))) << 8)),
-					m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
-					m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr
-			);
-			if( nFuncCode != m_nFuncCodeArr[i] ){
-				m_nFuncCodeArr[i] = nFuncCode;
-				if( 0 == m_nFuncCodeArr[i] ){
-					m_szFuncNameArr[i][0] = L'\0';
-				}else{
-					//	Oct. 2, 2001 genta
-					m_pcEditDoc->m_cFuncLookup.Funccode2Name(
-						m_nFuncCodeArr[i],
-						m_szFuncNameArr[i],
-						_countof(m_szFuncNameArr[i]) - 1
-					);
-				}
-				ApiWrap::Wnd_SetText( m_hwndButtonArr[i], m_szFuncNameArr[i] );
-			}
-		}
-	}
-	m_nTimerCount += TIMER_TIMEOUT;
-	if( m_nTimerCount > TIMER_CHECKFUNCENABLE ||
-		nIdx != m_nCurrentKeyState
-	){
-		m_nTimerCount = 0;
-		/* 機能が利用可能か調べる */
-		for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
-			if( IsFuncEnable( (CEditDoc*)m_pcEditDoc, m_pShareData, m_nFuncCodeArr[i]  ) ){
-				::EnableWindow( m_hwndButtonArr[i], TRUE );
-			}else{
-				::EnableWindow( m_hwndButtonArr[i], FALSE );
-			}
-		}
-	}
-	m_nCurrentKeyState = nIdx;
-	return 0;
-}
 
 /*! ボタンのサイズを計算 */
 int CFuncKeyWnd::CalcButtonWidth(int cx)
@@ -479,4 +409,75 @@ void CFuncKeyWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
 	}
 
 	::SetFocus(GetParentHwnd());
+}
+
+/*!
+ * @brief WM_TIMERハンドラ
+ *
+ * WM_TIMERはSetTimer関数で作成したタイマーからポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CFuncKeyWnd::OnTimer(HWND hWnd, UINT id)
+{
+	UNREFERENCED_PARAMETER(id);
+
+	if (!hWnd) {
+		return;
+	}
+
+	if( ::GetActiveWindow() != GetParentHwnd() && m_nCurrentKeyState != -1 ) {	//	2002/06/02 MIK	// 2006.12.20 ryoji 初回更新は処理する
+		return;
+	}
+
+	int			nIdx;
+//	int			nFuncId;
+	int			i;
+
+// novice 2004/10/10
+	/* Shift,Ctrl,Altキーが押されていたか */
+	nIdx = getCtrlKeyState();
+	/* ALT,Shift,Ctrlキーの状態が変化したか */
+	if( nIdx != m_nCurrentKeyState ){
+		m_nTimerCount = TIMER_CHECKFUNCENABLE + 1;
+
+		/* ファンクションキーの機能名を取得 */
+		for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
+			// 2007.02.22 ryoji CKeyBind::GetFuncCode()を使う
+			EFunctionCode	nFuncCode = CKeyBind::GetFuncCode(
+					(WORD)(((VK_F1 + i) | ((WORD)((BYTE)(nIdx))) << 8)),
+					m_pShareData->m_Common.m_sKeyBind.m_nKeyNameArrNum,
+					m_pShareData->m_Common.m_sKeyBind.m_pKeyNameArr
+			);
+			if( nFuncCode != m_nFuncCodeArr[i] ){
+				m_nFuncCodeArr[i] = nFuncCode;
+				if( 0 == m_nFuncCodeArr[i] ){
+					m_szFuncNameArr[i][0] = L'\0';
+				}else{
+					//	Oct. 2, 2001 genta
+					m_pcEditDoc->m_cFuncLookup.Funccode2Name(
+						m_nFuncCodeArr[i],
+						m_szFuncNameArr[i],
+						_countof(m_szFuncNameArr[i]) - 1
+					);
+				}
+				ApiWrap::Wnd_SetText( m_hwndButtonArr[i], m_szFuncNameArr[i] );
+			}
+		}
+	}
+	m_nTimerCount += TIMER_TIMEOUT;
+	if( m_nTimerCount > TIMER_CHECKFUNCENABLE ||
+		nIdx != m_nCurrentKeyState
+	){
+		m_nTimerCount = 0;
+		/* 機能が利用可能か調べる */
+		for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
+			if( IsFuncEnable( (CEditDoc*)m_pcEditDoc, m_pShareData, m_nFuncCodeArr[i]  ) ){
+				::EnableWindow( m_hwndButtonArr[i], TRUE );
+			}else{
+				::EnableWindow( m_hwndButtonArr[i], FALSE );
+			}
+		}
+	}
+	m_nCurrentKeyState = nIdx;
 }

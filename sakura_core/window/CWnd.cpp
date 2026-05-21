@@ -43,6 +43,7 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
 	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
+	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
 	case WM_PAINT:
@@ -132,6 +133,18 @@ LRESULT CWnd::OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR)
 void CWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
 {
 	FORWARD_WM_COMMAND(hWnd, id, hWndCtl, notifyCode, DefWndProcW);
+}
+
+/*!
+ * @brief WM_TIMERハンドラ
+ *
+ * WM_TIMERはSetTimer関数で作成したタイマーからポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CWnd::OnTimer(HWND hWnd, UINT id)
+{
+	FORWARD_WM_TIMER(hWnd, id, DefWndProcW);
 }
 
 /*!
@@ -290,7 +303,6 @@ LRESULT COriginalWnd::DispatchEvent(
 	CALLH( WM_RBUTTONDOWN		, OnRButtonDown		);
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);
 	CALLH( WM_MOUSEMOVE			, OnMouseMove		);
-	CALLH( WM_TIMER				, OnTimer			);
 
 	CALLH( WM_MEASUREITEM		, OnMeasureItem		);
 	CALLH( WM_DRAWITEM			, OnDrawItem		);	// 2006.02.01 ryoji

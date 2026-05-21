@@ -1180,6 +1180,32 @@ void CTabWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 	}
 }
 
+/*!
+ * @brief WM_TIMERハンドラ
+ *
+ * WM_TIMERはSetTimer関数で作成したタイマーからポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ *
+ * @date 2006.02.01 ryoji 新規作成
+ */
+void CTabWnd::OnTimer(HWND hWnd, UINT id)
+{
+	if (1 == id)
+	{
+		// カーソルがウィンドウ外にある場合にも WM_MOUSEMOVE を送る
+		POINT pt;
+		::GetCursorPos(&pt);
+		::ScreenToClient(hWnd, &pt);
+
+		RECT rc;
+		::GetClientRect(hWnd, &rc);
+		if (::PtInRect(&rc, pt)) return;	// ウィンドウ内なので抜ける
+
+		FORWARD_WM_MOUSEMOVE(hWnd, pt.x, pt.y, 0, ::SendMessageW);
+	}
+}
+
 /*! WM_LBUTTONDBLCLK処理
 	@date 2006.03.26 ryoji 新規作成
 */
@@ -1641,27 +1667,6 @@ LRESULT CTabWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unu
 		ti.uId          = (UINT_PTR)GetHwnd();
 		ti.lpszText     = pszTip;
 		ApiWrap::Tooltip_UpdateTipText( m_hwndToolTip, &ti );
-	}
-
-	return 0L;
-}
-
-/*!	WM_TIMER処理
-	@date 2006.02.01 ryoji 新規作成
-*/
-LRESULT CTabWnd::OnTimer( HWND hwnd, [[maybe_unused]] UINT uMsg, WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	if( wParam == 1 )
-	{
-		// カーソルがウィンドウ外にある場合にも WM_MOUSEMOVE を送る
-		POINT pt;
-		RECT rc;
-
-		::GetCursorPos( &pt );
-		::ScreenToClient( hwnd, &pt );
-		::GetClientRect( hwnd, &rc );
-		if( !::PtInRect( &rc, pt ) )
-			::SendMessageAny( hwnd, WM_MOUSEMOVE, 0, MAKELONG( pt.x, pt.y ) );
 	}
 
 	return 0L;
