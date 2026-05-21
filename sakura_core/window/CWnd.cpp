@@ -38,8 +38,29 @@ LRESULT CWnd::DispatchEvent(
 	LPARAM lParam
 )
 {
+	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+// clang-format on
+
+	default:
+		break;
+	}
+
 	//あとはデフォルトに任せる
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CWnd::OnDestroy(HWND hWnd)
+{
+	FORWARD_WM_DESTROY(hWnd, DefWndProcW);
 }
 
 /*!
@@ -192,7 +213,6 @@ LRESULT COriginalWnd::DispatchEvent(
 #define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
 
 	switch (uMsg) {
-	CALLH( WM_DESTROY			, OnDestroy			);
 	CALLH( WM_SIZE				, OnSize			);
 	CALLH( WM_COMMAND			, OnCommand			);
 	CALLH( WM_LBUTTONDOWN		, OnLButtonDown		);

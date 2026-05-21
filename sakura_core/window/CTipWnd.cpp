@@ -43,10 +43,6 @@ CTipWnd::CTipWnd()
 /* CTipWndクラス デストラクタ */
 CTipWnd::~CTipWnd()
 {
-	if( nullptr != m_hFont ){
-		::DeleteObject( m_hFont );
-		m_hFont = nullptr;
-	}
 	return;
 }
 
@@ -83,11 +79,6 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 		nullptr // handle to menu, or child-window identifier
 	);
 
-	if( nullptr != m_hFont ){
-		::DeleteObject( m_hFont );
-		m_hFont = nullptr;
-	}
-
 	m_hFont = ::CreateFontIndirect( &(GetDllShareData().m_Common.m_sHelper.m_lf) );
 	return;
 }
@@ -95,10 +86,10 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 /* Tipを表示 */
 void CTipWnd::Show( int nX, int nY, RECT* pRect )
 {
-	HDC		hdc;
-	RECT	rc;
+	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+	MemDcHolder hdc = ::CreateCompatibleDC(nullptr);
 
-	hdc = ::GetDC( GetHwnd() );
+	RECT	rc;
 
 	// サイズを計算済み	2001/06/19 asa-o
 	if(pRect != nullptr)
@@ -111,7 +102,7 @@ void CTipWnd::Show( int nX, int nY, RECT* pRect )
 		ComputeWindowSize( hdc, &rc );
 	}
 
-	::ReleaseDC( GetHwnd(), hdc );
+	hdc = nullptr;
 
 	if( m_bAlignLeft ){
 		// 右側固定で表示(MiniMap)
@@ -150,7 +141,8 @@ void CTipWnd::ComputeWindowSize(
 	int nCurMaxWidth = 0;
 	int nCurHeight = 0;
 
-	HGDIOBJ hFontOld = ::SelectObject( hdc, m_hFont );
+	SelectionHolder hFontOld{ hdc };
+	hFontOld = ::SelectObject( hdc, m_hFont );
 
 	for ( size_t i = 0, nLineBgn = 0; i <= cchText; ) {
 		// iの位置がNUL終端かどうか
@@ -197,8 +189,6 @@ void CTipWnd::ComputeWindowSize(
 		}
 	}
 
-	::SelectObject( hdc, hFontOld );
-
 	prcResult->left = 0;
 	prcResult->top = 0;
 	prcResult->right = nCurMaxWidth + cx4 * 2; //※左右マージンだから2倍
@@ -230,7 +220,9 @@ void CTipWnd::DrawTipText(
 	rc.top = cy4;
 
 	int nBkModeOld = ::SetBkMode( hdc, TRANSPARENT );
-	HGDIOBJ hFontOld = ::SelectObject( hdc, m_hFont );
+
+	SelectionHolder hFontOld{ hdc };
+	hFontOld = ::SelectObject( hdc, m_hFont );
 	COLORREF textColorOld = ::SetTextColor( hdc, ::GetSysColor( COLOR_INFOTEXT ) );
 
 	for ( size_t i = 0, nLineBgn = 0; i <= cchText; ) {
@@ -270,7 +262,7 @@ void CTipWnd::DrawTipText(
 	}
 
 	::SetTextColor( hdc, textColorOld );
-	::SelectObject( hdc, hFontOld );
+	hFontOld = nullptr;
 	::SetBkMode( hdc, nBkModeOld );
 
 	return;
@@ -306,12 +298,26 @@ void CTipWnd::GetWindowSize(LPRECT pRect)
 		return;
 	}
 
-	HDC		hdc = ::GetDC( GetHwnd() );
+	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+	MemDcHolder hdc = ::CreateCompatibleDC(nullptr);
 
 	// ウィンドウのサイズを得る
 	ComputeWindowSize( hdc, pRect );
-
-	::ReleaseDC( GetHwnd(), hdc ); //2007.10.10 kobake ReleaseDCが抜けていたのを修正
 }
 
 // 2001/06/19 End
+
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CTipWnd::OnDestroy(HWND hWnd)
+{
+	//表示用フォントを削除する
+	m_hFont = nullptr;
+
+	Base::OnDestroy(hWnd);
+}

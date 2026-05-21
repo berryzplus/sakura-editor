@@ -825,7 +825,6 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 
 	/* 初期化 */
 	m_hwndTab    = nullptr;
-	m_hFont      = nullptr;
 	gm_pOldWndProc = nullptr;
 	m_hwndToolTip = nullptr;
 	m_bVisualStyle = ::IsVisualStyle();	// 2007.04.01 ryoji
@@ -918,9 +917,9 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 		/* 表示用フォント */
 		/* LOGFONTの初期化 */
 		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
-		m_hFont = ::CreateFontIndirect( &m_lf );
+		m_hFont = ::CreateFontIndirectW(&m_pShareData->m_Common.m_sTabBar.m_lf);
 		/* フォント変更 */
-		::SendMessageAny( m_hwndTab, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0) );
+		SetWindowFont(m_hwndTab, m_hFont, TRUE);
 
 		//ツールチップを作成する。（タブではなく「閉じる」などのボタン用）
 		//	2005.08.11 ryoji 「重ねて表示」のZ-orderがおかしくなるのでTOPMOST指定を解除
@@ -960,7 +959,7 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 		ApiWrap::Tooltip_AddTool( m_hwndToolTip, &ti );
 
 		// 2006.02.22 ryoji イメージリストを初期化する
-		InitImageList();
+		m_hIml = InitImageList();
 
 		Refresh();	// タブ非表示から表示に切り替わったときに各ウィンドウの情報をタブ登録する必要がある
 
@@ -1000,26 +999,53 @@ void CTabWnd::Close( void )
 {
 	if( GetHwnd() )
 	{
-		if( gm_pOldWndProc )
-		{
-			// Modified by KEITA for WIN64 2003.9.6
-			::SetWindowLongPtr( m_hwndTab, GWLP_WNDPROC, (LONG_PTR)gm_pOldWndProc );
-			gm_pOldWndProc = nullptr;
-		}
-		
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( m_hwndTab, GWLP_USERDATA, (LONG_PTR)nullptr );
-
-		if( m_hwndToolTip )
-		{
-			::DestroyWindow( m_hwndToolTip );
-			m_hwndToolTip = nullptr;
-		}
-
 		this->DestroyWindow();
 	}
 }
 
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CTabWnd::OnDestroy(HWND hWnd)
+{
+	::KillTimer(hWnd, 1);
+
+	if (gm_pOldWndProc)
+	{
+		// Modified by KEITA for WIN64 2003.9.6
+		::SetWindowLongPtr( m_hwndTab, GWLP_WNDPROC, (LONG_PTR)gm_pOldWndProc );
+		gm_pOldWndProc = nullptr;
+	}
+		
+	// Modified by KEITA for WIN64 2003.9.6
+	::SetWindowLongPtr( m_hwndTab, GWLP_USERDATA, (LONG_PTR)nullptr );
+
+	//タブコントロールを削除
+	if (m_hwndTab)
+	{
+		::DestroyWindow( m_hwndTab );
+		m_hwndTab = nullptr;
+	}
+
+	if (m_hwndToolTip)
+	{
+		::DestroyWindow( m_hwndToolTip );
+		m_hwndToolTip = nullptr;
+	}
+
+	//イメージリストを削除する
+	m_hIml = nullptr;
+
+	//表示用フォントを削除する
+	m_hFont = nullptr;
+
+	Base::OnDestroy(hWnd);
+}
+ 
 //WM_SIZE処理
 LRESULT CTabWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
@@ -1043,37 +1069,6 @@ LRESULT CTabWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg,
 	return 0L;
 }
 
-//WM_DSESTROY処理
-LRESULT CTabWnd::OnDestroy( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	//タブコントロールを削除
-	if( m_hwndTab )
-	{
-		::DestroyWindow( m_hwndTab );
-		m_hwndTab = nullptr;
-	}
-
-	//表示用フォント
-	if( m_hFont )
-	{
-		::DeleteObject( m_hFont );
-		m_hFont = nullptr;
-	}
-
-	// 2006.01.28 ryoji イメージリストを削除
-	if( nullptr != m_hIml )
-	{
-		ImageList_Destroy( m_hIml );
-		m_hIml = nullptr;
-	}
-
-	::KillTimer( hwnd, 1 );	//	2006.02.01 ryoji
-
-	_SetHwnd(nullptr);
-
-	return 0L;
-}
- 
 /*! WM_LBUTTONDBLCLK処理
 	@date 2006.03.26 ryoji 新規作成
 */
@@ -2261,11 +2256,9 @@ void CTabWnd::LayoutTab( void )
 		nSizeBoxWidth = ::GetSystemMetrics( SM_CXVSCROLL );
 	}
 	if( bChgFont ){
-		HFONT hFontOld = m_hFont;
 		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
-		m_hFont = ::CreateFontIndirect( &m_lf );
-		::SendMessageAny( m_hwndTab, WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0) );
-		::DeleteObject( hFontOld );
+		m_hFont = ::CreateFontIndirectW(&m_pShareData->m_Common.m_sTabBar.m_lf);
+		SetWindowFont(m_hwndTab, m_hFont, TRUE);
 		// ウィンドウの高さを修正
 	}
 
@@ -2274,12 +2267,14 @@ void CTabWnd::LayoutTab( void )
 	HIMAGELIST hImg = TabCtrl_GetImageList( m_hwndTab );
 	if( nullptr == hImg && bDispTabIcon )
 	{
-		if( nullptr != InitImageList() )
+		m_hIml = InitImageList();
+		if (m_hIml) {
 			Refresh( TRUE, TRUE );
+		}
 	}
 	else if( nullptr != hImg && !bDispTabIcon )
 	{
-		InitImageList();
+		m_hIml = InitImageList();
 	}
 
 	// 現在のウィンドウスタイルを取得する
@@ -2430,12 +2425,7 @@ l_end:
 	// タブに新しいアイコンイメージを設定する
 	TabCtrl_SetImageList( m_hwndTab, hImlNew );
 
-	// 新しいイメージリストを記憶する
-	if( nullptr != m_hIml )
-		ImageList_Destroy( m_hIml );
-	m_hIml = hImlNew;
-
-	return m_hIml;	// 新しいイメージリストを返す
+	return hImlNew;	// 新しいイメージリストを返す
 }
 
 /*! イメージリストのインデックス取得処理
@@ -2483,7 +2473,6 @@ int CTabWnd::GetImageIndex( EditNode* pNode )
 				TabCtrl_SetImageList( m_hwndTab, hImlNew );
 
 			// 新しいイメージリストを記憶する
-			ImageList_Destroy( m_hIml );
 			m_hIml = hImlNew;
 
 			return sfi.iIcon;	// インデックスを返す
@@ -2816,11 +2805,12 @@ void CTabWnd::GetTabName( EditNode* pEditNode, BOOL bFull, BOOL bDupamp, LPWSTR 
 	else
 	{
 		// フルパス名を簡易名に変換する
-		HDC hdc = ::GetDC(m_hwndTab);
-		HFONT hFontOld = (HFONT)SelectObject(hdc, m_hFont);
+		using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+		using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
+		MemDcHolder hdc = ::CreateCompatibleDC(nullptr);
+		SelectionHolder hFontOld{ hdc };
+		hFontOld = ::SelectObject(hdc, m_hFont);
 		CFileNameManager::getInstance()->GetTransformFileNameFast( pEditNode->m_szFilePath, pszText, nLen, hdc, false );
-		SelectObject(hdc, hFontOld);
-		::ReleaseDC(m_hwndTab, hdc);
 	}
 
 	if( bDupamp )

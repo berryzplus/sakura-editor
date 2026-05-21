@@ -112,11 +112,21 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 void CAutoScrollWnd::Close()
 {
 	this->DestroyWindow();
+}
 
-	if( m_hCenterImg ){
-		::DeleteObject( m_hCenterImg );
-		m_hCenterImg = nullptr;
-	}
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CAutoScrollWnd::OnDestroy(HWND hWnd)
+{
+	//背景ビットマップを削除する
+	m_hCenterImg = nullptr;
+
+	Base::OnDestroy(hWnd);
 }
 
 LRESULT CAutoScrollWnd::OnLButtonDown( [[maybe_unused]] HWND hWnd, [[maybe_unused]] UINT Msg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )

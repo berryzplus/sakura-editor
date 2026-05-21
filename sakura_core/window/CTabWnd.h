@@ -33,6 +33,9 @@ struct DLLSHAREDATA;
 class CTabWnd final : public COriginalWnd
 {
 private:
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
+	using ImageListHolder = cxx::ResourceHolder<&::ImageList_Destroy>;
+
 	using Base = COriginalWnd;
 	using Me = CTabWnd;
 
@@ -88,8 +91,8 @@ protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 */
+	void	OnDestroy(HWND hWnd) override;
 	LRESULT OnSize( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_SIZE処理 */
-	LRESULT OnDestroy( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_DSESTROY処理 */
 	LRESULT OnNotify( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_NOTIFY処理 */
 	LRESULT OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;		/*!< WM_PAINT処理 */
 	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
@@ -157,7 +160,7 @@ protected:
 	*/
 public:
 	DLLSHAREDATA*	m_pShareData;	/*!< 共有データ */
-	HFONT			m_hFont = nullptr;		/*!< 表示用フォント */
+	FontHolder		m_hFont = nullptr;			//!< 表示用フォント
 	HWND			m_hwndTab = nullptr;		/*!< タブコントロール */
 	HWND			m_hwndToolTip = nullptr;	/*!< ツールチップ（ボタン用） */
 	WCHAR			m_szTextTip[1024];	/*!< ツールチップのテキスト（タブ用） */
@@ -169,7 +172,7 @@ private:
 	POINT		m_ptSrcCursor;			//!< ドラッグ開始カーソル位置
 	HCURSOR		m_hDefaultCursor;		//!< ドラッグ開始時のカーソル
 
-	HIMAGELIST	m_hIml = nullptr;					//!< イメージリスト
+	ImageListHolder	m_hIml = nullptr;					//!< イメージリスト
 	HICON		m_hIconApp;				//!< アプリケーションアイコン
 	HICON		m_hIconGrep;			//!< Grepアイコン
 	int			m_iIconApp;				//!< アプリケーションアイコンのインデックス

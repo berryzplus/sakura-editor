@@ -17,6 +17,7 @@
 #define SAKURA_CFUNCKEYWND_2EB0FD88_ABBB_4280_BEEA_46E8468E4550_H_
 #pragma once
 
+#include "_main/global.h"
 #include "window/CWnd.h"
 #include "env/DLLSHAREDATA.h"
 
@@ -28,6 +29,8 @@ class CEditDoc; // 2002/2/10 aroka
 class CFuncKeyWnd final : public COriginalWnd
 {
 private:
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
+
 	using Base = COriginalWnd;
 	using Me = CFuncKeyWnd;
 
@@ -55,7 +58,7 @@ private:
 	int				m_nCurrentKeyState = -1;
 	WCHAR			m_szFuncNameArr[12][256];
 	HWND			m_hwndButtonArr[12];
-	HFONT			m_hFont;	/*!< 表示用フォント */
+	FontHolder		m_hFont = nullptr;	/*!< 表示用フォント */
 	bool			m_bSizeBox = false;
 	HWND			m_hwndSizeBox = nullptr;
 	int				m_nTimerCount = 0;
@@ -71,10 +74,10 @@ protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	void	OnDestroy(HWND hWnd) override;
 	LRESULT OnTimer(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	// WM_TIMERタイマーの処理
 	LRESULT OnCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;	// WM_COMMAND処理
 	LRESULT OnSize(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;// WM_SIZE処理
-	LRESULT OnDestroy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;// WM_DESTROY処理
 };
 
 #endif /* SAKURA_CFUNCKEYWND_2EB0FD88_ABBB_4280_BEEA_46E8468E4550_H_ */

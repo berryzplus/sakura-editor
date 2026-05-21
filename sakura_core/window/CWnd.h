@@ -57,6 +57,7 @@ public:
 	//特殊インターフェース (使用は好ましくない)
 	void		_SetHwnd(HWND hwnd) { m_hWnd = hwnd; }
 
+	virtual void	OnDestroy(HWND hWnd);
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
 
@@ -136,7 +137,6 @@ public:
 	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
 	virtual DECLH( OnTimer			);	// WM_TIMER
 	virtual DECLH( OnSize			);	// WM_SIZE
-	virtual DECLH( OnDestroy		);	// WM_DSESTROY
 
 	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
 	virtual DECLH( OnNotify			);	// WM_NOTIFY	//@@@ 2003.05.31 MIK

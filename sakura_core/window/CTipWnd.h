@@ -28,6 +28,9 @@
 class CTipWnd final : public COriginalWnd
 {
 private:
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
+	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
+
 	using Base = COriginalWnd;
 	using Me = CTipWnd;
 
@@ -48,16 +51,12 @@ public:
 	void GetWindowSize(LPRECT pRect);		// 2001/06/19 asa-o ウィンドウのサイズを得る
 
 	void ChangeFont( LOGFONT* lf ){
-		if ( m_hFont ){
-			::DeleteObject( m_hFont );
-		}
-		m_hFont = ::CreateFontIndirect( lf );
+		m_hFont = ::CreateFontIndirectW( lf );
 	}
 
-protected: // 2002/2/10 aroka アクセス権変更
-	HFONT		m_hFont = nullptr;
-
 public:
+	FontHolder	m_hFont = nullptr;
+
 	CNativeW	m_cKey;			/* キーの内容データ */
 	BOOL		m_KeyWasHit = FALSE;	/* キーがヒットしたか */
 	int			m_nSearchLine;	/* 辞書のヒット行 */	// 2006.04.10 fon
@@ -76,6 +75,7 @@ protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	void	OnDestroy(HWND hWnd) override;
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;/* 描画処理 */
 
 public:

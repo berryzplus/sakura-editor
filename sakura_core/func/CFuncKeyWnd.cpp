@@ -18,10 +18,9 @@
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
-#include "_main/global.h"
 #include "func/CFuncKeyWnd.h"
+
 #include "env/CShareData.h"
-#include "env/DLLSHAREDATA.h"
 #include "window/CEditWnd.h"
 #include "doc/CEditDoc.h"
 #include "util/input.h"
@@ -75,8 +74,6 @@ CFuncKeyWnd::CFuncKeyWnd()
 
 CFuncKeyWnd::~CFuncKeyWnd()
 {
-	/* 表示用フォント */
-	::DeleteObject( m_hFont );
 	return;
 }
 
@@ -315,33 +312,6 @@ LRESULT CFuncKeyWnd::OnTimer( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT 
 	return 0;
 }
 
-// WM_DESTROY処理
-LRESULT CFuncKeyWnd::OnDestroy( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
-{
-	int i;
-
-	/* タイマーを削除 */
-	Timer_ONOFF( false ); // 20060126 aroka
-
-	/* ボタンを削除 */
-	for( i = 0; i < int(std::size(m_hwndButtonArr)); ++i ){
-		if( nullptr != m_hwndButtonArr[i] ){
-			::DestroyWindow( m_hwndButtonArr[i]	);
-			m_hwndButtonArr[i] = nullptr;
-		}
-	}
-
-	/* サイズボックスを削除 */
-	if( nullptr != m_hwndSizeBox ){
-		::DestroyWindow( m_hwndSizeBox );
-		m_hwndSizeBox = nullptr;
-	}
-
-	_SetHwnd(nullptr);
-
-	return 0L;
-}
-
 /*! ボタンのサイズを計算 */
 int CFuncKeyWnd::CalcButtonSize( void )
 {
@@ -401,7 +371,7 @@ void CFuncKeyWnd::CreateButtons( void )
 			nullptr				// pointer not needed
 		);
 		/* フォント変更 */
-		::SendMessageAny( m_hwndButtonArr[i], WM_SETFONT, (WPARAM)m_hFont, MAKELPARAM(TRUE, 0) );
+		SetWindowFont(m_hwndButtonArr[i], m_hFont, TRUE);
 	}
 	m_nCurrentKeyState = -1;
 	return;
@@ -461,4 +431,36 @@ void CFuncKeyWnd::Timer_ONOFF( bool bStart )
 		}
 	}
 	return;
+}
+
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CFuncKeyWnd::OnDestroy(HWND hWnd)
+{
+	/* サイズボックスを削除 */
+	if (m_hwndSizeBox) {
+		::DestroyWindow(m_hwndSizeBox);
+		m_hwndSizeBox = nullptr;
+	}
+
+	/* タイマーを削除 */
+	Timer_ONOFF(false);
+
+	/* ボタンを削除 */
+	for (auto& hWndButton : m_hwndButtonArr) {
+		if (hWndButton) {
+			::DestroyWindow(hWndButton);
+			hWndButton = nullptr;
+		}
+	}
+
+	//表示用フォントを削除する
+	m_hFont = nullptr;
+
+	Base::OnDestroy(hWnd);
 }
