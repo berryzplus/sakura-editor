@@ -54,8 +54,7 @@ protected:
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
-
-	LRESULT OnLButtonDblClk(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONDBLCLK
+	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
 
 private:
 	int			m_bVertical;	/* 垂直分割ボックスか */

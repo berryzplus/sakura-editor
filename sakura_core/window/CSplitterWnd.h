@@ -89,8 +89,8 @@ protected:
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
+	void	OnLButtonDblClk(HWND hwnd, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnLButtonDblClk(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタンダブルクリック時の処理 */
 	/*
 	||  実装ヘルパ関数
 	*/

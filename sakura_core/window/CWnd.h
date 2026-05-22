@@ -90,6 +90,7 @@ public:
 	virtual void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags);
 	virtual void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
 	virtual void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
+	virtual void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -160,7 +161,6 @@ public:
 
 #define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
 
-	virtual DECLH( OnLButtonDblClk	);	// WM_LBUTTONDBLCLK
 	virtual DECLH( OnRButtonDown	);	// WM_RBUTTONDOWN
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 

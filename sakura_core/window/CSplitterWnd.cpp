@@ -991,9 +991,11 @@ void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 /* マウス左ボタン押下時の処理 */
 void CSplitterWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(keyFlags);
+	if (fDoubleClick) {
+		OnLButtonDblClk(hWnd, x, y, keyFlags);
+		return;
+	}
+
 
 	const auto xPos = x;
 	const auto yPos = y;
@@ -1063,43 +1065,38 @@ void CSplitterWnd::OnLButtonUp( HWND hWnd, int x, int y, UINT keyFlags )
 }
 
 /* マウス左ボタンダブルクリック時の処理 */
-LRESULT CSplitterWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CSplitterWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 {
-	const auto hWnd = hwnd;
+	UNREFERENCED_PARAMETER(keyFlags);
 
-	int nX;
-	int nY;
-	int	nHit;
-	int	xPos;
-	int	yPos;
+	int nX = 0;
+	int nY = 0;
 
-	xPos = (int)(short)LOWORD(lParam);
-	yPos = (int)(short)HIWORD(lParam);
-
-	nHit = HitTestSplitter( xPos, yPos );
-	if( nHit == 1 ){
-		if( m_nAllSplitCols == 1 ){
-			nX = 0;
-		}else{
-			nX = m_nHSplitPos;
-		}
-		DoSplit( nX , 0 );
-	}else
-	if( nHit == 2 ){
-		if( m_nAllSplitRows == 1 ){
-			nY = 0;
-		}else{
-			nY = m_nVSplitPos;
-		}
-		DoSplit( 0 , nY );
-	}else
-	if( nHit == 3 ){
-		DoSplit( 0 , 0 );
+	if (!hWnd) {
+		return;
 	}
 
-	OnMouseMove(hWnd, xPos, yPos, 0);
+	switch (const auto nHit = HitTestSplitter(x, y)) {
+	case 1:
+		if (1 < m_nAllSplitCols) {
+			nX = m_nHSplitPos;
+		}
+		DoSplit(nX , 0);
+		break;
 
-	return 0L;
+	case 2:
+		if (1 < m_nAllSplitRows){
+			nY = m_nVSplitPos;
+		}
+		DoSplit(0, nY);
+		break;
+
+	default:
+		DoSplit(0, 0);
+		break;
+	}
+
+	OnMouseMove(hWnd, x, y, 0);
 }
 
 /* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */

@@ -192,11 +192,10 @@ void CSplitBoxWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 //WM_LBUTTONDOWN
 void CSplitBoxWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(x);
-	UNREFERENCED_PARAMETER(y);
-	UNREFERENCED_PARAMETER(keyFlags);
+	if (fDoubleClick) {
+		OnLButtonDblClk(hWnd, x, y, keyFlags);
+		return;
+	}
 
 	const auto hwnd = hWnd;
 
@@ -465,10 +464,19 @@ void CSplitBoxWnd::OnLButtonUp( HWND hWnd, int x, int y, UINT keyFlags )
 }
 
 //WM_LBUTTONDBLCLK
-LRESULT CSplitBoxWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CSplitBoxWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
 	RECT		rc;
 	int			nCyHScroll;
+
+	if (!hWnd) {
+		return;
+	}
+
 	if( m_bVertical ){
 		::GetClientRect( GetParentHwnd(), &rc );
 		nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );	/* 水平スクロールバーの高さ */
@@ -485,5 +493,4 @@ LRESULT CSplitBoxWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unuse
 		/* 親ウィンドウに、メッセージをポストする */
 		::PostMessageAny( GetParentHwnd(), MYWM_DOSPLIT, (WPARAM)(rc.right / 2), (LPARAM)0 );
 	}
-	return 0L;
 }

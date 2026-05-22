@@ -1209,11 +1209,19 @@ void CTabWnd::OnTimer(HWND hWnd, UINT id)
 /*! WM_LBUTTONDBLCLK処理
 	@date 2006.03.26 ryoji 新規作成
 */
-LRESULT CTabWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CTabWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	if (!hWnd) {
+		return;
+	}
+
 	// 新規作成コマンドを実行する
 	::SendMessageCmd( GetParentHwnd(), WM_COMMAND, MAKEWPARAM( F_FILENEW, 0 ), (LPARAM)nullptr );
-	return 0L;
 }
 
 /*!	WM_CAPTURECHANGED処理
@@ -1234,16 +1242,16 @@ LRESULT CTabWnd::OnCaptureChanged( [[maybe_unused]] HWND hwnd, [[maybe_unused]] 
 */
 void CTabWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(keyFlags);
+	if (fDoubleClick) {
+		OnLButtonDblClk(hWnd, x, y, keyFlags);
+		return;
+	}
 
 	CMyPoint pt{ x, y };
 
 	if (!hWnd) {
 		return;
 	}
-
 
 	RECT rc;
 	RECT rcBtn;
