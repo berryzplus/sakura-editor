@@ -158,6 +158,7 @@ public:
 	virtual LRESULT DispatchEvent_WM_APP(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/* 仮想関数 メッセージ処理(デフォルト動作) */
+	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
 
 	/* デフォルトメッセージ処理 */
 	virtual LRESULT CallDefWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
@@ -171,7 +172,7 @@ public:
 	void	DestroyWindow() const;
 
 	std::wstring	m_ClassName;
-	HINSTANCE		m_hInstance = G_AppInstance();	//!< アプリケーションインスタンスのハンドル
+	HINSTANCE		m_hInstance = nullptr;			//!< アプリケーションインスタンスのハンドル。（ウィンドウ作成後のみ有効）
 	HWND			m_hwndParent = nullptr;			//!< 親ウィンドウのハンドル
 };
 

@@ -309,8 +309,6 @@ HWND COriginalWnd::Create(
 	HMENU		hMenu			// handle to menu, or child-window identifier
 )
 {
-	m_hwndParent = hwndParent;
-
 	const auto hWnd = ::CreateWindowExW(
 		dwExStyle, // extended window style
 		lpszClassName, // pointer to registered class name
@@ -345,17 +343,41 @@ LRESULT COriginalWnd::DispatchEvent(
 	LPARAM lParam
 )
 {
-	switch (uMsg) {
-	default:
-		if (WM_APP <= uMsg && uMsg <= 0xBFFF ){
-			/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
-			return DispatchEvent_WM_APP(hWnd, uMsg, wParam, lParam);
-		}
-		break;	/* default */
+	// 独自ウィンドウはWM_CREATEを処理する
+	if (WM_CREATE == uMsg) {
+		return HANDLE_WM_CREATE(hWnd, wParam, lParam, OnCreate);
+	}
+
+	// 0x8000 - 0xBFFF はアプリケーション定義のメッセージ
+	if (WM_APP <= uMsg && uMsg <= WM_APP + 0x3FFF) {
+		/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
+		return DispatchEvent_WM_APP(hWnd, uMsg, wParam, lParam);
 	}
 
 	//あとはデフォルトに任せる
 	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ *
+ * @returns ウインドウの作成を続行してよいかどうか
+ * @retval true  ウィンドウの作成を続行してよい
+ * @retval false ウィンドウの作成を続行してはいけない（作成を中止する）
+ */
+bool COriginalWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!hWnd || !lpCreateStruct) {
+		return false;
+	}
+
+	m_hInstance = lpCreateStruct->hInstance;
+
+	m_hwndParent = lpCreateStruct->hwndParent;
+
+	return true;
 }
 
 /* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
