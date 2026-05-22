@@ -1344,9 +1344,12 @@ LRESULT CTabWnd::OnRButtonDown( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UIN
 /*!	WM_MEASUREITEM処理
 	@date 2006.02.01 ryoji 新規作成
 */
-LRESULT CTabWnd::OnMeasureItem( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CTabWnd::OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem)
 {
-	MEASUREITEMSTRUCT* lpmis = (MEASUREITEMSTRUCT*)lParam;
+	const auto hwnd = hWnd;
+
+	auto lpmis = lpMeasureItem;
+
 	if( lpmis->CtlType == ODT_MENU )
 	{
 		TABMENU_DATA* pData = (TABMENU_DATA*)lpmis->itemData;
@@ -1372,8 +1375,6 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_u
 		::DeleteObject( hFont );
 		::ReleaseDC( hwnd, hdc );
 	}
-
-	return 0L;
 }
 
 /*!	WM_DRAWITEM処理

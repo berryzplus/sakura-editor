@@ -81,6 +81,7 @@ public:
 	virtual void	OnSize(HWND hWnd, UINT state, int cx, int cy);
 	virtual void	OnPaint(HWND hWnd, PAINTSTRUCT& ps);
 	virtual void	OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem);
+	virtual void	OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem);
 
 	virtual LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR);
 
@@ -163,7 +164,6 @@ public:
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
 
-	virtual DECLH( OnMeasureItem	);	// WM_MEASUREITEM
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
 
 #pragma pop_macro("DECLH")

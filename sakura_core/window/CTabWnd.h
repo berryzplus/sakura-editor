@@ -98,6 +98,7 @@ protected:
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem) override;
+	void	OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem) override;
 
 	LRESULT	OnNotify(HWND hWnd, UINT_PTR idFrom, LPNMHDR pNMHDR) override;
 
@@ -109,7 +110,6 @@ protected:
 	LRESULT OnRButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_RBUTTONDOWN処理 */
 	LRESULT OnLButtonDblClk( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONDBLCLK処理 */
 	LRESULT OnMouseMove( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_MOUSEMOVE処理 */
-	LRESULT OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_MEASUREITEM処理 */
 
 	// 2005.09.01 ryoji ドラッグアンドドロップでタブの順序変更を可能に
 	/* サブクラス化した Tab でのメッセージ処理 */

@@ -43,6 +43,7 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
 	HANDLE_MSG(hWnd, WM_DRAWITEM,						OnDrawItem);
+	HANDLE_MSG(hWnd, WM_MEASUREITEM,					OnMeasureItem);
 	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
@@ -115,6 +116,11 @@ void CWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 void CWnd::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
 {
 	FORWARD_WM_DRAWITEM(hWnd, lpDrawItem, DefWndProcW);
+}
+
+void CWnd::OnMeasureItem(HWND hWnd, MEASUREITEMSTRUCT* lpMeasureItem)
+{
+	FORWARD_WM_MEASUREITEM(hWnd, lpMeasureItem, DefWndProcW);
 }
 
 /*!
@@ -310,7 +316,6 @@ LRESULT COriginalWnd::DispatchEvent(
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);
 	CALLH( WM_MOUSEMOVE			, OnMouseMove		);
 
-	CALLH( WM_MEASUREITEM		, OnMeasureItem		);
 	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji
 
 	default:
