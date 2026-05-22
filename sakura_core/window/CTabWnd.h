@@ -105,9 +105,9 @@ protected:
 	void	OnTimer(HWND hWnd, UINT id) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 
 	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
-	LRESULT OnLButtonUp( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONUP処理 */
 	LRESULT OnRButtonDown( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_RBUTTONDOWN処理 */
 	LRESULT OnLButtonDblClk( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_LBUTTONDBLCLK処理 */
 

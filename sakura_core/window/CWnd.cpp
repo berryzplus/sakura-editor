@@ -48,6 +48,7 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 	HANDLE_MSG(hWnd, WM_MOUSEMOVE,						OnMouseMove);
 	HANDLE_MSG(hWnd, WM_LBUTTONDOWN,					OnLButtonDown);
+	HANDLE_MSG(hWnd, WM_LBUTTONUP,						OnLButtonUp);
 // clang-format on
 
 	case WM_PAINT:
@@ -169,6 +170,11 @@ void CWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 void CWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
 	FORWARD_WM_LBUTTONDOWN(hWnd, fDoubleClick, x, y, keyFlags, DefWndProcW);
+}
+
+void CWnd::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
+{
+	FORWARD_WM_LBUTTONUP(hWnd, x, y, keyFlags, DefWndProcW);
 }
 
 /*!
@@ -321,7 +327,6 @@ LRESULT COriginalWnd::DispatchEvent(
 #define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
 
 	switch (uMsg) {
-	CALLH( WM_LBUTTONUP			, OnLButtonUp		);
 	CALLH( WM_LBUTTONDBLCLK		, OnLButtonDblClk	);
 	CALLH( WM_RBUTTONDOWN		, OnRButtonDown		);
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);

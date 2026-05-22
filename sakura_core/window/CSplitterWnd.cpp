@@ -1016,11 +1016,19 @@ void CSplitterWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UIN
 }
 
 /* マウス左ボタン解放時の処理 */
-LRESULT CSplitterWnd::OnLButtonUp( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CSplitterWnd::OnLButtonUp( HWND hWnd, int x, int y, UINT keyFlags )
 {
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
 	int bDraggingOld;
 	int nX;
 	int nY;
+
+	if (!hWnd) {
+		return;
+	}
 
 	if( m_bDragging ){
 		/* 分割トラッカーの表示 */
@@ -1052,7 +1060,6 @@ LRESULT CSplitterWnd::OnLButtonUp( [[maybe_unused]] HWND hwnd, [[maybe_unused]] 
 			DoSplit( nX, nY );
 		}
 	}
-	return 0L;
 }
 
 /* マウス左ボタンダブルクリック時の処理 */

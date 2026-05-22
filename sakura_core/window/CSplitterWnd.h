@@ -88,8 +88,8 @@ protected:
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnLButtonUp(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタン解放時の処理 */
 	LRESULT OnLButtonDblClk(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタンダブルクリック時の処理 */
 	/*
 	||  実装ヘルパ関数

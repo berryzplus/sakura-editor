@@ -1274,14 +1274,20 @@ void CTabWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT key
 /*!	WM_LBUTTONUP処理
 	@date 2006.11.30 ryoji 新規作成
 */
-LRESULT CTabWnd::OnLButtonUp( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CTabWnd::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 {
-	POINT pt;
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	CMyPoint pt{ x, y };
+
+	if (!hWnd) {
+		return;
+	}
+
 	RECT rc;
 	RECT rcBtn;
 
-	pt.x = LOWORD(lParam);
-	pt.y = HIWORD(lParam);
 	::GetClientRect( GetHwnd(), &rc );
 
 	if( ::GetCapture() == GetHwnd() )	// 自ウィンドウがマウスキャプチャしている?
@@ -1316,8 +1322,6 @@ LRESULT CTabWnd::OnLButtonUp( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT 
 		m_eCaptureSrc = CAPT_NONE;
 		::ReleaseCapture();
 	}
-
-	return 0L;
 }
 
 /*!	WM_RBUTTONDOWN処理

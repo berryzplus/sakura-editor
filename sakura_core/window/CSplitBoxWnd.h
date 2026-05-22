@@ -53,8 +53,8 @@ protected:
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnLButtonUp(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONUP
 	LRESULT OnLButtonDblClk(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONDBLCLK
 
 private:
