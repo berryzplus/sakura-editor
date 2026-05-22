@@ -42,8 +42,8 @@ protected:
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnDestroy(HWND hWnd) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnLButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT OnRButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT OnMButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 

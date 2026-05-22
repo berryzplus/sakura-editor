@@ -943,8 +943,8 @@ void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
 	UNREFERENCED_PARAMETER(keyFlags);
 
-	const auto xPos = x;
-	const auto yPos = y;
+	auto xPos = x;
+	auto yPos = y;
 
 	if (!hWnd) {
 		return;
@@ -989,14 +989,20 @@ void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 }
 
 /* マウス左ボタン押下時の処理 */
-LRESULT CSplitterWnd::OnLButtonDown( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CSplitterWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	int		nHit;
-	int		xPos;
-	int		yPos;
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(fDoubleClick);
+	UNREFERENCED_PARAMETER(keyFlags);
 
-	xPos = (int)(short)LOWORD(lParam);
-	yPos = (int)(short)HIWORD(lParam);
+	const auto xPos = x;
+	const auto yPos = y;
+
+	if (!hWnd) {
+		return;
+	}
+
+	int		nHit;
 
 	::SetFocus( GetParentHwnd() );
 	/* 分割バーへのヒットテスト */
@@ -1007,8 +1013,6 @@ LRESULT CSplitterWnd::OnLButtonDown( [[maybe_unused]] HWND hwnd, [[maybe_unused]
 	}
 	/* 分割トラッカーの表示 */
 	DrawSplitter( xPos, yPos, FALSE );
-
-	return 0L;
 }
 
 /* マウス左ボタン解放時の処理 */

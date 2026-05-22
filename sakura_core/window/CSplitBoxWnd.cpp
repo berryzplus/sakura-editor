@@ -190,14 +190,27 @@ void CSplitBoxWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 }
 
 //WM_LBUTTONDOWN
-LRESULT CSplitBoxWnd::OnLButtonDown( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CSplitBoxWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(fDoubleClick);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	const auto hwnd = hWnd;
+
 	HDC			hdc;
 	RECT		rc;
 	RECT		rc2;
 	int			nCyHScroll;
 	HBRUSH		hBrush;
 	HBRUSH		hBrushOld;
+
+	if (!hWnd) {
+		return;
+	}
+
 	::SetCapture( hwnd );
 	if( m_bVertical ){
 		m_nDragPosY = 1;
@@ -244,7 +257,6 @@ LRESULT CSplitBoxWnd::OnLButtonDown( HWND hwnd, [[maybe_unused]] UINT uMsg, [[ma
 		::DeleteObject( hBrush );
 		::ReleaseDC( ::GetParent( GetParentHwnd() ), hdc );
 	}
-	return 0L;
 }
 
 //WM_MOUSEMOVE
