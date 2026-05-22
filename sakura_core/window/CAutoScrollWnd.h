@@ -44,8 +44,7 @@ protected:
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
-
-	LRESULT OnMButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
+	void	OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 
 private:
 	int				m_BitMapId;
