@@ -168,12 +168,17 @@ void CAutoScrollWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, U
 	}
 }
 
-LRESULT CAutoScrollWnd::OnRButtonDown( [[maybe_unused]] HWND hWnd, [[maybe_unused]] UINT Msg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CAutoScrollWnd::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(fDoubleClick);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
 	if( m_cView->m_nAutoScrollMode ){
 		m_cView->AutoScrollExit();
 	}
-	return 0;
 }
 
 LRESULT CAutoScrollWnd::OnMButtonDown( [[maybe_unused]] HWND hWnd, [[maybe_unused]] UINT Msg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )

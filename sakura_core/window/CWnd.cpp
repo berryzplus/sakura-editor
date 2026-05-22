@@ -50,6 +50,7 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_LBUTTONDOWN,					OnLButtonDown);
 	HANDLE_MSG(hWnd, WM_LBUTTONUP,						OnLButtonUp);
 	HANDLE_MSG(hWnd, WM_LBUTTONDBLCLK,					OnLButtonDown);
+	HANDLE_MSG(hWnd, WM_RBUTTONDOWN,					OnRButtonDown);
 // clang-format on
 
 	case WM_PAINT:
@@ -186,6 +187,11 @@ void CWnd::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 void CWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 {
 	FORWARD_WM_LBUTTONDOWN(hWnd, TRUE, x, y, keyFlags, DefWndProcW);
+}
+
+void CWnd::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
+{
+	FORWARD_WM_RBUTTONDOWN(hWnd, fDoubleClick, x, y, keyFlags, DefWndProcW);
 }
 
 /*!
@@ -338,7 +344,6 @@ LRESULT COriginalWnd::DispatchEvent(
 #define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
 
 	switch (uMsg) {
-	CALLH( WM_RBUTTONDOWN		, OnRButtonDown		);
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);
 
 	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji

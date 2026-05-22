@@ -91,6 +91,7 @@ public:
 	virtual void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
 	virtual void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
 	virtual void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags);
+	virtual void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -161,7 +162,6 @@ public:
 
 #define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
 
-	virtual DECLH( OnRButtonDown	);	// WM_RBUTTONDOWN
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
 
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji

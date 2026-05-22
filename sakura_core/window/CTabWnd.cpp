@@ -1336,14 +1336,21 @@ void CTabWnd::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 	@date 2006.02.01 ryoji 新規作成
 	@date 2006.11.30 ryoji タブ一覧ボタンクリック関数を廃止して処理取り込み
 */
-LRESULT CTabWnd::OnRButtonDown( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CTabWnd::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	POINT pt;
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(fDoubleClick);
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	CMyPoint pt{ x, y };
+
+	if (!hWnd) {
+		return;
+	}
+
 	RECT rc;
 	RECT rcBtn;
 
-	pt.x = LOWORD(lParam);
-	pt.y = HIWORD(lParam);
 	::GetClientRect( GetHwnd(), &rc );
 
 	// タブ一覧ボタン上ならタブ一覧メニュー（フルパス）を表示する	// 2006.11.30 ryoji
@@ -1355,8 +1362,6 @@ LRESULT CTabWnd::OnRButtonDown( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UIN
 		::ClientToScreen( GetHwnd(), &pt );
 		TabListMenu( pt, FALSE, TRUE, FALSE );	// タブ一覧メニュー（フルパス）
 	}
-
-	return 0L;
 }
 
 /*!	WM_MEASUREITEM処理
