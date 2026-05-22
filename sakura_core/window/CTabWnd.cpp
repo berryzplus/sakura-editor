@@ -1008,6 +1008,31 @@ void CTabWnd::Close( void )
 }
 
 /*!
+ * @brief タブウィンドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CTabWnd::DispatchEvent(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
+)
+{
+	if (WM_CAPTURECHANGED == uMsg) {
+		OnCaptureChanged(hWnd, HWND(lParam));
+		return 0L;
+	}
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
  * @brief WM_DESTROYハンドラ
  *
  * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
@@ -1227,12 +1252,13 @@ void CTabWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 /*!	WM_CAPTURECHANGED処理
 	@date 2006.11.30 ryoji 新規作成
 */
-LRESULT CTabWnd::OnCaptureChanged( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CTabWnd::OnCaptureChanged(HWND hWnd, HWND hWndCapture)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(hWndCapture);
+
 	if( m_eCaptureSrc != CAPT_NONE )
 		m_eCaptureSrc = CAPT_NONE;
-
-	return 0L;
 }
 
 /*!	WM_LBUTTONDOWN処理

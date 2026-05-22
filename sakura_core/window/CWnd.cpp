@@ -345,13 +345,7 @@ LRESULT COriginalWnd::DispatchEvent(
 	LPARAM lParam
 )
 {
-#pragma push_macro("CALLH")
-
-#define CALLH(message, method) case message: return method( hWnd, uMsg, wParam, lParam )
-
 	switch (uMsg) {
-	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji
-
 	default:
 		if (WM_APP <= uMsg && uMsg <= 0xBFFF ){
 			/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
@@ -359,8 +353,6 @@ LRESULT COriginalWnd::DispatchEvent(
 		}
 		break;	/* default */
 	}
-
-#pragma pop_macro("CALLH")
 
 	//あとはデフォルトに任せる
 	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);

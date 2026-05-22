@@ -92,6 +92,7 @@ protected:
 	void GetTabName( EditNode* pEditNode, BOOL bFull, BOOL bDupamp, LPWSTR pszName, int nLen );	/* タブ名取得処理 */	// 2007.06.28 ryoji 新規作成
 
 	/* 仮想関数 */
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	/* 仮想関数 メッセージ処理 */
 	void	OnDestroy(HWND hWnd) override;
@@ -109,7 +110,7 @@ protected:
 	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnCaptureChanged( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) override;	/*!< WM_CAPTURECHANGED 処理 */
+	void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
 
 	// 2005.09.01 ryoji ドラッグアンドドロップでタブの順序変更を可能に
 	/* サブクラス化した Tab でのメッセージ処理 */

@@ -159,14 +159,6 @@ public:
 
 	/* 仮想関数 メッセージ処理(デフォルト動作) */
 
-#pragma push_macro("DECLH")
-
-#define DECLH(method) LRESULT method(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { return DefWndProcW(hWnd, uMsg, wParam, lParam); }
-
-	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
-
-#pragma pop_macro("DECLH")
-
 	/* デフォルトメッセージ処理 */
 	virtual LRESULT CallDefWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const;
 
