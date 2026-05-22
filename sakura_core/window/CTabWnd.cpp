@@ -1380,9 +1380,11 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_u
 	@date 2006.02.01 ryoji 新規作成
 	@date 2012.04.14 syat タブのオーナードロー追加
 */
-LRESULT CTabWnd::OnDrawItem( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CTabWnd::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
 {
-	DRAWITEMSTRUCT* lpdis = (DRAWITEMSTRUCT*)lParam;
+	UNREFERENCED_PARAMETER(hWnd);
+
+	const auto lpdis = lpDrawItem;
 	if( lpdis->CtlType == ODT_MENU )
 	{
 		// タブ一覧メニューを描画する
@@ -1576,8 +1578,6 @@ LRESULT CTabWnd::OnDrawItem( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT u
 			ExcludeClipRect(hdc, rcFullItem.left, rcFullItem.top, rcFullItem.right, rcFullItem.bottom);
 		}
 	}
-
-	return 0L;
 }
 
 /*!	WM_MOUSEMOVE処理
