@@ -1585,16 +1585,18 @@ void CTabWnd::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
 	@date 2006.02.01 ryoji 新規作成
 	@date 2007.03.05 ryoji ボタンの出入りでツールチップを更新する
 */
-LRESULT CTabWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CTabWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags [[maybe_unused]])
 {
+	const auto hwnd = hWnd;
+
 	// カーソルがウィンドウ内に入ったらタイマー起動
 	// ウィンドウ外に出たらタイマー削除
 	POINT pt;
 	RECT rc;
 	BOOL bHovering;
 
-	pt.x = LOWORD( lParam );
-	pt.y = HIWORD( lParam );
+	pt.x = x;
+	pt.y = y;
 	::GetClientRect( hwnd, &rc );
 	bHovering = ::PtInRect( &rc, pt );
 	if( bHovering != m_bHovering )
@@ -1669,8 +1671,6 @@ LRESULT CTabWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unu
 		ti.lpszText     = pszTip;
 		ApiWrap::Tooltip_UpdateTipText( m_hwndToolTip, &ti );
 	}
-
-	return 0L;
 }
 
 /*!

@@ -51,9 +51,9 @@ protected:
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 
 	LRESULT OnLButtonDown(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;// WM_LBUTTONDOWN
-	LRESULT OnMouseMove(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;// WM_MOUSEMOVE
 	LRESULT OnLButtonUp(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONUP
 	LRESULT OnLButtonDblClk(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;//WM_LBUTTONDBLCLK
 

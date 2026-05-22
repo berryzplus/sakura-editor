@@ -86,8 +86,8 @@ protected:
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 
-	LRESULT OnMouseMove(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override; /* マウス移動時の処理 */
 	LRESULT OnLButtonDown(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタン押下時の処理 */
 	LRESULT OnLButtonUp(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタン解放時の処理 */
 	LRESULT OnLButtonDblClk(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	/* マウス左ボタンダブルクリック時の処理 */

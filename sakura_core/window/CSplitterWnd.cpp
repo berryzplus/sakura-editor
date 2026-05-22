@@ -939,15 +939,19 @@ void CSplitterWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 }
 
 /* マウス移動時の処理 */
-LRESULT CSplitterWnd::OnMouseMove( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	const auto xPos = x;
+	const auto yPos = y;
+
+	if (!hWnd) {
+		return;
+	}
+
 	int		nHit;
 	RECT	rc;
-	int		xPos;
-	int		yPos;
-
-	xPos = (int)(short)LOWORD(lParam);
-	yPos = (int)(short)HIWORD(lParam);
 
 	nHit = HitTestSplitter( xPos, yPos );
 	switch( nHit ){
@@ -981,9 +985,7 @@ LRESULT CSplitterWnd::OnMouseMove( [[maybe_unused]] HWND hwnd, [[maybe_unused]] 
 		}
 		/* 分割トラッカーの表示 */
 		DrawSplitter( xPos, yPos, TRUE );
-//		MYTRACE( L"xPos=%d yPos=%d \n", xPos, yPos );
 	}
-	return 0L;
 }
 
 /* マウス左ボタン押下時の処理 */
@@ -1052,6 +1054,8 @@ LRESULT CSplitterWnd::OnLButtonUp( [[maybe_unused]] HWND hwnd, [[maybe_unused]] 
 /* マウス左ボタンダブルクリック時の処理 */
 LRESULT CSplitterWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwnd;
+
 	int nX;
 	int nY;
 	int	nHit;
@@ -1081,7 +1085,9 @@ LRESULT CSplitterWnd::OnLButtonDblClk( [[maybe_unused]] HWND hwnd, [[maybe_unuse
 	if( nHit == 3 ){
 		DoSplit( 0 , 0 );
 	}
-	OnMouseMove( GetHwnd(), 0, 0, MAKELONG( xPos, yPos ) );
+
+	OnMouseMove(hWnd, xPos, yPos, 0);
+
 	return 0L;
 }
 

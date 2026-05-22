@@ -46,6 +46,7 @@ LRESULT CWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_MEASUREITEM,					OnMeasureItem);
 	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
+	HANDLE_MSG(hWnd, WM_MOUSEMOVE,						OnMouseMove);
 // clang-format on
 
 	case WM_PAINT:
@@ -157,6 +158,11 @@ void CWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
 void CWnd::OnTimer(HWND hWnd, UINT id)
 {
 	FORWARD_WM_TIMER(hWnd, id, DefWndProcW);
+}
+
+void CWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
+{
+	FORWARD_WM_MOUSEMOVE(hWnd, x, y, keyFlags, DefWndProcW);
 }
 
 /*!
@@ -314,7 +320,6 @@ LRESULT COriginalWnd::DispatchEvent(
 	CALLH( WM_LBUTTONDBLCLK		, OnLButtonDblClk	);
 	CALLH( WM_RBUTTONDOWN		, OnRButtonDown		);
 	CALLH( WM_MBUTTONDOWN		, OnMButtonDown		);
-	CALLH( WM_MOUSEMOVE			, OnMouseMove		);
 
 	CALLH( WM_CAPTURECHANGED	, OnCaptureChanged	);	// 2006.11.30 ryoji
 

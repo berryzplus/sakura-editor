@@ -248,8 +248,11 @@ LRESULT CSplitBoxWnd::OnLButtonDown( HWND hwnd, [[maybe_unused]] UINT uMsg, [[ma
 }
 
 //WM_MOUSEMOVE
-LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CSplitBoxWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+
 	HDC			hdc;
 	int			xPos;
 	int			yPos;
@@ -261,9 +264,11 @@ LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[mayb
 	POINT		po_top;
 	HBRUSH		hBrush;
 	HBRUSH		hBrushOld;
-	if( hwnd != ::GetCapture() ){
-		return 0L;
+
+	if (::GetCapture() == hWnd) {
+		return;
 	}
+
 	if( m_bVertical ){
 		::GetClientRect( ::GetParent( GetParentHwnd() ), &rc );
 		nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );	/* 水平スクロールバーの高さ */
@@ -372,7 +377,6 @@ LRESULT CSplitBoxWnd::OnMouseMove( HWND hwnd, [[maybe_unused]] UINT uMsg, [[mayb
 			::ReleaseDC( ::GetParent( GetParentHwnd() ), hdc );
 		}
 	}
-	return 0L;
 }
 
 //WM_LBUTTONUP

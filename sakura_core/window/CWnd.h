@@ -87,6 +87,7 @@ public:
 
 	virtual void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
 	virtual void	OnTimer(HWND hWnd, UINT id);
+	virtual void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags);
 
 	HWND		m_hWnd = nullptr;		// このウィンドウのハンドル
 };
@@ -162,7 +163,6 @@ public:
 	virtual DECLH( OnLButtonDblClk	);	// WM_LBUTTONDBLCLK
 	virtual DECLH( OnRButtonDown	);	// WM_RBUTTONDOWN
 	virtual DECLH( OnMButtonDown	);	// WM_MBUTTONDOWN
-	virtual DECLH( OnMouseMove		);	// WM_MOUSEMOVE
 
 	virtual DECLH( OnCaptureChanged	);	// WM_CAPTURECHANGED	// 2006.11.30 ryoji
 
