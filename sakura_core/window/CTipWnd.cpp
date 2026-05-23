@@ -79,7 +79,6 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 		nullptr // handle to menu, or child-window identifier
 	);
 
-	m_hFont = ::CreateFontIndirect( &(GetDllShareData().m_Common.m_sHelper.m_lf) );
 	return;
 }
 
@@ -293,6 +292,26 @@ void CTipWnd::GetWindowSize(LPRECT pRect)
 }
 
 // 2001/06/19 End
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CTipWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	m_hFont = ::CreateFontIndirect(&GetDllShareData().m_Common.m_sHelper.m_lf);
+
+	return true;
+}
 
 /*!
  * @brief WM_DESTROYハンドラ

@@ -95,6 +95,7 @@ protected:
 	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	/* 仮想関数 メッセージ処理 */
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
@@ -131,11 +132,10 @@ protected:
 	void BroadcastRefreshToGroup( void );
 	BOOL SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptDrop );	/*!< タブ分離処理 */	// 2007.06.20 ryoji
 	LRESULT ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
-	void	LayoutTab(int cx, int cy);
+	bool	LayoutTab(int cx);
 
 	HIMAGELIST InitImageList( void );				/*!< イメージリストの初期化処理 */
 	int GetImageIndex( EditNode* pNode );			/*!< イメージリストのインデックス取得処理 */
-	HIMAGELIST ImageList_Duplicate( HIMAGELIST himl );	/*!< イメージリストの複製処理 */
 
 	// 2006.02.01 ryoji タブ一覧を追加
 	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji

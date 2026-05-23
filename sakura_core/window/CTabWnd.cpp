@@ -40,13 +40,13 @@
 // 2006.01.30 ryoji タブのサイズ／位置に関する定義
 // 2009.10.01 ryoji 高DPI対応スケーリング
 #define TAB_MARGIN_TOP		DpiScaleY(3)
-#define TAB_MARGIN_LEFT		DpiScaleX(1)
+#define TAB_MARGIN_LEFT		cxBorder
 #define TAB_MARGIN_RIGHT	DpiScaleX(47)
 
 //#define TAB_FONT_HEIGHT		DpiPointsToPixels(9)
 #define TAB_FONT_HEIGHT		abs(GetDllShareData().m_Common.m_sTabBar.m_lf.lfHeight)
 #define TAB_ITEM_HEIGHT		(TAB_FONT_HEIGHT + DpiScaleY(7))
-#define TAB_WINDOW_HEIGHT	(TAB_ITEM_HEIGHT + TAB_MARGIN_TOP + 2)
+#define TAB_WINDOW_HEIGHT	(TAB_ITEM_HEIGHT + TAB_MARGIN_TOP + DpiScaleY(2))
 
 #define MAX_TABITEM_WIDTH	DpiScaleX(GetDllShareData().m_Common.m_sTabBar.m_nTabMaxWidth)
 #define MIN_TABITEM_WIDTH	DpiScaleX(GetDllShareData().m_Common.m_sTabBar.m_nTabMinWidth)
@@ -848,129 +848,25 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 		pszClassName						// Pointer to a null-terminated string or is an atom.
 	);
 
-	RECT rcParent;
-	::GetWindowRect( hwndParent, &rcParent );
+	int left = 0;
+	int top = 0;
+
+	RECT rc;
+	::GetClientRect(hwndParent, &rc);
 
 	/* 基底クラスメンバ呼び出し */
-	Base::Create(
+	return Base::Create(
 		hwndParent,
 		0,									// extended window style
 		pszClassName,						// Pointer to a null-terminated string or is an atom.
 		pszClassName,						// pointer to window name
-		WS_CHILD/* | WS_VISIBLE*/,			// window style	// 2007.03.08 ryoji WS_VISIBLE 除去
-		// 2006.01.30 ryoji 初期配置見直し
-		// ※タブ非表示 -> 表示切替で編集ウィンドウにゴミが表示されることがあるので初期幅はゼロに
-		CW_USEDEFAULT,						// horizontal position of window
-		0,									// vertical position of window
-		rcParent.right - rcParent.left,		// window width
+		WS_CHILD | WS_VISIBLE,			// window style	// 2007.03.08 ryoji WS_VISIBLE 除去
+		left,						// horizontal position of window
+		top,									// vertical position of window
+		rc.right - rc.left,		// window width
 		TAB_WINDOW_HEIGHT,					// window height
 		nullptr								// handle to menu, or child-window identifier
 	);
-
-	//タブウインドウを作成する。
-	m_hwndTab = ::CreateWindow(
-		WC_TABCONTROL,
-		L"",
-		//	2004.05.22 MIK 消えるTAB対策でWS_CLIPSIBLINGS追加
-		// 2007.12.06 ryoji TCS_TOOLTIPS追加（タブ用のツールチップはタブに作らせる）
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | TCS_TOOLTIPS,
-		// 2006.01.30 ryoji 初期配置見直し
-		TAB_MARGIN_LEFT,
-		TAB_MARGIN_TOP,
-		rcParent.right - rcParent.left - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT),
-		TAB_WINDOW_HEIGHT,
-		GetHwnd(),
-		(HMENU)nullptr,
-		GetAppInstance(),
-		(LPVOID)nullptr
-		);
-	if( m_hwndTab )
-	{
-		// Modified by KEITA for WIN64 2003.9.6
-		::SetWindowLongPtr( m_hwndTab, GWLP_USERDATA, (LONG_PTR) this );
-		gm_pOldWndProc = (WNDPROC)::SetWindowLongPtr( m_hwndTab, GWLP_WNDPROC, (LONG_PTR) TabWndProc );
-
-		//スタイルを変更する。
-		UINT lngStyle;
-		lngStyle = (UINT)::GetWindowLongPtr( m_hwndTab, GWL_STYLE );
-		//	Feb. 14, 2004 MIK マルチライン化の変更混入戻し
-		lngStyle &= ~(TCS_BUTTONS | TCS_MULTILINE);
-		if( m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine ){
-			lngStyle |= TCS_MULTILINE;
-		}else{
-			lngStyle |= TCS_SINGLELINE;
-		}
-		m_bMultiLine = m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine;
-		lngStyle |= TCS_TABS | TCS_FOCUSNEVER | TCS_FIXEDWIDTH | TCS_FORCELABELLEFT;	// 2006.01.28 ryoji
-		//lngStyle &= ~(TCS_BUTTONS | TCS_SINGLELINE);	//2004.01.31
-		//lngStyle |= TCS_TABS | TCS_MULTILINE;
-		::SetWindowLongPtr( m_hwndTab, GWL_STYLE, lngStyle );
-		TabCtrl_SetItemSize( m_hwndTab, MAX_TABITEM_WIDTH, TAB_ITEM_HEIGHT );	// 2006.01.28 ryoji
-
-		// タブのツールチップスタイルを変更する	// 2007.12.06 ryoji
-		HWND hwndToolTips;
-		hwndToolTips = TabCtrl_GetToolTips( m_hwndTab );
-		lngStyle = (UINT)::GetWindowLongPtr( hwndToolTips, GWL_STYLE );
-		lngStyle |= TTS_ALWAYSTIP | TTS_NOPREFIX;	// 従来通りTTS_ALWAYSTIPにしておく
-		::SetWindowLongPtr( hwndToolTips, GWL_STYLE, lngStyle );
-
-		/* 表示用フォント */
-		/* LOGFONTの初期化 */
-		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
-		m_hFont = ::CreateFontIndirectW(&m_pShareData->m_Common.m_sTabBar.m_lf);
-		/* フォント変更 */
-		SetWindowFont(m_hwndTab, m_hFont, TRUE);
-
-		//ツールチップを作成する。（タブではなく「閉じる」などのボタン用）
-		//	2005.08.11 ryoji 「重ねて表示」のZ-orderがおかしくなるのでTOPMOST指定を解除
-		m_hwndToolTip = ::CreateWindowEx(
-			0,
-			TOOLTIPS_CLASS,
-			nullptr,
-			WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			GetHwnd(), //m_hwndTab,
-			nullptr,
-			GetAppInstance(),
-			nullptr
-			);
-
-		// ツールチップをマルチライン可能にする（SHRT_MAX: Win95でINT_MAXだと表示されない）	// 2007.03.03 ryoji
-		ApiWrap::Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
-
-		// ボタン用ツールチップにダークモードを適用する
-		DarkMode::setDarkTooltips( m_hwndToolTip, static_cast<int>(DarkMode::ToolTipsType::tooltip) );
-
-		// タブバーにツールチップを追加する
-		TOOLINFO	ti;
-		ti.cbSize      = CCSIZEOF_STRUCT(TOOLINFO, lpszText);
-		ti.uFlags      = TTF_SUBCLASS | TTF_IDISHWND;	// TTF_IDISHWND: uId は HWND で rect は無視（HWND 全体）
-		ti.hwnd        = GetHwnd();
-		ti.hinst       = GetAppInstance();
-		ti.uId         = (UINT_PTR)GetHwnd();
-		ti.lpszText    = nullptr;
-		ti.rect.left   = 0;
-		ti.rect.top    = 0;
-		ti.rect.right  = 0;
-		ti.rect.bottom = 0;
-		ApiWrap::Tooltip_AddTool( m_hwndToolTip, &ti );
-
-		// 2006.02.22 ryoji イメージリストを初期化する
-		m_hIml = InitImageList();
-
-		Refresh();	// タブ非表示から表示に切り替わったときに各ウィンドウの情報をタブ登録する必要がある
-
-		RECT rc{};
-		::GetClientRect(GetHwnd(), &rc);
-		const auto cx = rc.right - rc.left;
-		const auto cy = rc.bottom - rc.top;
-		LayoutTab(cx, cy);
-	}
-
-	return GetHwnd();
 }
 
 void CTabWnd::UpdateStyle()
@@ -1030,6 +926,146 @@ LRESULT CTabWnd::DispatchEvent(
 
 	//あとはデフォルトに任せる
 	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CTabWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	const auto hInstance = lpCreateStruct->hInstance;
+
+	auto cx = lpCreateStruct->cx;
+	const auto cy = lpCreateStruct->cy;
+
+	if (m_bSizeBox) {
+		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+		m_hwndSizeBox = ::CreateWindowExW(
+			0L, 						/* no extended styles			*/
+			WC_SCROLLBAR,				/* scroll bar control class		*/
+			nullptr,					/* text for window title bar	*/
+			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
+			cx - cxVScroll,				/* horizontal position			*/
+			cy - cyHScroll,				/* vertical position			*/
+			cxVScroll,					/* width of the scroll bar		*/
+			cyHScroll,					/* default height				*/
+			hWnd,		 				/* handle of main window		*/
+			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
+			lpCreateStruct->hInstance,	/* instance owning this window	*/
+			(LPVOID) nullptr			/* pointer not needed			*/
+		);
+
+		cx -= cxVScroll;
+	}
+
+	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
+	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+	const auto cyBorder = GetSystemMetrics(SM_CYBORDER);
+	const auto cyEdge = GetSystemMetrics(SM_CYEDGE);
+
+	// 2007.12.06 ryoji TCS_TOOLTIPS追加（タブ用のツールチップはタブに作らせる）
+	DWORD dwTabStyles = TCS_TOOLTIPS | TCS_TABS | TCS_FOCUSNEVER | TCS_FIXEDWIDTH | TCS_FORCELABELLEFT;
+
+	//タブウインドウを作成する。
+	m_hwndTab = ::CreateWindowExW(
+		0L,
+		WC_TABCONTROL,
+		L"",
+		//	2004.05.22 MIK 消えるTAB対策でWS_CLIPSIBLINGS追加
+		WS_CHILD | WS_CLIPSIBLINGS | dwTabStyles,
+		// 2006.01.30 ryoji 初期配置見直し
+		TAB_MARGIN_LEFT,
+		TAB_MARGIN_TOP,
+		cx - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT),
+		cy,
+		hWnd,
+		(HMENU)nullptr,
+		hInstance,
+		LPVOID(this)
+	);
+
+	if (!m_hwndTab)
+	{
+		return false;
+	}
+
+	// Modified by KEITA for WIN64 2003.9.6
+	::SetWindowLongPtr( m_hwndTab, GWLP_USERDATA, (LONG_PTR) this );
+	gm_pOldWndProc = (WNDPROC)::SetWindowLongPtr( m_hwndTab, GWLP_WNDPROC, (LONG_PTR) TabWndProc );
+
+	// タブのツールチップスタイルを変更する	// 2007.12.06 ryoji
+	const auto hwndToolTips = TabCtrl_GetToolTips(m_hwndTab);
+	auto lngStyle = (DWORD)::GetWindowLongPtrW(hwndToolTips, GWL_STYLE);
+	lngStyle |= TTS_ALWAYSTIP | TTS_NOPREFIX;	// 従来通りTTS_ALWAYSTIPにしておく
+	::SetWindowLongPtrW(hwndToolTips, GWL_STYLE, lngStyle);
+
+	//ツールチップを作成する。（タブではなく「閉じる」などのボタン用）
+	//	2005.08.11 ryoji 「重ねて表示」のZ-orderがおかしくなるのでTOPMOST指定を解除
+	m_hwndToolTip = ::CreateWindowExW(
+		0,
+		TOOLTIPS_CLASS,
+		nullptr,
+		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		hWnd,
+		nullptr,
+		hInstance,
+		nullptr
+	);
+
+	if (!m_hwndToolTip)
+	{
+		return false;
+	}
+
+	// ツールチップをマルチライン可能にする（SHRT_MAX: Win95でINT_MAXだと表示されない）	// 2007.03.03 ryoji
+	ApiWrap::Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
+
+	// ボタン用ツールチップにダークモードを適用する
+	DarkMode::setDarkTooltips(m_hwndToolTip, static_cast<int>(DarkMode::ToolTipsType::tooltip));
+
+	// タブバーにツールチップを追加する
+	TOOLINFO ti{ CCSIZEOF_STRUCT(TOOLINFO, lpszText) };
+	ti.uFlags      = TTF_SUBCLASS | TTF_IDISHWND;	// TTF_IDISHWND: uId は HWND で rect は無視（HWND 全体）
+	ti.hwnd        = hWnd;
+	ti.hinst       = hInstance;
+	ti.uId         = UINT_PTR(hWnd);
+	ti.lpszText    = nullptr;
+	ti.rect.left   = 0;
+	ti.rect.top    = 0;
+	ti.rect.right  = 0;
+	ti.rect.bottom = 0;
+
+	ApiWrap::Tooltip_AddTool(m_hwndToolTip, &ti);
+
+	std::wstring dummyCaption;
+
+	TCITEMW tcitem{};
+	tcitem.mask    = TCIF_TEXT | TCIF_PARAM;
+	tcitem.pszText = std::data(dummyCaption);
+	tcitem.lParam  = LPARAM(GetParentHwnd());
+
+	TabCtrl_InsertItem(m_hwndTab, 0, &tcitem);
+	TabCtrl_SetCurSel(m_hwndTab, 0);
+
+	if (!LayoutTab(cx)) return false;
+
+	return true;
 }
 
 /*!
@@ -2369,14 +2405,16 @@ void CTabWnd::TabWnd_ActivateFrameWindow( HWND hwnd, bool bForeground )
  *
  * @date 2006.01.28 ryoji 新規作成
  */
-void CTabWnd::LayoutTab(int cx, int cy)
+bool CTabWnd::LayoutTab(int cx)
 {
 	const auto hWnd = GetHwnd();
 
 	// フォントを切り替える 2011.12.01 Moca
-	if (const auto bChgFont = (0 != memcmp( &m_lf, &m_pShareData->m_Common.m_sTabBar.m_lf, sizeof(m_lf) ))) {
-		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
+	const auto hFont = GetWindowFont(hWnd);
+	if (LOGFONT lf{}; !::GetObjectW(hFont, sizeof(lf), &lf) || 0 != memcmp(&lf, &m_pShareData->m_Common.m_sTabBar.m_lf, sizeof(LOGFONT)))
+	{
 		m_hFont = ::CreateFontIndirectW(&m_pShareData->m_Common.m_sTabBar.m_lf);
+		if (!m_hFont) return false;
 		SetWindowFont(m_hwndTab, m_hFont, FALSE);
 	}
 
@@ -2385,13 +2423,13 @@ void CTabWnd::LayoutTab(int cx, int cy)
 	if (const auto hImg = TabCtrl_GetImageList(m_hwndTab); !hImg)
 	{
 		m_hIml = InitImageList();
-		if (bDispTabIcon && m_hIml) {
-			Refresh(TRUE, TRUE);
-		}
+
+		// タブに新しいアイコンイメージを設定する
+		TabCtrl_SetImageList(m_hwndTab, m_hIml);
 	}
 
 	// 現在のウィンドウスタイルを取得する
-	UINT lStyle = (UINT)::GetWindowLongPtr( m_hwndTab, GWL_STYLE );
+	UINT lStyle = (UINT)::GetWindowLongPtrW(m_hwndTab, GWL_STYLE);
 	UINT lStyleOld = lStyle;
 
 	// タブのアイテム幅の等幅を切り替える
@@ -2410,6 +2448,8 @@ void CTabWnd::LayoutTab(int cx, int cy)
 	}else if( !bOwnerDraw && (lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle &= ~TCS_OWNERDRAWFIXED;
 	}
+
+	TabCtrl_SetItemSize(m_hwndTab, MAX_TABITEM_WIDTH, TAB_ITEM_HEIGHT);	// 2006.01.28 ryoji
 
 	// タブのアイテムサイズを調整する（等幅のときのサイズやフォント切替時の高さ調整）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetItemSize() を実行する
@@ -2434,8 +2474,8 @@ void CTabWnd::LayoutTab(int cx, int cy)
 
 	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
 	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+	const auto cyBorder = GetSystemMetrics(SM_CYBORDER);
 	const auto cyEdge = GetSystemMetrics(SM_CYEDGE);
-	const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
 
 	// タブ余白設定（「閉じるボタン」や「アイコン」の設定切替時の余白切替）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetPadding() を実行する
@@ -2445,7 +2485,7 @@ void CTabWnd::LayoutTab(int cx, int cy)
 		const auto cxSmIcon = GetSystemMetrics(SM_CXSMICON);
 		cxPadding += bDispTabIcon ? (cxSmIcon + cxEdge) / 3 : (cxSmIcon + cxBorder) / 2;	// それっぽく調整: ボタン幅の 1/3（アイコン有） or 1/2（アイコン無）
 	}
-	TabCtrl_SetPadding(m_hwndTab, cxPadding, DpiScaleY(3));
+	TabCtrl_SetPadding(m_hwndTab, cxPadding, cyBorder + cyEdge);
 
 	// 新しいウィンドウスタイルを適用する
 	// ※ TabCtrl_SetPadding() の後でやらないと設定変更の直後にアイコンやテキストの描画位置がずれる場合がある
@@ -2463,26 +2503,19 @@ void CTabWnd::LayoutTab(int cx, int cy)
 		}
 	}
 
-	int nHeight = TAB_WINDOW_HEIGHT;
-	if (m_pShareData->m_Common.m_sTabBar.m_bTabMultiLine && 0 < nCount) {
-		// 正確に再配置（多段タブでは段数が変わることがあるので必須）
-		RECT rcDisp{};
-		rcDisp.left = TAB_MARGIN_LEFT;
-		rcDisp.right = rcDisp.left + cx - (TAB_MARGIN_LEFT + TAB_MARGIN_RIGHT + cxVScroll);
-		rcDisp.bottom = cy;
-		TabCtrl_AdjustRect(m_hwndTab, FALSE, &rcDisp);
-		nHeight = (rcDisp.bottom - rcDisp.top - cyEdge) + TAB_MARGIN_TOP;
-	}
+	UpdateStyle();
 
 	::SetWindowPos(
-		hWnd,
+		m_hwndTab,
 		nullptr,
 		0,
 		0,
-		cx - !m_hwndSizeBox ? cxVScroll : 0,
-		nHeight,
-		SWP_NOMOVE | SWP_NOZORDER | SWP_SHOWWINDOW
+		0,
+		0,
+		SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_SHOWWINDOW
 	);
+
+	return true;
 }
 
 /*! イメージリストの初期化処理
@@ -2490,60 +2523,55 @@ void CTabWnd::LayoutTab(int cx, int cy)
 */
 HIMAGELIST CTabWnd::InitImageList( void )
 {
-	SHFILEINFO sfi;
-	HIMAGELIST hImlSys;
-	HIMAGELIST hImlNew;
+	if (!m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon) return nullptr;
 
-	hImlNew = nullptr;
-	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabIcon )
-	{
-		// システムイメージリストを取得する
-		// 注：複製後に差し替えて利用するアイコンには事前にアクセスしておかないとイメージが入らない
-		//     ここでは「フォルダーを閉じたアイコン」、「フォルダーを開いたアイコン」を差し替え用として利用
-		//     WinNT4.0 では SHGetFileInfo() の第一引数に同名を指定すると同じインデックスを返してくることがある？
-		// 2016.08.06 ".0" の場合に Win10で同じインデックスが返ってくるので、"C:\\"に変更
+	SHFILEINFO sfi{};
 
-		hImlSys = (HIMAGELIST)::SHGetFileInfo(
-			L"C:\\",
-			FILE_ATTRIBUTE_DIRECTORY,
-			&sfi,
-			sizeof(sfi),
-			SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES
-		);
-		if( nullptr == hImlSys )
-			goto l_end;
-		m_iIconApp = sfi.iIcon;
+	// システムイメージリストを取得する
+	// 注：複製後に差し替えて利用するアイコンには事前にアクセスしておかないとイメージが入らない
+	//     ここでは「フォルダーを閉じたアイコン」、「フォルダーを開いたアイコン」を差し替え用として利用
+	//     WinNT4.0 では SHGetFileInfo() の第一引数に同名を指定すると同じインデックスを返してくることがある？
+	// 2016.08.06 ".0" の場合に Win10で同じインデックスが返ってくるので、"C:\\"に変更
 
-		hImlSys = (HIMAGELIST)::SHGetFileInfo(
-			L".1",
-			FILE_ATTRIBUTE_DIRECTORY,
-			&sfi,
-			sizeof(sfi),
-			SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES | SHGFI_OPENICON
-		);
-		if( nullptr == hImlSys )
-			goto l_end;
-		m_iIconGrep = sfi.iIcon;
+	const auto ret = ::SHGetFileInfoW(
+		L"C:\\",
+		FILE_ATTRIBUTE_DIRECTORY,
+		&sfi,
+		sizeof(sfi),
+		SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES
+	);
+	if (!ret) return nullptr;
 
-		// システムイメージリストを複製する
-		hImlNew = ImageList_Duplicate( hImlSys );
-		if( nullptr == hImlNew )
-			goto l_end;
-		ImageList_SetBkColor( hImlNew, CLR_NONE );
+	m_iIconApp = sfi.iIcon;
 
-		// イメージリストにアプリケーションアイコンと Grepアイコンを登録する
-		// （利用しないアイコンと差し替える）
-		m_hIconApp = GetAppIcon( GetAppInstance(), ICON_DEFAULT_APP, FN_APP_ICON, true );
-		ImageList_ReplaceIcon( hImlNew, m_iIconApp, m_hIconApp );
-		if( m_iIconApp != m_iIconGrep ){
-			m_hIconGrep = GetAppIcon( GetAppInstance(), ICON_DEFAULT_GREP, FN_GREP_ICON, true );
-			ImageList_ReplaceIcon( hImlNew, m_iIconGrep, m_hIconGrep );
-		}
+	const auto hImlSys = (HIMAGELIST)::SHGetFileInfoW(
+		L".1",
+		FILE_ATTRIBUTE_DIRECTORY,
+		&sfi,
+		sizeof(sfi),
+		SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES | SHGFI_OPENICON
+	);
+	if (!hImlSys) return nullptr;
+
+	m_iIconGrep = sfi.iIcon;
+
+	// システムイメージリストを複製する
+	const auto hImlNew = ::ImageList_Duplicate(hImlSys);
+	if (!hImlNew) return nullptr;
+
+	::ImageList_SetBkColor(hImlNew, CLR_NONE);
+
+	const auto hInstance = GetAppInstance();
+
+	// イメージリストにアプリケーションアイコンと Grepアイコンを登録する
+	// （利用しないアイコンと差し替える）
+	m_hIconApp = GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
+	::ImageList_ReplaceIcon(hImlNew, m_iIconApp, m_hIconApp);
+
+	if (m_iIconApp != m_iIconGrep) {
+		m_hIconGrep = GetAppIcon(hInstance, ICON_DEFAULT_GREP, FN_GREP_ICON, true);
+		::ImageList_ReplaceIcon(hImlNew, m_iIconGrep, m_hIconGrep);
 	}
-
-l_end:
-	// タブに新しいアイコンイメージを設定する
-	TabCtrl_SetImageList( m_hwndTab, hImlNew );
 
 	return hImlNew;	// 新しいイメージリストを返す
 }
@@ -2602,51 +2630,6 @@ int CTabWnd::GetImageIndex( EditNode* pNode )
 	}
 
 	return m_iIconApp;	// アプリケーションアイコンのインデックスを返す
-}
-
-/*! イメージリストの複製処理
-	@date 2006.02.17 ryoji 新規作成
-*/
-HIMAGELIST CTabWnd::ImageList_Duplicate( HIMAGELIST himl )
-{
-	if( nullptr == himl ) return nullptr;
-
-	// 本物の ImageList_Duplicate() があればそれを呼び出す
-	HIMAGELIST hImlNew = ::ImageList_Duplicate(himl);
-	if (hImlNew) return hImlNew;
-
-	//いったんは古いコードを残しておく。
-
-	// 本物の ImageList_Duplicate() の代替処理
-	// 新しいイメージリストを作成してアイコン単位でコピーする
-	//（この場合、多色アイコンは綺麗には表示されないかもしれない）
-	int cxIcon = CX_SMICON;
-	int cyIcon = CY_SMICON;
-	ImageList_GetIconSize( himl, &cxIcon, &cyIcon );
-	hImlNew = ImageList_Create( cxIcon, cyIcon, ILC_COLOR32 | ILC_MASK, 4, 4 );
-	if( hImlNew )
-	{
-		ImageList_SetBkColor( hImlNew, CLR_NONE );
-		int nCount = ImageList_GetImageCount( himl );
-		int i;
-		for( i = 0; i < nCount; i++ )
-		{
-			HICON hIcon = ImageList_GetIcon( himl, i, ILD_TRANSPARENT );
-			if( nullptr == hIcon )
-			{
-				ImageList_Destroy( hImlNew );
-				return nullptr;
-			}
-			int iIcon = ImageList_AddIcon( hImlNew, hIcon );
-			::DestroyIcon( hIcon );
-			if( 0 > iIcon )
-			{
-				ImageList_Destroy( hImlNew );
-				return nullptr;
-			}
-		}
-	}
-	return hImlNew;
 }
 
 /*! ボタン背景描画処理

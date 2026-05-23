@@ -75,6 +75,7 @@ protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 

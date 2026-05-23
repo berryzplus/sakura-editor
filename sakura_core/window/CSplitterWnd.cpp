@@ -83,7 +83,6 @@ HWND CSplitterWnd::Create( HWND hwndParent )
 		0, // window height
 		nullptr // handle to menu, or child-window identifier
 	);
-	DarkMode::setDarkWndSafe(hWnd);
 	return hWnd;
 }
 
@@ -779,6 +778,26 @@ int CSplitterWnd::GetLastPane( void )
 		nPane = 3;
 	}
 	return nPane;
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CSplitterWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	DarkMode::setDarkWndSafe(hWnd);
+
+	return true;
 }
 
 /*!

@@ -84,6 +84,7 @@ protected:
 	LRESULT DispatchEvent_WM_APP(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;

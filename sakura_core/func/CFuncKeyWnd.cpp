@@ -104,45 +104,24 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 		pszClassName// Pointer to a null-terminated string or is an atom.
 	);
 
+	RECT rc{};
+	::GetClientRect(hwndParent, &rc);
+
+	const auto cyMenu = GetSystemMetrics(SM_CYMENU);
+
 	/* 基底クラスメンバ呼び出し */
-	Base::Create(
+	return Base::Create(
 		hwndParent,
 		0, // extended window style
 		pszClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPCHILDREN, // window style	// 2006.06.17 ryoji WS_CLIPCHILDREN 追加	// 2007.03.08 ryoji WS_VISIBLE 除去
-		CW_USEDEFAULT, // horizontal position of window
-		0, // vertical position of window
-		0, // window width	// 2007.02.05 ryoji 100->0（半端なサイズで一瞬表示されるより見えないほうがいい）
-		::GetSystemMetrics( SM_CYMENU ), // window height
+		0, // horizontal position of window
+		rc.bottom - rc.top - cyMenu, // vertical position of window
+		rc.right - rc.left, // window width	// 2007.02.05 ryoji 100->0（半端なサイズで一瞬表示されるより見えないほうがいい）
+		cyMenu, // window height
 		nullptr // handle to menu, or child-window identifier
 	);
-
-	m_hwndSizeBox = nullptr;
-	if( m_bSizeBox ){
-		m_hwndSizeBox = ::CreateWindowEx(
-			0L, 						/* no extended styles			*/
-			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,						/* text for window title bar	*/
-			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			0,							/* horizontal position			*/
-			0,							/* vertical position			*/
-			200,						/* width of the scroll bar		*/
-			CW_USEDEFAULT,				/* default height				*/
-			GetHwnd(), 					/* handle of main window		*/
-			(HMENU) nullptr,				/* no menu for a scroll bar 	*/
-			GetAppInstance(),				/* instance owning this window	*/
-			(LPVOID) nullptr				/* pointer not needed			*/
-		);
-	}
-
-	/* ボタンの生成 */
-	CreateButtons();
-
-	Timer_ONOFF( true ); // 20060126 aroka
-	OnTimer(GetHwnd(), IDT_FUNCWND);	// 初回更新
-
-	return GetHwnd();
 }
 
 /* ウィンドウ クローズ */
@@ -194,39 +173,48 @@ int CFuncKeyWnd::CalcButtonWidth(int cx)
 /*! ボタンの生成
 	@date 2007.02.05 ryoji ボタンの水平位置・幅の設定処理を削除（OnSizeで再配置されるので不要）
 */
-void CFuncKeyWnd::CreateButtons( void )
+void CFuncKeyWnd::CreateButtons(HWND hWnd, HINSTANCE hInstance, int cx, int cy)
 {
-	RECT	rcParent;
-	int		nButtonHeight;
-	int		i;
+	std::ranges::fill(m_nFuncCodeArr, F_0);
 
-	::GetWindowRect( GetHwnd(), &rcParent );
-	nButtonHeight = rcParent.bottom - rcParent.top - 2;
+	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
+	const auto cxEdge = GetSystemMetrics(SM_CXEDGE);
+	const auto cyBorder = GetSystemMetrics(SM_CYBORDER);
 
-	for( i = 0; i < int(std::size(m_nFuncCodeArr)); ++i ){
-		m_nFuncCodeArr[i] = F_0;
-	}
+	const auto nButtonWidth = CalcButtonWidth(cx);
+	const auto nButtonHeight = cy - cyBorder * 2;
 
-	for( i = 0; i < int(std::size(m_hwndButtonArr)); ++i ){
-		m_hwndButtonArr[i] = ::CreateWindow(
+	int nX = cxBorder;
+	for (int i = 0; i < std::ssize(m_hwndButtonArr); ++i) {
+		auto& hWndButton = m_hwndButtonArr[i];
+
+		hWndButton = ::CreateWindowExW(
+			0L,
 			WC_BUTTON,							// predefined class
 			L"",								// button text
 			WS_VISIBLE | WS_CHILD | BS_LEFT,	// styles
-			// Size and position values are given explicitly, because
-			// the CW_USEDEFAULT constant gives zero values for buttons.
-			0,					// starting x position
-			0 + 1,				// starting y position
-			0,					// button width
+			nX,					// starting x position
+			cyBorder,			// starting y position
+			nButtonWidth,		// button width
 			nButtonHeight,		// button height
-			GetHwnd(),				// parent window
-			nullptr,				// No menu
-			(HINSTANCE) GetWindowLongPtr(GetHwnd(), GWLP_HINSTANCE),	// Modified by KEITA for WIN64 2003.9.6
+			hWnd,				// parent window
+			nullptr,			// No menu
+			hInstance,			// Modified by KEITA for WIN64 2003.9.6
 			nullptr				// pointer not needed
 		);
+
+		nX += nButtonWidth + cxBorder;
+
+		if (0 == i % m_nButtonGroupNum) {
+			nX += cxEdge * 6;
+		}
+
 		/* フォント変更 */
-		SetWindowFont(m_hwndButtonArr[i], m_hFont, TRUE);
+		SetWindowFont(hWndButton, m_hFont, TRUE);
 	}
+
 	m_nCurrentKeyState = -1;
+
 	return;
 }
 
@@ -290,6 +278,58 @@ void CFuncKeyWnd::Timer_ONOFF( bool bStart )
 		}
 	}
 	return;
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CFuncKeyWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	const auto hInstance = lpCreateStruct->hInstance;
+
+	auto cx = lpCreateStruct->cx;
+	const auto cy = lpCreateStruct->cy;
+
+	if (m_bSizeBox) {
+		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+		m_hwndSizeBox = ::CreateWindowExW(
+			0L, 						/* no extended styles			*/
+			WC_SCROLLBAR,				/* scroll bar control class		*/
+			nullptr,					/* text for window title bar	*/
+			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
+			cx - cxVScroll,				/* horizontal position			*/
+			cy - cyHScroll,				/* vertical position			*/
+			cxVScroll,					/* width of the scroll bar		*/
+			cyHScroll,					/* default height				*/
+			hWnd,		 				/* handle of main window		*/
+			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
+			lpCreateStruct->hInstance,	/* instance owning this window	*/
+			(LPVOID) nullptr			/* pointer not needed			*/
+		);
+
+		cx -= cxVScroll;
+	}
+
+	/* ボタンの生成 */
+	CreateButtons(hWnd, hInstance, cx, cy);
+
+	Timer_ONOFF(true); // 20060126 aroka
+
+	OnTimer(hWnd, IDT_FUNCWND);	// 初回更新
+
+	return true;
 }
 
 /*!

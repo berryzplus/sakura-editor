@@ -68,12 +68,13 @@ protected:
 	/*
 	|| 実装ヘルパ系
 	*/
-	void CreateButtons( void );	/* ボタンの生成 */
+	void	CreateButtons(HWND hWnd, HINSTANCE hInstance, int cx, int cy);
 	int		CalcButtonWidth(int cx);
 
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;

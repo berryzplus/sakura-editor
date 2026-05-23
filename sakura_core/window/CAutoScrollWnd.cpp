@@ -7,8 +7,10 @@
 */
 
 #include "StdAfx.h"
-#include "CAutoScrollWnd.h"
+#include "window/CAutoScrollWnd.h"
+
 #include "view/CEditView.h"
+
 #include "sakura_rc.h"
 
 namespace window {
@@ -78,16 +80,12 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 
 	m_cView = view;
 
-	m_hCenterImg = (HBITMAP)::LoadImageW(hInstance, MAKEINTRESOURCE(m_BitMapId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-
-	const auto hCursor = ::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId));
-
 	/* ウィンドウクラス作成 */
 	RegisterWC(
 		hInstance,
 		nullptr,
 		nullptr,
-		hCursor,
+		::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId)),
 		(HBRUSH)(COLOR_3DFACE + 1),
 		nullptr,
 		pszClassName
@@ -112,6 +110,29 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 void CAutoScrollWnd::Close()
 {
 	this->DestroyWindow();
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CAutoScrollWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	m_hCenterImg = (HBITMAP)::LoadImageW(lpCreateStruct->hInstance, MAKEINTRESOURCE(m_BitMapId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	if (!m_hCenterImg) {
+		return false;
+	}
+
+	return true;
 }
 
 /*!
