@@ -80,6 +80,8 @@ CFuncKeyWnd::~CFuncKeyWnd()
 /* ウィンドウ オープン */
 HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDoc, bool bSizeBox )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+
 	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	m_pcEditDoc = pCEditDoc;
@@ -94,15 +96,12 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	}
 
 	/* ウィンドウクラス作成 */
-	RegisterWC(
-		hInstance,
-		nullptr,// Handle to the class icon.
-		nullptr,	//Handle to a small icon
-		::LoadCursor( nullptr, IDC_ARROW ),// Handle to the class cursor.
-		(HBRUSH)(COLOR_3DFACE + 1),// Handle to the class background brush.
-		nullptr/*MAKEINTRESOURCE( MYDOCUMENT )*/,// Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file.
-		pszClassName// Pointer to a null-terminated string or is an atom.
-	);
+	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(nullptr, IDC_ARROW));
+
+	LPCWSTR pClassName = m_ClassName.c_str();
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	}
 
 	RECT rc{};
 	::GetClientRect(hwndParent, &rc);
@@ -113,7 +112,7 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	return Base::Create(
 		hwndParent,
 		0, // extended window style
-		pszClassName,	// Pointer to a null-terminated string or is an atom.
+		pClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPCHILDREN, // window style	// 2006.06.17 ryoji WS_CLIPCHILDREN 追加	// 2007.03.08 ryoji WS_VISIBLE 除去
 		0, // horizontal position of window

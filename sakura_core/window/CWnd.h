@@ -105,7 +105,7 @@ public:
  * @li ウィンドウメッセージ配送
  * 
  * @par 独自ウィンドウの使用方法は以下の手順
- * @li RegisterWC()	ウィンドウクラス登録
+ * @li RegisterClassW()	ウィンドウクラス登録
  * @li Create()		ウィンドウ作成
  */
 class COriginalWnd : public CWnd
@@ -125,15 +125,15 @@ public:
 	~COriginalWnd() override;
 
 	// ウィンドウクラス登録
-	ATOM RegisterWC(
-		HINSTANCE	hInstance,
-		HICON		hIcon,			// Handle to the class icon.
-		HICON		hIconSm,		// Handle to a small icon
-		HCURSOR		hCursor,		// Handle to the class cursor.
-		HBRUSH		hbrBackground,	// Handle to the class background brush.
-		LPCWSTR		lpszMenuName,	// Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file.
-		LPCWSTR		lpszClassName	// Pointer to a null-terminated string or is an atom.
-	);
+	ATOM RegisterClassW(
+		HBRUSH		hbrBackground,
+		HCURSOR		hCursor,
+		UINT		style = CS_DBLCLKS,
+		int			cbWndExtra = 0,
+		HICON		hIcon = nullptr,
+		LPCWSTR		lpszMenuName = nullptr,
+		HICON		hIconSm = nullptr
+	) const;
 
 	//ウィンドウ作成
 	HWND Create(

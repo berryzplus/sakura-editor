@@ -821,6 +821,8 @@ CTabWnd::~CTabWnd()
 /* ウィンドウ オープン */
 HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+
 	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	/* 初期化 */
@@ -836,17 +838,13 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 	m_eTabPosition = TabPosition_None;
 
 	/* ウィンドウクラス作成 */
-	RegisterWC(
-		hInstance,
-		nullptr,								// Handle to the class icon.
-		nullptr,								//Handle to a small icon
-		::LoadCursor( nullptr, IDC_ARROW ),	// Handle to the class cursor.
-		// 2006.01.30 ryoji 背景は WM_PAINT で描画するほうがちらつかない（と思う）
-		//(HBRUSH)(COLOR_3DFACE + 1),			// Handle to the class background brush.
-		nullptr,								// Handle to the class background brush.
-		nullptr,								// Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file.
-		pszClassName						// Pointer to a null-terminated string or is an atom.
-	);
+	// 2006.01.30 ryoji 背景は WM_PAINT で描画するほうがちらつかない（と思う）
+	const auto atom = RegisterClassW(HBRUSH(nullptr), ::LoadCursorW(nullptr, IDC_ARROW));
+
+	LPCWSTR pClassName = m_ClassName.c_str();
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	}
 
 	int left = 0;
 	int top = 0;
@@ -858,7 +856,7 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 	return Base::Create(
 		hwndParent,
 		0,									// extended window style
-		pszClassName,						// Pointer to a null-terminated string or is an atom.
+		pClassName,						// Pointer to a null-terminated string or is an atom.
 		pszClassName,						// pointer to window name
 		WS_CHILD | WS_VISIBLE,			// window style	// 2007.03.08 ryoji WS_VISIBLE 除去
 		left,						// horizontal position of window

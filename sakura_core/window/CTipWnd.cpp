@@ -49,19 +49,17 @@ CTipWnd::~CTipWnd()
 /* 初期化 */
 void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 {
+	UNREFERENCED_PARAMETER(hInstance);
+
 	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	/* ウィンドウクラス作成 */
-	RegisterWC(
-		hInstance,
-		/* WNDCLASS用 */
-		nullptr,// Handle to the class icon.
-		nullptr,	//Handle to a small icon
-		::LoadCursor( nullptr, IDC_ARROW ),// Handle to the class cursor.
-		(HBRUSH)/*NULL*/(COLOR_INFOBK + 1),// Handle to the class background brush.
-		nullptr/*MAKEINTRESOURCE( MYDOCUMENT )*/,// Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file.
-		pszClassName// Pointer to a null-terminated string or is an atom.
-	);
+	const auto atom = RegisterClassW(HBRUSH(COLOR_INFOBK + 1), ::LoadCursorW(nullptr, IDC_ARROW));
+
+	LPCWSTR pClassName = m_ClassName.c_str();
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	}
 
 	/* 基底クラスメンバ呼び出し */
 	// 2006.01.09 ryoji 初期状態を不可視にする
@@ -69,7 +67,7 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 	Base::Create(
 		hwndParent,
 		WS_EX_TOOLWINDOW, // extended window style	// 2002/2/3 GAE
-		pszClassName,	// Pointer to a null-terminated string or is an atom.
+		pClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_POPUP | WS_CLIPCHILDREN | WS_BORDER, // window style
 		CW_USEDEFAULT, // horizontal position of window

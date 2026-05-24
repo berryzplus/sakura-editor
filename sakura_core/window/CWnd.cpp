@@ -262,35 +262,43 @@ COriginalWnd::~COriginalWnd()
 	return;
 }
 
-/* ウィンドウクラス作成 */
-ATOM COriginalWnd::RegisterWC(
-	/* WNDCLASS用 */
-	HINSTANCE	hInstance,
-	HICON		hIcon,			// Handle to the class icon.
-	HICON		hIconSm,		// Handle to a small icon
-	HCURSOR		hCursor,		// Handle to the class cursor.
-	HBRUSH		hbrBackground,	// Handle to the class background brush.
-	LPCWSTR		lpszMenuName,	// Pointer to a null-terminated character string that specifies the resource name of the class menu, as the name appears in the resource file.
-	LPCWSTR		lpszClassName	// Pointer to a null-terminated string or is an atom.
-)
+/*!
+ * @brief 独自ウィンドウのウィンドウクラスを登録する。
+ *
+ * @retval != 0 登録されたウィンドウクラスのATOM値。
+ * @retval == 0 登録に失敗した。
+ *
+ * @note RegisterWCからRegisterClassWに改称。
+ */
+ATOM COriginalWnd::RegisterClassW(
+	HBRUSH		hbrBackground,
+	HCURSOR		hCursor,
+	UINT		style,
+	int			cbWndExtra,
+	HICON		hIcon,
+	LPCWSTR		lpszMenuName,
+	HICON		hIconSm
+) const
 {
-	/* ウィンドウクラスの登録 */
+	const auto hInstance = G_AppInstance();
+
 	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
 
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
-	wc.style = CS_DBLCLKS;
+	wc.style		 = style;
 	wc.lpfnWndProc   = WndProc;
 	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
+	wc.cbWndExtra    = cbWndExtra;
 	wc.hInstance     = hInstance;
 	wc.hIcon         = hIcon;
 	wc.hCursor       = hCursor;
 	wc.hbrBackground = hbrBackground;
 	wc.lpszMenuName  = lpszMenuName;
-	wc.lpszClassName = lpszClassName;
+	wc.lpszClassName = m_ClassName.c_str();
 	wc.hIconSm       = hIconSm;
 
+	//ウィンドウクラスの登録
 	return ::RegisterClassExW(&wc);
 }
 

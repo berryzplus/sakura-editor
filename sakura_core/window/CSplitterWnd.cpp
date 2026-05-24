@@ -54,19 +54,12 @@ HWND CSplitterWnd::Create( HWND hwndParent )
 
 	/* 初期化 */
 	/* ウィンドウクラス作成 */
-	ATOM atWork;
-	atWork = RegisterWC(
-		G_AppInstance(),
-		nullptr,// Handle to the class icon.
-		nullptr,	//Handle to a small icon
-		nullptr,// Handle to the class cursor.
-		(HBRUSH)nullptr,// Handle to the class background brush.
-		nullptr/*MAKEINTRESOURCE( MYDOCUMENT )*/,// Pointer to a null-terminated 
-				//character string that specifies the resource name of the class menu,
-				//as the name appears in the resource file.
-		pszClassName// Pointer to a null-terminated string or is an atom.
-	);
-	if( 0 == atWork ){
+	const auto atom = RegisterClassW(HBRUSH(nullptr), HCURSOR(nullptr));
+
+	LPCWSTR pClassName = m_ClassName.c_str();
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	} else {
 		ErrorMessage( nullptr, LS(STR_ERR_CSPLITTER01) );
 	}
 
@@ -74,7 +67,7 @@ HWND CSplitterWnd::Create( HWND hwndParent )
 	HWND hWnd = Base::Create(
 		hwndParent,
 		0, // extended window style
-		pszClassName,	// Pointer to a null-terminated string or is an atom.
+		pClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_CHILD | WS_VISIBLE, // window style
 		CW_USEDEFAULT, // horizontal position of window

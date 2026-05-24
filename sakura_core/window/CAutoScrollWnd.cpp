@@ -76,27 +76,27 @@ CAutoScrollWnd::~CAutoScrollWnd()
 
 HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal, const CMyPoint& point, CEditView* view )
 {
+	UNREFERENCED_PARAMETER(bVertical);
+	UNREFERENCED_PARAMETER(bHorizontal);
+
 	LPCWSTR pszClassName = m_ClassName.c_str();
 
 	m_cView = view;
 
 	/* ウィンドウクラス作成 */
-	RegisterWC(
-		hInstance,
-		nullptr,
-		nullptr,
-		::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId)),
-		(HBRUSH)(COLOR_3DFACE + 1),
-		nullptr,
-		pszClassName
-	);
+	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId)));
+
+	LPCWSTR pClassName = m_ClassName.c_str();
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	}
 
 	/* 基底クラスメンバ呼び出し */
 	return Base::Create(
 		/* 初期化 */
 		hwndParent,
 		0,
-		pszClassName,	// Pointer to a null-terminated string or is an atom.
+		pClassName,	// Pointer to a null-terminated string or is an atom.
 		pszClassName, // pointer to window name
 		WS_CHILD | WS_VISIBLE, // window style
 		point.x-16, // horizontal position of window
