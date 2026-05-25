@@ -340,7 +340,7 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	//	2007.02.09 bosagami
 	HWND hFolder = GetItemHwnd( IDC_COMBO_FOLDER );
 	DragAcceptFiles(hFolder, true);
-	::SetWindowSubclass(hFolder, &OnFolderProc, 0, 0);
+	m_Folder.Attach(hFolder, 0);
 
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_FILE), &m_cRecentGrepFile);
@@ -370,10 +370,12 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	@date 2007.02.09 bosagami 新規作成
 	@date 2007.09.02 genta ディレクトリチェックを強化
 */
-LRESULT CALLBACK CDlgGrep::OnFolderProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, [[maybe_unused]] DWORD_PTR dwRefData)
+LRESULT CDlgGrep::FolderCombo::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg) {
-	case WM_DROPFILES:
+	const auto hwnd = hWnd;
+	WPARAM wparam = wParam;
+
+	if (WM_DROPFILES == uMsg)
 	{
 		//	From Here 2007.09.02 genta 
 		SFilePath sPath;
@@ -393,20 +395,14 @@ LRESULT CALLBACK CDlgGrep::OnFolderProc(HWND hwnd, UINT msg, WPARAM wparam, LPAR
 		if( IsFileExists( sPath, true )){	//	第2引数がtrueだとディレクトリは対象外
 			SFilePath szWork;
 			SplitPath_FolderAndFile( sPath, szWork, nullptr );
-			wcscpy( sPath, szWork );
+			sPath = szWork;
 		}
 
 		SetGrepFolder(hwnd, sPath);
 		return 0;
 	}
-	case WM_DESTROY:
-		::RemoveWindowSubclass(hwnd, &OnFolderProc, uIdSubclass);
-		return 0;
-	default:
-		break;
-	}
 
-	return ::DefSubclassProc(hwnd, msg, wparam, lparam);
+	return DefWndProcW(hWnd, uMsg, wParam, lParam);
 }
 
 BOOL CDlgGrep::OnDestroy()

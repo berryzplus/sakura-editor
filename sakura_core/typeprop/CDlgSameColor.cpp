@@ -113,8 +113,8 @@ BOOL CDlgSameColor::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	HWND hwndList = GetItemHwnd( IDC_LIST_COLORS );
 
 	// 指定色スタティック、色選択リストをサブクラス化
-	::SetWindowSubclass(hwndStatic, &ColorStatic_SubclassProc, 0, (DWORD_PTR)this);
-	::SetWindowSubclass(hwndList, &ColorList_SubclassProc, 0, 0);
+	m_ColorStatic.Attach(hwndStatic, 0);
+	m_ColorList.Attach(hwndList, 0);
 
 	WCHAR szText[30];
 	int nItem;
@@ -358,12 +358,12 @@ BOOL CDlgSameColor::OnSelChangeListColors( HWND hwndCtl )
 /*! サブクラス化された指定色スタティックのウィンドウプロシージャ
 	@date 2006.04.26 ryoji 新規作成
 */
-LRESULT CALLBACK CDlgSameColor::ColorStatic_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData )
+LRESULT CDlgSameColor::ColorStatic::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwnd = hWnd;
+
 	HDC			hDC;
 	RECT		rc;
-
-	auto pCDlgSameColor = (CDlgSameColor *)dwRefData;
 
 	switch( uMsg ){
 	case WM_PAINT:
@@ -380,7 +380,7 @@ LRESULT CALLBACK CDlgSameColor::ColorStatic_SubclassProc( HWND hwnd, UINT uMsg, 
 		rc.bottom -= 2;
 		{
 			CGraphics gr(hDC);
-			gr.SetBrushColor( pCDlgSameColor->m_cr );
+			gr.SetBrushColor( m_ParentWnd.m_cr );
 			gr.SetPen( ::GetSysColor(COLOR_3DSHADOW) );
 			::RoundRect( gr, rc.left, rc.top, rc.right, rc.bottom, 5, 5 );
 		}
@@ -399,23 +399,20 @@ LRESULT CALLBACK CDlgSameColor::ColorStatic_SubclassProc( HWND hwnd, UINT uMsg, 
 		}
 		return (LRESULT)1;
 
-	case WM_DESTROY:
-		// サブクラス化解除
-		::RemoveWindowSubclass(hwnd, &ColorStatic_SubclassProc, uIdSubclass);
-		return (LRESULT)0;
-
 	default:
 		break;
 	}
 
-	return ::DefSubclassProc(hwnd, uMsg, wParam, lParam);
+	return DefWndProcW(hWnd, uMsg, wParam, lParam);
 }
 
 /*! サブクラス化された色選択リストのウィンドウプロシージャ
 	@date 2006.04.26 ryoji 新規作成
 */
-LRESULT CALLBACK CDlgSameColor::ColorList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, [[maybe_unused]] DWORD_PTR dwRefData )
+LRESULT CDlgSameColor::ColorList::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	const auto hwnd = hWnd;
+
 	POINT po;
 	RECT rcItem;
 	RECT rc;
@@ -458,14 +455,9 @@ LRESULT CALLBACK CDlgSameColor::ColorList_SubclassProc( HWND hwnd, UINT uMsg, WP
 		}
 		break;
 
-	case WM_DESTROY:
-		// サブクラス化解除
-		::RemoveWindowSubclass(hwnd, &ColorList_SubclassProc, uIdSubclass);
-		return (LRESULT)0;
-
 	default:
 		break;
 	}
 
-	return ::DefSubclassProc(hwnd, uMsg, wParam, lParam);
+	return DefWndProcW(hWnd, uMsg, wParam, lParam);
 }

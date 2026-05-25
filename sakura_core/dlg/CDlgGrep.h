@@ -24,6 +24,7 @@
 #include "recent/CRecentGrepFolder.h"
 #include "recent/CRecentExcludeFile.h"
 #include "recent/CRecentExcludeFolder.h"
+#include "window/CWnd.h"
 
 #define DEFAULT_EXCLUDE_FILE_PATTERN    L"*.msi;*.exe;*.obj;*.pdb;*.ilk;*.res;*.pch;*.iobj;*.ipdb"
 #define DEFAULT_EXCLUDE_FOLDER_PATTERN  L".git;.svn;.vs"
@@ -32,10 +33,15 @@
 class CDlgGrep : public CDialog
 {
 public:
+	struct FolderCombo final : public CCustomizedWnd {
+		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+	};
+
 	/*
 	||  Constructors
 	*/
 	CDlgGrep();
+
 	/*
 	||  Attributes & Operations
 	*/
@@ -65,7 +71,9 @@ public:
 	SFilePathLong	m_szExcludeFile;		//!< 除外ファイル
 	SFilePathLong	m_szExcludeFolder;		//!< 除外フォルダー
 	SFilePath	m_szCurrentFilePath;
-protected:
+
+	FolderCombo		m_Folder;
+
 	CRecentSearch			m_cRecentSearch;
 	CRecentGrepFile			m_cRecentGrepFile;
 	CRecentGrepFolder		m_cRecentGrepFolder;
@@ -85,6 +93,6 @@ protected:
 	void SetData( void ) override;	/* ダイアログデータの設定 */
 	int GetData( void ) override;	/* ダイアログデータの取得 */
 	void SetDataFromThisText(bool bChecked);	/* 現在編集中ファイルから検索チェックでの設定 */
-	static LRESULT CALLBACK OnFolderProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 };
+
 #endif /* SAKURA_CDLGGREP_01A0D5CB_326B_4C56_A527_C811F84FD8D8_H_ */
