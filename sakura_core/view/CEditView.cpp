@@ -319,11 +319,7 @@ LRESULT CEditView::DispatchEvent(
 {
 	const auto hwnd = hWnd;
 
-	HDC			hdc;
-//	int			nPosX;
-//	int			nPosY;
-
-	switch ( uMsg ){
+	switch (uMsg) {
 	case WM_MOUSEWHEEL:
 		if( GetEditWnd().DoMouseWheel( wParam, lParam ) ){
 			return 0L;
@@ -332,45 +328,6 @@ LRESULT CEditView::DispatchEvent(
 
 	case WM_MOUSEHWHEEL:
 		return OnMOUSEHWHEEL( wParam, lParam );
-
-	case WM_CREATE:
-		::SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR) this );
-		m_hwndSizeBox = ::CreateWindowEx(
-			0L,									/* no extended styles */
-			WC_SCROLLBAR,						/* scroll bar control class */
-			nullptr,								/* text for window title bar */
-			WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			0,									/* horizontal position */
-			0,									/* vertical position */
-			200,								/* width of the scroll bar */
-			CW_USEDEFAULT,						/* default height */
-			hwnd, 								/* handle of main window */
-			(HMENU) nullptr,						/* no menu for a scroll bar */
-			((CREATESTRUCT*)lParam)->hInstance,	/* instance owning this window */
-			(LPVOID) nullptr						/* pointer not needed */
-		);
-		if (m_hwndSizeBox == nullptr) {
-			return -1;
-		}
-		m_hwndSizeBoxPlaceholder = ::CreateWindowEx(
-			0L, 								/* no extended styles */
-			WC_STATIC,							/* scroll bar control class */
-			nullptr,								/* text for window title bar */
-			WS_CHILD,							/* innocent child */
-			0,									/* horizontal position */
-			0,									/* vertical position */
-			200,								/* width of the scroll bar */
-			CW_USEDEFAULT,						/* default height */
-			hwnd, 								/* handle of main window */
-			(HMENU) nullptr,						/* no menu for a scroll bar */
-			((CREATESTRUCT*)lParam)->hInstance,	/* instance owning this window */
-			(LPVOID) nullptr						/* pointer not needed */
-		);
-		if (m_hwndSizeBoxPlaceholder == nullptr) {
-			return -1;
-		}
-		DarkMode::setWindowCtlColorSubclass(hwnd);
-		return 0L;
 
 		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
@@ -641,49 +598,6 @@ LRESULT CEditView::DispatchEvent(
 		m_bInMenuLoop = FALSE;	/* メニュー モーダル ループに入っています */
 		return 0L;
 
-	case WM_PAINT:
-		{
-			PAINTSTRUCT	ps;
-			hdc = ::BeginPaint( hwnd, &ps );
-			OnPaint( hdc, &ps, FALSE );
-			::EndPaint(hwnd, &ps);
-		}
-		return 0L;
-
-	case WM_CLOSE:
-//		MYTRACE( L"	WM_CLOSE\n" );
-		::DestroyWindow( hwnd );
-		return 0L;
-	case WM_DESTROY:
-		if( nullptr != m_pcDropTarget ){
-			m_pcDropTarget->Revoke_DropTarget();
-		}
-
-		/* タイマー終了 */
-		::KillTimer( GetHwnd(), IDT_ROLLMOUSE );
-
-//		MYTRACE( L"	WM_DESTROY\n" );
-		/*
-		||子ウィンドウの破棄
-		*/
-		if( nullptr != m_hwndVScrollBar ){	// Aug. 20, 2005 Aroka
-			::DestroyWindow( m_hwndVScrollBar );
-			m_hwndVScrollBar = nullptr;
-		}
-		if( nullptr != m_hwndHScrollBar ){
-			::DestroyWindow( m_hwndHScrollBar );
-			m_hwndHScrollBar = nullptr;
-		}
-		::DestroyWindow( m_hwndSizeBox );
-		m_hwndSizeBox = nullptr;
-		::DestroyWindow( m_hwndSizeBoxPlaceholder );
-		m_hwndSizeBoxPlaceholder = nullptr;
-		m_pcsbwVSplitBox = nullptr;	/* 垂直分割ボックス */
-		m_pcsbwHSplitBox = nullptr;	/* 水平分割ボックス */
-
-		m_hWnd = nullptr;
-		return 0L;
-
 	case MYWM_DOSPLIT:
 //		nPosX = (int)wParam;
 //		nPosY = (int)lParam;
@@ -790,6 +704,110 @@ LRESULT CEditView::DispatchEvent(
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                    ウィンドウイベント                       //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CEditView::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
+		return false;
+	}
+
+	const auto cx = lpCreateStruct->cx;
+	const auto cy = lpCreateStruct->cy;
+
+	const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+	const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+	m_hwndSizeBox = ::CreateWindowExW(
+		0L, 						/* no extended styles			*/
+		WC_SCROLLBAR,				/* scroll bar control class		*/
+		nullptr,					/* text for window title bar	*/
+		WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
+		cx - cxVScroll,				/* horizontal position			*/
+		cy - cyHScroll,				/* vertical position			*/
+		cxVScroll,					/* width of the scroll bar		*/
+		cyHScroll,					/* default height				*/
+		hWnd,		 				/* handle of main window		*/
+		HMENU(nullptr),				/* no menu for a scroll bar 	*/
+		lpCreateStruct->hInstance,	/* instance owning this window	*/
+		LPVOID(nullptr)				/* pointer not needed			*/
+	);
+
+	if (!m_hwndSizeBox) {
+		return false;
+	}
+
+	m_hwndSizeBoxPlaceholder = ::CreateWindowExW(
+		0L, 						/* no extended styles */
+		WC_STATIC,					/* scroll bar control class */
+		nullptr,					/* text for window title bar */
+		WS_CHILD,					/* innocent child */
+		cx - cxVScroll,				/* horizontal position			*/
+		cy - cyHScroll,				/* vertical position			*/
+		cxVScroll,					/* width of the scroll bar		*/
+		cyHScroll,					/* default height				*/
+		hWnd,		 				/* handle of main window		*/
+		HMENU(nullptr),				/* no menu for a scroll bar 	*/
+		lpCreateStruct->hInstance,	/* instance owning this window	*/
+		LPVOID(nullptr)				/* pointer not needed			*/
+	);
+	if (!m_hwndSizeBoxPlaceholder) {
+		return false;
+	}
+
+	DarkMode::setWindowCtlColorSubclass(hWnd);
+
+	return true;
+}
+
+/*!
+ * @brief WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ */
+void CEditView::OnDestroy(HWND hWnd)
+{
+	if (m_pcDropTarget) {
+		m_pcDropTarget->Revoke_DropTarget();
+	}
+
+	//タイマー終了
+	::KillTimer(hWnd, IDT_ROLLMOUSE);
+
+	/*
+	||子ウィンドウの破棄
+	*/
+	m_pcsbwHSplitBox = nullptr;	/* 水平分割ボックス */
+	if (m_hwndHScrollBar) {
+		::DestroyWindow(m_hwndHScrollBar);
+		m_hwndHScrollBar = nullptr;
+	}
+	m_pcsbwVSplitBox = nullptr;	/* 垂直分割ボックス */
+	if (m_hwndVScrollBar) {
+		::DestroyWindow(m_hwndVScrollBar);
+		m_hwndVScrollBar = nullptr;
+	}
+	if (m_hwndSizeBox) {
+		::DestroyWindow(m_hwndSizeBox);
+		m_hwndSizeBox = nullptr;
+	}
+	if (m_hwndSizeBoxPlaceholder) {
+		::DestroyWindow(m_hwndSizeBoxPlaceholder);
+		m_hwndSizeBoxPlaceholder = nullptr;
+	}
+
+	Base::OnDestroy(hWnd);
+}
 
 void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 {
@@ -994,6 +1012,23 @@ void CEditView::OnKillFocus( void )
 	}
 
 	return;
+}
+
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CEditView::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	UNREFERENCED_PARAMETER(hWnd);
+
+	HDC hdc = ps.hdc;
+
+	OnPaint( hdc, &ps, FALSE );
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

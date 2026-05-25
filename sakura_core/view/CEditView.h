@@ -196,6 +196,11 @@ public:
 	void OnAfterLoad(const SLoadInfo& sLoadInfo) override;
 	/* メッセージディスパッチャ */
 	LRESULT DispatchEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
+	void	OnDestroy(HWND hWnd) override;
+	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+
 	//
 	void OnChangeSetting();										/* 設定変更を反映させる */
 	void OnPaint(HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp);			/* 通常の描画処理 */
