@@ -49,49 +49,9 @@
 #include "CSelectLang.h"
 #include "apiwrap/DarkMode.h"
 
-LRESULT CALLBACK EditViewWndProc( HWND, UINT, WPARAM, LPARAM );
 VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
 
 #define IDT_ROLLMOUSE	1
-
-/*
-|| ウィンドウプロシージャ
-||
-*/
-
-LRESULT CALLBACK EditViewWndProc(
-	HWND		hwnd,	// handle of window
-	UINT		uMsg,	// message identifier
-	WPARAM		wParam,	// first message parameter
-	LPARAM		lParam 	// second message parameter
-)
-{
-//	DEBUG_TRACE(L"EditViewWndProc(0x%08X): %ls\n", hwnd, GetWindowsMessageName(uMsg));
-
-	CREATESTRUCT* pCreate;
-	CEditView* pCEdit;
-
-	switch( uMsg ){
-	case WM_CREATE:
-		pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
-		pCEdit = reinterpret_cast<CEditView*>(pCreate->lpCreateParams);
-		return pCEdit->DispatchEvent( hwnd, uMsg, wParam, lParam );
-	default:
-		pCEdit = ( CEditView* )::GetWindowLongPtr( hwnd, GWLP_USERDATA );
-		if( nullptr != pCEdit ){
-			//	May 16, 2000 genta
-			//	From Here
-			if( uMsg == WM_COMMAND ){
-				::SendMessage( ::GetParent( pCEdit->m_hwndParent ), WM_COMMAND, wParam,  lParam );
-			}
-			else{
-				return pCEdit->DispatchEvent( hwnd, uMsg, wParam, lParam );
-			}
-			//	To Here
-		}
-		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
-	}
-}
 
 /*
 ||  タイマーメッセージのコールバック関数
@@ -119,7 +79,8 @@ VOID CALLBACK EditViewTimerProc(
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CEditView::CEditView( void )
-: CViewCalc(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
+	: COriginalWnd(GSTR_VIEWNAME)
+	, CViewCalc(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cViewSelect(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cParser(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cTextDrawer(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
@@ -226,7 +187,6 @@ BOOL CEditView::Create(
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//↓今までCreateでやってたこと
 
-	WNDCLASS	wc;
 	m_hwndParent = hwndParent;
 	m_nMyIndex = nMyIndex;
 
@@ -243,43 +203,13 @@ BOOL CEditView::Create(
 	GetTextArea().SetLeftYohaku(DpiScaleX(GetDllShareData().m_Common.m_sWindow.m_nLineNumRightSpace));
 
 	/* ウィンドウクラスの登録 */
-	//	Apr. 27, 2000 genta
-	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
-	wc.style			= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
-	wc.lpfnWndProc		= EditViewWndProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= 0;
-	wc.hInstance		= G_AppInstance();
-	wc.hIcon			= LoadIcon( nullptr, IDI_APPLICATION );
-	wc.hCursor			= nullptr/*LoadCursor( NULL, IDC_IBEAM )*/;
-	wc.hbrBackground	= (HBRUSH)nullptr/*(COLOR_WINDOW + 1)*/;
-	wc.lpszMenuName		= nullptr;
-	wc.lpszClassName	= GSTR_VIEWNAME;
+	const auto atom = RegisterClassW(HBRUSH(nullptr), HCURSOR(nullptr), CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW, 0, ::LoadIconW(nullptr, IDI_APPLICATION));
 
-	// TODO: 実装を改善する余地があります。
-	// RegisterClassは既に登録された状態で呼ぶと失敗するため、
-	// 単純に成否チェックして抜けたらマズいです。
-	::RegisterClass( &wc );
+	CMyRect rc;
+	rc.SetXYWH(CW_USEDEFAULT, 0, CW_USEDEFAULT, 0);
 
 	/* エディタウィンドウの作成 */
-	m_hWnd = ::CreateWindowEx(
-		WS_EX_STATICEDGE,		// extended window style
-		GSTR_VIEWNAME,			// pointer to registered class name
-		GSTR_VIEWNAME,			// pointer to window name
-		0						// window style
-		| WS_VISIBLE
-		| WS_CHILD
-		| WS_CLIPCHILDREN
-		,
-		CW_USEDEFAULT,			// horizontal position of window
-		0,						// vertical position of window
-		CW_USEDEFAULT,			// window width
-		0,						// window height
-		hwndParent,				// handle to parent or owner window
-		nullptr,					// handle to menu or child-window identifier
-		G_AppInstance(),		// handle to application instance
-		(LPVOID)this			// pointer to window-creation data(lpCreateParams)
-	);
+	m_hWnd = Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, hwndParent, 100 + nMyIndex, rc, GSTR_VIEWNAME, WS_EX_STATICEDGE);
 	if( nullptr == GetHwnd() ){
 		return FALSE;
 	}
@@ -381,12 +311,14 @@ void CEditView::Close()
 || メッセージディスパッチャ
 */
 LRESULT CEditView::DispatchEvent(
-	HWND	hwnd,	// handle of window
+	HWND	hWnd,	// handle of window
 	UINT	uMsg,	// message identifier
 	WPARAM	wParam,	// first message parameter
 	LPARAM	lParam 	// second message parameter
 )
 {
+	const auto hwnd = hWnd;
+
 	HDC			hdc;
 //	int			nPosX;
 //	int			nPosY;
@@ -480,7 +412,7 @@ LRESULT CEditView::DispatchEvent(
 		if( wParam == IMN_SETCONVERSIONMODE || wParam == IMN_SETOPENSTATUS){
 			GetCaret().ShowEditCaret();
 		}
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 
 	case WM_IME_COMPOSITION:
 		if( IsInsMode() && (lParam & GCS_RESULTSTR)){
@@ -537,11 +469,11 @@ LRESULT CEditView::DispatchEvent(
 			PostprocessCommand_hokan();	// 補完実行
 			return DefWindowProc( hwnd, uMsg, wParam, lParam );
 		}
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 
 	case WM_IME_ENDCOMPOSITION:
 		m_szComposition[0] = L'\0';
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 
 	case WM_IME_CHAR:
 		if( ! IsInsMode() /* Oct. 2, 2005 genta */ ){ /* 上書きモードか？ */
@@ -566,7 +498,7 @@ LRESULT CEditView::DispatchEvent(
 	case WM_SYSKEYUP:
 		GetCommander().m_bPrevCommand = 0;
 		// 念のため呼ぶ
-		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 	// 2004.04.27 To Here
 
 	case WM_LBUTTONDBLCLK:
@@ -782,7 +714,7 @@ LRESULT CEditView::DispatchEvent(
 			break;
 		}
 		// 2010.03.16 0LではなくTSFが何かするかもしれないのでDefにまかせる
-		return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 
 	case MYWM_DROPFILES:	// 独自のドロップファイル通知	// 2008.06.20 ryoji
 		OnMyDropFiles( (HDROP)wParam );
@@ -848,8 +780,11 @@ LRESULT CEditView::DispatchEvent(
 	}
 
 	default:
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 	}
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

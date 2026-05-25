@@ -55,6 +55,7 @@
 #include "util/design_template.h"
 #include "_os/CClipboard.h"
 #include "window/CSplitBoxWnd.h"
+#include "window/CWnd.h"
 
 class CDropTarget; /// 2002/2/3 aroka ヘッダー軽量化
 class COpeBlk;///
@@ -97,7 +98,8 @@ const int CMD_FROM_MOUSE = 2;
 //2007.10.02 kobake Command_TRIM2をCConvertに移動
 
 class CEditView
-: public CViewCalc //$$ これが親クラスである必要は無いが、このクラスのメソッド呼び出しが多いので、暫定的に親クラスとする。
+	: public COriginalWnd
+	, public CViewCalc //$$ これが親クラスである必要は無いが、このクラスのメソッド呼び出しが多いので、暫定的に親クラスとする。
 , public CEditView_Paint
 , public CDocListenerEx
 {
@@ -109,6 +111,9 @@ private:
 	using CRulerHolder = std::unique_ptr<CRuler>;
 	using CTextAreaHolder = std::unique_ptr<CTextArea>;
 	using CVSplitBoxWndHolder = std::unique_ptr<CVSplitBoxWnd>;
+
+	using Base = COriginalWnd;
+	using Me = CEditView;
 
 public:
 	const CEditDoc* GetDocument() const
@@ -143,7 +148,8 @@ public:
 public:
 	/* Constructors */
 	CEditView( void );
-	~CEditView();
+	~CEditView() override;
+
 	void Close();
 	/* 初期化系メンバ関数 */
 	BOOL Create(
@@ -155,7 +161,6 @@ public:
 	);
 	void CopyViewStatus( CEditView* ) const;					/* 自分の表示状態を他のビューにコピー */
 
-	HWND GetHwnd() const { return m_hWnd; }
 	void InvalidateRect(LPCRECT lpRect, BOOL bErase = TRUE) { ::InvalidateRect(m_hWnd, lpRect, bErase); }
 	int ScrollWindowEx(int dx, int dy, const RECT* prcScroll, const RECT* prcClip, HRGN hrgnUpdate, RECT* prcUpdate, UINT uFlags) {
 		return ::ScrollWindowEx(m_hWnd, dx, dy, prcScroll, prcClip, hrgnUpdate, prcUpdate, uFlags);
@@ -190,7 +195,7 @@ public:
 	//ドキュメントイベント
 	void OnAfterLoad(const SLoadInfo& sLoadInfo) override;
 	/* メッセージディスパッチャ */
-	LRESULT DispatchEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT DispatchEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	//
 	void OnChangeSetting();										/* 設定変更を反映させる */
 	void OnPaint(HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp);			/* 通常の描画処理 */
@@ -645,7 +650,6 @@ public:
 
 public:
 	//ウィンドウ
-	HWND			m_hwndParent;		/* 親ウィンドウハンドル */
 	HWND			m_hwndVScrollBar = nullptr;	/* 垂直スクロールバーウィンドウハンドル */
 	int				m_nVScrollRate;		/* 垂直スクロールバーの縮尺 */
 	HWND			m_hwndHScrollBar = nullptr;	/* 水平スクロールバーウィンドウハンドル */
@@ -745,7 +749,6 @@ public:
 
 	// IME
 private:
-	HWND			m_hWnd;
 	int				m_nLastReconvLine;             //2002.04.09 minfu 再変換情報保存用;
 	int				m_nLastReconvIndex;            //2002.04.09 minfu 再変換情報保存用;
 
