@@ -8,7 +8,7 @@
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, Moca
 	Copyright (C) 2014, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -42,9 +42,7 @@ public:
 	std::wstring	m_strText2;				//!< 置換後
 	int				m_nReplaceKeySequence;	//!< 置換後シーケンス
 
-protected:
 	CRecentReplace			m_cRecentReplace;
-	CFontAutoDeleter		m_cFontText2;
 
 	/*
 	||  実装ヘルパ関数
@@ -57,5 +55,8 @@ protected:
 
 	void SetData( void ) override;	/* ダイアログデータの設定 */
 	int GetData( void ) override;	/* ダイアログデータの取得 */
+
+	RecentCombo m_Text2{ IDC_COMBO_TEXT2, m_cRecentReplace };
 };
+
 #endif /* SAKURA_CDLGGREPREPLACE_D97F4D2D_9963_40FB_91C1_5A6FF0407E99_H_ */

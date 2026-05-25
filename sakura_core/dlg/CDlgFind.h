@@ -8,7 +8,7 @@
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, YAZAKI
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -46,7 +46,6 @@ public:
 	CLogicPoint	m_ptEscCaretPos_PHY;	// 検索開始時のカーソル位置退避エリア
 
 	CRecentSearch			m_cRecentSearch;
-	CFontAutoDeleter		m_cFontText;
 
 protected:
 //@@@ 2002.2.2 YAZAKI CShareDataに移動
@@ -62,5 +61,8 @@ protected:
 
 	// BOOL OnKeyDown( WPARAM wParam, LPARAM lParam ) override;
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add
+
+	RecentCombo m_Text{ IDC_COMBO_TEXT, m_cRecentSearch, true };
 };
+
 #endif /* SAKURA_CDLGFIND_AF260AA4_6075_4B87_9F03_2CEEDAD64094_H_ */

@@ -248,37 +248,6 @@ private:
 };
 
 /*!
- * @brief フォントハンドルを管理するクラス
- *
- * @note C++にスマートポインターが存在しなかった頃の歴史的遺物。
- */
-class CFontAutoDeleter final
-{
-private:
-	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
-
-	using Me = CFontAutoDeleter;
-
-public:
-	CFontAutoDeleter() = default;
-	CFontAutoDeleter(const Me& other);
-	Me& operator = (const Me& other);
-	CFontAutoDeleter(Me&& other) noexcept;
-	Me& operator = (Me&& other) noexcept;
-	~CFontAutoDeleter() noexcept;
-
-	void	SetFont( const HFONT& hFontOld, const HFONT& hFont, const HWND& hWnd );
-	void	ReleaseOnDestroy();
-
-	[[nodiscard]] HFONT	GetFont() const { return m_hFont; }
-
-private:
-	void	Clear() noexcept;
-
-	FontHolder m_hFont = nullptr;
-};
-
-/*!
  * @brief 指定したフォントで描画を行うために必要なリソースを管理するクラス
  *
  * @note 通常の描画でGetDCを呼び出すシーンはない。

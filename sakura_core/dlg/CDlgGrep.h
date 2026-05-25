@@ -80,8 +80,6 @@ public:
 	CRecentExcludeFile		m_cRecentExcludeFile;
 	CRecentExcludeFolder	m_cRecentExcludeFolder;
 
-	std::vector<CFontAutoDeleter>	m_cFontDeleters;
-
 	/*
 	||  実装ヘルパ関数
 	*/
@@ -93,6 +91,13 @@ public:
 	void SetData( void ) override;	/* ダイアログデータの設定 */
 	int GetData( void ) override;	/* ダイアログデータの取得 */
 	void SetDataFromThisText(bool bChecked);	/* 現在編集中ファイルから検索チェックでの設定 */
+
+public:
+	RecentCombo m_Text{ IDC_COMBO_TEXT, m_cRecentSearch, true };
+	RecentCombo m_File{ IDC_COMBO_FILE, m_cRecentGrepFile, true };
+	RecentCombo m_Folder2{ IDC_COMBO_FOLDER, m_cRecentGrepFolder, true };
+	RecentCombo m_ExcludeFile{ IDC_COMBO_EXCLUDE_FILE, m_cRecentExcludeFile, true };
+	RecentCombo m_ExcludeFolder{ IDC_COMBO_EXCLUDE_FOLDER, m_cRecentExcludeFolder, true };
 };
 
 #endif /* SAKURA_CDLGGREP_01A0D5CB_326B_4C56_A527_C811F84FD8D8_H_ */

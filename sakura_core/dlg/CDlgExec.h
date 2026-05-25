@@ -7,7 +7,7 @@
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, YAZAKI
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -48,5 +48,9 @@ protected:
 	BOOL OnInitDialog(HWND hwnd, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add
+
+	RecentCombo m_Command{ IDC_COMBO_m_szCommand, m_cRecentCmd };
+	RecentCombo m_CurDir{ IDC_COMBO_CUR_DIR, m_cRecentCur };
 };
+
 #endif /* SAKURA_CDLGEXEC_4A4BE162_D6C9_4E28_B1AC_091DFFE7DD72_H_ */

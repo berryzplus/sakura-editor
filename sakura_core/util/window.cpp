@@ -432,67 +432,6 @@ int CTextWidthCalc::GetTextHeight() const
 	return tm.tmHeight;
 }
 
-CFontAutoDeleter::CFontAutoDeleter(const Me& other)
-{
-	operator = (other);
-}
-
-CFontAutoDeleter& CFontAutoDeleter::operator = (const Me& other)
-{
-	Clear();
-
-	if (const auto& hFont = other.m_hFont) {
-		if (LOGFONT lf = {};
-			::GetObjectW(hFont, sizeof(lf), &lf)) {
-			m_hFont = ::CreateFontIndirectW(&lf);
-		}
-	}
-
-	return *this;
-}
-
-CFontAutoDeleter::CFontAutoDeleter(Me&& other) noexcept
-{
-	operator = (std::move(other));
-}
-
-CFontAutoDeleter& CFontAutoDeleter::operator = (Me&& other) noexcept
-{
-	Clear();
-
-	m_hFont = other.m_hFont.release();
-
-	return *this;
-}
-
-CFontAutoDeleter::~CFontAutoDeleter() noexcept
-{
-	Clear();
-}
-
-void CFontAutoDeleter::Clear() noexcept
-{
-	m_hFont = nullptr;
-}
-
-void CFontAutoDeleter::SetFont(
-	const HFONT& hFontOld [[maybe_unused]],
-	const HFONT& hFont,
-	const HWND& hWnd [[maybe_unused]]
-)
-{
-	Clear();
-
-	m_hFont = hFont;
-}
-
-/*! ウィンドウのリリース(WM_DESTROY用)
-*/
-void CFontAutoDeleter::ReleaseOnDestroy()
-{
-	Clear();
-}
-
 /*!
 	システムフォントに準拠したフォントを取得
 	@param[in]	nLogicalHeight	フォント高さ(論理単位)

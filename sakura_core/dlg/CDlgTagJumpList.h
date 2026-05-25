@@ -151,6 +151,8 @@ private:
 
 	CRecentTagjumpKeyword	m_cRecentKeyword;
 
+	RecentCombo m_Keyword{ IDC_KEYWORD, m_cRecentKeyword };
+
 	POINT	m_ptDefaultSize;
 	RECT	m_rcItems[11];
 

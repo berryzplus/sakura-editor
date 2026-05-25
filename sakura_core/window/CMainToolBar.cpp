@@ -343,7 +343,7 @@ void CMainToolBar::CreateToolBar( void )
 							//検索ボックスを更新	// 関数化 2010/6/6 Uchi
 							AcceptSharedSearchKey();
 
-							CDialog::SetComboBoxDeleter(m_hwndSearchBox, &m_cRecentSearch);
+							m_SearchBox.Attach(m_hwndToolBar);
 
 							// コンボボックスの垂直位置を調整する
 							CMyRect rcCombo;

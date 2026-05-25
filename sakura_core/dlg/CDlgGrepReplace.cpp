@@ -128,19 +128,17 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 
 BOOL CDlgGrepReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwndDlg;
+
 	_SetHwnd( hwndDlg );
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	ApiWrap::Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );
 
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
-
 	BOOL bRet = CDlgGrep::OnInitDialog( hwndDlg, wParam, lParam );
 	if( !bRet ) return bRet;
 
-	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT2 ), WM_GETFONT, 0, 0 );
-	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT2 ) );
-	m_cFontText2.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT2 ) );
+	m_Text2.Attach(hWnd);
 
 	return bRet;
 }
@@ -164,7 +162,6 @@ BOOL CDlgGrepReplace::OnCbnDropDown( HWND hwndCtl, int wID )
 
 BOOL CDlgGrepReplace::OnDestroy()
 {
-	m_cFontText2.ReleaseOnDestroy();
 	return CDlgGrep::OnDestroy();
 }
 

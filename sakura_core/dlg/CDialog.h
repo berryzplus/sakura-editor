@@ -11,7 +11,7 @@
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2011, nasukoji
 	Copyright (C) 2012, Uchi
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -20,6 +20,10 @@
 #ifndef SAKURA_CDIALOG_17C8C15C_881C_4C1F_B953_CB11FCC8B70B_H_
 #define SAKURA_CDIALOG_17C8C15C_881C_4C1F_B953_CB11FCC8B70B_H_
 #pragma once
+
+#include "window/CWnd.h"
+
+#include "sakura_rc.h"
 
 struct DLLSHAREDATA;
 class CRecent;
@@ -61,10 +65,31 @@ struct SAnchorList
 	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 */
 class CDialog{
+private:
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 
 	using Me = CDialog;
 
 public:
+	
+	struct RecentCombo final : public CCustomizedWnd {
+		RecentCombo(int childId, CRecent& cRecent, bool font = false)
+			: m_ChildId(childId)
+			, m_cRecent(cRecent)
+			, m_bCustomFont(font)
+		{
+		}
+
+		bool	Attach(HWND hWnd, UINT uIdSubclass = 1) override;
+
+		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+		int			m_ChildId;
+		CRecent&	m_cRecent;
+		bool		m_bCustomFont;
+		FontHolder	m_hFont = nullptr;
+	};
+
 	/*
 	||  Constructors
 	*/
@@ -120,12 +145,6 @@ public:
 	void ResizeItem( HWND hTarget, const POINT& ptDlgDefalut, const POINT& ptDlgNew, const RECT& rcItemDefault, EAnchorStyle anchor, bool bUpdate = true);
 	void GetItemClientRect( int wID, RECT& rc );
 
-	static LRESULT CALLBACK SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-	//! @brief コンボボックスに履歴削除・単語削除の機能を追加する
-	//!
-	//! @param hwndCtl コンボボックスのハンドル。CBS_DROPDOWNLISTスタイルのコンボボックスには対応していません。
-	//! @param pRecent 紐づけるCRecentへのポインタ。nullptrは指定できません。
-	static void SetComboBoxDeleter( HWND hwndCtl, CRecent* pRecent );
 public:
 
 	static bool DirectoryUp(WCHAR* szDir);

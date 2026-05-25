@@ -69,6 +69,8 @@ int CDlgExec::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 
 BOOL CDlgExec::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwnd;
+
 	_SetHwnd( hwnd );
 	
 	ECodeType codes[] = { CODE_SJIS, CODE_UNICODE, CODE_UTF8 };
@@ -84,8 +86,8 @@ BOOL CDlgExec::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	}
 
 	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_m_szCommand), &m_cRecentCmd);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_CUR_DIR), &m_cRecentCur);
+	m_Command.Attach(hWnd);
+	m_CurDir.Attach(hWnd);
 	return bRet;
 }
 

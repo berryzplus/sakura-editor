@@ -323,6 +323,8 @@ int CDlgReplace::GetData( void )
 
 BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwndDlg;
+
 	_SetHwnd( hwndDlg );
 	//	Jun. 26, 2001 genta
 	//	この位置で正規表現の初期化をする必要はない
@@ -349,28 +351,17 @@ BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		::CheckDlgButton( GetHwnd(), IDC_RADIO_ALLAREA, TRUE );
 	}
 
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT2), &m_cRecentReplace);
-
 	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 	if( !bRet ) return bRet;
 
-	// フォント設定	2012/11/27 Uchi
-	HFONT hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT ), WM_GETFONT, 0, 0 );
-	HFONT hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT ) );
-	m_cFontText.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT ) );
-
-	hFontOld = (HFONT)::SendMessageAny( GetItemHwnd( IDC_COMBO_TEXT2 ), WM_GETFONT, 0, 0 );
-	hFont = SetMainFont( GetItemHwnd( IDC_COMBO_TEXT2 ) );
-	m_cFontText2.SetFont( hFontOld, hFont, GetItemHwnd( IDC_COMBO_TEXT2 ) );
+	m_Text.Attach(hWnd);
+	m_Text2.Attach(hWnd);
 
 	return bRet;
 }
 
 BOOL CDlgReplace::OnDestroy()
 {
-	m_cFontText.ReleaseOnDestroy();
-	m_cFontText2.ReleaseOnDestroy();
 	return CDialog::OnDestroy();
 }
 

@@ -9,6 +9,7 @@
 #define SAKURA_CMAINTOOLBAR_FEA7E388_DFEC_4E15_94CC_90A7E779797B_H_
 #pragma once
 
+#include "dlg/CDialog.h"
 #include "recent/CRecentSearch.h"
 #include "window/CWnd.h"
 
@@ -17,6 +18,8 @@ class CImageListMgr;
 
 class CMainToolBar final : public CCustomizedWnd {
 private:
+	using RecentCombo = CDialog::RecentCombo;
+
 	using Base = CCustomizedWnd;
 	using Me = CMainToolBar;
 
@@ -66,6 +69,8 @@ private:
 	CImageListMgr*			m_pcIcons = nullptr;
 	HIMAGELIST				m_hImageList = nullptr;
 	HIMAGELIST				m_hDisabledImageList = nullptr;
+
+	RecentCombo				m_SearchBox{ int(F_SEARCH_BOX), m_cRecentSearch };
 };
 
 #endif /* SAKURA_CMAINTOOLBAR_FEA7E388_DFEC_4E15_94CC_90A7E779797B_H_ */

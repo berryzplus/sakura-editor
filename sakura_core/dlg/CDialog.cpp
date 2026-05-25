@@ -799,20 +799,72 @@ static int DeletePreviousWord(wchar_t* text, int length, int curPos)
 	return prevWordStartPos;
 }
 
-LRESULT CALLBACK CDialog::SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
-	                         UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+bool CDialog::RecentCombo::Attach(HWND hWnd, UINT uIdSubclass)
 {
-	HWND hwndCombo = GetParent(hwnd);
+	const auto hWndCombo = ::GetDlgItem(hWnd, m_ChildId);
+
+	if ((::GetWindowLongPtrW(hWndCombo, GWL_STYLE) & 0b11) == CBS_DROPDOWNLIST)
+		return false;
+
+	// 設定するフォントの高さを取得
+	const auto hFontOld = GetWindowFont(hWndCombo);
+
+	LONG fontHeight = 0;
+	if (LOGFONT	lf{}; GetObjectW(hFontOld, sizeof(lf), &lf)) {
+		fontHeight = lf.lfHeight;
+	} else if (m_bCustomFont) {
+		return false;
+	}
+
+	COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
+	if (!::GetComboBoxInfo(hWndCombo, &info))
+		return false;
+
+	if (!CCustomizedWnd::Attach(info.hwndItem, uIdSubclass))
+		return false;
+
+	// フォント設定	2012/11/27 Uchi
+	if (m_bCustomFont) {
+		//ビューフォントの設定を取得
+		LOGFONT	lf = GetDllShareData().m_Common.m_sView.m_lf;
+
+		//フォントの高さは設定されていたものに合わせる
+		lf.lfHeight = fontHeight;
+
+		lf.lfWidth = 0;
+		lf.lfEscapement = 0;
+		lf.lfOrientation = 0;
+		lf.lfWeight = FW_NORMAL;
+		lf.lfItalic = FALSE;
+		lf.lfUnderline = FALSE;
+		lf.lfStrikeOut = FALSE;
+		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS;		// Raster Font を使わないように
+
+		// フォントを作成
+		m_hFont = ::CreateFontIndirectW(&lf);
+		if (m_hFont) {
+			// フォントの設定
+			SetWindowFont(hWndCombo, m_hFont, FALSE);
+		}
+	}
+
+	return true;
+}
+
+LRESULT CDialog::RecentCombo::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	HWND hwndCombo = GetParent(hWnd);
 	switch( uMsg ){
 	case WM_KEYDOWN:
 		if( wParam == VK_DELETE ){
 			BOOL bShow = ApiWrap::Combo_GetDroppedState(hwndCombo);
 			int nIndex = ApiWrap::Combo_GetCurSel(hwndCombo);
 			if( bShow && 0 <= nIndex ){
-				DeleteRecentItem(hwndCombo, nIndex, (CRecent*)dwRefData);
+				DeleteRecentItem(hwndCombo, nIndex, &m_cRecent);
 			}
 		}
 		break;
+
 	case WM_CHAR:
 		// ASCII 削除文字。Ctrl + Backspace が入力された。
 		if (wParam == 0x7f) {
@@ -837,21 +889,18 @@ LRESULT CALLBACK CDialog::SubEditProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 			return 0;
 		}
 		break;
+
 	case WM_DESTROY:
-		::RemoveWindowSubclass(hwnd, &SubEditProc, uIdSubclass);
+		if (m_hFont) {
+			const auto hFont = GetStockFont(DEFAULT_GUI_FONT);
+			SetWindowFont(hwndCombo, hFont, FALSE);
+			m_hFont = nullptr;
+		}
 		return 0;
+
 	default:
 		break;
 	}
-	return ::DefSubclassProc(hwnd, uMsg, wParam, lParam);
-}
 
-void CDialog::SetComboBoxDeleter(HWND hwndCtl, CRecent* pRecent)
-{
-	if (!pRecent || (::GetWindowLongPtr(hwndCtl, GWL_STYLE) & 0b11) == CBS_DROPDOWNLIST)
-		return;
-	COMBOBOXINFO info = { sizeof(COMBOBOXINFO) };
-	if (!::GetComboBoxInfo(hwndCtl, &info))
-		return;
-	::SetWindowSubclass(info.hwndItem, &SubEditProc, 0, (DWORD_PTR)pRecent);
+	return DefWndProcW(hWnd, uMsg, wParam, lParam);
 }

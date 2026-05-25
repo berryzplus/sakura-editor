@@ -10,7 +10,7 @@
 	Copyright (C) 2002, hor
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -59,11 +59,8 @@ public:
 
 	CLogicPoint		m_ptEscCaretPos_PHY;	// 検索/置換開始時のカーソル位置退避エリア
 
-protected:
 	CRecentSearch			m_cRecentSearch;
 	CRecentReplace			m_cRecentReplace;
-	CFontAutoDeleter		m_cFontText;
-	CFontAutoDeleter		m_cFontText2;
 
 	/*
 	||  実装ヘルパ関数
@@ -78,5 +75,9 @@ protected:
 	void SetData( void ) override;		/* ダイアログデータの設定 */
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	int GetData( void ) override;		/* ダイアログデータの取得 */
+
+	RecentCombo m_Text{ IDC_COMBO_TEXT, m_cRecentSearch, true }; 
+	RecentCombo m_Text2{ IDC_COMBO_TEXT2, m_cRecentReplace, true }; 
 };
+
 #endif /* SAKURA_CDLGREPLACE_37D62C07_5DAB_4CAC_A8B2_83C75329F8B7_H_ */

@@ -396,6 +396,8 @@ int CDlgTagJumpList::GetData( void )
 */
 BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwndDlg;
+
 	HWND		hwndList;
 	LV_COLUMN	col;
 	RECT		rc;
@@ -499,11 +501,11 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		bRet = FALSE;	//for set focus
 	}
 
-	SetComboBoxDeleter(hwndKey, &m_cRecentKeyword);
-
 	/* 基底クラスメンバ */
 	CDialog::OnInitDialog( GetHwnd(), wParam, lParam );
 	
+	m_Keyword.Attach(hWnd);
+
 	return bRet;
 }
 

@@ -294,6 +294,8 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCur
 
 BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
+	const auto hWnd = hwndDlg;
+
 	_SetHwnd( hwndDlg );
 
 	/* カレントフォルダーが初期値 */
@@ -342,25 +344,14 @@ BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	DragAcceptFiles(hFolder, true);
 	m_Folder.Attach(hFolder, 0);
 
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_FILE), &m_cRecentGrepFile);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_FOLDER), &m_cRecentGrepFolder);
-
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_EXCLUDE_FILE), &m_cRecentExcludeFile);
-	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_EXCLUDE_FOLDER), &m_cRecentExcludeFolder);
-
 	BOOL bRet = CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 	if( !bRet ) return bRet;
 
-	// フォント設定	2012/11/27 Uchi
-	const int nItemIds[] = { IDC_COMBO_TEXT, IDC_COMBO_FILE, IDC_COMBO_FOLDER, IDC_COMBO_EXCLUDE_FILE, IDC_COMBO_EXCLUDE_FOLDER };
-	m_cFontDeleters.resize( int(std::size(nItemIds)) );
-	for( size_t i2 = 0; i2 < int(std::size(nItemIds)); ++i2 ){
-		HWND hwndItem = GetItemHwnd( nItemIds[i2] );
-		HFONT hFontOld = (HFONT)::SendMessageAny( hwndItem, WM_GETFONT, 0, 0 );
-		HFONT hFont = SetMainFont( hwndItem );
-		m_cFontDeleters[i2].SetFont( hFontOld, hFont, hwndItem );
-	}
+	m_Text.Attach(hWnd); 
+	m_File.Attach(hWnd); 
+	m_Folder2.Attach(hWnd); 
+	m_ExcludeFile.Attach(hWnd); 
+	m_ExcludeFolder.Attach(hWnd);
 
 	return bRet;
 }
@@ -407,9 +398,6 @@ LRESULT CDlgGrep::FolderCombo::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam
 
 BOOL CDlgGrep::OnDestroy()
 {
-	for( size_t i = 0; i < m_cFontDeleters.size(); ++i ){
-		m_cFontDeleters[i].ReleaseOnDestroy();
-	}
 	return CDialog::OnDestroy();
 }
 
