@@ -72,7 +72,7 @@ public:
 	/*
 	|| メンバ関数
 	*/
-	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]]) override;
+	HWND	CreateMainWnd(HINSTANCE hInstance [[maybe_unused]], int nCmdShow [[maybe_unused]]) override;
 
 	void	ExecCommand(EFunctionCode funcCode);
 
@@ -127,11 +127,11 @@ private:
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
-	void	OnDestroy(HWND hWnd);
+	void	OnDestroy(HWND hWnd) override;
 	void	OnClose(HWND hWnd) const;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
 	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags);
-	void	OnTimer(HWND hWnd, UINT id);
+	void	OnTimer(HWND hWnd, UINT id) override;
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
 
 	bool	OnSetTypeSetting(size_t index);

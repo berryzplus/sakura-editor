@@ -118,7 +118,7 @@ std::vector<std::wstring> SplitLegacyCommandLine(std::wstring_view s)
  */
 bool CAppMainWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-	if (!hWnd || !lpCreateStruct) {
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
 

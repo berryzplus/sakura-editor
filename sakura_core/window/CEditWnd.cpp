@@ -348,6 +348,7 @@ STabGroupInfo _GetTabGroupInfo(int nGroup)
 } // namespace window
 
 CEditWnd::CEditWnd()
+	: CAppMainWnd(GSTR_EDITWINDOWNAME)
 {
 	const auto& cTypeConfig = GetEditDoc().m_cDocType.GetDocumentAttribute();
 	auto& cLayoutMgr = GetEditDoc().m_cLayoutMgr;
@@ -408,29 +409,22 @@ void CEditWnd::UpdateCaption()
 
 HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 {
-	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
-	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
-
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
-	wc.style			= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
-	wc.lpfnWndProc		= &WndProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= sizeof(LONG_PTR) * 1;                                  //拡張領域を1個確保。
-	wc.hInstance		= hInstance;
-	//	Dec, 2, 2002 genta アイコン読み込み方法変更
-	wc.hIcon			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, false);
+	const UINT style		= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
 
-	wc.hCursor			= nullptr/*LoadCursor( NULL, IDC_ARROW )*/;
-	wc.hbrBackground	= (HBRUSH)nullptr/*(COLOR_3DSHADOW + 1)*/;
-	wc.lpszMenuName		= nullptr;	// MAKEINTRESOURCE( IDR_MENU1 );	2010/5/16 Uchi
-	wc.lpszClassName	= GSTR_EDITWINDOWNAME;
+	const int cbWndExtra	= sizeof(LONG_PTR) * 1;		//拡張領域を1個確保。
+
+	//	Dec, 2, 2002 genta アイコン読み込み方法変更
+	const auto hIcon			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, false);
 
 	//	Dec. 6, 2002 genta
 	//	small icon指定のため RegisterClassExに変更
-	wc.hIconSm			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
+	const auto hIconSm			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
 
-	const auto atom = ::RegisterClassExW(&wc);
+	// ウィンドウクラス登録
+	const auto atom = Base::RegisterClassW(HBRUSH(nullptr), HCURSOR(nullptr), style, cbWndExtra, hIcon, LPCWSTR(nullptr), hIconSm);
+
 	if (!atom) {
 		//	2004.05.13 Moca return NULLを有効にした
 		return nullptr;
@@ -440,22 +434,7 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGr
 	const auto rc = window::_CalcInitialRect(nCmdShow, sTabGroupInfo);
 
 	//作成
-	return ::CreateWindowExW(
-		0L,				 			// extended window style
-		MAKEINTRESOURCE(atom),		// pointer to registered class name
-		GSTR_EDITWINDOWNAME,		// pointer to window name
-		WS_OVERLAPPEDWINDOW
-		| WS_VISIBLE
-		| WS_CLIPCHILDREN,			// window style
-		rc.left,			// horizontal position of window
-		rc.top,				// vertical position of window
-		rc.Width(),			// window width
-		rc.Height(),		// window height
-		HWND(nullptr),		// handle to parent or owner window
-		HMENU(nullptr),		// handle to menu or child-window identifier
-		hInstance,			// handle to application instance
-		this				// pointer to window-creation data
-	);
+	return Base::CreateWnd(atom, WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN, HWND(nullptr), 0, rc, m_ClassName);
 }
 
 void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
@@ -1847,8 +1826,11 @@ LRESULT CEditWnd::DispatchEvent(
 		}
 // >> by aroka
 #endif
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
+		break;
 	}
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -1998,6 +1980,8 @@ void CEditWnd::OnDestroy(HWND hWnd)
 	if (m_pShareData->m_sHandles.m_hwndDebug == hWnd) {
 		m_pShareData->m_sHandles.m_hwndDebug = nullptr;
 	}
+
+	Base::OnDestroy(hWnd);
 
 	// Windows にスレッドの終了を要求します。
 	::PostQuitMessage(0);

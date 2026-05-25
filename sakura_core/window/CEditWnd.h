@@ -139,12 +139,12 @@ public:
 
 	//各種イベント
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
-	void	OnDestroy(HWND hWnd);
+	void	OnDestroy(HWND hWnd) override;
 	void	OnClose(HWND hWnd) const;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
-	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
+	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
@@ -152,7 +152,7 @@ public:
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
 	BOOL OnPrintPageSetting( void );/* 印刷ページ設定 */
-	void	OnTimer(HWND hWnd, UINT id);
+	void	OnTimer(HWND hWnd, UINT id) override;
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );

@@ -414,66 +414,11 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		false, nullptr, GetDllShareData().m_Common.m_sTabBar.m_bNewWindow? true : false );
 }
 
-/*!
- * @brief Windowsと直接やり取りするコールバックプロシージャ
- *
- * @param hWnd [in] 宛先ウインドウのハンドル
- * @param uMsg [in] メッセージコード
- * @param wParam [in, opt] 第1パラメーター
- * @param lParam [in, opt] 第2パラメーター
- * @returns 処理結果 メッセージコードにより異なる
- *
- * @note ウィンドウプロシージャじゃ
- *
- * @date 2003/09/06 KEITA Use SetWindowLongPtr for WIN64
- */
-/* static */ LRESULT CALLBACK CAppMainWnd::WndProc(
-	HWND	hWnd,	// handle of window
-	UINT	uMsg,	// message identifier
-	WPARAM	wParam,	// first message parameter
-	LPARAM	lParam 	// second message parameter
-) /* noexcept */
-{
-	// WM_CREATEが来たらウインドウに作成パラメーターを関連付ける
-	if (auto lpCreateStruct = LPCREATESTRUCTW(lParam);
-		WM_CREATE == uMsg &&
-		lpCreateStruct &&
-		lpCreateStruct->lpCreateParams)
-	{
-		// ウインドウ作成パラメーターには this ポインターが渡されている
-		auto pcWnd = std::bit_cast<CAppMainWnd*>(lpCreateStruct->lpCreateParams);
-
-		// ウインドウハンドルを関連付ける
-		pcWnd->m_hWnd = hWnd;
-
-		// ウインドウハンドルにクラスオブジェクトを関連付ける
-		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, LONG_PTR(lpCreateStruct->lpCreateParams));
-
-		return pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
-	}
-
-	// GetWindowLongPtr する都合、NULLを弾く
-	if (!hWnd) {
-		return 0L;
-	}
-
-	// ウインドウに関連付けられたオブジェクトに処理を委譲
-	if (auto pcWnd = std::bit_cast<CAppMainWnd*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
-		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
-		if (WM_DESTROY == uMsg) {
-			pcWnd->m_hWnd = nullptr;
-		}
-		return ret;
-	}
-
-	//あとはデフォルトに任せる
-	return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CControlTray
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CControlTray::CControlTray()
+	: CAppMainWnd(std::format(L"{:s}{:s}", GSTR_CEDITAPP, GetProfileName()))
 {
 	// 操作キューを作成する
 	SFilePath queueName{ std::format(GSTR_SAKURA_CP_QUEUE, GetProfileName()) };
@@ -538,55 +483,35 @@ void CControlTray::AsyncCommandProc(std::stop_token st)
 }
 
 /* 作成 */
-HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]])
+HWND CControlTray::CreateMainWnd(
+	HINSTANCE hInstance [[maybe_unused]],
+	int nCmdShow [[maybe_unused]]
+)
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
 	//同名同クラスのウィンドウが既に存在していたら、失敗
-	SFilePath szTrayWndName{ GSTR_CEDITAPP };
-
-	std::wstring_view profileName{ GetProfileName() };
-	szTrayWndName.append(profileName);
-	if (::FindWindowW(szTrayWndName, szTrayWndName)) {
+	if (cxx::FindWindowW(m_ClassName, m_ClassName)) {
 		return nullptr;
 	}
 
 	//ウィンドウクラス登録
-	WNDCLASSEXW wc{ sizeof(WNDCLASSEXW) };
+	const auto atom = Base::RegisterClassW(HBRUSH(COLOR_WINDOW + 1), ::LoadCursorW(nullptr, IDC_ARROW), CS_DBLCLKS, 0, ::LoadIconW(nullptr, IDI_APPLICATION));
 
-	wc.style			= CS_DBLCLKS;
-	wc.lpfnWndProc		= &WndProc;
-	wc.cbClsExtra		= 0;
-	wc.cbWndExtra		= 0;
-	wc.hInstance		= hInstance;
-	wc.hIcon			= ::LoadIconW(nullptr, IDI_APPLICATION);
-	wc.hCursor			= ::LoadCursorW(nullptr, IDC_ARROW);
-	wc.hbrBackground	= HBRUSH(COLOR_WINDOW + 1);
-	wc.lpszMenuName		= nullptr;
-	wc.lpszClassName	= szTrayWndName;
-	wc.hIconSm			= nullptr;
-
-	const auto atom = ::RegisterClassExW(&wc);
 	if (!atom) {
 			ErrorMessage( nullptr, LS(STR_TRAY_CREATE) );
 	}
 
-	// ウィンドウ作成 (WM_CREATEで、GetHwnd() に HWND が格納される)
-	return ::CreateWindowExW(
-		0L,
-		MAKEINTATOM(atom),		// pointer to registered class name
-		szTrayWndName,			// pointer to window name
-		WS_OVERLAPPEDWINDOW,	// window style
-		CW_USEDEFAULT,			// horizontal position of window
-		SW_HIDE,				// vertical position of window
-		100,					// window width
-		100,					// window height
-		HWND(nullptr),			// handle to parent or owner window
-		HMENU(nullptr),			// handle to menu or child-window identifier
-		hInstance,				// handle to application instance
-		LPVOID(this)			// pointer to window-creation data(lpCreateParams)
+	CMyRect rc;
+	rc.SetXYWH(
+		CW_USEDEFAULT,	// horizontal position of window
+		SW_HIDE,		// vertical position of window
+		100,			// window width
+		100				// window height
 	);
 
+	// ウィンドウ作成 (WM_CREATEで、GetHwnd() に HWND が格納される)
+	return Base::CreateWnd(atom, WS_OVERLAPPEDWINDOW, HWND(nullptr), 0, rc, m_ClassName);
 }
 
 /*!
@@ -1004,7 +929,7 @@ LRESULT CControlTray::DispatchEvent(
 	}
 
 	//あとはデフォルトに任せる
-	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -1103,6 +1028,8 @@ void CControlTray::OnDestroy(HWND hWnd)
 	hWndExitingDlg = nullptr;
 
 	m_pShareData->m_sHandles.m_hwndTray = nullptr;
+
+	Base::OnDestroy(hWnd);
 
 	// Windows にスレッドの終了を要求します。
 	::PostQuitMessage(0);

@@ -25,6 +25,7 @@
 #include "uiparts/CMenuDrawer.h"
 #include "util/design_template.h"
 #include "util/tchar_convert.h"
+#include "window/CWnd.h"
 
 namespace cxx {
 
@@ -204,31 +205,26 @@ public:
 /*!
  * @brief メインウインドウの基底クラス
  */
-struct CAppMainWnd
+struct CAppMainWnd : public COriginalWnd
 {
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+	using Base = COriginalWnd;
+	using Me = CAppMainWnd;
 
-	virtual ~CAppMainWnd() = default;
+	using Base::Base;
+	~CAppMainWnd() override = default;
 
 	virtual HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) = 0;
 
 	virtual int		MessageLoop() const = 0;
 
-	virtual LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) = 0;	/* メッセージ処理 */
-
-	HWND	GetHwnd() const noexcept { return m_hWnd; }
-
 	CImageListMgr&	GetIcons() { return m_hIcons; }
 	CMenuDrawer&	GetMenuDrawer() { return m_cMenuDrawer; }
 
-	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 
 	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
-
-	HINSTANCE		m_hInstance = nullptr;
-	HWND			m_hWnd = nullptr;
 
 	DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
 
