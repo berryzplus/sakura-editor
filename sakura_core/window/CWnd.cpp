@@ -207,6 +207,61 @@ void CWnd::OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFla
  * @param uMsg [in] メッセージコード
  * @param wParam [in, opt] 第1パラメーター
  * @param lParam [in, opt] 第2パラメーター
+ * @param uIdSubclass [in] サブクラスID
+ * @param dwRefData [in] サブクラスに関連付けられたユーザーデータ(CWndポインター。)
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+/* static */ LRESULT CALLBACK CCustomizedWnd::SubclassProc(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam,
+	UINT_PTR uIdSubclass,
+	DWORD_PTR dwRefData
+)
+{
+	SLresult ret;
+	if (auto pcWnd = std::bit_cast<CWnd*>(dwRefData)) {
+		ret = SLresult(pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam));
+	}
+
+	if (WM_DESTROY == uMsg) {
+		::RemoveWindowSubclass(hWnd, &SubclassProc, uIdSubclass);
+	}
+
+	if (ret) {
+		return ret.result;
+	}
+
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+bool CCustomizedWnd::Attach(HWND hWnd, UINT uIdSubclass)
+{
+	const auto ret = ::SetWindowSubclass(hWnd, &SubclassProc, uIdSubclass, DWORD_PTR(this));
+	if (!ret) return false;
+	m_IdSubclass = uIdSubclass;
+	return ret;
+}
+
+void CCustomizedWnd::Detach(HWND hWnd)
+{
+	if (const auto ret = ::RemoveWindowSubclass(hWnd, &SubclassProc, m_IdSubclass); !ret) return;
+	m_IdSubclass = 0;
+}
+
+LRESULT CCustomizedWnd::DefWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const
+{
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief Windowsと直接やり取りするコールバックプロシージャ
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
  * @returns 処理結果 メッセージコードにより異なる
  */
 /* static */ LRESULT CALLBACK COriginalWnd::WndProc(

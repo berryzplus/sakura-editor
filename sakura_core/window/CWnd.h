@@ -98,6 +98,41 @@ public:
 };
 
 /*!
+ * @brief カスタムウィンドウの基底クラス
+ *
+ * @par カスタムウィンドウの基本的な機能
+ * @li 作成済みウィンドウにアタッチ
+ * @li DispatchEventで特定メッセージに対する振る舞いを差し替える
+ * @li ウィンドウからデタッチ
+ */
+class CCustomizedWnd : public CWnd
+{
+private:
+	using Base = CWnd;
+	using Me = CCustomizedWnd;
+
+public:
+	static LRESULT CALLBACK SubclassProc(
+		HWND hWnd,
+		UINT uMsg,
+		WPARAM wParam,
+		LPARAM lParam,
+		UINT_PTR uIdSubclass,
+		DWORD_PTR dwRefData
+	);
+
+	// コンストラクタは流用する
+	using Base::Base;
+
+	virtual bool	Attach(HWND hWnd, UINT uIdSubclass = 1);
+	virtual void	Detach(HWND hWnd);
+
+	LRESULT DefWndProcW(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const override;
+
+	UINT		m_IdSubclass = 0;
+};
+
+/*!
  * @brief 独自ウィンドウの基本クラス
  * 
  * @par CWndクラスの基本的な機能
