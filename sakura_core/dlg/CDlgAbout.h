@@ -8,7 +8,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2000, genta
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -19,6 +19,8 @@
 #pragma once
 
 #include "dlg/CDialog.h"
+#include "window/CWnd.h"
+
 /*!
 	@brief About Box管理
 	
@@ -26,23 +28,27 @@
 	メッセージを捕捉する．
 */
 
-class CUrlWnd
+class CUrlWnd final : public CCustomizedWnd
 {
+private:
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
+
+	using Base = CCustomizedWnd;
+	using Me = CDialog;
+
 public:
-	CUrlWnd() {}
+	CUrlWnd() = default;
+
 	BOOL SetSubclassWindow( HWND hWnd );
-	HWND GetHwnd() const{ return m_hWnd; }
-protected:
-	HFONT GetFont() const { return m_hFont; }
-protected:
-	static LRESULT CALLBACK UrlWndProc( HWND hWnd, UINT msg, WPARAM wp, LPARAM lp );
-protected:
-	bool OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText = 0 ) const;
-protected:
-	HWND m_hWnd = nullptr;
-	HFONT m_hFont = nullptr;
+
+	HFONT	GetFont() const noexcept { return m_hFont; }
+
+	LRESULT	DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	bool	OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText = 0 ) const;
+
+	FontHolder	m_hFont = nullptr;
 	BOOL m_bHilighted = FALSE;
-	WNDPROC m_pOldProc = nullptr;
 };
 
 class CDlgAbout final : public CDialog

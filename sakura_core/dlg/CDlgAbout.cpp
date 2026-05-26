@@ -13,7 +13,7 @@
 	Copyright (C) 2004, Moca
 	Copyright (C) 2005, genta
 	Copyright (C) 2006, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -351,20 +351,17 @@ BOOL CUrlWnd::SetSubclassWindow( HWND hWnd )
 	lptr = SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)this );
 	if( lptr == 0 && GetLastError() != 0 )
 		return FALSE;
-	m_pOldProc = (WNDPROC)SetWindowLongPtr( hWnd, GWLP_WNDPROC, (LONG_PTR)UrlWndProc );
-	if( m_pOldProc == nullptr )
+	if (!Base::Attach(hWnd))
 		return FALSE;
-	m_hWnd = hWnd;
 
 	// 下線付きフォントに変更する
-	HFONT hFont;
+	const auto hFont = GetWindowFont(hWnd);
 	LOGFONT lf;
-	hFont = (HFONT)SendMessageAny( hWnd, WM_GETFONT, (WPARAM)0, (LPARAM)0 );
-	GetObject( hFont, sizeof(lf), &lf );
+	::GetObjectW(hFont, sizeof(lf), &lf);
 	lf.lfUnderline = TRUE;
-	m_hFont = CreateFontIndirect( &lf );
+	m_hFont = ::CreateFontIndirectW(&lf);
 	if(m_hFont != nullptr)
-		SendMessageAny( hWnd, WM_SETFONT, (WPARAM)m_hFont, (LPARAM)FALSE );
+		SetWindowFont(hWnd, m_hFont, FALSE);
 
 	// 設定されているテキストを取得する
 	std::wstring strText;
@@ -377,15 +374,15 @@ BOOL CUrlWnd::SetSubclassWindow( HWND hWnd )
 	return FALSE;
 }
 
-LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CUrlWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	CUrlWnd* pUrlWnd = (CUrlWnd*)GetWindowLongPtr( hWnd, GWLP_USERDATA );
+	auto pUrlWnd = this;
 
 	HDC hdc;
 	POINT pt;
 	RECT rc;
 
-	switch ( msg ) {
+	switch (uMsg) {
 	case WM_SETCURSOR:
 		// カーソル形状変更
 		SetHandCursor();		// Hand Cursorを設定 2013/1/29 Uchi
@@ -482,21 +479,18 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 	case WM_DESTROY:
 		// 後始末
 		KillTimer( hWnd, 1 );
-		SetWindowLongPtr( hWnd, GWLP_WNDPROC, (LONG_PTR)pUrlWnd->m_pOldProc );
-		if( pUrlWnd->m_hFont != nullptr )
-			DeleteObject( pUrlWnd->m_hFont );
-		pUrlWnd->m_hWnd = nullptr;
 		pUrlWnd->m_hFont = nullptr;
 		pUrlWnd->m_bHilighted = FALSE;
-		pUrlWnd->m_pOldProc = nullptr;
 		return (LRESULT)0;
 	case WM_SETTEXT:
 		return pUrlWnd->OnSetText( (LPCWSTR)lParam ) ? TRUE : FALSE;
+
 	default:
 		break;
 	}
 
-	return CallWindowProc( pUrlWnd->m_pOldProc, hWnd, msg, wParam, lParam );
+	//あとはデフォルトに任せる
+	return Base::DefWndProcW(hWnd, uMsg, wParam, lParam);
 }
 //@@@ 2002.01.18 add end
 
@@ -504,34 +498,37 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 //https://docs.microsoft.com/en-us/windows/desktop/winmsg/wm-settext
 bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) const
 {
+	const auto hWnd = GetHwnd();
+
 	// 標準のメッセージハンドラに処理させる
-	auto retSetText = ::CallWindowProc( m_pOldProc, GetHwnd(), WM_SETTEXT, 0, (LPARAM)pchText );
-	if ( retSetText == FALSE ) {
-		return false;
-	}
+	FORWARD_WM_SETTEXT(hWnd, pchText, Base::DefWndProcW);
 
 	// サイズを調整のためにDCを取得
-	HDC hDC = ::GetDC( GetHwnd() );
-	auto hObj = ::SelectObject( hDC, GetFont() );
+	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+	MemDcHolder hDC = ::CreateCompatibleDC(nullptr);
+
+	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
+	SelectionHolder hObj{ hDC };
+	hObj = ::SelectObject(hDC, GetFont());
 
 	// DrawText関数を使ってサイズを計測する
 	// ※この処理は実際には描かない
 	CMyRect rcText;
-	int retDrawText = ::DrawText( hDC, pchText, static_cast<int>(cchText), &rcText, DT_CALCRECT );
+	const auto retDrawText = ::DrawTextW(hDC, pchText, static_cast<int>(cchText), &rcText, DT_CALCRECT);
 
 	// DCの後始末
-	::SelectObject( hDC, hObj );
-	::ReleaseDC( GetHwnd(), hDC );
+	hObj = nullptr;
+	hDC = nullptr;
 
 	// サイズを取得できなければ処理失敗とする
-	if ( retDrawText == 0 ) {
+	if (!retDrawText) {
 		return false;
 	}
 
 	// マージン用にシステム設定値を取得する。
 	// ※ユーザーが変えられる値なので毎回取りに行く（EDGE = 2px on 96dpi）
-	const int cxEdge = ::GetSystemMetrics( SM_CXEDGE );
-	const int cyEdge = ::GetSystemMetrics( SM_CYEDGE );
+	const auto cxEdge = ::GetSystemMetrics(SM_CXEDGE);
+	const auto cyEdge = ::GetSystemMetrics(SM_CYEDGE);
 
 	// 計測結果のRECT構造体をSIZE構造体に読み替え、マージンを付加する
 	SIZE size;
