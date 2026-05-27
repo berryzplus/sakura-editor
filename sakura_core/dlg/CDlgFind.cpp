@@ -104,11 +104,6 @@ BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	return bRet;
 }
 
-BOOL CDlgFind::OnDestroy()
-{
-	return CDialog::OnDestroy();
-}
-
 /* ダイアログデータの設定 */
 void CDlgFind::SetData( void )
 {

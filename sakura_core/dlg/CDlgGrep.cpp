@@ -396,11 +396,6 @@ LRESULT CDlgGrep::FolderCombo::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam
 	return DefWndProcW(hWnd, uMsg, wParam, lParam);
 }
 
-BOOL CDlgGrep::OnDestroy()
-{
-	return CDialog::OnDestroy();
-}
-
 BOOL CDlgGrep::OnBnClicked( int wID )
 {
 	switch( wID ){

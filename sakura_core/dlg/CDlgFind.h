@@ -26,15 +26,21 @@
 -----------------------------------------------------------------------*/
 class CDlgFind final : public CDialog
 {
+private:
+	using Base = CDialog;
+	using Me = CDlgFind;
+
+	using Base::DoModeless;
+
 public:
 	/*
 	||  Constructors
 	*/
 	CDlgFind();
+
 	/*
 	||  Attributes & Operations
 	*/
-//	int DoModal( HINSTANCE, HWND, LPARAM );	/* モーダルダイアログの表示 */
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);	/* モードレスダイアログの表示 */
 
 	void ChangeView(LPARAM pcEditView);
@@ -47,7 +53,6 @@ public:
 
 	CRecentSearch			m_cRecentSearch;
 
-protected:
 //@@@ 2002.2.2 YAZAKI CShareDataに移動
 //	void AddToSearchKeyArr( const char* );
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
@@ -55,7 +60,6 @@ protected:
 	void SetCombosList( void );	/* 検索文字列/置換後文字列リストの設定 */
 	void SetData( void ) override;		/* ダイアログデータの設定 */
 	BOOL OnInitDialog(HWND hwnd, WPARAM wParam, LPARAM lParam) override;
-	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam ) override;	// 2009.11.29 ryoji
 

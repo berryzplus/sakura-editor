@@ -67,7 +67,6 @@ public:
 	*/
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
-	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnActivate( WPARAM wParam, LPARAM lParam ) override;	// 2009.11.29 ryoji
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add

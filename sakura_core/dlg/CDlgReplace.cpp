@@ -360,11 +360,6 @@ BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	return bRet;
 }
 
-BOOL CDlgReplace::OnDestroy()
-{
-	return CDialog::OnDestroy();
-}
-
 BOOL CDlgReplace::OnBnClicked( int wID )
 {
 	int			nRet;

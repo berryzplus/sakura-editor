@@ -160,11 +160,6 @@ BOOL CDlgGrepReplace::OnCbnDropDown( HWND hwndCtl, int wID )
 	return CDlgGrep::OnCbnDropDown( hwndCtl, wID );
 }
 
-BOOL CDlgGrepReplace::OnDestroy()
-{
-	return CDlgGrep::OnDestroy();
-}
-
 BOOL CDlgGrepReplace::OnBnClicked( int wID )
 {
 	switch( wID ){
