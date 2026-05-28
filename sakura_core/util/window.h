@@ -141,6 +141,7 @@ bool	IsDlgButtonChecked(HWND hDlg, int nIDButton);
 bool	IsDlgItemEnabled(HWND hWndDlg, int nIDDlgItem);
 void	SetTrackBarPos(HWND hWndDlg, int nIDDlgItem, WORD pos, bool bRedraw = true);
 void	SetUpDownPos(HWND hWndDlg, int nIDDlgItem, WORD pos);
+bool	ShowDlgItem(HWND hWndDlg, int nIDDlgItem, bool bShow = true);
 
 SGetTextResult	GetDlgItemTextW(HWND hWndDlg, int nIDDlgItem);
 SGetTextResult	GetDlgItemTextW(HWND hWndDlg, int nIDDlgItem, std::span<WCHAR> buffer);

@@ -334,6 +334,18 @@ void SetUpDownPos(HWND hWndDlg, int nIDDlgItem, WORD pos)
 	::SendDlgItemMessageW(hWndDlg, nIDDlgItem, UDM_SETPOS, 0L, LPARAM(pos));
 }
 
+/*!
+ * @brief コントロールの表示／非表示を切り替える
+ */
+bool ShowDlgItem(HWND hWndDlg, int nIDDlgItem, bool bShow)
+{
+	bool ret = false;
+	if (const auto hWndCtl = ::GetDlgItem(hWndDlg, nIDDlgItem)) {
+		ret = ::ShowWindow(hWndCtl, bShow ? SW_SHOW : SW_HIDE);
+	}
+	return ret;
+}
+
 } // namespace apiwrap
 
 /*!

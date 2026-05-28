@@ -414,6 +414,8 @@ void CDlgFuncList::ChangeView( LPARAM pcEditView )
 /*! ダイアログデータの設定 */
 void CDlgFuncList::SetData()
 {
+	const auto hWnd = GetHwnd();
+
 	HWND			hwndList;
 	HWND			hwndTree;
 	hwndList = GetItemHwnd( IDC_LIST_FL );
@@ -426,7 +428,9 @@ void CDlgFuncList::SetData()
 	::SendMessage(hwndTree, WM_SETREDRAW, (WPARAM)FALSE, 0);
 	ListView_DeleteAllItems( hwndList );
 	TreeView_DeleteAllItems( hwndTree );
-	::ShowWindow( GetItemHwnd(IDC_BUTTON_SETTING), SW_HIDE );
+
+	apiwrap::ShowDlgItem(hWnd, IDC_BUTTON_SETTING, false);
+
 	const HTREEITEM hInsertAfter = (m_nSortType == SORTTYPE_DEFAULT_DESC) ? TVI_FIRST : TVI_LAST;
 
 	SetDocLineFuncList();
