@@ -74,6 +74,12 @@ struct ResourceHolder
     {
     }
 
+	ResourceHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	ResourceHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
 	// bound 更新（OwnedResourceHolder の updateContext 相当）
 	template<typename... Bound>
 	void updateBound(Bound&&... bound) noexcept
@@ -84,10 +90,11 @@ struct ResourceHolder
 
 	pointer get() const noexcept { return m_Holder.get(); }
 	pointer release() noexcept { return m_Holder.release(); }
+	void reset(pointer p) { m_Holder.reset(p); }
 
-	Me& operator = (resource_type t)
+	Me& operator = (pointer p)
 	{
-		m_Holder.reset(t);
+		reset(p);
 		return *this;
 	}
 
