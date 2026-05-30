@@ -81,6 +81,15 @@ WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 
 namespace window {
 
+//先行宣言
+bool SendTrayMessage(
+	_In_ HWND hWndTray,
+	_In_ UINT uID,
+	_In_ DWORD dwMessage,
+	_In_opt_ HICON hIcon = nullptr,
+	const std::optional<std::wstring>& optTipText = std::nullopt
+);
+
 /*!
  * @brief タスクトレイにアイコンを作成する
  *
@@ -95,7 +104,35 @@ namespace window {
 bool CreateTrayIcon(
 	_In_ HINSTANCE hInstance,
 	_In_ HWND hWndTray
-);
+)
+{
+	// タスクトレイのアイコンを使わない場合、直ちに抜ける
+	if (!GetDllShareData().m_Common.m_sGeneral.m_bUseTaskTray) return false;
+
+	//アイコンを読み込む
+	const auto hIcon = GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
+
+	//バージョン情報を取得
+	DWORD dwVersionMS;
+	DWORD dwVersionLS;
+	GetAppVersionInfo(hInstance, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS);
+
+	//プロファイル名を取得
+	std::wstring profileName{ GetProfileName() };
+
+	//ツールチップテキストを組み立てる
+	const auto tipText = std::format(L"{:s} {:d}.{:d}.{:d}.{:d}{:s}",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
+		GSTR_APPNAME,
+		HIWORD(dwVersionMS),
+		LOWORD(dwVersionMS),
+		HIWORD(dwVersionLS),
+		LOWORD(dwVersionLS),
+		profileName.empty() ? L"" : std::format(L" {:s}", profileName)
+	);
+
+	//タスクトレイにメッセージを送信する
+	return window::SendTrayMessage(hWndTray, 0, NIM_ADD, hIcon, tipText);
+}
 
 /*!
  * @brief タスクトレイにメッセージを送信する
@@ -111,8 +148,8 @@ bool SendTrayMessage(
 	_In_ HWND hWndTray,
 	_In_ UINT uID,
 	_In_ DWORD dwMessage,
-	_In_opt_ HICON hIcon = nullptr,
-	const std::optional<std::wstring>& optTipText = std::nullopt
+	_In_opt_ HICON hIcon,
+	const std::optional<std::wstring>& optTipText
 )
 {
 	NOTIFYICONDATA tnd{ sizeof(NOTIFYICONDATA) };
@@ -331,42 +368,6 @@ HWND CControlTray::Create( HINSTANCE hInstance )
 	);
 
 }
-
-namespace window {
-
-bool CreateTrayIcon(HINSTANCE hInstance, HWND hWndTray)
-{
-	// タスクトレイのアイコンを作る
-	if (!GetDllShareData().m_Common.m_sGeneral.m_bUseTaskTray) return false;
-
-		const auto hIcon = GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
-
-		/* バージョン情報 */
-		DWORD dwVersionMS;
-		DWORD dwVersionLS;
-		GetAppVersionInfo(hInstance, VS_VERSION_INFO, &dwVersionMS, &dwVersionLS);
-
-		std::wstring profname;
-		if (const auto pszProfileName = GetProfileName(); *pszProfileName) {
-			profname = L" ";
-			profname += pszProfileName;
-		}
-
-		const auto tipText = std::format(L"{:s} {:d}.{:d}.{:d}.{:d}{:s}",		//Jul. 06, 2001 jepro UR はもう付けなくなったのを忘れていた
-			GSTR_APPNAME,
-			HIWORD( dwVersionMS ),
-			LOWORD( dwVersionMS ),
-			HIWORD( dwVersionLS ),
-			LOWORD( dwVersionLS ),
-			profname
-		);
-
-		window::SendTrayMessage(hWndTray, 0, NIM_ADD, hIcon, tipText);
-
-	return true;	//トレイにアイコンを作った
-}
-
-} // namespace window
 
 /* メッセージループ */
 void CControlTray::MessageLoop( void )
