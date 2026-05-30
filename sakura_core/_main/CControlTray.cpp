@@ -97,7 +97,28 @@ bool SendTrayMessage(
 	_In_ DWORD dwMessage,
 	_In_opt_ HICON hIcon = nullptr,
 	const std::optional<std::wstring>& optTipText = std::nullopt
-);
+)
+{
+	NOTIFYICONDATA tnd{ sizeof(NOTIFYICONDATA) };
+	tnd.hWnd				= hWndTray;
+	tnd.uID					= uID;
+	tnd.uFlags				= NIF_MESSAGE;
+	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
+
+	if (hIcon) {
+		tnd.uFlags |= NIF_ICON;
+		tnd.hIcon	= hIcon;
+	}
+
+	if (optTipText.has_value()) {
+		tnd.uFlags |= NIF_TIP;
+		const auto& tipText = *optTipText;
+		if (std::size(tnd.szTip) <= tipText.length() + 1) throw std::length_error("Tooltip text is too long");
+		std::ranges::copy(tipText, tnd.szTip);
+	}
+
+	return ::Shell_NotifyIconW(dwMessage, &tnd);
+}
 
 } // namespace window
 
@@ -366,33 +387,6 @@ void CControlTray::RegisterHotKey(HWND hWnd) noexcept
 		);
 	}
 }
-
-namespace window {
-
-bool SendTrayMessage(HWND hWndTray, UINT uID, DWORD dwMessage, HICON hIcon, const std::optional<std::wstring>& optTipText)
-{
-	NOTIFYICONDATA tnd{ sizeof(NOTIFYICONDATA) };
-	tnd.hWnd				= hWndTray;
-	tnd.uID					= uID;
-	tnd.uFlags				= NIF_MESSAGE;
-	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
-
-	if (hIcon) {
-		tnd.uFlags |= NIF_ICON;
-		tnd.hIcon	= hIcon;
-	}
-
-	if (optTipText.has_value()) {
-		tnd.uFlags |= NIF_TIP;
-		const auto& tipText = *optTipText;
-		if (std::size(tnd.szTip) <= tipText.length() + 1) throw std::length_error("Tooltip text is too long");
-		std::ranges::copy(tipText, tnd.szTip);
-	}
-
-	return ::Shell_NotifyIconW(dwMessage, &tnd);
-}
-
-} // namespace window
 
 /* メッセージ処理 */
 //@@@ 2001.12.26 YAZAKI MRUリストは、CMRUに依頼する
