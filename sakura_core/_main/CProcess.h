@@ -21,6 +21,7 @@
 #include "_main/CCommandLine.h"
 #include "env/CShareData.h"
 #include "util/design_template.h"
+#include "util/tchar_convert.h"
 
 namespace cxx {
 
@@ -83,6 +84,59 @@ public:
 
 	DWORD dwProcessId = 0;
 	DWORD dwThreadId = 0;
+};
+
+/*!
+ * @brief ロックしたミューテックスオブジェクト
+ */
+struct MutexHolder : public cxx::HandleHolder {
+	using MutexReleaser = cxx::ResourceHolder<&::ReleaseMutex>;
+
+	using Base = cxx::HandleHolder;
+	using Me = MutexHolder;
+
+	MutexReleaser m_Releaser;
+
+	explicit MutexHolder(HANDLE hMutex)
+		: HandleHolder(hMutex)
+		, m_Releaser(hMutex)
+	{
+	}
+
+	MutexHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	MutexHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
+	~MutexHolder() override = default;
+
+	bool Lock(DWORD dwTimeout = INFINITE) override
+	{
+		if (!m_Releaser) {
+			m_Releaser = get();
+		}
+		return Base::Lock(dwTimeout);
+	}
+
+	bool Unlock() override
+	{
+		m_Releaser = nullptr;
+		return Base::Unlock();
+	}
+
+	void reset(HANDLE h)
+	{
+		Unlock();
+		m_Holder.reset(h);
+		m_Releaser = h;
+	}
+
+	Me& operator = (HANDLE h)
+	{
+		reset(h);
+		return *this;
+	}
 };
 
 } // namespace cxx

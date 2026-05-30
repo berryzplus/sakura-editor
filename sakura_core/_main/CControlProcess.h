@@ -17,12 +17,8 @@
 #define SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_
 #pragma once
 
-#include <filesystem>
-
-#include "global.h"
-#include "CProcess.h"
-
-class CControlTray;
+#include "_main/CControlTray.h"
+#include "_main/CProcess.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -36,6 +32,8 @@ class CControlTray;
 */
 class CControlProcess final : public CProcess {
 private:
+	using CControlTrayHolder = std::unique_ptr<CControlTray>;
+
 	using Base = CProcess;
 	using Me = CControlProcess;
 
@@ -52,9 +50,8 @@ private:
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 
-	HANDLE			m_hMutex = nullptr;					//!< アプリケーション実行検出用ミューテックス
-	HANDLE			m_hMutexCP = nullptr;				//!< コントロールプロセスミューテックス
-	CControlTray*	m_pcTray = nullptr;
+	cxx::MutexHolder	m_hMutex{ nullptr };				//!< アプリケーション実行検出用ミューテックス
+	CControlTrayHolder	m_pcTray{ nullptr };				//!< トレイウィンドウ
 };
 
 #endif /* SAKURA_CCONTROLPROCESS_AFB90808_4287_4A11_B7FB_9CD21CF8BFD6_H_ */

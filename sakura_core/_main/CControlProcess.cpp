@@ -18,7 +18,6 @@
 #include "StdAfx.h"
 #include "_main/CControlProcess.h"
 
-#include "_main/CControlTray.h"
 #include "apiwrap/DarkMode.h"
 #include "config/system_constants.h"
 #include "debug/CRunningTimer.h"
@@ -104,6 +103,11 @@ std::filesystem::path CControlProcess::GetPrivateIniFileName(const std::wstring&
 	return privateIniPath.append(filename.c_str());
 }
 
+CControlProcess::~CControlProcess()
+{
+	return;
+}
+
 /*!
 	@brief コントロールプロセスを初期化する
 	
@@ -121,30 +125,32 @@ bool CControlProcess::InitializeProcess()
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlProcess::InitializeProcess" );
 
 	// アプリケーション実行検出用(インストーラで使用)
-	m_hMutex = ::CreateMutex( nullptr, FALSE, GSTR_MUTEX_SAKURA );
-	if( nullptr == m_hMutex ){
+	m_hMutex = ::CreateMutexW(nullptr, FALSE, GSTR_MUTEX_SAKURA);
+	if (!m_hMutex) {
 		ErrorBeep();
 		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
 		return false;
 	}
+
+	// Mutexのロックを試みる（使わないので失敗しても問題ない）
+	m_hMutex.try_lock_for(std::chrono::seconds(0));
 
 	std::wstring_view profileName{ GetProfileName() };
 
-	const auto pszProfileName = GetProfileName();
-
 	/* コントロールプロセスの目印 */
-	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
-	strCtrlProcEvent += pszProfileName;
-	m_hMutexCP = ::CreateMutex( nullptr, TRUE, strCtrlProcEvent.c_str() );
-	if( nullptr == m_hMutexCP ){
+	SFilePath szMutexName{ GSTR_MUTEX_SAKURA_CP };
+	szMutexName.append(profileName);
+	cxx::MutexHolder hMutex{ ::CreateMutexW(nullptr, TRUE, szMutexName) };
+	if (!hMutex || ERROR_ALREADY_EXISTS == ::GetLastError()) {
 		ErrorBeep();
 		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
 		return false;
 	}
-	if( ERROR_ALREADY_EXISTS == ::GetLastError() ){
-		return false;
-	}
-	
+
+	// コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
+	const auto systemDirectory = cxx::GetSystemDirectoryW();
+	::SetCurrentDirectoryW(systemDirectory.c_str());
+
 	/* 共有メモリを初期化 */
 	if (!GetShareData().InitShareData(profileName)) {
 		// L"異なるバージョンのエディタを同時に起動することはできません。"
@@ -152,16 +158,14 @@ bool CControlProcess::InitializeProcess()
 		return false;
 	}
 
-	// コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
-	WCHAR szDir[_MAX_PATH];
-	::GetSystemDirectory( szDir, int(std::size(szDir)) );
-	::SetCurrentDirectory( szDir );
-
 	/* 共有データのロード */
 	if( !CShareData_IO::LoadShareData() ){
 		/* レジストリ項目 作成 */
 		CShareData_IO::SaveShareData();
 	}
+
+	// トレイウィンドウのオブジェクトを生成する
+	m_pcTray = std::make_unique<CControlTray>();
 
 	/* ダークモード設定を反映する */
 	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);
@@ -173,10 +177,6 @@ bool CControlProcess::InitializeProcess()
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	m_pcTray = new CControlTray;
-
-	MY_TRACETIME( cRunningTimer, L"After new CControlTray" );
-
 	HWND hwnd = m_pcTray->Create( GetProcessInstance() );
 	if( !hwnd ){
 		ErrorBeep();
@@ -195,6 +195,8 @@ bool CControlProcess::InitializeProcess()
 	InitEventHolder initEvent{ hEvent };
 
 	initEvent = nullptr;
+
+	hMutex = nullptr;
 
 	return true;
 }
@@ -225,18 +227,3 @@ void CControlProcess::OnExitProcess()
 {
 	return;
 }
-
-CControlProcess::~CControlProcess()
-{
-	delete m_pcTray;
-
-	if( m_hMutexCP ){
-		::ReleaseMutex( m_hMutexCP );
-	}
-	::CloseHandle( m_hMutexCP );
-	// 旧バージョン（1.2.104.1以前）との互換性：「異なるバージョン...」が二回出ないように
-	if( m_hMutex ){
-		::ReleaseMutex( m_hMutex );
-	}
-	::CloseHandle( m_hMutex );
-};
