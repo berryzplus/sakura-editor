@@ -79,6 +79,28 @@ WORD convertHotKeyMods(WORD wHotKeyMods) noexcept
 	return wMods;
 }
 
+namespace window {
+
+/*!
+ * @brief タスクトレイにメッセージを送信する
+ *
+ * @param hWndTray [in] タスクトレイのウィンドウハンドル
+ * @param uID [in] トレイアイコンの識別子(ウィンドウハンドルとセット)
+ * @param dwMessage [in] NIM_ADD, NIM_MODIFY, NIM_DELETE のいずれか
+ * @param hIcon [in, opt] トレイアイコンのハンドル
+ * @param optTipText [in, opt] トレイアイコンのツールチップテキスト
+ * @return Shell_NotifyIconWの戻り値
+ */
+bool SendTrayMessage(
+	_In_ HWND hWndTray,
+	_In_ UINT uID,
+	_In_ DWORD dwMessage,
+	_In_opt_ HICON hIcon = nullptr,
+	const std::optional<std::wstring>& optTipText = std::nullopt
+);
+
+} // namespace window
+
 //Stonee, 2001/03/21
 //Stonee, 2001/07/01  多重起動された場合は前回のダイアログを前面に出すようにした。
 void CControlTray::DoGrep()
@@ -303,7 +325,7 @@ bool CControlTray::CreateTrayIcon( [[maybe_unused]] HWND hWnd )
 			LOWORD( dwVersionLS ),
 			profname.c_str()
 		);
-		TrayMessage( GetTrayHwnd(), NIM_ADD, 0,  hIcon, pszTips );
+		window::SendTrayMessage(GetTrayHwnd(), 0, NIM_ADD, hIcon, pszTips);
 //To Here Jan. 12, 2001
 		m_bCreatedTrayIcon = TRUE;	/* トレイにアイコンを作った */
 	}
@@ -345,28 +367,32 @@ void CControlTray::RegisterHotKey(HWND hWnd) noexcept
 	}
 }
 
-/* タスクトレイのアイコンに関する処理 */
-BOOL CControlTray::TrayMessage( HWND hDlg, DWORD dwMessage, UINT uID, HICON hIcon, const WCHAR* pszTip )
+namespace window {
+
+bool SendTrayMessage(HWND hWndTray, UINT uID, DWORD dwMessage, HICON hIcon, const std::optional<std::wstring>& optTipText)
 {
-	BOOL			res;
-	NOTIFYICONDATA	tnd;
-	tnd.cbSize				= sizeof_raw( tnd );
-	tnd.hWnd				= hDlg;
+	NOTIFYICONDATA tnd{ sizeof(NOTIFYICONDATA) };
+	tnd.hWnd				= hWndTray;
 	tnd.uID					= uID;
-	tnd.uFlags				= NIF_MESSAGE|NIF_ICON|NIF_TIP;
+	tnd.uFlags				= NIF_MESSAGE;
 	tnd.uCallbackMessage	= MYWM_NOTIFYICON;
-	tnd.hIcon				= hIcon;
-	if( pszTip ){
-		::wcsncpy_s(tnd.szTip, pszTip, _TRUNCATE);
-	}else{
-		tnd.szTip[0] = L'\0';
+
+	if (hIcon) {
+		tnd.uFlags |= NIF_ICON;
+		tnd.hIcon	= hIcon;
 	}
-	res = Shell_NotifyIcon( dwMessage, &tnd );
-	if( hIcon ){
-		DestroyIcon( hIcon );
+
+	if (optTipText.has_value()) {
+		tnd.uFlags |= NIF_TIP;
+		const auto& tipText = *optTipText;
+		if (std::size(tnd.szTip) <= tipText.length() + 1) throw std::length_error("Tooltip text is too long");
+		std::ranges::copy(tipText, tnd.szTip);
 	}
-	return res;
+
+	return ::Shell_NotifyIconW(dwMessage, &tnd);
 }
+
+} // namespace window
 
 /* メッセージ処理 */
 //@@@ 2001.12.26 YAZAKI MRUリストは、CMRUに依頼する
@@ -1731,7 +1757,7 @@ void CControlTray::OnDestroy()
 	}
 
 	if( m_bCreatedTrayIcon ){	/* トレイにアイコンを作った */
-		TrayMessage( GetTrayHwnd(), NIM_DELETE, 0, nullptr, nullptr );
+		window::SendTrayMessage(GetTrayHwnd(), 0, NIM_DELETE, nullptr, std::nullopt);
 	}
 
 	m_hWnd = nullptr;
