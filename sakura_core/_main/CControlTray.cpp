@@ -1134,7 +1134,7 @@ bool CControlTray::OnSetTypeSetting(size_t index)
 		m_pShareData->m_TypeBasis.m_nIdx = 0;
 	}
 
-	auto types = CShareData::getInstance()->GetTypeSettings();
+	auto& types = CShareData::getInstance()->GetTypeSettings();
 	*types[index] = type;
 	types[index]->m_nIdx = int(index);
 
@@ -1171,7 +1171,7 @@ bool CControlTray::OnAddTypeSetting(size_t index)
 
 	const auto nInsert = (int)index;
 	auto& types = CShareData::getInstance()->GetTypeSettings();
-	auto type = new STypeConfig(*types[0]);	// 基本をコピー
+	auto type = std::make_unique<STypeConfig>(*types[0]);	// 基本をコピー
 	type->m_id = (::GetTickCount64() & 0x3fffffff) + nInsert * 0x10000;
 
 	// 同じ名前のものがあったらその次にする
@@ -1186,17 +1186,25 @@ bool CControlTray::OnAddTypeSetting(size_t index)
 	}
 	type->m_szTypeExts[0] = L'\0';
 	type->m_nRegexKeyMagicNumber = CRegexKeyword::GetNewMagicNumber();
-	types.resize(m_pShareData->m_nTypesCount + 1);
 
-	const auto nTypeSizeOld = m_pShareData->m_nTypesCount;
-	++m_pShareData->m_nTypesCount;
-	for (auto i = nTypeSizeOld; nInsert < i; --i) {
-		types[i] = types[i - 1];
+	types.emplace(types.cbegin() + nInsert, std::move(type));
+
+	//追加したタイプ別設定を取得する(typeはもう使えない)
+	const auto& added = types[nInsert];
+
+	auto& typesMini = m_pShareData->m_TypeMini;
+	for (int i = m_pShareData->m_nTypesCount; nInsert < i; --i) {
 		types[i]->m_nIdx = i;
-		m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i - 1];
+		std::swap(typesMini[i - 1], typesMini[i]);
 	}
 
-	types[nInsert] = type;
+	auto& typeMini = typesMini[nInsert];
+	::wcscpy_s(typeMini.m_szTypeName, added->m_szTypeName);
+	::wcscpy_s(typeMini.m_szTypeExts, added->m_szTypeExts);
+	typeMini.m_id = added->m_id;
+	typeMini.m_encoding = added->m_encoding;
+
+	++m_pShareData->m_nTypesCount;
 
 	return true;
 }
@@ -1212,23 +1220,21 @@ bool CControlTray::OnDelTypeSetting(size_t index)
 		return false;
 	}
 
-	const auto nTypeSizeOld = m_pShareData->m_nTypesCount;
 	auto& types = CShareData::getInstance()->GetTypeSettings();
+	types.erase(types.cbegin() + nDelPos);
 
-	delete types[nDelPos];
-
-	for (auto i = nDelPos; i < nTypeSizeOld - 1; ++i) {
-		types[i] = types[i + 1];
+	auto& typesMini = m_pShareData->m_TypeMini;
+	for (int i = nDelPos; i < std::size(types) - 1; ++i) {
 		types[i]->m_nIdx = i;
-		m_pShareData->m_TypeMini[i] = m_pShareData->m_TypeMini[i + 1];
+		std::swap(typesMini[i], typesMini[i + 1]);
 	}
-	types.resize(m_pShareData->m_nTypesCount - 1);
-	m_pShareData->m_nTypesCount--;
 
-	auto& typeMini = m_pShareData->m_TypeMini[nTypeSizeOld - 1];
+	auto& typeMini = typesMini[m_pShareData->m_nTypesCount];
 	typeMini.m_szTypeName[0] = L'\0';
 	typeMini.m_szTypeExts[0] = L'\0';
 	typeMini.m_id = 0;
+
+	m_pShareData->m_nTypesCount--;
 
 	return true;
 }

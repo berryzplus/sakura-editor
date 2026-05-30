@@ -1347,14 +1347,10 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 	}
 	SetValueLimit( pShare->m_nTypesCount, 1, MAX_TYPES );
 	// 注：コントロールプロセス専用
-	std::vector<STypeConfig*>& types = CShareData::getInstance()->GetTypeSettings();
-	for( i = GetDllShareData().m_nTypesCount; i < nCountOld; i++ ){
-		delete types[i];
-		types[i] = nullptr;
-	}
+	auto& types = CShareData::getInstance()->GetTypeSettings();
 	types.resize(pShare->m_nTypesCount);
 	for( i = nCountOld; i < pShare->m_nTypesCount; i++ ){
-		types[i] = new STypeConfig();
+		types[i] = std::make_unique<STypeConfig>();
 		*types[i] = *types[0]; // 基本をコピー
 		auto_sprintf( types[i]->m_szTypeName, LS(STR_TRAY_TYPE_NAME), i );
 		types[i]->m_nIdx = i;
@@ -1363,15 +1359,15 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 
 	for( i = 0; i < pShare->m_nTypesCount; ++i ){
 		auto_sprintf( szKey, L"Types(%d)", i );
-		STypeConfig& type = *(types[i]);
+		auto& type = *(types[i]);
 		ShareData_IO_Type_One(cProfile, type, szKey);
 		if( cProfile.IsReadingMode() ){
 			type.m_nIdx = i;
 			if( i == 0 ){
 				pShare->m_TypeBasis = type;
 			}
-			wcscpy(pShare->m_TypeMini[i].m_szTypeExts, type.m_szTypeExts);
-			wcscpy(pShare->m_TypeMini[i].m_szTypeName, type.m_szTypeName);
+			wcscpy_s(pShare->m_TypeMini[i].m_szTypeExts, type.m_szTypeExts);
+			wcscpy_s(pShare->m_TypeMini[i].m_szTypeName, type.m_szTypeName);
 			pShare->m_TypeMini[i].m_id = type.m_id;
 			pShare->m_TypeMini[i].m_encoding = type.m_encoding;
 		}
@@ -1379,9 +1375,9 @@ void CShareData_IO::ShareData_IO_Types( CDataProfile& cProfile )
 	if( cProfile.IsReadingMode() ){
 		// Id重複チェック、更新
 		for( i = 0; i < pShare->m_nTypesCount - 1; i++ ){
-			STypeConfig& type = *(types[i]);
+			auto& type = *(types[i]);
 			for( int k = i + 1; k < pShare->m_nTypesCount; k++ ){
-				STypeConfig& type2 = *(types[k]);
+				auto& type2 = *(types[k]);
 				if( type.m_id == type2.m_id ){
 					type2.m_id = (::GetTickCount() & 0x3fffffff) + k * 0x10000;
 					pShare->m_TypeMini[k].m_id = type2.m_id;

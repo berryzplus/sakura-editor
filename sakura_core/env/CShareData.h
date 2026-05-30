@@ -16,7 +16,7 @@
 	Copyright (C) 2007, ryoji, maru
 	Copyright (C) 2008, ryoji, Uchi
 	Copyright (C) 2011, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -33,11 +33,9 @@
 #define SAKURA_CSHAREDATA_B25C0FA2_B810_4327_8EC6_0AF46D49593A_H_
 #pragma once
 
-#include <string>
 #include "CSelectLang.h"		// 2011.04.10 nasukoji
 #include "charset/charset.h"
 #include "util/design_template.h"
-#include "charset/charset.h"
 
 // 2010.04.19 Moca DLLSHAREDATA関連はDLLSHAREDATA.h等最低限必要な場所へ移動
 // CShareData.hは、自分のInterfaceしか提供しません。別にDLLSHAREDATA.hをincludeすること。
@@ -45,6 +43,72 @@ class CMutex;
 struct DLLSHAREDATA;
 struct SFileTree;
 struct STypeConfig;
+
+namespace cxx {
+
+//! HANDLE型のスマートポインタ
+class HandleHolder : public cxx::ResourceHolder<&::CloseHandle>
+{
+private:
+	using Base = cxx::ResourceHolder<&::CloseHandle>;
+	using Me = HandleHolder;
+
+public:
+	/*!
+	 * コンストラクタは流用する
+	 */
+	using Base::Base;
+
+	HandleHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	HandleHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
+	virtual ~HandleHolder() = default;
+
+	void lock()
+	{
+		Lock(INFINITE);	//無限に待つ
+	}
+
+	bool try_lock()
+	{
+		return Lock(0);	//ロック取得を試行
+	}
+
+	template<class Rep, class Period>
+	bool try_lock_for(const std::chrono::duration<Rep, Period>& rel_time)
+	{
+		const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(rel_time);
+		return Lock(DWORD(milliseconds.count()));
+	}
+
+	bool unlock()
+	{
+		return Unlock();
+	}
+
+	virtual bool Lock(DWORD dwTimeout = INFINITE)
+	{
+		// ロック取得を試行
+		const auto dwRet = ::WaitForSingleObject(get(), dwTimeout);
+
+		if (WAIT_FAILED == dwRet) {
+			// エラー
+			return false;
+		}
+
+		return WAIT_OBJECT_0 == dwRet || WAIT_ABANDONED == dwRet;
+	}
+
+	virtual bool Unlock()
+	{
+		return true;
+	}
+};
+
+} // namespace cxx
 
 /*!	@brief 共有データの管理
 
@@ -62,6 +126,11 @@ struct STypeConfig;
 */
 class CShareData : public TSingleInstance<CShareData>
 {
+private:
+	using MappedDataHolder = cxx::ResourceHolder<&::UnmapViewOfFile>;
+	using STypeConfigHolder = std::unique_ptr<STypeConfig>;
+	using STypeConfigsHolder = std::vector<STypeConfigHolder>;
+
 public:
 	CShareData();
 	~CShareData() override;
@@ -69,7 +138,9 @@ public:
 	/*
 	||  Attributes & Operations
 	*/
-	bool InitShareData();	/* CShareDataクラスの初期化処理 */
+	bool	InitShareData(std::wstring_view profileName = L"");
+	bool	OpenShareData(std::wstring_view profileName = L"");
+
 	void RefreshString();	/* 言語選択後に共有メモリ内の文字列を更新する */
 	
 	//MRU系
@@ -88,8 +159,9 @@ public:
 	bool		BeReloadWhenExecuteMacro( int idx );	//	idxで指定したマクロは、実行するたびにファイルを読み込む設定か？
 
 	//タイプ別設定(コントロールプロセス専用)
-	void CreateTypeSettings();
-	std::vector<STypeConfig*>& GetTypeSettings();
+	STypeConfigsHolder& GetTypeSettings() {
+		return m_TypeSettings;
+	}
 
 	// 国際化対応のための文字列を変更する(コントロールプロセス専用)
 	void ConvertLangValues(std::vector<std::wstring>& values, bool bSetValues);
@@ -102,23 +174,26 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
-
 	//	Jan. 30, 2005 genta 初期化関数の分割
 	void InitKeyword(DLLSHAREDATA* pShareData);
 	bool InitKeyAssign(DLLSHAREDATA* pShareData); // 2007.11.04 genta 起動中止のため値を返す
 	void RefreshKeyAssignString(DLLSHAREDATA* pShareData);
 	void InitToolButtons(DLLSHAREDATA* pShareData);
-	void InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConfig*>& types);
+	void	InitTypeConfigs(DLLSHAREDATA* pShareData);
 	void InitPopupMenu(DLLSHAREDATA* pShareData);
 
 public:
 	static void InitFileTree(SFileTree*);
 
 private:
+	cxx::HandleHolder	m_hFileMap = nullptr;
+	MappedDataHolder	m_MappedData = nullptr;
+	DLLSHAREDATA*		m_pShareData = nullptr;
+
 	CSelectLang m_cSelectLang;			// メッセージリソースDLL読み込み用（プロセスに1個）		// 2011.04.10 nasukoji
-	HANDLE			m_hFileMap = nullptr;
-	DLLSHAREDATA*	m_pShareData = nullptr;
-	std::vector<STypeConfig*>* 	m_pvTypeSettings = nullptr;	//	(コントロールプロセスのみ)
+
+	STypeConfigsHolder 	m_TypeSettings{};
+
 	HWND			m_hwndTraceOutSource = nullptr;	// TraceOutA()起動元ウィンドウ（いちいち起動元を指定しなくてすむように）
 };
 

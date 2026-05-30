@@ -48,41 +48,44 @@ void CType::InitTypeConfig(int nIdx, STypeConfig& type)
 
 	@date 2005.01.30 genta CShareData::Init()から分離．
 */
-void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConfig*>& types )
+void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData)
 {
-	CType* table[] = {
-		new CType_Basis(),	//基本
-		new CType_Text(),	//テキスト
-		new CType_Cpp(),	//C/C++
-		new CType_Html(),	//HTML
-		new CType_Sql(),	//PL/SQL
-		new CType_Cobol(),	//COBOL
-		new CType_Java(),	//Java
-		new CType_Asm(),	//アセンブラ
-		new CType_Awk(),	//awk
-		new CType_Dos(),	//MS-DOSバッチファイル
-		new CType_Pascal(),	//Pascal
-		new CType_Tex(),	//TeX
-		new CType_Perl(),	//Perl
-		new CType_Python(),	//Python
-		new CType_Vb(),		//Visual Basic
-		new CType_Rich(),	//リッチテキスト
-		new CType_Ini(),	//設定ファイル
+	const std::array<std::unique_ptr<CType>, 17> table = {
+		std::make_unique<CType_Basis>(),	//基本
+		std::make_unique<CType_Text>(),		//テキスト
+		std::make_unique<CType_Cpp>(),		//C/C++
+		std::make_unique<CType_Html>(),		//HTML
+		std::make_unique<CType_Sql>(),		//PL/SQL
+		std::make_unique<CType_Cobol>(),	//COBOL
+		std::make_unique<CType_Java>(),		//Java
+		std::make_unique<CType_Asm>(),		//アセンブラ
+		std::make_unique<CType_Awk>(),		//awk
+		std::make_unique<CType_Dos>(),		//MS-DOSバッチファイル
+		std::make_unique<CType_Pascal>(),	//Pascal
+		std::make_unique<CType_Tex>(),		//TeX
+		std::make_unique<CType_Perl>(),		//Perl
+		std::make_unique<CType_Python>(),	//Python
+		std::make_unique<CType_Vb>(),		//Visual Basic
+		std::make_unique<CType_Rich>(),	//リッチテキスト
+		std::make_unique<CType_Ini>(),	//設定ファイル
 	};
+	static_assert( std::size(table) <= int(MAX_TYPES) );
+
+	auto& types = m_TypeSettings;
 	types.clear();
-	static_assert( int(std::size(table)) <= MAX_TYPES );
-	for(int i = 0; i < int(std::size(table)) && i < MAX_TYPES; i++){
-		STypeConfig* type = new STypeConfig;
-		types.push_back(type);
+
+	for (int i = 0; i < std::ssize(table); ++i) {
+		const auto& type = types.emplace_back(std::make_unique<STypeConfig>());
 		table[i]->InitTypeConfig(i, *type);
-		wcscpy(pShareData->m_TypeMini[i].m_szTypeExts, type->m_szTypeExts);
-		wcscpy(pShareData->m_TypeMini[i].m_szTypeName, type->m_szTypeName);
+		wcscpy_s(pShareData->m_TypeMini[i].m_szTypeExts, type->m_szTypeExts);
+		wcscpy_s(pShareData->m_TypeMini[i].m_szTypeName, type->m_szTypeName);
 		pShareData->m_TypeMini[i].m_encoding = type->m_encoding;
 		pShareData->m_TypeMini[i].m_id = type->m_id;
-		SAFE_DELETE(table[i]);
 	}
+
+	pShareData->m_nTypesCount = int(std::size(types));
+
 	pShareData->m_TypeBasis = *types[0];
-	pShareData->m_nTypesCount = (int)types.size();
 }
 
 /*!	@brief 共有メモリ初期化/強調キーワード

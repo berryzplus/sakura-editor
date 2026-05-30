@@ -9,23 +9,23 @@
 	Copyright (C) 2002, aroka CProcessより分離, YAZAKI
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 
 #include "StdAfx.h"
-#include "CControlProcess.h"
-#include "CControlTray.h"
-#include "env/DLLSHAREDATA.h"
-#include "CCommandLine.h"
-#include "env/CShareData_IO.h"
-#include "debug/CRunningTimer.h"
-#include "env/CShareData.h"
-#include "sakura_rc.h"/// IDD_EXITTING 2002/2/10 aroka ヘッダー整理
-#include "config/system_constants.h"
+#include "_main/CControlProcess.h"
+
+#include "_main/CControlTray.h"
 #include "apiwrap/DarkMode.h"
+#include "config/system_constants.h"
+#include "debug/CRunningTimer.h"
+#include "env/CShareData_IO.h"
+#include "env/DLLSHAREDATA.h"
+
+#include "sakura_rc.h"/// IDD_EXITTING 2002/2/10 aroka ヘッダー整理
 
 //-------------------------------------------------
 
@@ -128,6 +128,8 @@ bool CControlProcess::InitializeProcess()
 		return false;
 	}
 
+	std::wstring_view profileName{ GetProfileName() };
+
 	const auto pszProfileName = GetProfileName();
 
 	// 初期化完了イベントを作成する
@@ -155,7 +157,9 @@ bool CControlProcess::InitializeProcess()
 	}
 	
 	/* 共有メモリを初期化 */
-	if( !CProcess::InitializeProcess() ){
+	if (!GetShareData().InitShareData(profileName)) {
+		// L"異なるバージョンのエディタを同時に起動することはできません。"
+		ErrorMessage(nullptr, LS(STR_ERR_DLGPROCESS1));
 		return false;
 	}
 

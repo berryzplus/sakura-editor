@@ -21,9 +21,9 @@
 */
 
 #include "StdAfx.h"
-#include "CNormalProcess.h"
-#include "CCommandLine.h"
-#include "CControlTray.h"
+#include "_main/CNormalProcess.h"
+
+#include "_main/CControlTray.h"
 #include "window/CEditWnd.h" // 2002/2/3 aroka
 #include "agent/CGrepAgent.h"
 #include "doc/CEditDoc.h"
@@ -70,6 +70,9 @@ bool CNormalProcess::InitializeProcess()
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
 
+	// プロファイル名を取得
+	const std::wstring_view profileName{ GetProfileName() };
+
 	/* プロセス初期化の目印 */
 	HANDLE	hMutex = _GetInitializeMutex();	// 2002/2/8 aroka 込み入っていたので分離
 	if( nullptr == hMutex ){
@@ -77,9 +80,7 @@ bool CNormalProcess::InitializeProcess()
 	}
 
 	/* 共有メモリを初期化する */
-	if ( !CProcess::InitializeProcess() ){
-		return false;
-	}
+	GetShareData().OpenShareData(profileName);
 
 	/* ダークモード設定を反映する */
 	ApplyDarkModeSetting(GetDllShareData().m_Common.m_sWindow.m_bDarkMode);

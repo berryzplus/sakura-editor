@@ -17,13 +17,10 @@
 #define SAKURA_CPROCESS_FECC5450_9096_4EAD_A6DA_C8B12C3A31B5_H_
 #pragma once
 
-#include <filesystem>
-#include <string>
-#include <string_view>
-
-#include "global.h"
-#include "util/design_template.h"
+#include "_main/global.h"
+#include "_main/CCommandLine.h"
 #include "env/CShareData.h"
+#include "util/design_template.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -34,15 +31,16 @@
 class CProcess : public TSingleInstance<CProcess> {
 public:
 	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
+	~CProcess() override = default;
+
 	bool Run();
-	virtual ~CProcess(){}
 	virtual void RefreshString();
 
 	virtual std::filesystem::path GetIniFileName() const;
 
 protected:
-	CProcess();
-	virtual bool InitializeProcess();
+	virtual bool	InitializeProcess() = 0;
+
 	virtual bool MainLoop() = 0;
 	virtual void OnExitProcess() = 0;
 

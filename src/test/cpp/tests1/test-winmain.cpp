@@ -108,62 +108,6 @@ void writeTextFile(
 	fs.close();
 }
 
-//! HANDLE型のスマートポインタ
-class HandleHolder : public cxx::ResourceHolder<&::CloseHandle>
-{
-private:
-	using Base = cxx::ResourceHolder<&::CloseHandle>;
-	using Me = HandleHolder;
-
-public:
-	/*!
-	 * コンストラクタは流用する
-	 */
-	using Base::ResourceHolder;
-
-	virtual ~HandleHolder() = default;
-
-	void lock()
-	{
-		Lock(INFINITE);	//無限に待つ
-	}
-
-	bool try_lock()
-	{
-		return Lock(0);	//ロック取得を試行
-	}
-
-	template<class Rep, class Period>
-	bool try_lock_for(const std::chrono::duration<Rep, Period>& rel_time)
-	{
-		const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(rel_time);
-		return Lock(DWORD(milliseconds.count()));
-	}
-
-	bool unlock()
-	{
-		return Unlock();
-	}
-
-	virtual bool Lock(DWORD dwTimeout = INFINITE)
-	{
-		// ロック取得を試行
-		const auto dwRet = ::WaitForSingleObject(get(), dwTimeout);
-
-		if (WAIT_FAILED == dwRet) {
-			// エラー
-			return false;
-		}
-
-		return WAIT_OBJECT_0 == dwRet || WAIT_ABANDONED == dwRet;
-	}
-
-	virtual bool Unlock()
-	{
-		return true;
-	}
-};
-
 /*!
  * @brief 起動したプロセスオブジェクト
  *
@@ -530,6 +474,17 @@ void TerminateControlProcess(
 }
 
 } // namespace testing
+
+namespace cxx {
+
+TEST(HandleHolder, Lock101)
+{
+	// ハンドルを開かずにロックを試み、失敗させる
+	cxx::HandleHolder handle{};
+	EXPECT_THAT(handle.Lock(), IsFalse());
+}
+
+} // namespace cxx
 
 namespace winmain {
 

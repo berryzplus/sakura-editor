@@ -51,28 +51,6 @@ std::filesystem::path CProcess::GetIniFileName() const
 }
 
 /*!
-	@brief プロセスを初期化する
-
-	共有メモリを初期化する
-*/
-bool CProcess::InitializeProcess()
-{
-	/* 共有データ構造体のアドレスを返す */
-	if( !GetShareData().InitShareData() ){
-		//	適切なデータを得られなかった
-		::MYMESSAGEBOX( nullptr, MB_OK | MB_ICONERROR,
-			GSTR_APPNAME, L"異なるバージョンのエディタを同時に起動することはできません。" );
-		return false;
-	}
-
-	/* リソースから製品バージョンの取得 */
-	//	2004.05.13 Moca 共有データのバージョン情報はコントロールプロセスだけが
-	//	ShareDataで設定するように変更したのでここからは削除
-
-	return true;
-}
-
-/*!
 	@brief プロセス実行
 	
 	@author aroka

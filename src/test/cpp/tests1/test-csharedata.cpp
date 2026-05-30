@@ -1783,6 +1783,63 @@ TEST_F(CShareDataTest, InitShareData001)
 	EXPECT_THAT(::GetDllShareData().m_sWorkBuffer.GetBuffer<WCHAR>(), ::testing::SizeIs(Eq(size_t(32000))));
 }
 
+TEST_F(CShareDataTest, OpenShareData101)
+{
+	// 共有データを破棄する
+	TearDownShareData();
+
+	// テスト用プロファイル名
+	const auto profileName{ GetProfileName() };
+
+	// 共有データの名前を組み立てる
+	SFilePath shareDataName{ GSTR_SHAREDATA };
+	shareDataName.append(profileName);
+
+	// ファイルマッピングオブジェクトを作る
+	const auto hFileMap = ::CreateFileMappingW(
+		INVALID_HANDLE_VALUE,
+		nullptr,
+		PAGE_READWRITE | SEC_COMMIT,
+		0,
+		sizeof(DLLSHAREDATA),
+		shareDataName
+	);
+
+	EXPECT_THAT(hFileMap, NotNull());
+
+	// スマートポインターに入れる
+	cxx::HandleHolder fileMapHolder{ hFileMap };
+
+	// ファイルマッピングオブジェクトをマップする
+	using MappedDataHolder = cxx::ResourceHolder<&::UnmapViewOfFile, DLLSHAREDATA*>;
+	MappedDataHolder mappedData = (DLLSHAREDATA*)::MapViewOfFile(
+		hFileMap,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		0
+	);
+
+	EXPECT_THAT(mappedData, NotNull());
+
+	auto pShareData = static_cast<DLLSHAREDATA*>(mappedData);
+
+	EXPECT_THAT(pShareData, NotNull());
+
+	pShareData->m_nSize = sizeof(DLLSHAREDATA) + 1;
+
+	pcShareData = std::make_unique<CShareData>();
+
+	EXPECT_THAT(pcShareData->OpenShareData(), IsFalse());
+
+	pcShareData = nullptr;
+	mappedData = nullptr;
+	fileMapHolder = nullptr;
+
+	// 共有データを生成して初期化する
+	SetUpShareData();
+}
+
 /*!
  * @brief 言語切替のテスト
  */

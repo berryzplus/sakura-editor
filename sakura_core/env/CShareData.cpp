@@ -18,7 +18,7 @@
 	Copyright (C) 2009, nasukoji, ryoji
 	Copyright (C) 2011, nasukoji
 	Copyright (C) 2012, Moca, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -26,6 +26,7 @@
 
 #include "StdAfx.h"
 #include "env/CShareData.h"
+
 #include "env/DLLSHAREDATA.h"
 #include "env/CShareData_IO.h"
 #include "env/CSakuraEnvironment.h"
@@ -73,22 +74,7 @@ CShareData::CShareData() = default;
 */
 CShareData::~CShareData()
 {
-	if( m_pShareData ){
-		/* プロセスのアドレス空間から､ すでにマップされているファイル ビューをアンマップします */
-		::UnmapViewOfFile( m_pShareData );
-		m_pShareData = nullptr;
-	}
-	if( m_hFileMap ){
-		CloseHandle( m_hFileMap );
-	}
-	if( m_pvTypeSettings ){
-		for( int i = 0; i < (int)m_pvTypeSettings->size(); i++ ){
-			delete (*m_pvTypeSettings)[i];
-			(*m_pvTypeSettings)[i] = nullptr;
-		}
-		delete m_pvTypeSettings;
-		m_pvTypeSettings = nullptr;
-	}
+	return;
 }
 
 static CMutex g_cMutexShareWork( FALSE, GSTR_MUTEX_SAKURA_SHAREWORK );
@@ -110,27 +96,25 @@ CMutex& CShareData::GetMutexShareWork(){
 
 	@date 2018/06/01 仕様変更 https://github.com/sakura-editor/sakura/issues/29
 */
-bool CShareData::InitShareData()
+bool CShareData::InitShareData(std::wstring_view profileName)
 {
 	MY_RUNNINGTIMER(cRunningTimer,L"CShareData::InitShareData" );
 
-	m_hwndTraceOutSource = nullptr;	// 2006.06.26 ryoji
+	// 共有データの名前を組み立てる
+	SFilePath shareDataName{ GSTR_SHAREDATA };
+	shareDataName.append(profileName);
 
-	/* ファイルマッピングオブジェクト */
-	{
-		const auto pszProfileName = GetProfileName();
-		std::wstring strShareDataName = GSTR_SHAREDATA;
-		strShareDataName += pszProfileName;
-		m_hFileMap = ::CreateFileMapping(
-			INVALID_HANDLE_VALUE,	//	Sep. 6, 2003 wmlhq
-			nullptr,
-			PAGE_READWRITE | SEC_COMMIT,
-			0,
-			sizeof( DLLSHAREDATA ),
-			strShareDataName.c_str()
-		);
-	}
-	if( nullptr == m_hFileMap ){
+	// ファイルマッピングオブジェクトを作る
+	const auto hFileMap = ::CreateFileMappingW(
+		INVALID_HANDLE_VALUE,	//	Sep. 6, 2003 wmlhq
+		nullptr,
+		PAGE_READWRITE | SEC_COMMIT,
+		0,
+		sizeof(DLLSHAREDATA),
+		shareDataName
+	);
+
+	if (!hFileMap) {
 		::MessageBox(
 			nullptr,
 			L"CreateFileMapping()に失敗しました",
@@ -140,18 +124,35 @@ bool CShareData::InitShareData()
 		return false;
 	}
 
-	if( GetLastError() != ERROR_ALREADY_EXISTS ){
-		/* オブジェクトが存在していなかった場合 */
-		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
-		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
-			m_hFileMap,
-			FILE_MAP_ALL_ACCESS,
-			0,
-			0,
-			0
-		);
-		CreateTypeSettings();
+	// 既存の共有データを開いたかどうかをチェックする
+	bool isOpened = hFileMap && ERROR_ALREADY_EXISTS == ::GetLastError();
 
+	m_hFileMap = hFileMap;
+
+	const auto mappedData = ::MapViewOfFile(
+		hFileMap,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		0
+	);
+
+	if (!mappedData) return false;
+
+	m_MappedData = mappedData;
+
+	m_pShareData = static_cast<DLLSHAREDATA*>(mappedData);
+
+	// 既存の共有データを開いた場合、バージョンとサイズが不一致だと使えない。
+	if (isOpened && (uShareDataVersion != m_pShareData->m_vStructureVersion || sizeof(*m_pShareData) != m_pShareData->m_nSize)) {
+		return false;
+	}
+
+	m_hwndTraceOutSource = nullptr;
+
+	m_pShareData = new (mappedData) DLLSHAREDATA();
+
+	{
 		m_pShareData->m_vStructureVersion = uShareDataVersion;
 		m_pShareData->m_nSize = sizeof(*m_pShareData);
 
@@ -668,9 +669,7 @@ bool CShareData::InitShareData()
 			CShareData_IO::IO_MainMenu( cProfile, &data, m_pShareData->m_Common.m_sMainMenu, false );
 		}
 
-		{
-			InitTypeConfigs( m_pShareData, *m_pvTypeSettings );
-		}
+		InitTypeConfigs(m_pShareData);
 
 		{
 			/* m_PrintSettingArr[0]を設定して、残りの1～7にコピーする。
@@ -725,32 +724,53 @@ bool CShareData::InitShareData()
 
 			m_pShareData->m_bLineNumIsCRLF_ForJump = true;	/* 指定行へジャンプの「改行単位の行番号」か「折り返し単位の行番号」か */
 		}
-	}else{
-		/* オブジェクトがすでに存在する場合 */
-		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
-		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
-			m_hFileMap,
-			FILE_MAP_ALL_ACCESS,
-			0,
-			0,
-			0
-		);
-
-		//	From Here Oct. 27, 2000 genta
-		//	2014.01.08 Moca サイズチェック追加
-		if( m_pShareData->m_vStructureVersion != uShareDataVersion ||
-			m_pShareData->m_nSize != sizeof(*m_pShareData) ){
-			//	この共有データ領域は使えない．
-			//	ハンドルを解放する
-			::UnmapViewOfFile( m_pShareData );
-			m_pShareData = nullptr;
-			return false;
-		}
-		//	To Here Oct. 27, 2000 genta
-
-		SelectCharWidthCache(CWM_FONT_EDIT, CWM_CACHE_SHARE);
-		InitCharWidthCache(m_pShareData->m_Common.m_sView.m_lf);
 	}
+
+	return true;
+}
+
+/*!
+ * @brief 共有データを開く
+ */
+bool CShareData::OpenShareData(std::wstring_view profileName)
+{
+	// 共有データの名前を組み立てる
+	SFilePath shareDataName{ GSTR_SHAREDATA };
+	shareDataName.append(profileName);
+
+	// ファイルマッピングオブジェクトを開く
+	const auto hFileMap = ::OpenFileMappingW(
+		FILE_MAP_READ | FILE_MAP_WRITE,
+		FALSE,
+		shareDataName
+	);
+
+	if (!hFileMap) return false;
+
+	m_hFileMap = hFileMap;
+
+	const auto mappedData = ::MapViewOfFile(
+		hFileMap,
+		FILE_MAP_READ | FILE_MAP_WRITE,
+		0,
+		0,
+		0
+	);
+
+	if (!mappedData) return false;
+
+	m_MappedData = mappedData;
+
+	m_pShareData = static_cast<DLLSHAREDATA*>(mappedData);
+
+	// バージョンとサイズが不一致だと使えない。
+	if (uShareDataVersion != m_pShareData->m_vStructureVersion || sizeof(*m_pShareData) != m_pShareData->m_nSize) {
+		return false;
+	}
+
+	SelectCharWidthCache(CWM_FONT_EDIT, CWM_CACHE_SHARE);
+	InitCharWidthCache(m_pShareData->m_Common.m_sView.m_lf);
+
 	return true;
 }
 
@@ -837,7 +857,6 @@ void CShareData::ConvertLangValues(std::vector<std::wstring>& values, bool bSetV
 			break;
 		}
 	}
-	assert( m_pvTypeSettings != nullptr );
 	indexBackup = index;
 	ConvertLangValue( shareData.m_TypeBasis.m_szTypeName, STR_TYPE_NAME_BASIS );
 	for( i = 0; i < (int)GetTypeSettings().size(); i++ ){
@@ -1449,18 +1468,6 @@ void CShareData::InitPopupMenu([[maybe_unused]] DLLSHAREDATA* pShareData)
 void CShareData::RefreshString()
 {
 	RefreshKeyAssignString( m_pShareData );
-}
-
-void CShareData::CreateTypeSettings()
-{
-	if( nullptr == m_pvTypeSettings ){
-		m_pvTypeSettings = new std::vector<STypeConfig*>();
-	}
-}
-
-std::vector<STypeConfig*>& CShareData::GetTypeSettings()
-{
-	return *m_pvTypeSettings;
 }
 
 void CShareData::InitFileTree( SFileTree* setting )
