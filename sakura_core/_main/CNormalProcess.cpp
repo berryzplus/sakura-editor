@@ -156,14 +156,23 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	CPluginManager::getInstance()->LoadAllPlugin();
 	MY_TRACETIME( cRunningTimer, L"After Load Plugins" );
 
+	//ドキュメントを作成
+	m_pcEditDoc = std::make_unique<CEditDoc>();
+
+	//メインウィンドウオブジェクトのインスタンスを作成
+	m_pcEditWnd = std::make_unique<CEditWnd>();
+
 	// エディタアプリケーションを作成。2007.10.23 kobake
 	// グループIDを取得
 	int nGroupId = CCommandLine::getInstance()->GetGroupId();
 	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
 		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
 	}
+
 	// CEditAppを作成
-	m_pcEditApp = CEditApp::getInstance();
+	m_pcEditApp = std::make_unique<CEditApp>();
+
+	// メインウインドウを作成
 	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
 	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
 	if( nullptr == pEditWnd->GetHwnd() ){

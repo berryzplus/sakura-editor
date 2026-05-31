@@ -16,8 +16,10 @@
 #define SAKURA_CNORMALPROCESS_F2808B31_61DC_4BE0_8661_9626478AC7F9_H_
 #pragma once
 
-#include "global.h"
-#include "CProcess.h"
+#include "_main/global.h"
+#include "_main/CProcess.h"
+#include "doc/CEditDoc.h"
+#include "window/CEditWnd.h"
 #include "extmodule/CMigemo.h"
 #include "CEditApp.h"
 #include "util/design_template.h"
@@ -32,6 +34,10 @@
 */
 class CNormalProcess final : public CProcess {
 private:
+	using CEditAppHolder = std::unique_ptr<CEditApp>;
+	using CEditDocHolder = std::unique_ptr<CEditDoc>;
+	using CEditWndHolder = std::unique_ptr<CEditWnd>;
+
 	using Base = CProcess;
 	using Me = CNormalProcess;
 
@@ -51,7 +57,12 @@ protected:
 	void OpenFiles(HWND hwnd);
 
 private:
-	CEditApp*	m_pcEditApp = nullptr;	//2007.10.23 kobake
+	CEditDocHolder		m_pcEditDoc = nullptr;
+
+	CEditWndHolder		m_pcEditWnd = nullptr;
+
+	CEditAppHolder		m_pcEditApp = nullptr;
+
 	CMigemo		m_cMigemo;
 };
 

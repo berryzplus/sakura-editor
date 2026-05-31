@@ -75,7 +75,7 @@ private:
 
 public:
 	//コンストラクタ・デストラクタ
-	CEditDoc(CEditApp* pcApp);
+	CEditDoc();
 	~CEditDoc();
 
 	//初期化

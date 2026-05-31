@@ -8,24 +8,24 @@
 
 #include "StdAfx.h"
 #include "CEditApp.h"
-#include "doc/CEditDoc.h"
-#include "window/CEditWnd.h"
+
 #include "_main/CCommandLine.h"
 #include "util/module.h"
 #include "util/shell.h"
 
-void CEditApp::Create(HINSTANCE hInst, int nGroupId)
+CEditApp::CEditApp()
 {
-	m_hInst = hInst;
-
 	//ヘルパ作成
 	m_cIcons.Create( m_hInst );	//	CreateImage List
+}
 
+void CEditApp::Create(HINSTANCE hInst [[maybe_unused]], int nGroupId)
+{
 	//ドキュメントの作成
 	m_pcEditDoc->Create();
 
 	//ウィンドウの作成
-	m_pcEditWnd->Create( m_pcEditDoc, &m_cIcons, nGroupId );
+	m_pcEditWnd->Create( GetDocument(), &GetIcons(), nGroupId );
 
 	//プロパティ管理
 	m_pcPropertyManager->Create(
@@ -33,12 +33,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 		&GetIcons(),
 		&m_pcEditWnd->GetMenuDrawer()
 	);
-}
-
-CEditApp::~CEditApp()
-{
-	delete m_pcEditWnd;
-	delete m_pcEditDoc;
 }
 
 /*! 共通設定 プロパティシート */

@@ -28,6 +28,7 @@ struct EditorTestSuite : public env::ShareDataTestSuite
 {
 	static inline std::unique_ptr<CEditDoc> pcEditDoc = nullptr;
 	static inline std::unique_ptr<CEditWnd> pcEditWnd = nullptr;
+	static inline std::unique_ptr<CEditApp> pcEditApp = nullptr;
 	static inline CSMacroMgr* pcSMacroMgr = nullptr;
 
 	static void SetUpEditor();
