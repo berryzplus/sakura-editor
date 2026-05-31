@@ -84,17 +84,15 @@ int WINAPI wWinMain(
 	CCommandLine cCommandLine;
 
 	//プロセスの生成とメッセージループ
-	CProcessFactory aFactory;
-	CProcess *process = nullptr;
-	try{
-		process = aFactory.Create( hInstance, lpCmdLine );
+	try {
+		const auto process = std::unique_ptr<CProcess>(CProcessFactory().Create(hInstance, lpCmdLine));
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
+
+		if (process) {
+			process->Run();
+		}
 	}
 	catch(...){
-	}
-	if( nullptr != process ){
-		process->Run();
-		delete process;
 	}
 
 	return 0;
