@@ -76,9 +76,6 @@ namespace window {
 	pcGrepAgent = std::make_unique<CGrepAgent>();
 	CEditApp::getInstance()->m_pcGrepAgent = pcGrepAgent.get();
 
-	//編集モード
-	CAppMode::getInstance();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
-
 	// SMacroMgrを用意する
 	pcSMacroMgr = std::make_unique<CSMacroMgr>();
 

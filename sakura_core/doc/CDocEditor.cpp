@@ -1,14 +1,15 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
 
 #include "StdAfx.h"
-#include "CDocEditor.h"
-#include "CEditDoc.h"
+#include "doc/CDocEditor.h"
+
+#include "doc/CEditDoc.h"
 #include "doc/logic/CDocLine.h"
 #include "doc/logic/CDocLineMgr.h"
 #include "env/DLLSHAREDATA.h"
@@ -132,6 +133,11 @@ void CDocEditor::OnAfterSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
 
 	// カレントディレクトリの変更
 	::SetCurrentDirectory( pcDoc->m_cDocFile.GetFilePathClass().GetDirPath().c_str() );
+
+	CAppMode::getInstance()->SetViewMode(false);	/* ビューモード */
+
+	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
+	CAppMode::getInstance()->SetDebugModeOFF();	// アウトプットウィンドウは通常ウィンドウ化
 }
 
 //	From Here Nov. 20, 2000 genta

@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2007, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -17,7 +17,6 @@
 #include "macro/CSMacroMgr.h"
 #include "env/CPropertyManager.h"
 #include "agent/CGrepAgent.h"
-#include "_main/CAppMode.h"
 #include "_main/CCommandLine.h"
 #include "util/module.h"
 #include "util/shell.h"
@@ -39,9 +38,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 
 	//GREPモード管理
 	m_pcGrepAgent = new CGrepAgent();
-
-	//編集モード
-	CAppMode::getInstance();	//ウィンドウよりも前にイベントを受け取るためにここでインスタンス作成
 
 	//マクロ
 	m_pcSMacroMgr = new CSMacroMgr();

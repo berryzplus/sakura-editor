@@ -1,6 +1,6 @@
 ﻿/*! @file */
 /*
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -8,16 +8,6 @@
 #include "CAppMode.h"
 #include "window/CEditWnd.h"
 #include "env/CSakuraEnvironment.h"
-
-void CAppMode::OnAfterSave([[maybe_unused]] const SSaveInfo& sSaveInfo)
-{
-	m_bViewMode = false;	/* ビューモード */
-
-	// 名前を付けて保存から再ロードが除去された分の不足処理を追加（ANSI版との差異）	// 2009.08.12 ryoji
-	if( IsDebugMode() ){
-		SetDebugModeOFF();	// アウトプットウィンドウは通常ウィンドウ化
-	}
-}
 
 //! デバッグモニタモードに設定
 void CAppMode::SetDebugModeON()
