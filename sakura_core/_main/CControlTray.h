@@ -75,8 +75,10 @@ public:
 	*/
 	HWND Create(HINSTANCE hInstance);	/* 作成 */
 
+	int		MessageLoop() const;
+
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
-	void MessageLoop( void );	/* メッセージループ */
+
 	int	CreatePopUpMenu_L( void );	/* ポップアップメニュー(トレイ左ボタン) */
 	int	CreatePopUpMenu_R( void );	/* ポップアップメニュー(トレイ右ボタン) */
 

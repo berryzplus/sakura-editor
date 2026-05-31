@@ -60,6 +60,8 @@
 #include "recent/CRecentFolder.h"
 #include "apiwrap/DarkMode.h"
 
+#include "plugin/CPluginManager.h"
+
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
 //	定義を削除
 
@@ -188,9 +190,6 @@ CViewFont* GetViewFont(bool isMiniMap)
 {
 	return GetEditWnd().GetViewFont(isMiniMap);
 }
-
-//	/* メッセージループ */
-//	DWORD MessageLoop_Thread( DWORD pCEditWndObject );
 
 LRESULT CALLBACK CEditWndProc(
 	HWND	hwnd,	// handle of window
@@ -1040,50 +1039,38 @@ static inline BOOL MyIsDialogMessage(HWND hwnd, MSG* msg)
 	return ::IsDialogMessage(hwnd, msg);
 }
 
-//複数プロセス版
-/* メッセージループ */
-//2004.02.17 Moca GetMessageのエラーチェック
-void CEditWnd::MessageLoop( void )
+/*!
+ * @brief メッセージループ
+ *
+ * @return PostQuitMessage()で指定された終了コード
+ */
+int CEditWnd::MessageLoop() const
 {
-	MSG	msg;
-	int ret;
+	const auto hWnd = GetHwnd();
+	DarkMode::setDarkWndNotifySafeEx(hWnd, false, true);
 
-	auto hWndDM = GetHwnd();
-	DarkMode::setDarkWndNotifySafeEx(hWndDM, false, true);
+	MSG	msg{};
 
-	while(GetHwnd())
-	{
-		//メッセージ取得
-		ret = GetMessage(&msg,nullptr,0,0);
-		if(ret== 0)break; //WM_QUIT
-		if(ret==-1)break; //GetMessage失敗
-
+	while (GetMessageW(&msg, nullptr, 0, 0)) {
 		//ダイアログメッセージ
 		     if( MyIsDialogMessage( CPrintPreview::GetPrintPreviewBarHANDLE_Safe(m_pPrintPreview.get()),	&msg ) ){}	//!< 印刷プレビュー 操作バー
 		else if( MyIsDialogMessage( m_cDlgFind.GetHwnd(),								&msg ) ){}	//!<「検索」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgFuncList.GetHwnd(),							&msg ) ){}	//!<「アウトライン」ダイアログ
 		else if( MyIsDialogMessage( m_cDlgReplace.GetHwnd(),							&msg ) ){}	//!<「置換」ダイアログ
-		else if( MyIsDialogMessage( m_cDlgGrep.GetHwnd(),								&msg ) ){}	//!<「Grep」ダイアログ
 		else if( MyIsDialogMessage( m_cHokanMgr.GetHwnd(),								&msg ) ){}	//!<「入力補完」
-		else if( m_cToolbar.EatMessage(&msg ) ){ }													//!<ツールバー
+		else if( GetEditWnd().m_cToolbar.EatMessage(&msg ) ) continue;													//!<ツールバー
+		// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
+		else if( GetActiveView().m_bHokan && WM_KEYDOWN == msg.message && -1 == GetEditWnd().m_cHokanMgr.KeyProc(msg.wParam, msg.lParam)) continue;	// 補完ウィンドウが処理を実行した
 		//アクセラレータ
-		else{
-			// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
-			if( msg.message == WM_KEYDOWN ){
-				if( GetActiveView().m_bHokan ){
-					if( -1 == m_cHokanMgr.KeyProc( msg.wParam, msg.lParam ) )
-						continue;	// 補完ウィンドウが処理を実行した
-				}
-			}
-
-			if( m_hAccel && TranslateAccelerator( msg.hwnd, m_hAccel, &msg ) ){}
-			//通常メッセージ
-			else{
-				TranslateMessage( &msg );
-				DispatchMessage( &msg );
-			}
+		else if( m_hAccel && TranslateAcceleratorW(msg.hwnd, m_hAccel, &msg)) continue;
+		//通常メッセージ
+		else {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 	}
+
+	return static_cast<int>(msg.wParam);
 }
 
 LRESULT CEditWnd::DispatchEvent(
@@ -1519,6 +1506,9 @@ LRESULT CEditWnd::DispatchEvent(
 
 		/* 編集ウィンドウオブジェクトからのオブジェクト削除要求 */
 		::PostMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_DELETE_ME, 0, 0 );
+
+		/* プラグイン解放 */
+		CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
 
 		/* Windows にスレッドの終了を要求します */
 		::PostQuitMessage( 0 );

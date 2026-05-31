@@ -117,6 +117,8 @@ public:
 	HWND _CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo);
 	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
 
+	int		MessageLoop() const;
+
 	void OpenDocumentWhenStart(
 		const SLoadInfo& sLoadInfo		//!< [in]
 	);
@@ -134,7 +136,6 @@ public:
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 	//管理
-	void MessageLoop( void );								/* メッセージループ */
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
 
 	//各種イベント

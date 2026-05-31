@@ -38,10 +38,10 @@
 		+----------+---------------------------+---------------------------+
 */
 int WINAPI wWinMain(
-	HINSTANCE	hInstance,		//!< handle to current instance
-	[[maybe_unused]] HINSTANCE	hPrevInstance,	//!< handle to previous instance
-	LPWSTR		lpCmdLine,		//!< pointer to command line
-	[[maybe_unused]] int			nCmdShow		//!< show state of window
+	_In_ HINSTANCE hInstance,							//!< handle to current instance
+	_In_opt_ HINSTANCE hPrevInstance [[maybe_unused]],	//!< handle to previous instance
+	_In_ LPWSTR lpCmdLine,								//!< pointer to command line
+	_In_ int nCmdShow									//!< show state of window
 )
 {
 #ifdef USE_LEAK_CHECK_WITH_CRTDBG
@@ -66,7 +66,7 @@ int WINAPI wWinMain(
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
 
 		if (process) {
-			process->Run();
+			return process->Run(nCmdShow);
 		}
 	}
 	catch (const std::domain_error& e) {

@@ -44,9 +44,8 @@ public:
 	std::filesystem::path GetIniFileName() const override;
 
 private:
-	bool InitializeProcess() override;
-	bool MainLoop() override;
-	void OnExitProcess() override;
+	bool	InitializeProcess(int nCmdShow [[maybe_unused]]) override;
+	int		MainLoop() const override;
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 

@@ -179,20 +179,21 @@ std::filesystem::path CProcess::GetIniFileName() const
 }
 
 /*!
-	@brief プロセス実行
-	
-	@author aroka
-	@date 2002/01/16
-*/
-bool CProcess::Run()
+ * @brief プロセス実行
+ *
+ * @param nCmdShow [in] コマンドライン引数の表示オプション
+ * @return PostQuitMessage()で指定した終了コード
+ * 
+ * @author aroka
+ * @date 2002/01/16 新規作成
+ */
+int CProcess::Run(int nCmdShow)
 {
-	if( InitializeProcess() )
-	{
-			MainLoop() ;
-			OnExitProcess();
-		return true;
+	if (InitializeProcess(nCmdShow)) {
+		return MainLoop();
 	}
-	return false;
+
+	return 0;
 }
 
 /*!

@@ -66,8 +66,10 @@ CNormalProcess::~CNormalProcess()
 	@date 2007.06.26 ryoji グループIDを指定して編集ウィンドウを作成する
 	@date 2012.02.25 novice 複数ファイル読み込み
 */
-bool CNormalProcess::InitializeProcess()
+bool CNormalProcess::InitializeProcess(int nCmdShow)
 {
+	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
+
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
 
 	// プロファイル名を取得
@@ -460,26 +462,9 @@ bool CNormalProcess::InitializeProcess()
 	@author aroka
 	@date 2002/01/07
 */
-bool CNormalProcess::MainLoop()
+int CNormalProcess::MainLoop() const
 {
-	if( GetMainWindow() ){
-		m_pcEditApp->GetEditWindow()->MessageLoop();	/* メッセージループ */
-		return true;
-	}
-	return false;
-}
-
-/*!
-	@brief エディタプロセスを終了する
-	
-	@author aroka
-	@date 2002/01/07
-	こいつはなにもしない。後始末はdtorで。
-*/
-void CNormalProcess::OnExitProcess()
-{
-	/* プラグイン解放 */
-	CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
+	return GetEditWnd().MessageLoop();
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

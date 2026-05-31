@@ -120,7 +120,7 @@ CControlProcess::~CControlProcess()
 	@date 2006/04/10 ryoji 初期化完了イベントの処理を追加、異常時の後始末はデストラクタに任せる
 	@date 2013.03.20 novice コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
 */
-bool CControlProcess::InitializeProcess()
+bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlProcess::InitializeProcess" );
 
@@ -205,23 +205,7 @@ bool CControlProcess::InitializeProcess()
 	@author aroka
 	@date 2002/01/07
 */
-bool CControlProcess::MainLoop()
+int CControlProcess::MainLoop() const
 {
-	if( m_pcTray && GetMainWindow() ){
-		m_pcTray->MessageLoop();	/* メッセージループ */
-		return true;
-	}
-	return false;
-}
-
-/*!
-	@brief コントロールプロセスを終了する
-	
-	@author aroka
-	@date 2002/01/07
-	@date 2006/07/02 ryoji 共有データ保存を CControlTray へ移動
-*/
-void CControlProcess::OnExitProcess()
-{
-	return;
+	return m_pcTray->MessageLoop();
 }

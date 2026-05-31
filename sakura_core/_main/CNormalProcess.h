@@ -40,11 +40,10 @@ public:
 	using Base::Base;
 	~CNormalProcess() override;
 
-protected:
+private:
 	//プロセスハンドラ
-	bool InitializeProcess() override;
-	bool MainLoop() override;
-	void OnExitProcess() override;
+	bool	InitializeProcess(int nCmdShow) override;
+	int		MainLoop() const override;
 
 protected:
 	//実装補助
