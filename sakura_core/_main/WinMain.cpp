@@ -65,12 +65,16 @@ int WINAPI wWinMain(
 		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
 
 		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
-		::OleInitialize( nullptr );	// 2009.01.07 ryoji 追加
 	}
-	
+
 	//開発情報
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
 	DEBUG_TRACE(L"sizeof(DLLSHAREDATA) = %d\n",sizeof(DLLSHAREDATA));
+
+	cxx::COleInit oleInit;
+	if (!oleInit) return 1;	// 暫定エラーコード=1は「assert failedと同じ」。
+
+	(void)oleInit;	// OLEのクリーンアップはスコープを抜けるときに行わせる
 
 	DarkMode::initDarkMode();
 	DarkMode::setDarkModeConfig();
@@ -93,6 +97,5 @@ int WINAPI wWinMain(
 		delete process;
 	}
 
-	::OleUninitialize();	// 2009.01.07 ryoji 追加
 	return 0;
 }

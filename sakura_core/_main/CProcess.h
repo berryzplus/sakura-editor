@@ -139,6 +139,31 @@ struct MutexHolder : public cxx::HandleHolder {
 	}
 };
 
+class COleInit final
+{
+private:
+	using Me = COleInit;
+
+	bool m_initialized = false;
+
+public:
+	COleInit() noexcept
+		: m_initialized(SUCCEEDED(::OleInitialize(nullptr)))
+	{
+	}
+
+	COleInit(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	~COleInit() noexcept {
+		if (m_initialized) ::OleUninitialize();
+	}
+
+	explicit operator bool() const noexcept {
+		return m_initialized;
+	}
+};
+
 } // namespace cxx
 
 /*-----------------------------------------------------------------------
