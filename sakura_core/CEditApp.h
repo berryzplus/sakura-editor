@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2007, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -11,19 +11,15 @@
 
 //2007.10.23 kobake 作成
 
-#include "util/design_template.h"
-#include "uiparts/CSoundSet.h"
-#include "uiparts/CImageListMgr.h"
 #include "types/CType.h"
+#include "util/design_template.h"
+#include "window/CEditWnd.h"
 
 class CEditDoc;
-class CEditWnd;
 class CLoadAgent;
 class CSaveAgent;
 class CVisualProgress;
-class CMruListener;
 class CSMacroMgr;
-class CPropertyManager;
 class CGrepAgent;
 enum EFunctionCode;
 
@@ -55,7 +51,7 @@ public:
 	CEditDoc*			m_pcEditDoc;
 
 	//ウィンドウ
-	CEditWnd*			m_pcEditWnd;
+	CEditWnd*			m_pcEditWnd = new CEditWnd();
 
 	//IO管理
 	CLoadAgent*			m_pcLoadAgent;
@@ -63,16 +59,16 @@ public:
 	CVisualProgress*	m_pcVisualProgress;
 
 	//その他ヘルパ
-	CMruListener*		m_pcMruListener;		//MRU管理
 	CSMacroMgr*			m_pcSMacroMgr;			//マクロ管理
 
-	CPropertyManager*	m_pcPropertyManager;	//プロパティ管理
+	CPropertyManager*	m_pcPropertyManager = m_pcEditWnd->m_pcPropertyManager.get();
 
 	CGrepAgent*			m_pcGrepAgent;			//GREPモード
-	CSoundSet			m_cSoundSet;			//サウンド管理
+
+	CSoundSet&			m_cSoundSet = m_pcEditWnd->m_cSoundSet;
 
 	//GUIオブジェクト
-	CImageListMgr		m_cIcons;					//!< Image List
+	CImageListMgr&		m_cIcons = m_pcEditWnd->m_hIcons;
 };
 
 //WM_QUIT検出例外
@@ -80,4 +76,5 @@ class CAppExitException : public std::exception{
 public:
 	const char* what() const throw() override{ return "CAppExitException"; }
 };
+
 #endif /* SAKURA_CEDITAPP_421797BC_DD8E_4209_AAF7_6BDC4D1CAAE9_H_ */

@@ -13,9 +13,7 @@
 #include "agent/CLoadAgent.h"
 #include "agent/CSaveAgent.h"
 #include "uiparts/CVisualProgress.h"
-#include "recent/CMruListener.h"
 #include "macro/CSMacroMgr.h"
-#include "env/CPropertyManager.h"
 #include "agent/CGrepAgent.h"
 #include "_main/CCommandLine.h"
 #include "util/module.h"
@@ -46,14 +44,9 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 	m_pcEditDoc->Create();
 
 	//ウィンドウの作成
-	m_pcEditWnd = new CEditWnd();
 	m_pcEditWnd->Create( m_pcEditDoc, &m_cIcons, nGroupId );
 
-	//MRU管理
-	m_pcMruListener = new CMruListener();
-
 	//プロパティ管理
-	m_pcPropertyManager = new CPropertyManager();
 	m_pcPropertyManager->Create(
 		m_pcEditWnd->GetHwnd(),
 		&GetIcons(),
@@ -64,8 +57,6 @@ void CEditApp::Create(HINSTANCE hInst, int nGroupId)
 CEditApp::~CEditApp()
 {
 	delete m_pcSMacroMgr;
-	delete m_pcPropertyManager;
-	delete m_pcMruListener;
 	delete m_pcGrepAgent;
 	delete m_pcVisualProgress;
 	delete m_pcSaveAgent;
