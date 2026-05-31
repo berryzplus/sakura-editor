@@ -69,7 +69,10 @@ int WINAPI wWinMain(
 			process->Run();
 		}
 	}
-	catch(...){
+	catch (const std::domain_error& e) {
+		ErrorBeep();
+		TopErrorMessage(nullptr, cxx::to_wstring(e.what()).c_str());
+		return 3;	// 暫定エラーコード=3は「terminatedと同じ」。
 	}
 
 	return 0;

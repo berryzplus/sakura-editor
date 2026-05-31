@@ -765,7 +765,8 @@ bool CShareData::OpenShareData(std::wstring_view profileName)
 
 	// バージョンとサイズが不一致だと使えない。
 	if (uShareDataVersion != m_pShareData->m_vStructureVersion || sizeof(*m_pShareData) != m_pShareData->m_nSize) {
-		return false;
+		// L"異なるバージョンのエディタを同時に起動することはできません。"
+		throw std::domain_error(cxx::to_string(LS(STR_ERR_DLGPROCESS1)));
 	}
 
 	SelectCharWidthCache(CWM_FONT_EDIT, CWM_CACHE_SHARE);

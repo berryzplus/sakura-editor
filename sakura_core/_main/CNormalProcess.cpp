@@ -85,8 +85,7 @@ bool CNormalProcess::InitializeProcess()
 
 	} catch (const std::system_error&) {
 		// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。"
-		ErrorMessage(nullptr, LS(STR_ERR_DLGNRMPROC2));
-		return false;
+		throw std::domain_error(cxx::to_string(LS(STR_ERR_DLGNRMPROC2)));
 	}
 
 	/* 共有メモリを初期化する */

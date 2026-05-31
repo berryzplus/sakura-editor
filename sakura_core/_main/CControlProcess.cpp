@@ -142,9 +142,8 @@ bool CControlProcess::InitializeProcess()
 	szMutexName.append(profileName);
 	cxx::MutexHolder hMutex{ ::CreateMutexW(nullptr, TRUE, szMutexName) };
 	if (!hMutex || ERROR_ALREADY_EXISTS == ::GetLastError()) {
-		ErrorBeep();
-		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
-		return false;
+		// L"CreateMutex()失敗。\n終了します。" );
+		throw std::domain_error(cxx::to_string(LS(STR_ERR_CTRLMTX1)));
 	}
 
 	// コントロールプロセスのカレントディレクトリをシステムディレクトリに変更
@@ -154,8 +153,7 @@ bool CControlProcess::InitializeProcess()
 	/* 共有メモリを初期化 */
 	if (!GetShareData().InitShareData(profileName)) {
 		// L"異なるバージョンのエディタを同時に起動することはできません。"
-		ErrorMessage(nullptr, LS(STR_ERR_DLGPROCESS1));
-		return false;
+		throw std::domain_error(cxx::to_string(LS(STR_ERR_DLGPROCESS1)));
 	}
 
 	/* 共有データのロード */

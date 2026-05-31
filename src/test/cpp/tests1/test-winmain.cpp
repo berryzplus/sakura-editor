@@ -768,6 +768,120 @@ struct WinMainFuncTest : public TWinMainTest<::testing::Test> {
 /*!
  * @brief WinMainを起動してみるテスト
  *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  コントロールプロセス起動の失敗をテストする。（ミューテックス競合）
+ */
+TEST_F(WinMainFuncTest, CreateControlProcess101)
+{
+	// テスト用プロファイル名
+	const auto profileName{ GetProfileName() };
+
+	// ミューテックスの名前を組み立てる
+	SFilePath szMutexName{ GSTR_MUTEX_SAKURA_CP };
+	szMutexName += profileName;
+
+	// ミューテックスを作成してロックする
+	cxx::MutexHolder hMutex{ ::CreateMutexW(nullptr, TRUE, szMutexName) };
+	EXPECT_THAT(hMutex, NotNull());
+
+	// コントロールプロセスを起動する
+	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(3), ".*");
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  コントロールプロセス起動の失敗をテストする。（異なるバージョン）
+ */
+TEST_F(WinMainFuncTest, CreateControlProcess102)
+{
+	// テスト用プロファイル名
+	const auto profileName{ GetProfileName() };
+
+	// 共有データの名前を組み立てる
+	SFilePath shareDataName{ GSTR_SHAREDATA };
+	shareDataName.append(profileName);
+
+	// ファイルマッピングオブジェクトを作る
+	const auto hFileMap = ::CreateFileMappingW(
+		INVALID_HANDLE_VALUE,
+		nullptr,
+		PAGE_READWRITE | SEC_COMMIT,
+		0,
+		sizeof(DLLSHAREDATA),
+		shareDataName
+	);
+
+	EXPECT_THAT(hFileMap, NotNull());
+
+	// スマートポインターに入れる
+	cxx::HandleHolder fileMapHolder{ hFileMap };
+
+	// ファイルマッピングオブジェクトをマップする
+	using MappedDataHolder = cxx::ResourceHolder<&::UnmapViewOfFile, DLLSHAREDATA*>;
+	MappedDataHolder mappedData = (DLLSHAREDATA*)::MapViewOfFile(
+		hFileMap,
+		FILE_MAP_ALL_ACCESS,
+		0,
+		0,
+		0
+	);
+
+	EXPECT_THAT(mappedData, NotNull());
+
+	auto pShareData = static_cast<DLLSHAREDATA*>(mappedData);
+
+	EXPECT_THAT(pShareData, NotNull());
+
+	pShareData->m_nSize = sizeof(DLLSHAREDATA) + 1;
+
+	// コントロールプロセスを起動する
+	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(3), ".*");
+}
+
+/*!
+ * @brief コントロールプロセス起動の失敗をテストする。（初期化完了イベント作成済み）
+ */
+TEST_F(WinMainFuncTest, CreateControlProcess103)
+{
+	// テスト用プロファイル名
+	const auto profileName{ GetProfileName() };
+
+	// 初期化完了イベントの名前を決める
+	SFilePath initEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
+	initEventName += profileName;
+
+	// プロセス起動前に初期化完了イベントを作成する
+	cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
+
+	// コントロールプロセスを起動する
+	EXPECT_ANY_THROW(CProcess::CreateControlProcess(std::wstring{ profileName }));
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  エディター起動の失敗をテストする。
+ */
+TEST_F(WinMainFuncTest, CreateEditorProcess101)
+{
+	// テスト用プロファイル名
+	const auto profileName{ GetProfileName() };
+
+	// ミューテックスの名前を組み立てる
+	SFilePath szMutexName{ GSTR_MUTEX_SAKURA_CP };
+	szMutexName += profileName;
+
+	// ミューテックスを作成してロックする
+	cxx::MutexHolder hMutex{ ::CreateMutexW(nullptr, TRUE, szMutexName) };
+	EXPECT_THAT(hMutex, NotNull());
+
+	// コントロールプロセスを起動する
+	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(3), ".*");
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
  *  Grepを実行する。
  */
 TEST_F(WinMainFuncTest, DoGrep001)

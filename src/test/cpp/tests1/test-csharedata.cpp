@@ -1830,7 +1830,7 @@ TEST_F(CShareDataTest, OpenShareData101)
 
 	pcShareData = std::make_unique<CShareData>();
 
-	EXPECT_THAT(pcShareData->OpenShareData(), IsFalse());
+	EXPECT_ANY_THROW(pcShareData->OpenShareData());
 
 	pcShareData = nullptr;
 	mappedData = nullptr;
