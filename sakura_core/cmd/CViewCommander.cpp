@@ -40,7 +40,7 @@
 
 CViewCommander::CViewCommander(CEditView* pEditView) : m_pCommanderView(pEditView)
 {
-	m_pcSMacroMgr = CEditApp::getInstance()->m_pcSMacroMgr;
+	m_pcSMacroMgr = GetDocument()->m_pcSMacroMgr.get();
 }
 
 /*!

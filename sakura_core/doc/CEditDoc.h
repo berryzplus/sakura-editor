@@ -15,7 +15,7 @@
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji, maru
 	Copyright (C) 2008, ryoji, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -42,6 +42,12 @@
 #include "macro/CCookieManager.h"
 #include "util/design_template.h"
 
+#include "agent/CGrepAgent.h"
+#include "agent/CLoadAgent.h"
+#include "agent/CSaveAgent.h"
+#include "macro/CSMacroMgr.h"
+#include "uiparts/CVisualProgress.h"
+
 class CSMacroMgr; // 2002/2/10 aroka
 class CEditWnd; // Sep. 10, 2002 genta
 struct EditInfo; // 20050705 aroka
@@ -60,6 +66,13 @@ class CEditDoc
 : public CDocSubject
 , public TInstanceHolder<CEditDoc>
 {
+private:
+	using CGrepAgentHolder = std::unique_ptr<CGrepAgent>;
+	using CLoadAgentHolder = std::unique_ptr<CLoadAgent>;
+	using CSaveAgentHolder = std::unique_ptr<CSaveAgent>;
+	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
+	using CVisualProgressHolder = std::unique_ptr<CVisualProgress>;
+
 public:
 	//コンストラクタ・デストラクタ
 	CEditDoc(CEditApp* pcApp);
@@ -150,6 +163,12 @@ public:
 	HBITMAP			m_hBackImg = nullptr;
 	int				m_nBackImgWidth;
 	int				m_nBackImgHeight;
+
+	CLoadAgentHolder m_pcLoadAgent = std::make_unique<CLoadAgent>();
+	CSaveAgentHolder m_pcSaveAgent = std::make_unique<CSaveAgent>();
+	CVisualProgressHolder m_pcVisualProgress = std::make_unique<CVisualProgress>();
+	CGrepAgentHolder m_pcGrepAgent = std::make_unique<CGrepAgent>();
+	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 };
 
 CEditDoc* GetDocument() noexcept;
