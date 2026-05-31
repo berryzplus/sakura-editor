@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 2002, genta
 	Copyright (C) 2004, genta
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -16,9 +16,6 @@
 #define SAKURA_CMACROFACTORY_67B6F8F6_0951_4717_84AD_C67E6D5F68AB_H_
 #pragma once
 
-#include <map>
-#include <list>
-#include <string>
 #include "util/design_template.h"
 
 class CMacroManagerBase;
@@ -34,14 +31,12 @@ class CMacroManagerBase;
 	CMacroFactory::Create()を拡張子を引数にして呼び出すと対応する
 	マクロエンジンが返される．得られたEngineに対してLoadKeyMacro()及び
 	ExecKeyMacro() を呼び出すことでマクロの読み込み・実行が行われる．
-
-	Singleton
-*/
-class CMacroFactory : public TSingleton<CMacroFactory> {
-	friend class TSingleton<CMacroFactory>;
-	CMacroFactory();
-
+ */
+class CMacroFactory final : public TSingleInstance<CMacroFactory> {
 public:
+	CMacroFactory();
+	~CMacroFactory() override;
+
 	typedef CMacroManagerBase* (*Creator)(const WCHAR*);
 
 	bool RegisterCreator(Creator f);
@@ -69,4 +64,5 @@ private:
 	*/
 	MacroEngineRep m_mMacroCreators;
 };
+
 #endif /* SAKURA_CMACROFACTORY_67B6F8F6_0951_4717_84AD_C67E6D5F68AB_H_ */

@@ -7,18 +7,18 @@
 /*
 	Copyright (C) 2002, genta
 	Copyright (C) 2004, genta
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
 #include "StdAfx.h"
-#include <algorithm>
-#include <ctype.h>
-#include "CMacroFactory.h"
+#include "macro/CMacroFactory.h"
 
 static const WCHAR NULSTR[] = L"";
 
 CMacroFactory::CMacroFactory() = default;
+
+CMacroFactory::~CMacroFactory() = default;
 
 /*!
 	与えられた拡張子をmapのkeyに変換する

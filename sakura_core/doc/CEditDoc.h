@@ -45,6 +45,7 @@
 #include "agent/CGrepAgent.h"
 #include "agent/CLoadAgent.h"
 #include "agent/CSaveAgent.h"
+#include "macro/CMacroFactory.h"
 #include "macro/CSMacroMgr.h"
 #include "uiparts/CVisualProgress.h"
 
@@ -70,6 +71,7 @@ private:
 	using CGrepAgentHolder = std::unique_ptr<CGrepAgent>;
 	using CLoadAgentHolder = std::unique_ptr<CLoadAgent>;
 	using CSaveAgentHolder = std::unique_ptr<CSaveAgent>;
+	using CMacroFactoryHolder = std::unique_ptr<CMacroFactory>;
 	using CSMacroMgrHolder = std::unique_ptr<CSMacroMgr>;
 	using CVisualProgressHolder = std::unique_ptr<CVisualProgress>;
 
@@ -168,6 +170,7 @@ public:
 	CSaveAgentHolder m_pcSaveAgent = std::make_unique<CSaveAgent>();
 	CVisualProgressHolder m_pcVisualProgress = std::make_unique<CVisualProgress>();
 	CGrepAgentHolder m_pcGrepAgent = std::make_unique<CGrepAgent>();
+	CMacroFactoryHolder	m_MacroFactory = std::make_unique<CMacroFactory>();
 	CSMacroMgrHolder m_pcSMacroMgr = std::make_unique<CSMacroMgr>();
 };
 
