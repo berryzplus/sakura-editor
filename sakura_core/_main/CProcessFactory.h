@@ -17,9 +17,8 @@
 #define SAKURA_CPROCESSFACTORY_5006562F_7795_40FF_AA4C_FFB94842F7C5_H_
 #pragma once
 
-#include "global.h"
-
-class CProcess;
+#include "_main/global.h"
+#include "_main/CProcess.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -34,8 +33,18 @@ class CProcess;
 	起動の起動をエディタの起動に先立って行う．
 */
 class CProcessFactory {
+private:
+	HINSTANCE	m_hInstance;
+
 public:
-	CProcess* Create( HINSTANCE hInstance, LPCWSTR lpCmdLine );
+	using CProcessHolder = std::unique_ptr<CProcess>;
+
+	explicit CProcessFactory(HINSTANCE hInstance = ::GetModuleHandleW(nullptr))
+		: m_hInstance(hInstance)
+	{
+	}
+
+	CProcessHolder	CreateInstance(std::wstring_view cmdline);
 
 private:
 	bool IsValidVersion();

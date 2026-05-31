@@ -14,25 +14,16 @@
 	Copyright (C) 2002, aroka
 	Copyright (C) 2007, kobake
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 
 #include "StdAfx.h"
-#include <Ole2.h>
-#include <locale.h>
-#include "_main/CCommandLine.h"
-#include "CProcessFactory.h"
-#include "CProcess.h"
-#include "util/os.h"
-#include "util/module.h"
-#include "debug/CRunningTimer.h"
-#include "version.h"
-#include "util/std_macro.h"
+#include "_main/CProcessFactory.h"
+
 #include "env/DLLSHAREDATA.h"
-#include "apiwrap/DarkMode.h"
 
 /*!
 	Windows Entry point
@@ -59,13 +50,6 @@ int WINAPI wWinMain(
 #endif
 
 	MY_RUNNINGTIMER(cRunningTimer, L"WinMain" );
-	{
-		// 2014.04.24 DLLの検索パスからカレントディレクトリを削除する
-		::SetDllDirectory( L"" );
-		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
-
-		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
-	}
 
 	//開発情報
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
@@ -76,16 +60,9 @@ int WINAPI wWinMain(
 
 	(void)oleInit;	// OLEのクリーンアップはスコープを抜けるときに行わせる
 
-	DarkMode::initDarkMode();
-	DarkMode::setDarkModeConfig();
-	DarkMode::setDefaultColors(true);
-
-	//コマンドラインクラスのインスタンスを確保する
-	CCommandLine cCommandLine;
-
 	//プロセスの生成とメッセージループ
 	try {
-		const auto process = std::unique_ptr<CProcess>(CProcessFactory().Create(hInstance, lpCmdLine));
+		const auto process = CProcessFactory(hInstance).CreateInstance(lpCmdLine);
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
 
 		if (process) {

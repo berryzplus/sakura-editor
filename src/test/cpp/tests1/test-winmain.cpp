@@ -26,7 +26,7 @@
 #include "env/CSakuraEnvironment.h"
 #include "util/file.h"
 #include "config/system_constants.h"
-#include "_main/CCommandLine.h"
+#include "_main/CProcessFactory.h"
 #include "_main/CControlProcess.h"
 
 #include "testing/StartEditorProcess.hpp"
@@ -384,13 +384,8 @@ struct TWinMainTest : public T, public window::UiaTestSuite {
 		// テスト用プロファイル名
 		const std::wstring_view profileName{ GetProfileName() };
 
-		// コマンドラインのインスタンスを用意する
-		CCommandLine commandLine;
-		const auto strCommandLine = std::format(LR"(-PROF="{}")", profileName);
-		commandLine.ParseCommandLine(strCommandLine.c_str(), false);
-
 		// プロセスのインスタンスを用意する
-		CControlProcess dummy(nullptr, strCommandLine.data());
+		const auto dummy = CProcessFactory().CreateInstance(std::format(LR"(-NOWIN -PROF="{}")", profileName));
 
 		// INIファイルのパスを取得
 		iniPath = GetIniFileName();
@@ -836,7 +831,7 @@ TEST_F(WinMainFuncTest, OpenDebugWindow001)
 		ep.lock();
 
 		// コントロールプロセスに終了指示を出して終了を待つ
-		testing::TerminateControlProcess(profileName, cp.dwProcessId);
+		testing::TerminateControlProcess(profileName);
 	});
 }
 

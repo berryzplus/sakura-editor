@@ -17,66 +17,71 @@
 */
 
 #include "StdAfx.h"
-#include "CProcessFactory.h"
-#include "CControlProcess.h"
-#include "CNormalProcess.h"
-#include "CCommandLine.h"
-#include "CControlTray.h"
-#include "dlg/CDlgProfileMgr.h"
-#include "debug/CRunningTimer.h"
-#include "util/os.h"
-#include <tchar.h>
-#include "CSelectLang.h"
-#include "config/system_constants.h"
+#include "_main/CProcessFactory.h"
 
-class CProcess;
+#include "_main/CControlProcess.h"
+#include "_main/CNormalProcess.h"
+#include "apiwrap/DarkMode.h"
+#include "dlg/CDlgProfileMgr.h"
+
+#include "CSelectLang.h"
 
 /*!
-	@brief プロセスクラスを生成する
-	
-	コマンドライン、コントロールプロセスの有無を判定し、
-	適当なプロセスクラスを生成する。
-	
-	@param[in] hInstance インスタンスハンドル
-	@param[in] lpCmdLine コマンドライン文字列
-	
-	@author aroka
-	@date 2002/01/08
-	@date 2006/04/10 ryoji
-*/
-CProcess* CProcessFactory::Create( HINSTANCE hInstance, LPCWSTR lpCmdLine )
+ * @brief プロセスクラスを生成する
+ * 
+ * コマンドラインを解析し、妥当なプロセスクラスを生成する。
+ * 
+ * @param mmdLine [in] コマンドライン文字列
+ * 
+ * @author aroka
+ * @date 2002/01/08
+ * @date 2006/04/10 ryoji
+ */
+std::unique_ptr<CProcess> CProcessFactory::CreateInstance(std::wstring_view cmdline)
 {
+	// 2014.04.24 DLLの検索パスからカレントディレクトリを削除する
+	::SetDllDirectoryW(L"");
+	::SetSearchPathMode(BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT);
+
+	DarkMode::initDarkMode();
+	DarkMode::setDarkModeConfig();
+	DarkMode::setDefaultColors(true);
+
+	// Cロケールを日本語に設定する
+	::setlocale(LC_ALL, "Japanese_Japan.932");
+
 	// 言語環境を初期化する
 	CSelectLang::InitializeLanguageEnvironment();
 
-	if( !ProfileSelect( hInstance, lpCmdLine ) ){
+	auto lpCmdLine = std::data(cmdline);
+
+	//コマンドラインクラスのインスタンスを確保する
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	SFilePath szExeFileName{ GetExeFileName().native() };
+	pCommandLine->ParseKanjiCodeFromFileName(szExeFileName, szExeFileName.Length());
+
+	pCommandLine->ParseCommandLine(lpCmdLine);
+
+	if (!ProfileSelect(m_hInstance, lpCmdLine)) {
 		return nullptr;
 	}
 
-	CProcess* process = nullptr;
 	if( !IsValidVersion() ){
 		return nullptr;
 	}
 
 	// プロセスクラスを生成する
-	if( IsStartingControlProcess() ){
-			process = new CControlProcess( hInstance, lpCmdLine );
+	if (IsStartingControlProcess()) {
+		return std::make_unique<CControlProcess>(m_hInstance, std::move(pCommandLine));
+	} else {
+		return std::make_unique<CNormalProcess>(m_hInstance, std::move(pCommandLine));
 	}
-	else{
-			process = new CNormalProcess( hInstance, lpCmdLine );
-	}
-	return process;
 }
 
 bool CProcessFactory::ProfileSelect( HINSTANCE hInstance, LPCWSTR lpCmdLine )
 {
-	//	May 30, 2000 genta
-	//	実行ファイル名をもとに漢字コードを固定する．
-	WCHAR szExeFileName[MAX_PATH];
-	const int cchExeFileName = ::GetModuleFileName(nullptr, szExeFileName, int(std::size(szExeFileName)));
-	CCommandLine::getInstance()->ParseKanjiCodeFromFileName(szExeFileName, cchExeFileName);
-
-	CCommandLine::getInstance()->ParseCommandLine(lpCmdLine);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	// コマンドラインオプションから起動プロファイルを判定する
 	bool profileSelected = CDlgProfileMgr::TrySelectProfile( CCommandLine::getInstance() );

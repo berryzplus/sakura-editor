@@ -19,6 +19,7 @@
 
 #include "_main/global.h"
 #include "_main/CCommandLine.h"
+#include "debug/CRunningTimer.h"
 #include "env/CShareData.h"
 #include "util/design_template.h"
 #include "util/tchar_convert.h"
@@ -173,6 +174,13 @@ public:
 	@brief プロセス基底クラス
 */
 class CProcess : public TSingleInstance<CProcess> {
+private:
+	using CCommandLineHolder = std::unique_ptr<CCommandLine>;
+	using COleInitHolder = std::unique_ptr<cxx::COleInit>;
+
+	using Base = TSingleInstance<CProcess>;
+	using Me = CProcess;
+
 public:
 	static cxx::ProcessHolder CreateSakuraProcess(
 		STARTUPINFO& si,
@@ -185,7 +193,7 @@ public:
 		const std::optional<std::wstring>& optProfileName = std::nullopt
 	);
 
-	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
+	CProcess(HINSTANCE hInstance, CCommandLineHolder&& pCommandLine);
 	~CProcess() override = default;
 
 	bool Run();
@@ -210,7 +218,10 @@ public:
 	[[nodiscard]] const CShareData* GetShareDataPtr() const { return &m_cShareData; }
 
 private:
-	HINSTANCE	m_hInstance;
+	HINSTANCE			m_hInstance;
+
+	CCommandLineHolder	m_pCommandLine;
+
 	HWND		m_hWnd = nullptr;
 	CShareData		m_cShareData;
 };

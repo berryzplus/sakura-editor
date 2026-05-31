@@ -158,10 +158,11 @@
 	@date 2002/01/07
 */
 CProcess::CProcess(
-	HINSTANCE	hInstance,		//!< handle to process instance
-	[[maybe_unused]] LPCWSTR		lpCmdLine		//!< pointer to command line
+	HINSTANCE				hInstance,		//!< handle to process instance
+	CCommandLineHolder&&	pCommandLine	//!< pointer to command line
 )
-: m_hInstance( hInstance )
+	: m_hInstance(hInstance)
+	, m_pCommandLine(std::move(pCommandLine))
 {
 }
 
