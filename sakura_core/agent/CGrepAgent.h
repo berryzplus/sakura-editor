@@ -178,4 +178,7 @@ public: //$$ 仮
 	bool	m_bGrepMode = false;		//!< Grepモードか
 	bool	m_bGrepRunning = false;		//!< Grep処理中
 };
+
+CGrepAgent*		GetGrepAgent();
+
 #endif /* SAKURA_CGREPAGENT_97F2B632_71C8_4E4A_AC42_13A6098B248F_H_ */
