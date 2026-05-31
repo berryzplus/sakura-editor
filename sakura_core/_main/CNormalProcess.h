@@ -19,10 +19,10 @@
 #include "_main/global.h"
 #include "_main/CProcess.h"
 #include "doc/CEditDoc.h"
-#include "window/CEditWnd.h"
-#include "extmodule/CMigemo.h"
-#include "CEditApp.h"
 #include "util/design_template.h"
+#include "window/CEditWnd.h"
+
+#include "CEditApp.h"
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -64,8 +64,6 @@ private:
 	CEditWndHolder		m_pcEditWnd = nullptr;
 
 	CEditAppHolder		m_pcEditApp = nullptr;
-
-	CMigemo		m_cMigemo;
 };
 
 #endif /* SAKURA_CNORMALPROCESS_F2808B31_61DC_4BE0_8661_9626478AC7F9_H_ */

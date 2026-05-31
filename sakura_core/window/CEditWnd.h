@@ -50,6 +50,7 @@
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 
+#include "extmodule/CMigemo.h"
 #include "print/CPrintPreview.h"
 #include "recent/CMruListener.h"
 
@@ -90,6 +91,7 @@ private:
 	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
 	using CEditViewHolder = std::unique_ptr<CEditView>;
 	using CEditViewsArray = std::array<CEditViewHolder, 4>;
+	using CMigemoHolder = std::unique_ptr<CMigemo>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
 	using CViewFontHolder = std::unique_ptr<CViewFont>;
@@ -415,6 +417,7 @@ public:
 	ESelectCountMode	m_nSelectCountMode = SELECT_COUNT_TOGGLE; // 選択文字カウント方法
 
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
+	CMigemoHolder m_pcMigemo = std::make_unique<CMigemo>();
 };
 
 CEditWnd* GetEditWndPtr() noexcept;
