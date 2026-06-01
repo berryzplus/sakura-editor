@@ -172,9 +172,19 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	// CEditAppを作成
 	m_pcEditApp = std::make_unique<CEditApp>();
 
+	m_pcEditDoc->Create();
+
 	// メインウインドウを作成
-	m_pcEditApp->Create(GetProcessInstance(), nGroupId);
-	CEditWnd* pEditWnd = m_pcEditApp->GetEditWindow();
+	m_pcEditWnd->Create( GetDocument(), &m_pcEditWnd->m_hIcons, nGroupId );
+
+	//プロパティ管理
+	m_pcEditWnd->m_pcPropertyManager->Create(
+		m_pcEditWnd->GetHwnd(),
+		&m_pcEditWnd->m_hIcons,
+		&m_pcEditWnd->GetMenuDrawer()
+	);
+
+	auto pEditWnd = m_pcEditWnd.get();
 	if( nullptr == pEditWnd->GetHwnd() ){
 		::ReleaseMutex( hMutex );
 		::CloseHandle( hMutex );

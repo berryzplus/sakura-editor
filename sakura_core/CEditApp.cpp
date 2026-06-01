@@ -19,22 +19,6 @@ CEditApp::CEditApp()
 	m_cIcons.Create( m_hInst );	//	CreateImage List
 }
 
-void CEditApp::Create(HINSTANCE hInst [[maybe_unused]], int nGroupId)
-{
-	//ドキュメントの作成
-	m_pcEditDoc->Create();
-
-	//ウィンドウの作成
-	m_pcEditWnd->Create( GetDocument(), &GetIcons(), nGroupId );
-
-	//プロパティ管理
-	m_pcPropertyManager->Create(
-		m_pcEditWnd->GetHwnd(),
-		&GetIcons(),
-		&m_pcEditWnd->GetMenuDrawer()
-	);
-}
-
 /*! 共通設定 プロパティシート */
 bool CEditApp::OpenPropertySheet( int nPageNum )
 {
