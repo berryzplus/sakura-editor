@@ -45,7 +45,10 @@ public:
 
 private:
 	bool	InitializeProcess(int nCmdShow [[maybe_unused]]) override;
-	int		MainLoop() const override;
+
+	CAppMainWnd* GetMainWnd() const override {
+		return m_pcTray.get();
+	}
 
 	std::filesystem::path GetPrivateIniFileName(const std::wstring& exeIniPath, const std::wstring& filename) const;
 

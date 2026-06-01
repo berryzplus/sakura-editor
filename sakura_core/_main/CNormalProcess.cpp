@@ -227,7 +227,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 			// pEditWnd->GetDocument()->SetCurDirNotitle();
 			// 2003.06.23 Moca GREP実行前にMutexを解放
 			//	こうしないとGrepが終わるまで新しいウィンドウを開けない
-			SetMainWindow( pEditWnd->GetHwnd() );
 			::ReleaseMutex( hMutex );
 			::CloseHandle( hMutex );
 			this->m_pcEditApp->m_pcGrepAgent->DoGrep(
@@ -281,7 +280,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 			GetDllShareData().m_Common.m_sSearch.m_nGrepOutputStyle = gi.nGrepOutputStyle;
 			// 2003.06.23 Moca GREPダイアログ表示前にMutexを解放
 			//	こうしないとGrepが終わるまで新しいウィンドウを開けない
-			SetMainWindow( pEditWnd->GetHwnd() );
 			::ReleaseMutex( hMutex );
 			::CloseHandle( hMutex );
 			hMutex = nullptr;
@@ -407,8 +405,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 		}
 	}
 
-	SetMainWindow( pEditWnd->GetHwnd() );
-
 	//	YAZAKI 2002/05/30 IMEウィンドウの位置がおかしいのを修正。
 	pEditWnd->GetActiveView().SetIMECompFormPos();
 
@@ -457,17 +453,6 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	initEvent = nullptr;
 
 	return pEditWnd->GetHwnd() ? true : false;
-}
-
-/*!
-	@brief エディタプロセスのメッセージループ
-	
-	@author aroka
-	@date 2002/01/07
-*/
-int CNormalProcess::MainLoop() const
-{
-	return GetEditWnd().MessageLoop();
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

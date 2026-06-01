@@ -239,23 +239,19 @@ public:
 protected:
 	virtual bool	InitializeProcess(int nCmdShow) = 0;
 
-	virtual int		MainLoop() const { return 0L; }
-
-	void			SetMainWindow(HWND hwnd){ m_hWnd = hwnd; }
-
 public:
 	HINSTANCE		GetProcessInstance() const{ return m_hInstance; }
 	CShareData&		GetShareData()   { return m_cShareData; }
-	HWND			GetMainWindow() const{ return m_hWnd; }
 
 	[[nodiscard]] const CShareData* GetShareDataPtr() const { return &m_cShareData; }
+
+	virtual CAppMainWnd* GetMainWnd() const = 0;
 
 private:
 	HINSTANCE			m_hInstance;
 
 	CCommandLineHolder	m_pCommandLine;
 
-	HWND		m_hWnd = nullptr;
 	CShareData		m_cShareData;
 };
 

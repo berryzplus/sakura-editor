@@ -175,13 +175,12 @@ bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	HWND hwnd = m_pcTray->CreateMainWnd(GetProcessInstance(), nCmdShow);
-	if( !hwnd ){
+	if (!m_pcTray->CreateMainWnd(GetProcessInstance(), nCmdShow)) {
 		ErrorBeep();
 		TopErrorMessage( nullptr, LS(STR_ERR_CTRLMTX3) );
 		return false;
 	}
-	SetMainWindow(hwnd);
+
 
 	// 初期化完了イベントを開く
 	SFilePath szInitEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
@@ -197,15 +196,4 @@ bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 	hMutex = nullptr;
 
 	return true;
-}
-
-/*!
-	@brief コントロールプロセスのメッセージループ
-	
-	@author aroka
-	@date 2002/01/07
-*/
-int CControlProcess::MainLoop() const
-{
-	return m_pcTray->MessageLoop();
 }

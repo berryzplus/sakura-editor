@@ -9,7 +9,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, aroka
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -19,10 +19,21 @@
 
 #include <iostream>
 
-#include "_main/CProcess.h"
+#include "_main/CControlTray.h"
 #include "window/CEditWnd.h"
 #include "CSelectLang.h"
 #include "config/app_constants.h"
+
+/*!
+ * メインウインドウのアドレスを取得します。
+ */
+CAppMainWnd* GetMainWnd()
+{
+	if (auto pcEditWnd = GetEditWndPtr()) {
+		return pcEditWnd;
+	}
+	return CControlTray::getInstance();
+}
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                 メッセージボックス：実装                    //
@@ -64,9 +75,9 @@ HWND GetMessageBoxOwner(HWND hWndOwner)
 {
 	if( !hWndOwner || !::IsWindow(hWndOwner) )
 	{
-		if( const auto pcProcess = CProcess::getInstance() )
+		if (const auto pcMainWnd = GetMainWnd())
 		{
-			hWndOwner = pcProcess->GetMainWindow();
+			hWndOwner = pcMainWnd->GetHwnd();
 		}
 	}
 	return hWndOwner;

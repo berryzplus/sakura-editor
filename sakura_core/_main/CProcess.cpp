@@ -190,7 +190,9 @@ std::filesystem::path CProcess::GetIniFileName() const
 int CProcess::Run(int nCmdShow)
 {
 	if (InitializeProcess(nCmdShow)) {
-		return MainLoop();
+		if (const auto pcMainWnd = GetMainWnd()) {
+			return pcMainWnd->MessageLoop();
+		}
 	}
 
 	return 0;

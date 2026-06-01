@@ -49,9 +49,11 @@ public:
 private:
 	//プロセスハンドラ
 	bool	InitializeProcess(int nCmdShow) override;
-	int		MainLoop() const override;
 
-protected:
+	CAppMainWnd* GetMainWnd() const override {
+		return m_pcEditWnd.get();
+	}
+
 	//実装補助
 	HANDLE _GetInitializeMutex() const; // 2002/2/8 aroka
 	void OpenFiles(HWND hwnd);
