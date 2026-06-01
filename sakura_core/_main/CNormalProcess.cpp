@@ -68,8 +68,6 @@ CNormalProcess::~CNormalProcess()
 */
 bool CNormalProcess::InitializeProcess(int nCmdShow)
 {
-	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
-
 	MY_RUNNINGTIMER( cRunningTimer, L"NormalProcess::Init" );
 
 	// プロファイル名を取得
@@ -163,26 +161,12 @@ bool CNormalProcess::InitializeProcess(int nCmdShow)
 	m_pcEditWnd = std::make_unique<CEditWnd>();
 
 	// エディタアプリケーションを作成。2007.10.23 kobake
-	// グループIDを取得
-	int nGroupId = CCommandLine::getInstance()->GetGroupId();
-	if( GetDllShareData().m_Common.m_sTabBar.m_bNewWindow && nGroupId == -1 ){
-		nGroupId = CAppNodeManager::getInstance()->GetFreeGroupId();
-	}
 
 	// CEditAppを作成
 	m_pcEditApp = std::make_unique<CEditApp>();
 
-	m_pcEditDoc->Create();
-
 	// メインウインドウを作成
-	m_pcEditWnd->Create( GetDocument(), &m_pcEditWnd->m_hIcons, nGroupId );
-
-	//プロパティ管理
-	m_pcEditWnd->m_pcPropertyManager->Create(
-		m_pcEditWnd->GetHwnd(),
-		&m_pcEditWnd->m_hIcons,
-		&m_pcEditWnd->GetMenuDrawer()
-	);
+	m_pcEditWnd->CreateMainWnd(GetProcessInstance(), nCmdShow);
 
 	auto pEditWnd = m_pcEditWnd.get();
 	if( nullptr == pEditWnd->GetHwnd() ){

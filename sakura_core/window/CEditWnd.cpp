@@ -549,13 +549,24 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 	@date 2007.06.26 ryoji nGroup追加
 	@date 2008.04.19 ryoji 初回アイドリング検出用ゼロ秒タイマーのセット処理を追加
 */
-HWND CEditWnd::Create(
-	[[maybe_unused]] const CEditDoc* pcEditDoc,
-	CImageListMgr*	pcIcons,	//!< [in] Image List
-	int				nGroup		//!< [in] グループID
+HWND CEditWnd::CreateMainWnd(
+	HINSTANCE hInstance,
+	int nCmdShow
 )
 {
+	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
+
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
+
+	auto pcIcons = &m_hIcons;
+
+	// グループIDを取得
+	int nGroup = CCommandLine::getInstance()->GetGroupId();
+	if (m_pShareData->m_Common.m_sTabBar.m_bNewWindow && nGroup == -1) {
+		nGroup = CAppNodeManager::getInstance()->GetFreeGroupId();
+	}
+
+	GetDocument()->Create();
 
 	wmemset( m_pszMenubarMessage, L' ', MENUBAR_MESSAGE_MAX_LEN );	// null終端は不要
 
@@ -605,7 +616,7 @@ HWND CEditWnd::Create(
 	MyInitCommonControls();
 
 	//イメージ、ヘルパなどの作成
-	m_cMenuDrawer.Create( G_AppInstance(), GetHwnd(), pcIcons );
+	m_cMenuDrawer.Create( hInstance, hWnd, pcIcons );
 	m_cToolbar.Create( pcIcons );
 
 	// プラグインコマンドを登録する
@@ -715,6 +726,13 @@ HWND CEditWnd::Create(
 
 	//デフォルトのIMEモード設定
 	GetDocument()->m_cDocEditor.SetImeMode( GetDocument()->m_cDocType.GetDocumentAttribute().m_nImeState );
+
+	//プロパティ管理
+	m_pcPropertyManager->Create(
+		GetHwnd(),
+		&m_hIcons,
+		&GetMenuDrawer()
+	);
 
 	return GetHwnd();
 }
