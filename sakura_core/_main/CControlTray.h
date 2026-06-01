@@ -73,7 +73,7 @@ public:
 	/*
 	|| メンバ関数
 	*/
-	HWND Create(HINSTANCE hInstance);	/* 作成 */
+	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]]);
 
 	int		MessageLoop() const;
 

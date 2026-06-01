@@ -175,7 +175,7 @@ bool CControlProcess::InitializeProcess(int nCmdShow [[maybe_unused]])
 	MY_TRACETIME( cRunningTimer, L"Before new CControlTray" );
 
 	/* タスクトレイにアイコン作成 */
-	HWND hwnd = m_pcTray->Create( GetProcessInstance() );
+	HWND hwnd = m_pcTray->CreateMainWnd(GetProcessInstance(), nCmdShow);
 	if( !hwnd ){
 		ErrorBeep();
 		TopErrorMessage( nullptr, LS(STR_ERR_CTRLMTX3) );

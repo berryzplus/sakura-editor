@@ -345,7 +345,7 @@ CControlTray::~CControlTray()
 // CControlTray メンバ関数
 
 /* 作成 */
-HWND CControlTray::Create( HINSTANCE hInstance )
+HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]])
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlTray::Create" );
 
