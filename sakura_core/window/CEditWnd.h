@@ -27,7 +27,9 @@
 #pragma once
 
 #include <shellapi.h>// HDROP
-#include "_main/global.h"
+
+#include "_main/CProcess.h"
+
 #include "_os/CDropTarget.h"
 #include "CMainToolBar.h"
 #include "CTabWnd.h"	//@@@ 2003.05.31 MIK
@@ -43,17 +45,11 @@
 #include "dlg/CDlgSetCharSet.h"
 #include "outline/CDlgFuncList.h"
 #include "env/CHokanMgr.h"
-#include "util/design_template.h"
 #include "doc/CDocListener.h"
-#include "uiparts/CImageListMgr.h"
-#include "uiparts/CMenuDrawer.h"
 #include "uiparts/CSoundSet.h"
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 
-#include "cxx/ResourceHolder.hpp"
-
-#include "env/CPropertyManager.h"
 #include "print/CPrintPreview.h"
 #include "recent/CMruListener.h"
 
@@ -85,8 +81,9 @@ struct STabGroupInfo {
 // 2007.10.30 kobake IsFuncEnable,IsFuncCheckedをFunccode.hに移動
 // 2007.10.30 kobake OnHelp_MenuItemをCEditAppに移動
 class CEditWnd
-	: public TSingleInstance<CEditWnd>
-, public CDocListenerEx
+	: public CAppMainWnd
+	, public CDocListenerEx
+	, public TSingleInstance<CEditWnd>
 {
 private:
 	using AccelHolder = cxx::ResourceHolder<&::DestroyAcceleratorTable>;
@@ -95,13 +92,15 @@ private:
 	using CEditViewsArray = std::array<CEditViewHolder, 4>;
 	using CMruListenerHolder = std::unique_ptr<CMruListener>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
-	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 	using CViewFontHolder = std::unique_ptr<CViewFont>;
 	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
 	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
 	using SMenubarMessage = StaticString<MENUBAR_MESSAGE_MAX_LEN>;
 	using WindowDcHolder = cxx::ResourceHolder<&::ReleaseDC>;
+
+	using Base = CAppMainWnd;
+	using Me = CEditWnd;
 
 public:
 	CEditWnd();
@@ -110,14 +109,14 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           作成                              //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow);
+	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) override;
 
 	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
 	void _GetWindowRectForInit(CMyRect* rcResult, int nGroup, const STabGroupInfo& sTabGroupInfo);	//!< ウィンドウ生成用の矩形を取得
 	HWND _CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo);
 	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
 
-	int		MessageLoop() const;
+	int		MessageLoop() const override;
 
 	void OpenDocumentWhenStart(
 		const SLoadInfo& sLoadInfo		//!< [in]
@@ -136,7 +135,7 @@ public:
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 	//管理
-	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* メッセージ処理 */
+	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
 	//各種イベント
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
@@ -264,8 +263,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                       各種アクセサ                          //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-	HWND			GetHwnd()		const	{ return m_hWnd; }
-	CMenuDrawer&	GetMenuDrawer()			{ return m_cMenuDrawer; }
 	CEditDoc*		GetDocument()           { return m_pcEditDoc; }
 	const CEditDoc*	GetDocument() const     { return m_pcEditDoc; }
 
@@ -349,19 +346,8 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        メンバ変数                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-private:
-	//共有データ
-	DLLSHAREDATA*	m_pShareData = &GetDllShareData();
-
 	//ドキュメント
 	CEditDoc* 		m_pcEditDoc = &GetEditDoc();
-
-	//自ウィンドウ
-	HWND			m_hWnd = nullptr;
-
-public:
-	//GUIオブジェクト
-	CImageListMgr	m_hIcons;
 
 	//サウンド管理
 	CSoundSet		m_cSoundSet;
@@ -397,9 +383,6 @@ private:
 	int				m_nEditViewCount = 1;	//!< 有効なビューの数
 	const int		m_nEditViewMaxCount = int(std::size(m_pcEditViewArr));//!< ビューの最大数=4
 
-	//ヘルパ
-	CMenuDrawer		m_cMenuDrawer;
-
 	//状態
 	bool			m_bIsActiveApp = false;		//!< 自アプリがアクティブかどうか	// 2007.03.08 ryoji
 	LPWSTR			m_pszLastCaption = nullptr;
@@ -432,7 +415,6 @@ public:
 	ESelectCountMode	m_nSelectCountMode = SELECT_COUNT_TOGGLE; // 選択文字カウント方法
 
 	CMruListenerHolder m_pcMruListener = std::make_unique<CMruListener>();
-	CPropertyManagerHolder m_pcPropertyManager = std::make_unique<CPropertyManager>();
 };
 
 CEditWnd* GetEditWndPtr() noexcept;

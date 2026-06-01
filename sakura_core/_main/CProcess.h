@@ -20,7 +20,10 @@
 #include "_main/global.h"
 #include "_main/CCommandLine.h"
 #include "debug/CRunningTimer.h"
+#include "env/CPropertyManager.h"
 #include "env/CShareData.h"
+#include "uiparts/CImageListMgr.h"
+#include "uiparts/CMenuDrawer.h"
 #include "util/design_template.h"
 #include "util/tchar_convert.h"
 
@@ -166,6 +169,37 @@ public:
 };
 
 } // namespace cxx
+
+/*!
+ * @brief メインウインドウの基底クラス
+ */
+struct CAppMainWnd
+{
+	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
+
+	virtual ~CAppMainWnd() = default;
+
+	virtual HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) = 0;
+
+	virtual int		MessageLoop() const = 0;
+
+	virtual LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) = 0;	/* メッセージ処理 */
+
+	HWND	GetHwnd() const noexcept { return m_hWnd; }
+
+	CImageListMgr&	GetIcons() { return m_hIcons; }
+	CMenuDrawer&	GetMenuDrawer() { return m_cMenuDrawer; }
+
+	HINSTANCE		m_hInstance = nullptr;
+	HWND			m_hWnd = nullptr;
+
+	DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
+
+	CImageListMgr	m_hIcons;
+	CMenuDrawer		m_cMenuDrawer;
+
+	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
+};
 
 /*-----------------------------------------------------------------------
 クラスの宣言
