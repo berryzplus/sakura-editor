@@ -318,13 +318,13 @@ TEST_F(TrayWndTest, OnDelTypeSetting102)
 TEST_F(TrayWndTest, OnChangeSetting001)
 {
 	// 英語にする
-	::wcscpy_s(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, L"sakura_lang_en_US.dll");
+	GetDllShareData().m_Common.m_sWindow.m_szLanguageDll = L"sakura_lang_en_US.dll";
 
 	HWND hWndTray = nullptr;
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_CHANGESETTING, 0, int(PM_CHANGESETTING_ALL)), 0);
 
 	// 日本語に戻す
-	::wcscpy_s(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll, L"");
+	GetDllShareData().m_Common.m_sWindow.m_szLanguageDll = L"";
 
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_CHANGESETTING, 0, int(PM_CHANGESETTING_ALL)), 0);
 }

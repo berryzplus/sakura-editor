@@ -131,7 +131,7 @@ struct CommonSetting_Window
 	int				m_nVertLineOffset;			//!< 縦線の描画座標オフセット 2005.11.10 Moca
 
 	//言語選択
-	WCHAR			m_szLanguageDll[MAX_PATH];	//!< 言語DLLファイル名
+	SFilePath		m_szLanguageDll;			//!< 言語DLLファイル名
 
 	//ミニマップ
 	int				m_nMiniMapFontSize;
