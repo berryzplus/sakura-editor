@@ -15,47 +15,43 @@
 #define SAKURA_CMUTEX_51EDDE78_F635_419A_9E10_159485D0F710_H_
 #pragma once
 
-#include <Windows.h>
+#include "_main/CProcess.h" // cxx::MutexHolder
 
 /** ミューテックスを扱うクラス
 	@date 2007.07.05 ryoji 新規作成
 */
-class CMutex
+class CMutex final : public cxx::MutexHolder
 {
+private:
+	using Base = MutexHolder;
 	using Me = CMutex;
 
 public:
 	CMutex( BOOL bInitialOwner, LPCWSTR pszName, LPSECURITY_ATTRIBUTES psa = nullptr )
+		: MutexHolder(nullptr)
+		, m_Name(pszName ? std::optional<std::wstring>(pszName) : std::nullopt)
+		, m_bInitialOwner(bInitialOwner)
+		, m_pSa(psa)
 	{
-		m_hObj = ::CreateMutex( psa, bInitialOwner, pszName );
 	}
 	CMutex(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CMutex(Me&&) noexcept = delete;
 	Me& operator = (Me&&) noexcept = delete;
-	~CMutex()
+	~CMutex() override = default;
+
+	bool Lock(DWORD dwTimeout = INFINITE) override
 	{
-		if( nullptr != m_hObj )
-		{
-			::CloseHandle( m_hObj );
-			m_hObj = nullptr;
+		if (!*this) {
+			HandleHolder::reset(::CreateMutexW(m_pSa, m_bInitialOwner, m_Name.has_value() ? m_Name.value().c_str() : nullptr));
 		}
+		return Base::Lock(dwTimeout);
 	}
-	BOOL Lock( DWORD dwTimeout = INFINITE )
-	{
-		DWORD dwRet = ::WaitForSingleObject( m_hObj, dwTimeout );
-		if( dwRet == WAIT_OBJECT_0 || dwRet == WAIT_ABANDONED )
-			return TRUE;
-		else
-			return FALSE;
-	}
-	BOOL Unlock()
-	{
-		return ::ReleaseMutex( m_hObj );
-	}
-	operator HANDLE() const { return m_hObj; }
-protected:
-	HANDLE m_hObj;
+
+private:
+	std::optional<std::wstring> m_Name;	// ミューテックスの名前を保持する
+	bool m_bInitialOwner = false;
+	LPSECURITY_ATTRIBUTES m_pSa = nullptr;
 };
 
 /**	スコープから抜けると同時にロックを解除する．
@@ -99,4 +95,5 @@ public:
 		o_.Unlock();
 	}
 };
+
 #endif /* SAKURA_CMUTEX_51EDDE78_F635_419A_9E10_159485D0F710_H_ */
