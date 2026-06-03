@@ -9,16 +9,15 @@
 
 #include "StdAfx.h"
 #include "env/CShareData_IO.h"
+
+#include "_main/CControlProcess.h"
+
 #include "doc/CDocTypeSetting.h" // ColorInfo !!
-#include "CShareData.h"
 #include "util/string_ex2.h"
 #include "util/window.h"
 #include "view/CEditView.h" // SColorStrategyInfo
 #include "view/colors/CColorStrategy.h"
 #include "plugin/CPlugin.h"
-#include "uiparts/CMenuDrawer.h"
-#include "_main/CCommandLine.h"
-#include "_main/CControlProcess.h"
 #include "config/app_constants.h"
 
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
@@ -73,6 +72,7 @@ void CShareData_IO::SaveShareData()
 
 	@date 2004-01-11 D.S.Koba CProfile変更によるコード簡略化
 	@date 2005-04-05 D.S.Koba 各セクションの入出力を関数として分離
+	@date 2014/12/08 sakura.iniの読み取り専用
 */
 bool CShareData_IO::ShareData_IO_2( bool bRead )
 {
@@ -90,14 +90,13 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		cProfile.SetWritingMode();
 	}
 
-	WCHAR	szIniFileName[_MAX_PATH + 1];
 	const auto iniPath = GetIniFileNameForIO(!bRead);
-	::wcsncpy_s(szIniFileName, iniPath.c_str(), _TRUNCATE);
+	std::filesystem::path szIniFileName{ iniPath };
 
 //	MYTRACE( L"Iniファイル処理-1 所要時間(ミリ秒) = %d\n", cRunningTimer.Read() );
 
 	if( bRead ){
-		if( !cProfile.ReadProfile( szIniFileName ) ){
+		if (const auto readSuccess = cProfile.ReadProfile(szIniFileName); !readSuccess) {
 			/* 設定ファイルが存在しない */
 			LANGID langId = GetUserDefaultUILanguage();
 			// Windowsの表示言語が日本語でない場合は言語設定を英語にする
@@ -114,20 +113,20 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 		}
 
 		// バージョンアップ時はバックアップファイルを作成する	// 2011.01.28 ryoji
-		WCHAR iniVer[256];
-		DWORD mH, mL, lH, lL;
-		mH = mL = lH = lL = 0;	// ※ 古～い ini だと "szVersion" は無い
+		StaticString<256> iniVer;
+		WORD mH = 0;
+		WORD mL = 0;
+		WORD lH = 0;
+		WORD lL = 0;	// ※ 古～い ini だと "szVersion" は無い
 		if( cProfile.IOProfileData(L"Other", L"szVersion", StringBufferW(iniVer)) )
-			swscanf( iniVer, L"%u.%u.%u.%u", &mH, &mL, &lH, &lL );
-		DWORD dwMS = (DWORD)MAKELONG(mL, mH);
-		DWORD dwLS = (DWORD)MAKELONG(lL, lH);
+			swscanf_s(iniVer, L"%hu.%hu.%hu.%hu", &mH, &mL, &lH, &lL);
+		const auto dwMS = (DWORD)MAKELONG(mL, mH);
+		const auto dwLS = (DWORD)MAKELONG(lL, lH);
 		if( pShareData->m_sVersion.m_dwProductVersionMS > dwMS
 			|| (pShareData->m_sVersion.m_dwProductVersionMS == dwMS && pShareData->m_sVersion.m_dwProductVersionLS > dwLS) )
 		{
-			WCHAR szBkFileName[std::size(szIniFileName) + 4];
-			::wcsncpy_s(szBkFileName, szIniFileName, _TRUNCATE);
-			::wcsncat_s(szBkFileName, L".bak", _TRUNCATE);
-			::CopyFile(szIniFileName, szBkFileName, FALSE);
+			const auto& szBkFileName = szIniFileName.append(L".bak");
+			::CopyFileW(szIniFileName.c_str(), szBkFileName.c_str(), FALSE);
 		}
 	}
 //	MYTRACE( L"Iniファイル処理 0 所要時間(ミリ秒) = %d\n", cRunningTimer.Read() );
@@ -164,11 +163,9 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 
 	menuDrawer = nullptr;
 
-	if( !bRead ){
-		// 2014.12.08 sakura.iniの読み取り専用
-		if( !GetDllShareData().m_Common.m_sOthers.m_bIniReadOnly ){
-			cProfile.WriteProfile( szIniFileName, L" sakura.ini テキストエディタ設定ファイル" );
-		}
+	// 書き込みモードで、設定が「読取専用」になってない場合のみ、書き込みを行う。
+	if (!bRead && !pShareData->m_Common.m_sOthers.m_bIniReadOnly) {
+		cProfile.WriteProfile(szIniFileName, L" sakura.ini テキストエディタ設定ファイル");
 	}
 
 //	MYTRACE( L"Iniファイル処理 8 所要時間(ミリ秒) = %d\n", cRunningTimer.Read() );
