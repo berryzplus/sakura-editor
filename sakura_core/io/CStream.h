@@ -43,7 +43,7 @@ public:
 	virtual ~CStream();
 
 	//演算子
-	operator bool() const{ return Good(); }
+	explicit operator bool() const noexcept { return Good(); }
 
 	//オープン・クローズ
 	void Open(const WCHAR* pszPath, const WCHAR* pszMode);
@@ -58,8 +58,8 @@ public:
 	);
 
 	//状態
-	virtual bool Good() const{ return m_fp!=nullptr && !Eof(); }
-	bool Eof() const{ return m_fp==nullptr || feof(m_fp); }
+	virtual bool Good() const noexcept { return m_fp && !Eof(); }
+	bool Eof() const noexcept { return !m_fp || ::feof(m_fp); }
 
 	//ファイルハンドル
 	FILE* GetFp() const{ return m_fp; }
