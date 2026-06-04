@@ -79,6 +79,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	//MY_RUNNINGTIMER( cRunningTimer, "CShareData_IO::ShareData_IO_2" );
 	CShareData* pcShare = CShareData::getInstance();
 
+	DLLSHAREDATA* pShareData = &GetDllShareData();
+
 	CDataProfile	cProfile;
 
 	// Feb. 12, 2006 D.S.Koba
@@ -100,7 +102,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			LANGID langId = GetUserDefaultUILanguage();
 			// Windowsの表示言語が日本語でない場合は言語設定を英語にする
 			if (langId != MAKELANGID( LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN )) {
-				DLLSHAREDATA* pShareData = &GetDllShareData();
 				wcscpy(pShareData->m_Common.m_sWindow.m_szLanguageDll, L"sakura_lang_en_US.dll");
 				cProfile.IOProfileData(L"Common", L"szLanguageDll", StringBufferW(pShareData->m_Common.m_sWindow.m_szLanguageDll));
 				std::vector<std::wstring> values;
@@ -120,7 +121,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 			swscanf( iniVer, L"%u.%u.%u.%u", &mH, &mL, &lH, &lL );
 		DWORD dwMS = (DWORD)MAKELONG(mL, mH);
 		DWORD dwLS = (DWORD)MAKELONG(lL, lH);
-		DLLSHAREDATA* pShareData = &GetDllShareData();
 		if( pShareData->m_sVersion.m_dwProductVersionMS > dwMS
 			|| (pShareData->m_sVersion.m_dwProductVersionMS == dwMS && pShareData->m_sVersion.m_dwProductVersionLS > dwLS) )
 		{
@@ -136,7 +136,6 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	const auto pcMenuDrawer = menuDrawer.get();
 
 	if( bRead ){
-		DLLSHAREDATA* pShareData = &GetDllShareData();
 		cProfile.IOProfileData(L"Common", L"szLanguageDll", StringBufferW(pShareData->m_Common.m_sWindow.m_szLanguageDll));
 		CSelectLang::ChangeLang( pShareData->m_Common.m_sWindow.m_szLanguageDll );
 		pcShare->RefreshString();
