@@ -2,7 +2,7 @@
 //2008.XX.XX kobake CShareDataから分離
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -132,7 +132,8 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 //	MYTRACE( L"Iniファイル処理 0 所要時間(ミリ秒) = %d\n", cRunningTimer.Read() );
 
-	CMenuDrawer* pcMenuDrawer = new CMenuDrawer; // 2010/7/4 Uchi
+	auto menuDrawer = std::make_unique<CMenuDrawer>();
+	const auto pcMenuDrawer = menuDrawer.get();
 
 	if( bRead ){
 		DLLSHAREDATA* pShareData = &GetDllShareData();
@@ -162,8 +163,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
 	ShareData_IO_Other( cProfile );
 
-	delete pcMenuDrawer;					// 2010/7/4 Uchi
-	pcMenuDrawer = nullptr;
+	menuDrawer = nullptr;
 
 	if( !bRead ){
 		// 2014.12.08 sakura.iniの読み取り専用
