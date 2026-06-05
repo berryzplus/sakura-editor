@@ -401,20 +401,18 @@ void CEditWnd::_GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup)
 		if( nGroup < 0 )	// 不正なグループID
 			nGroup = 0;	// グループ指定無し（最近アクティブのグループに入れる）
 		EditNode*	pEditNode = CAppNodeGroupHandle(nGroup).GetEditNodeAt(0);	// グループの先頭ウィンドウ情報を取得	// 2007.06.20 ryoji
-		hwndTop = pEditNode? pEditNode->GetHwnd(): nullptr;
 
-		if( hwndTop )
+		if (const auto hWnd = pEditNode ? pEditNode->GetHwnd() : nullptr)
 		{
 			//	Sep. 11, 2003 MIK 新規TABウィンドウの位置が上にずれないように
 			// 2007.06.20 ryoji 非プライマリモニタまたはタスクバーを動かした後でもずれないように
 
 			wpTop.length = sizeof(wpTop);
-			if( ::GetWindowPlacement( hwndTop, &wpTop ) ){	// 現在の先頭ウィンドウから位置を取得
+			if (::GetWindowPlacement(hWnd, &wpTop)) {	// 現在の先頭ウィンドウから位置を取得
 				if( wpTop.showCmd == SW_SHOWMINIMIZED )
 					wpTop.showCmd = pEditNode->m_showCmdRestore;
-			}
-			else{
-				hwndTop = nullptr;
+
+				hwndTop = hWnd;
 			}
 		}
 	}
