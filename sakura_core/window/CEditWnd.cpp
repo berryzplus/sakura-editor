@@ -209,9 +209,25 @@ namespace window {
 
 STabGroupInfo _GetTabGroupInfo(int nGroup)
 {
-	STabGroupInfo sTabGroupInfo{};
-	GetEditWnd()._GetTabGroupInfo(&sTabGroupInfo, nGroup);
-	return sTabGroupInfo;
+	//タブバーを表示してなければタブグループ無効
+	if (!GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd) return STabGroupInfo();
+
+	//グループIDが不正な場合は、グループ指定無しとみなす
+	if (nGroup < 0) nGroup = 0;
+
+	const auto pEditNode = CAppNodeGroupHandle(nGroup).GetEditNodeAt(0);	// グループの先頭ウィンドウ情報を取得	// 2007.06.20 ryoji
+	if (!pEditNode) return STabGroupInfo();
+
+	const auto hwndTop = pEditNode->GetHwnd();
+
+	WINDOWPLACEMENT	wpTop{};
+	wpTop.length = sizeof(WINDOWPLACEMENT);
+
+	if (::GetWindowPlacement(hwndTop, &wpTop) && SW_SHOWMINIMIZED == wpTop.showCmd) {
+		wpTop.showCmd = pEditNode->m_showCmdRestore;
+	}
+
+	return STabGroupInfo{ hwndTop, wpTop };
 }
 
 } // namespace window
@@ -389,40 +405,6 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, 
 	);
 }
 
-void CEditWnd::_GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup)
-{
-	HWND hwndTop = nullptr;
-	WINDOWPLACEMENT	wpTop = {0};
-
-	//From Here @@@ 2003.05.31 MIK
-	//タブウインドウの場合は現状値を指定
-	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd && !m_pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin )
-	{
-		if( nGroup < 0 )	// 不正なグループID
-			nGroup = 0;	// グループ指定無し（最近アクティブのグループに入れる）
-		EditNode*	pEditNode = CAppNodeGroupHandle(nGroup).GetEditNodeAt(0);	// グループの先頭ウィンドウ情報を取得	// 2007.06.20 ryoji
-
-		if (const auto hWnd = pEditNode ? pEditNode->GetHwnd() : nullptr)
-		{
-			//	Sep. 11, 2003 MIK 新規TABウィンドウの位置が上にずれないように
-			// 2007.06.20 ryoji 非プライマリモニタまたはタスクバーを動かした後でもずれないように
-
-			wpTop.length = sizeof(wpTop);
-			if (::GetWindowPlacement(hWnd, &wpTop)) {	// 現在の先頭ウィンドウから位置を取得
-				if( wpTop.showCmd == SW_SHOWMINIMIZED )
-					wpTop.showCmd = pEditNode->m_showCmdRestore;
-
-				hwndTop = hWnd;
-			}
-		}
-	}
-	//To Here @@@ 2003.05.31 MIK
-
-	//結果
-	pTabGroupInfo->hwndTop = hwndTop;
-	pTabGroupInfo->wpTop = wpTop;
-}
-
 void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 {
 	RECT	rcOrg;
@@ -596,8 +578,7 @@ HWND CEditWnd::CreateMainWnd(
 	}
 
 	//タブグループ情報取得
-	STabGroupInfo sTabGroupInfo;
-	_GetTabGroupInfo(&sTabGroupInfo, nGroup);
+	const auto sTabGroupInfo = window::_GetTabGroupInfo(nGroup);
 
 	// -- -- -- -- ウィンドウ作成 -- -- -- -- //
 	HWND hWnd = _CreateMainWindow(hInstance, nCmdShow, nGroup, sTabGroupInfo);

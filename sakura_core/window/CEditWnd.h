@@ -72,9 +72,9 @@ struct STabGroupInfo {
 	HWND			hwndTop = nullptr;
 	WINDOWPLACEMENT	wpTop = {};
 
-	STabGroupInfo() = default;
-
 	bool IsValid() const noexcept { return hwndTop != nullptr; }
+
+	explicit operator bool() const noexcept { return IsValid(); }
 };
 
 //! 編集ウィンドウ（外枠）管理クラス
@@ -113,7 +113,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) override;
 
-	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
 	void _GetWindowRectForInit(CMyRect* rcResult, int nGroup, const STabGroupInfo& sTabGroupInfo);	//!< ウィンドウ生成用の矩形を取得
 	HWND	_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo);
 	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
