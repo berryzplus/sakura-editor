@@ -212,8 +212,6 @@ namespace window {
  */
 CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 {
-	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: 出力矩形に反映する
-
 	const auto& sWindow = GetDllShareData().m_Common.m_sWindow;
 
 	/* ウィンドウサイズ継承 */
@@ -266,6 +264,10 @@ CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 		nWinCY = wpTop.rcNormalPosition.bottom - wpTop.rcNormalPosition.top;
 		nWinOX = wpTop.rcNormalPosition.left   + (rcWork.left - rcMon.left);
 		nWinOY = wpTop.rcNormalPosition.top    + (rcWork.top - rcMon.top);
+	}
+
+	if (CW_USEDEFAULT == nWinOX && 0 == nWinOY) {
+		nWinOY = nCmdShow;
 	}
 
 	CMyRect rcResult{};
@@ -399,6 +401,7 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGr
 		MAKEINTRESOURCE(atom),		// pointer to registered class name
 		GSTR_EDITWINDOWNAME,		// pointer to window name
 		WS_OVERLAPPEDWINDOW
+		| WS_VISIBLE
 		| WS_CLIPCHILDREN,			// window style
 		rc.left,			// horizontal position of window
 		rc.top,				// vertical position of window

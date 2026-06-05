@@ -434,11 +434,12 @@ TEST_F(EditWndTest, _CalcInitialRect001)
 
 	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
 	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
 
 	STabGroupInfo sTabGroupInfo{};
 	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
 
-	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, 0)));
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, SW_SHOWDEFAULT)));	//nCmdShowの値が反映される
 	EXPECT_THAT(rc.Width(), CW_USEDEFAULT);
 	EXPECT_THAT(rc.Height(), 0);
 }
@@ -451,6 +452,7 @@ TEST_F(EditWndTest, _CalcInitialRect002)
 
 	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_DEF;
 	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
 
 	STabGroupInfo sTabGroupInfo{};
 	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
@@ -480,6 +482,15 @@ TEST_F(EditWndTest, _CalcInitialRect003)
 	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(11, 22)));
 	EXPECT_THAT(rc.Width(), 33);
 	EXPECT_THAT(rc.Height(), 44);
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
+
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosX   = 0;
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosY   = 0;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCX = 0;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCY = 0;
 }
 
 TEST_F(EditWndTest, _GetTabGroupInfo001)
