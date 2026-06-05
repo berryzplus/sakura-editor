@@ -115,7 +115,7 @@ public:
 
 	void _GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup);
 	void _GetWindowRectForInit(CMyRect* rcResult, int nGroup, const STabGroupInfo& sTabGroupInfo);	//!< ウィンドウ生成用の矩形を取得
-	HWND _CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo);
+	HWND	_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo);
 	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
 
 	int		MessageLoop() const override;

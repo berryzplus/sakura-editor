@@ -324,8 +324,10 @@ void CEditWnd::_GetWindowRectForInit(CMyRect* rcResult, [[maybe_unused]] int nGr
 	rcResult->SetXYWH(nWinOX,nWinOY,nWinCX,nWinCY);
 }
 
-HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
+HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo)
 {
+	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
+
 	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
 	WNDCLASSEX	wc;
 	//	Apr. 27, 2000 genta
@@ -334,9 +336,9 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 	wc.lpfnWndProc		= CEditWndProc;
 	wc.cbClsExtra		= 0;
 	wc.cbWndExtra		= sizeof(LONG_PTR) * 1;                                  //拡張領域を1個確保。
-	wc.hInstance		= G_AppInstance();
+	wc.hInstance		= hInstance;
 	//	Dec, 2, 2002 genta アイコン読み込み方法変更
-	wc.hIcon			= GetAppIcon( G_AppInstance(), ICON_DEFAULT_APP, FN_APP_ICON, false );
+	wc.hIcon			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, false);
 
 	wc.hCursor			= nullptr/*LoadCursor( NULL, IDC_ARROW )*/;
 	wc.hbrBackground	= (HBRUSH)nullptr/*(COLOR_3DSHADOW + 1)*/;
@@ -346,7 +348,7 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 	//	Dec. 6, 2002 genta
 	//	small icon指定のため RegisterClassExに変更
 	wc.cbSize			= sizeof( wc );
-	wc.hIconSm			= GetAppIcon( G_AppInstance(), ICON_DEFAULT_APP, FN_APP_ICON, true );
+	wc.hIconSm			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
 	ATOM	atom = RegisterClassEx( &wc );
 	if( 0 == atom ){
 		//	2004.05.13 Moca return NULLを有効にした
@@ -369,7 +371,7 @@ HWND CEditWnd::_CreateMainWindow(int nGroup, const STabGroupInfo& sTabGroupInfo)
 		rc.Height(),		// window height
 		nullptr,				// handle to parent or owner window
 		nullptr,				// handle to menu or child-window identifier
-		G_AppInstance(),		// handle to application instance
+		hInstance,			// handle to application instance
 		nullptr				// pointer to window-creation data
 	);
 	return hwndResult;
@@ -554,8 +556,6 @@ HWND CEditWnd::CreateMainWnd(
 	int nCmdShow
 )
 {
-	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
-
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
 	auto pcIcons = &m_hIcons;
@@ -590,7 +590,7 @@ HWND CEditWnd::CreateMainWnd(
 	_GetTabGroupInfo(&sTabGroupInfo, nGroup);
 
 	// -- -- -- -- ウィンドウ作成 -- -- -- -- //
-	HWND hWnd = _CreateMainWindow(nGroup, sTabGroupInfo);
+	HWND hWnd = _CreateMainWindow(hInstance, nCmdShow, nGroup, sTabGroupInfo);
 	if(!hWnd)return nullptr;
 	m_hWnd = hWnd;
 
