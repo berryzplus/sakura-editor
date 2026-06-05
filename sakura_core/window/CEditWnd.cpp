@@ -329,7 +329,8 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, 
 	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
 
 	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
-	WNDCLASSEX	wc;
+	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
+
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
 	wc.style			= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
@@ -347,10 +348,10 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, 
 
 	//	Dec. 6, 2002 genta
 	//	small icon指定のため RegisterClassExに変更
-	wc.cbSize			= sizeof( wc );
 	wc.hIconSm			= GetAppIcon(hInstance, ICON_DEFAULT_APP, FN_APP_ICON, true);
-	ATOM	atom = RegisterClassEx( &wc );
-	if( 0 == atom ){
+
+	const auto atom = ::RegisterClassExW(&wc);
+	if (!atom) {
 		//	2004.05.13 Moca return NULLを有効にした
 		return nullptr;
 	}
@@ -360,21 +361,21 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, 
 	_GetWindowRectForInit(&rc, nGroup, sTabGroupInfo);
 
 	//作成
-	HWND hwndResult = ::CreateWindowEx(
-		0,				 	// extended window style
-		GSTR_EDITWINDOWNAME,		// pointer to registered class name
+	return ::CreateWindowExW(
+		0L,				 			// extended window style
+		MAKEINTRESOURCE(atom),		// pointer to registered class name
 		GSTR_EDITWINDOWNAME,		// pointer to window name
-		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,	// window style
+		WS_OVERLAPPEDWINDOW
+		| WS_CLIPCHILDREN,			// window style
 		rc.left,			// horizontal position of window
 		rc.top,				// vertical position of window
 		rc.Width(),			// window width
 		rc.Height(),		// window height
-		nullptr,				// handle to parent or owner window
-		nullptr,				// handle to menu or child-window identifier
+		HWND(nullptr),		// handle to parent or owner window
+		HMENU(nullptr),		// handle to menu or child-window identifier
 		hInstance,			// handle to application instance
 		nullptr				// pointer to window-creation data
 	);
-	return hwndResult;
 }
 
 void CEditWnd::_GetTabGroupInfo(STabGroupInfo* pTabGroupInfo, int& nGroup)
