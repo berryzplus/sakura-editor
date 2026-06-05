@@ -360,7 +360,7 @@ void CEditWnd::UpdateCaption()
 		CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ); // 2006.01.28 ryoji ファイル名、Grepモードパラメータを追加
 }
 
-HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo)
+HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 {
 	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
 	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
@@ -587,7 +587,7 @@ HWND CEditWnd::CreateMainWnd(
 	const auto sTabGroupInfo = window::_GetTabGroupInfo(nGroup);
 
 	// -- -- -- -- ウィンドウ作成 -- -- -- -- //
-	HWND hWnd = _CreateMainWindow(hInstance, nCmdShow, nGroup, sTabGroupInfo);
+	HWND hWnd = _CreateMainWindow(hInstance, nCmdShow, sTabGroupInfo);
 	if(!hWnd)return nullptr;
 	m_hWnd = hWnd;
 

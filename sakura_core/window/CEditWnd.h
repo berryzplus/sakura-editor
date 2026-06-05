@@ -113,7 +113,7 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) override;
 
-	HWND	_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo);
+	HWND	_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGroupInfo& sTabGroupInfo);
 	void _AdjustInMonitor(const STabGroupInfo& sTabGroupInfo);
 
 	int		MessageLoop() const override;
