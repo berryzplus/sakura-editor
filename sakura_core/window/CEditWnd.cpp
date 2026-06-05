@@ -214,9 +214,64 @@ CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 {
 	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: 出力矩形に反映する
 
-	int unusedArg = -1;
+	const auto& sWindow = GetDllShareData().m_Common.m_sWindow;
+
+	/* ウィンドウサイズ継承 */
+	auto nWinCX = CW_USEDEFAULT;
+	auto nWinCY = 0;
+
+	//	2004.05.13 Moca m_Common.m_eSaveWindowSizeをBOOLからenumに変えたため
+	if( WINSIZEMODE_DEF != sWindow.m_eSaveWindowSize ){
+		nWinCX = sWindow.m_nWinSizeCX;
+		nWinCY = sWindow.m_nWinSizeCY;
+	}
+
+	/* ウィンドウサイズ指定 */
+	auto fi = CCommandLine::getInstance()->GetEditInfoRef();
+	if( fi.m_nWindowSizeX >= 0 ){
+		nWinCX = fi.m_nWindowSizeX;
+	}
+	if( fi.m_nWindowSizeY >= 0 ){
+		nWinCY = fi.m_nWindowSizeY;
+	}
+
+	/* ウィンドウ位置指定 */
+	auto nWinOX = CW_USEDEFAULT;
+	auto nWinOY = 0;
+
+	// ウィンドウ位置固定
+	//	2004.05.13 Moca 保存したウィンドウ位置を使う場合は共有メモリからセット
+	if( WINSIZEMODE_DEF != sWindow.m_eSaveWindowPos ){
+		nWinOX =  sWindow.m_nWinPosX;
+		nWinOY =  sWindow.m_nWinPosY;
+	}
+
+	//	2004.05.13 Moca マルチディスプレイでは負の値も有効なので，
+	//	未設定の判定方法を変更．(負の値→CW_USEDEFAULT)
+	if( fi.m_nWindowOriginX != CW_USEDEFAULT ){
+		nWinOX = fi.m_nWindowOriginX;
+	}
+	if( fi.m_nWindowOriginY != CW_USEDEFAULT ){
+		nWinOY = fi.m_nWindowOriginY;
+	}
+
+	// 必要なら、タブグループにフィットするよう、変更
+	if(sTabGroupInfo.IsValid()){
+		RECT rcWork{};
+		RECT rcMon{};
+		GetMonitorWorkRect( sTabGroupInfo.hwndTop, &rcWork, &rcMon );
+
+		const WINDOWPLACEMENT& wpTop = sTabGroupInfo.wpTop;
+		nWinCX = wpTop.rcNormalPosition.right  - wpTop.rcNormalPosition.left;
+		nWinCY = wpTop.rcNormalPosition.bottom - wpTop.rcNormalPosition.top;
+		nWinOX = wpTop.rcNormalPosition.left   + (rcWork.left - rcMon.left);
+		nWinOY = wpTop.rcNormalPosition.top    + (rcWork.top - rcMon.top);
+	}
+
 	CMyRect rcResult{};
-	GetEditWnd()._GetWindowRectForInit(&rcResult, unusedArg, sTabGroupInfo);
+
+	//結果
+	rcResult.SetXYWH(nWinOX,nWinOY,nWinCX,nWinCY);
 
 	return rcResult;
 }
@@ -305,70 +360,8 @@ void CEditWnd::UpdateCaption()
 		CEditApp::getInstance()->m_pcGrepAgent->m_bGrepMode ); // 2006.01.28 ryoji ファイル名、Grepモードパラメータを追加
 }
 
-//!< ウィンドウ生成用の矩形を取得
-void CEditWnd::_GetWindowRectForInit(CMyRect* rcResult, [[maybe_unused]] int nGroup, const STabGroupInfo& sTabGroupInfo)
-{
-	/* ウィンドウサイズ継承 */
-	int	nWinCX, nWinCY;
-	//	2004.05.13 Moca m_Common.m_eSaveWindowSizeをBOOLからenumに変えたため
-	if( WINSIZEMODE_DEF != m_pShareData->m_Common.m_sWindow.m_eSaveWindowSize ){
-		nWinCX = m_pShareData->m_Common.m_sWindow.m_nWinSizeCX;
-		nWinCY = m_pShareData->m_Common.m_sWindow.m_nWinSizeCY;
-	}else{
-		nWinCX = CW_USEDEFAULT;
-		nWinCY = 0;
-	}
-
-	/* ウィンドウサイズ指定 */
-	EditInfo fi;
-	CCommandLine::getInstance()->GetEditInfo(&fi);
-	if( fi.m_nWindowSizeX >= 0 ){
-		nWinCX = fi.m_nWindowSizeX;
-	}
-	if( fi.m_nWindowSizeY >= 0 ){
-		nWinCY = fi.m_nWindowSizeY;
-	}
-
-	/* ウィンドウ位置指定 */
-	int nWinOX, nWinOY;
-	nWinOX = CW_USEDEFAULT;
-	nWinOY = 0;
-	// ウィンドウ位置固定
-	//	2004.05.13 Moca 保存したウィンドウ位置を使う場合は共有メモリからセット
-	if( WINSIZEMODE_DEF != m_pShareData->m_Common.m_sWindow.m_eSaveWindowPos ){
-		nWinOX =  m_pShareData->m_Common.m_sWindow.m_nWinPosX;
-		nWinOY =  m_pShareData->m_Common.m_sWindow.m_nWinPosY;
-	}
-
-	//	2004.05.13 Moca マルチディスプレイでは負の値も有効なので，
-	//	未設定の判定方法を変更．(負の値→CW_USEDEFAULT)
-	if( fi.m_nWindowOriginX != CW_USEDEFAULT ){
-		nWinOX = fi.m_nWindowOriginX;
-	}
-	if( fi.m_nWindowOriginY != CW_USEDEFAULT ){
-		nWinOY = fi.m_nWindowOriginY;
-	}
-
-	// 必要なら、タブグループにフィットするよう、変更
-	if(sTabGroupInfo.IsValid()){
-		RECT rcWork, rcMon;
-		GetMonitorWorkRect( sTabGroupInfo.hwndTop, &rcWork, &rcMon );
-
-		const WINDOWPLACEMENT& wpTop = sTabGroupInfo.wpTop;
-		nWinCX = wpTop.rcNormalPosition.right  - wpTop.rcNormalPosition.left;
-		nWinCY = wpTop.rcNormalPosition.bottom - wpTop.rcNormalPosition.top;
-		nWinOX = wpTop.rcNormalPosition.left   + (rcWork.left - rcMon.left);
-		nWinOY = wpTop.rcNormalPosition.top    + (rcWork.top - rcMon.top);
-	}
-
-	//結果
-	rcResult->SetXYWH(nWinOX,nWinOY,nWinCX,nWinCY);
-}
-
 HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, const STabGroupInfo& sTabGroupInfo)
 {
-	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: ウィンドウ作成メソッドの引数に反映する
-
 	// -- -- -- -- ウィンドウクラス登録 -- -- -- -- //
 	WNDCLASSEX wc{ sizeof(WNDCLASSEX) };
 
@@ -398,8 +391,7 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, int nGroup, 
 	}
 
 	//矩形取得
-	CMyRect rc;
-	_GetWindowRectForInit(&rc, nGroup, sTabGroupInfo);
+	const auto rc = window::_CalcInitialRect(nCmdShow, sTabGroupInfo);
 
 	//作成
 	return ::CreateWindowExW(
