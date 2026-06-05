@@ -781,6 +781,50 @@ struct WinMainFuncTest : public TWinMainTest<::testing::Test> {
 /*!
  * @brief WinMainを起動してみるテスト
  *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  タブバー有効で、別グループにしない場合、既存タブグループにフィットさせる。
+ */
+TEST_F(WinMainFuncTest, _CalcInitialRect001)
+{
+	RunGuiTest([this]{
+		// テスト用プロファイル名
+		const auto profileName(GetProfileName());
+
+		// ケース独自の設定ファイルを使うので、一旦削除する
+		std::filesystem::remove(iniPath);
+
+		// テスト用INIファイル作成
+		constexpr std::array iniLines = {
+			// 全般設定を出力
+			u8"[Common]"sv,
+			u8"szLanguageDll="sv,			// 言語DLLの指定(空にすると日本語になる)
+			u8"bDarkMode=1"sv,				// ダークモードをONにする
+			u8"bDispTabWnd=1"sv,			// タブバーを表示する
+			u8"bDispTabWndMultiWin=0"sv,	// タブをまとめない
+		};
+		cxx::writeTextFile(iniPath, iniLines);
+
+		// コントロールプロセスを起動する
+		auto cp = testing::CreateControlProcess(profileName);
+		EXPECT_THAT(cp, NotNull());
+
+		// 1つ目のエディタープロセスを起動する
+		auto ep1 = testing::CreateEditorProcess(std::array{ gm_TestDataPath1.native(), LR"(-Y=3)"s}, profileName);
+
+		// 2つ目のエディタープロセスを起動する
+		auto ep2 = testing::CreateEditorProcess(std::array{ gm_TestDataPath2.native(), LR"(-Y=3)"s }, profileName);
+
+		// 編集ウインドウにクローズを要求する
+		::PostMessageW(ep1.hWnd, WM_CLOSE, 0, 0);
+		::PostMessageW(ep2.hWnd, WM_CLOSE, 0, 0);
+
+		// コントロールプロセスに終了指示を出して終了を待つ
+		testing::TerminateControlProcess(profileName, cp.dwProcessId);
+	});
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
  *  コントロールプロセス起動の失敗をテストする。（ミューテックス競合）
  */
 TEST_F(WinMainFuncTest, CreateControlProcess101)

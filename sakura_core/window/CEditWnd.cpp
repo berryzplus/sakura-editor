@@ -205,6 +205,17 @@ LRESULT CALLBACK CEditWndProc(
 	return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
 }
 
+namespace window {
+
+STabGroupInfo _GetTabGroupInfo(int nGroup)
+{
+	STabGroupInfo sTabGroupInfo{};
+	GetEditWnd()._GetTabGroupInfo(&sTabGroupInfo, nGroup);
+	return sTabGroupInfo;
+}
+
+} // namespace window
+
 CEditWnd::CEditWnd()
 {
 	const auto& cTypeConfig = GetEditDoc().m_cDocType.GetDocumentAttribute();

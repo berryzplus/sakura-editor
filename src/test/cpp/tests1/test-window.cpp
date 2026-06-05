@@ -57,6 +57,8 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
+STabGroupInfo _GetTabGroupInfo(int nGroup);
+
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
@@ -423,6 +425,48 @@ struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, pub
 		return hWndPage;
 	}
 };
+
+TEST_F(EditWndTest, _GetTabGroupInfo001)
+{
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = false;
+
+	const auto sTabGroupInfo = window::_GetTabGroupInfo(-1);
+
+	EXPECT_THAT(sTabGroupInfo.IsValid(), IsFalse());
+	EXPECT_THAT(sTabGroupInfo.hwndTop, IsNull());
+
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = false;
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin = false;
+}
+
+TEST_F(EditWndTest, _GetTabGroupInfo002)
+{
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = true;
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin = true;
+
+	const auto sTabGroupInfo = window::_GetTabGroupInfo(-1);
+
+	EXPECT_THAT(sTabGroupInfo.IsValid(), IsFalse());
+	EXPECT_THAT(sTabGroupInfo.hwndTop, IsNull());
+
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = false;
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin = false;
+}
+
+TEST_F(EditWndTest, _GetTabGroupInfo003)
+{
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = true;
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin = false;
+	GetDllShareData().m_sNodes.m_nEditArrNum = 0;
+
+	const auto sTabGroupInfo = window::_GetTabGroupInfo(-1);
+
+	EXPECT_THAT(sTabGroupInfo.IsValid(), IsFalse());
+	EXPECT_THAT(sTabGroupInfo.hwndTop, IsNull());
+
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWnd = false;
+	GetDllShareData().m_Common.m_sTabBar.m_bDispTabWndMultiWin = false;
+}
 
 /*!
  * 上書き保存時バックアップのテスト
