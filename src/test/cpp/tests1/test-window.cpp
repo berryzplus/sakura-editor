@@ -57,6 +57,7 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
+CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo);
 STabGroupInfo _GetTabGroupInfo(int nGroup);
 
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
@@ -425,6 +426,61 @@ struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, pub
 		return hWndPage;
 	}
 };
+
+//タブ無効、位置とサイズ自動
+TEST_F(EditWndTest, _CalcInitialRect001)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+
+	STabGroupInfo sTabGroupInfo{};
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, 0)));
+	EXPECT_THAT(rc.Width(), CW_USEDEFAULT);
+	EXPECT_THAT(rc.Height(), 0);
+}
+
+//タブ無効、位置とサイズ指定あり
+TEST_F(EditWndTest, _CalcInitialRect002)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+	pCommandLine->ParseCommandLine(L"-WX=11 -WY=22 -SX=33 -SY=44", false);
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+
+	STabGroupInfo sTabGroupInfo{};
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(11, 22)));
+	EXPECT_THAT(rc.Width(), 33 - 1);	//バグっぽい
+	EXPECT_THAT(rc.Height(), 44 - 1);	//バグっぽい
+}
+
+//タブ無効、位置とサイズは保存されたものを使う
+TEST_F(EditWndTest, _CalcInitialRect003)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos  = WINSIZEMODE_SAVE;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SAVE;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
+
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosX   = 11;
+	GetDllShareData().m_Common.m_sWindow.m_nWinPosY   = 22;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCX = 33;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCY = 44;
+
+	STabGroupInfo sTabGroupInfo{};
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(11, 22)));
+	EXPECT_THAT(rc.Width(), 33);
+	EXPECT_THAT(rc.Height(), 44);
+}
 
 TEST_F(EditWndTest, _GetTabGroupInfo001)
 {

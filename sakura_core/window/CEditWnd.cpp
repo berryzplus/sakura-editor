@@ -207,6 +207,20 @@ LRESULT CALLBACK CEditWndProc(
 
 namespace window {
 
+/*!
+ * @brief ウィンドウ矩形を取得
+ */
+CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
+{
+	UNREFERENCED_PARAMETER(nCmdShow);	//TODO: 出力矩形に反映する
+
+	int unusedArg = -1;
+	CMyRect rcResult{};
+	GetEditWnd()._GetWindowRectForInit(&rcResult, unusedArg, sTabGroupInfo);
+
+	return rcResult;
+}
+
 STabGroupInfo _GetTabGroupInfo(int nGroup)
 {
 	//タブバーを表示してなければタブグループ無効
