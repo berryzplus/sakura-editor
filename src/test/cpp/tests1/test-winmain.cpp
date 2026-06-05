@@ -321,9 +321,14 @@ struct TWinMainTest : public T, public window::UiaTestSuite {
 	using Base = T;
 
 	/*!
-	 * テスト用ファイルのパス
+	 * テスト用ファイル1のパス
 	 */
-	static inline std::filesystem::path gm_TestDataPath = std::filesystem::current_path() / L"test_1000lines.txt";
+	static inline std::filesystem::path gm_TestDataPath1 = std::filesystem::current_path() / L"test_1000lines.txt";
+
+	/*!
+	 * テスト用ファイル2のパス
+	 */
+	static inline std::filesystem::path gm_TestDataPath2 = std::filesystem::current_path() / L"test_2000lines.txt";
 
 	/*!
 	 * テストスイートの開始前に1回だけ呼ばれる関数
@@ -337,11 +342,17 @@ struct TWinMainTest : public T, public window::UiaTestSuite {
 		SetUpUia();
 
 		// テスト用ファイル作成
-		std::wofstream fs(gm_TestDataPath);
+		std::wofstream os1(gm_TestDataPath1);
 		for (int n = 1; n <= 1000; n++) {
-			fs << n << std::endl;
+			os1 << n << std::endl;
 		}
-		fs.close();
+		os1.close();
+
+		std::wofstream os2(gm_TestDataPath2);
+		for (int n = 1; n <= 2000; n++) {
+			os2 << n << std::endl;
+		}
+		os2.close();
 	}
 
 	/*!
@@ -349,10 +360,12 @@ struct TWinMainTest : public T, public window::UiaTestSuite {
 	 */
 	static void TearDownTestSuite() {
 		std::error_code ec;
+		if (fexist(gm_TestDataPath1)) {
+			std::filesystem::remove(gm_TestDataPath1, ec);
+		}
 
-		// テスト用ファイルの後始末
-		if (fexist(gm_TestDataPath)) {
-			std::filesystem::remove(gm_TestDataPath, ec);
+		if (fexist(gm_TestDataPath2)) {
+			std::filesystem::remove(gm_TestDataPath2, ec);
 		}
 
 		if (const auto pluginPath = GetIniFileName().remove_filename().append(L"plugins"); fexist(pluginPath)) {
@@ -726,7 +739,7 @@ TEST_P(WinMainTest, runEditorProcess)
 	const auto strStartupMacro = std::accumulate(macroCommands.cbegin(), macroCommands.cend(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return a + std::data(b); });
 
 	// コマンドラインを組み立てる
-	std::wstring command(gm_TestDataPath);
+	std::wstring command{ gm_TestDataPath1 };
 	command += std::format(LR"( -PROF="{}")", profileName);
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
