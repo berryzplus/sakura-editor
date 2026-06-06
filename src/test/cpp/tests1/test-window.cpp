@@ -57,6 +57,7 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
+CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg, int& nCmdShow);
 CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo);
 STabGroupInfo _GetTabGroupInfo(int nGroup);
 
@@ -426,6 +427,71 @@ struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, pub
 		return hWndPage;
 	}
 };
+
+//デスクトップからはみ出さないように矩形を調整する。
+TEST_F(EditWndTest, _AdjustInMonitor001)
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	CMyRect rcWork{};
+	RECT rcMon{};
+
+	const auto hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY );
+	GetMonitorWorkRect(hMonitor, &rcWork, &rcMon);
+
+	// 1pxずつはみ出すように設定する
+	LONG x  = rcWork.left - 1;
+	LONG y  = rcWork.top - 1;
+	LONG cx = rcWork.Width() + 2;
+	LONG cy = rcWork.Height() + 2;
+
+	CMyRect rcOrg{};
+	rcOrg.SetXYWH(x, y, cx, cy);
+
+	int nCmdShow = SW_SHOW;
+
+	const auto rc = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
+	// はみ出さないサイズに調整される
+	EXPECT_THAT(rc.Width(),  rcWork.Width() );
+	EXPECT_THAT(rc.Height(), rcWork.Height());
+
+	// モニター領域の左上に調整される
+	EXPECT_THAT(rc.left,     rcWork.left);
+	EXPECT_THAT(rc.top,      rcWork.top );
+}
+
+TEST_F(EditWndTest, _AdjustInMonitor002)
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+
+	CMyRect rcWork{};
+	RECT rcMon{};
+
+	const auto hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY );
+	GetMonitorWorkRect(hMonitor, &rcWork, &rcMon);
+
+	LONG x = rcWork.right;
+	LONG y = rcWork.bottom;
+	LONG cx = rcWork.Width() / 2;
+	LONG cy = rcWork.Height() / 2;
+
+	CMyRect rcOrg{};
+	rcOrg.SetXYWH(x, y, cx, cy);
+
+	int nCmdShow = SW_SHOW;
+
+	const auto rc = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
+
+	// サイズは変わらない
+	EXPECT_THAT(rc.Width() , cx);
+	EXPECT_THAT(rc.Height(), cy);
+
+	// モニター領域の右下に収まるよう調整される
+	EXPECT_THAT(rc.left,     rcWork.right - cx);
+	EXPECT_THAT(rc.top,      rcWork.bottom - cy);
+}
 
 //タブ無効、位置とサイズ自動
 TEST_F(EditWndTest, _CalcInitialRect001)

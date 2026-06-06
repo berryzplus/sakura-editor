@@ -207,6 +207,56 @@ LRESULT CALLBACK CEditWndProc(
 
 namespace window {
 
+CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg, int& nCmdShow)
+{
+	auto x = rcOrg.left;
+	auto y = rcOrg.top;
+	auto cx = rcOrg.Width();
+	auto cy = rcOrg.Height();
+
+	CMyRect rcDesktop{};
+	::GetMonitorWorkRect(pt, &rcDesktop);
+
+	/* ウィンドウサイズ調整 */
+	if (rcDesktop.Width() < rcOrg.Width()) {
+		cx = rcDesktop.Width();
+	}
+	if (rcDesktop.Height() < rcOrg.Height()) {
+		cy = rcDesktop.Height();
+	}
+
+	/* ウィンドウ位置調整 */
+	if (x < rcDesktop.left) {
+		x = rcDesktop.left;
+	}
+	if (rcDesktop.right < x + cx) {
+		x = rcDesktop.right - cx;
+	}
+	if (y < rcDesktop.top) {
+		y = rcDesktop.top;
+	}
+	if (rcDesktop.bottom < y + cy) {
+		y = rcDesktop.bottom - cy;
+	}
+
+	if (const auto& sWindow = GetDllShareData().m_Common.m_sWindow;
+		WINSIZEMODE_DEF != sWindow.m_eSaveWindowSize && SIZE_MAXIMIZED == sWindow.m_nWinSizeType) {
+		nCmdShow = SW_SHOWMAXIMIZED;
+	} else if (WINSIZEMODE_SET == sWindow.m_eSaveWindowSize && SIZE_MINIMIZED == sWindow.m_nWinSizeType) {
+		nCmdShow = SW_SHOWMINIMIZED;
+	} else {
+		nCmdShow = SW_SHOW;
+	}
+
+
+	CMyRect rcResult{};
+
+	//結果
+	rcResult.SetXYWH(x, y, cx, cy);
+
+	return rcResult;
+}
+
 /*!
  * @brief ウィンドウ矩形を取得
  */
@@ -416,48 +466,8 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGr
 
 void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 {
-	RECT	rcOrg;
-	RECT	rcDesktop;
-//	int		nWork;
-
-	//	May 01, 2004 genta マルチモニタ対応
-	::GetMonitorWorkRect( GetHwnd(), &rcDesktop );
-	::GetWindowRect( GetHwnd(), &rcOrg );
-
-	// 2005.11.23 Moca マルチモニタ等で問題があったため計算方法変更
-	/* ウィンドウ位置調整 */
-	if( rcOrg.bottom > rcDesktop.bottom ){
-		rcOrg.top -= rcOrg.bottom - rcDesktop.bottom;
-		rcOrg.bottom = rcDesktop.bottom;	//@@@ 2002.01.08
-	}
-	if( rcOrg.right > rcDesktop.right ){
-		rcOrg.left -= rcOrg.right - rcDesktop.right;
-		rcOrg.right = rcDesktop.right;	//@@@ 2002.01.08
-	}
-
-	if( rcOrg.top < rcDesktop.top ){
-		rcOrg.bottom += rcDesktop.top - rcOrg.top;
-		rcOrg.top = rcDesktop.top;
-	}
-	if( rcOrg.left < rcDesktop.left ){
-		rcOrg.right += rcDesktop.left - rcOrg.left;
-		rcOrg.left = rcDesktop.left;
-	}
-
-	/* ウィンドウサイズ調整 */
-	if( rcOrg.bottom > rcDesktop.bottom ){
-		//rcOrg.bottom = rcDesktop.bottom - 1;	//@@@ 2002.01.08
-		rcOrg.bottom = rcDesktop.bottom;	//@@@ 2002.01.08
-	}
-	if( rcOrg.right > rcDesktop.right ){
-		//rcOrg.right = rcDesktop.right - 1;	//@@@ 2002.01.08
-		rcOrg.right = rcDesktop.right;	//@@@ 2002.01.08
-	}
-
 	//From Here @@@ 2003.06.13 MIK
-	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd
-		&& !m_pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin
-		&& sTabGroupInfo.hwndTop )
+	if (sTabGroupInfo)
 	{
 		// 現在の先頭ウィンドウから WS_EX_TOPMOST 状態を引き継ぐ	// 2007.05.18 ryoji
 		DWORD dwExStyle = (DWORD)::GetWindowLongPtr( sTabGroupInfo.hwndTop, GWL_EXSTYLE );
@@ -521,6 +531,17 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 	}
 	else
 	{
+		const auto hWnd = GetHwnd();
+
+		CMyRect rcOrg{};
+		::GetWindowRect(hWnd, &rcOrg);
+
+		CMyPoint pt{ rcOrg.left + rcOrg.Width() / 2, rcOrg.top + rcOrg.Height() / 2};
+
+		int nCmdShow = SW_SHOW;
+
+		rcOrg = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
+
 		::SetWindowPos(
 			GetHwnd(), nullptr,
 			rcOrg.left, rcOrg.top,
@@ -528,19 +549,7 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 			SWP_NOOWNERZORDER | SWP_NOZORDER
 		);
 
-		/* ウィンドウサイズ継承 */
-		if( WINSIZEMODE_DEF != m_pShareData->m_Common.m_sWindow.m_eSaveWindowSize &&
-			m_pShareData->m_Common.m_sWindow.m_nWinSizeType == SIZE_MAXIMIZED ){
-			::ShowWindow( GetHwnd(), SW_SHOWMAXIMIZED );
-		}else
-		// 2004.05.14 Moca ウィンドウサイズを直接指定する場合は、最小化表示を受け入れる
-		if( WINSIZEMODE_SET == m_pShareData->m_Common.m_sWindow.m_eSaveWindowSize &&
-			m_pShareData->m_Common.m_sWindow.m_nWinSizeType == SIZE_MINIMIZED ){
-			::ShowWindow( GetHwnd(), SW_SHOWMINIMIZED );
-		}
-		else{
-			::ShowWindow( GetHwnd(), SW_SHOW );
-		}
+		::ShowWindow(hWnd, nCmdShow);
 	}
 	//To Here @@@ 2003.06.13 MIK
 }
