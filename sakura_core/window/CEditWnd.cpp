@@ -207,7 +207,7 @@ LRESULT CALLBACK CEditWndProc(
 
 namespace window {
 
-CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg, int& nCmdShow)
+CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg)
 {
 	auto x = rcOrg.left;
 	auto y = rcOrg.top;
@@ -238,16 +238,6 @@ CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg, int& nCmdShow)
 	if (rcDesktop.bottom < y + cy) {
 		y = rcDesktop.bottom - cy;
 	}
-
-	if (const auto& sWindow = GetDllShareData().m_Common.m_sWindow;
-		WINSIZEMODE_DEF != sWindow.m_eSaveWindowSize && SIZE_MAXIMIZED == sWindow.m_nWinSizeType) {
-		nCmdShow = SW_SHOWMAXIMIZED;
-	} else if (WINSIZEMODE_SET == sWindow.m_eSaveWindowSize && SIZE_MINIMIZED == sWindow.m_nWinSizeType) {
-		nCmdShow = SW_SHOWMINIMIZED;
-	} else {
-		nCmdShow = SW_SHOW;
-	}
-
 
 	CMyRect rcResult{};
 
@@ -317,7 +307,13 @@ CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 	}
 
 	if (CW_USEDEFAULT == nWinOX && 0 == nWinOY) {
-		nWinOY = nCmdShow;
+		const auto maximized = WINSIZEMODE_DEF != sWindow.m_eSaveWindowSize && SIZE_MAXIMIZED == sWindow.m_nWinSizeType;
+		const auto minimized = WINSIZEMODE_SET == sWindow.m_eSaveWindowSize && SIZE_MINIMIZED == sWindow.m_nWinSizeType;
+		if (SW_SHOWDEFAULT == nCmdShow && (maximized || minimized)) {
+			nWinOY = sWindow.m_nWinSizeType;
+		} else {
+			nWinOY = nCmdShow;
+		}
 	}
 
 	CMyRect rcResult{};
@@ -325,7 +321,13 @@ CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo)
 	//結果
 	rcResult.SetXYWH(nWinOX,nWinOY,nWinCX,nWinCY);
 
-	return rcResult;
+	if (CW_USEDEFAULT == nWinOX || CW_USEDEFAULT == nWinCX) {
+		return rcResult;
+	}
+
+	CMyPoint pt{ rcResult.left + rcResult.Width() / 2, rcResult.top + rcResult.Height() / 2};
+
+	return window::_AdjustInMonitor(pt, rcResult);
 }
 
 STabGroupInfo _GetTabGroupInfo(int nGroup)
@@ -529,28 +531,6 @@ void CEditWnd::_AdjustInMonitor(const STabGroupInfo& sTabGroupInfo)
 			::InvalidateRect( GetHwnd(), nullptr, TRUE );	// 画面無効化
 		}
 	}
-	else
-	{
-		const auto hWnd = GetHwnd();
-
-		CMyRect rcOrg{};
-		::GetWindowRect(hWnd, &rcOrg);
-
-		CMyPoint pt{ rcOrg.left + rcOrg.Width() / 2, rcOrg.top + rcOrg.Height() / 2};
-
-		int nCmdShow = SW_SHOW;
-
-		rcOrg = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
-
-		::SetWindowPos(
-			GetHwnd(), nullptr,
-			rcOrg.left, rcOrg.top,
-			rcOrg.right - rcOrg.left, rcOrg.bottom - rcOrg.top,
-			SWP_NOOWNERZORDER | SWP_NOZORDER
-		);
-
-		::ShowWindow(hWnd, nCmdShow);
-	}
 	//To Here @@@ 2003.06.13 MIK
 }
 
@@ -685,8 +665,11 @@ HWND CEditWnd::CreateMainWnd(
 	// 画面表示直前にDispatchEventを有効化する
 	::SetWindowLongPtr( GetHwnd(), GWLP_USERDATA, (LONG_PTR)this );
 
-	// デスクトップからはみ出さないようにする
-	_AdjustInMonitor(sTabGroupInfo);
+	if (sTabGroupInfo)	// タブまとめ有効時
+	{
+		// ウィンドウ作成後処理を実施する
+		_AdjustInMonitor(sTabGroupInfo);
+	}
 
 	// ドロップされたファイルを受け入れる
 	::DragAcceptFiles( GetHwnd(), TRUE );

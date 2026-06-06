@@ -57,7 +57,7 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 
 namespace window {
 
-CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg, int& nCmdShow);
+CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg);
 CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo);
 STabGroupInfo _GetTabGroupInfo(int nGroup);
 
@@ -449,9 +449,8 @@ TEST_F(EditWndTest, _AdjustInMonitor001)
 	CMyRect rcOrg{};
 	rcOrg.SetXYWH(x, y, cx, cy);
 
-	int nCmdShow = SW_SHOW;
+	const auto rc = window::_AdjustInMonitor(pt, rcOrg);
 
-	const auto rc = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
 	// はみ出さないサイズに調整される
 	EXPECT_THAT(rc.Width(),  rcWork.Width() );
 	EXPECT_THAT(rc.Height(), rcWork.Height());
@@ -480,9 +479,7 @@ TEST_F(EditWndTest, _AdjustInMonitor002)
 	CMyRect rcOrg{};
 	rcOrg.SetXYWH(x, y, cx, cy);
 
-	int nCmdShow = SW_SHOW;
-
-	const auto rc = window::_AdjustInMonitor(pt, rcOrg, nCmdShow);
+	const auto rc = window::_AdjustInMonitor(pt, rcOrg);
 
 	// サイズは変わらない
 	EXPECT_THAT(rc.Width() , cx);
@@ -557,6 +554,45 @@ TEST_F(EditWndTest, _CalcInitialRect003)
 	GetDllShareData().m_Common.m_sWindow.m_nWinPosY   = 0;
 	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCX = 0;
 	GetDllShareData().m_Common.m_sWindow.m_nWinSizeCY = 0;
+}
+
+//タブ無効、位置とサイズ保存（最大化）
+TEST_F(EditWndTest, _CalcInitialRect004)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SET;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_MAXIMIZED;
+
+	STabGroupInfo sTabGroupInfo{};
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, SIZE_MAXIMIZED)));
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
+}
+
+
+//タブ無効、位置とサイズ保存（最小化）
+TEST_F(EditWndTest, _CalcInitialRect005)
+{
+	auto pCommandLine = std::make_unique<CCommandLine>();
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_SET;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_MINIMIZED;
+
+	STabGroupInfo sTabGroupInfo{};
+	const auto rc = window::_CalcInitialRect(SW_SHOWDEFAULT, sTabGroupInfo);
+
+	EXPECT_THAT(rc.UpperLeft(), Eq(CMyPoint(CW_USEDEFAULT, SIZE_MINIMIZED)));
+
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowPos = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_eSaveWindowSize = WINSIZEMODE_DEF;
+	GetDllShareData().m_Common.m_sWindow.m_nWinSizeType = SIZE_RESTORED;
 }
 
 TEST_F(EditWndTest, _GetTabGroupInfo001)
