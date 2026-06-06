@@ -436,7 +436,7 @@ BOOL CKeyMacroMgr::LoadKeyMacroStr( HINSTANCE hInstance, const WCHAR* pszCode )
 	szTempFile = GetTempFilePath(L"mac");
 
 	// 一時ファイルに書き込む
-	CTextOutputStream out = CTextOutputStream( szTempFile );
+	CTextOutputStream out{ std::filesystem::path{ szTempFile } };
 	out.WriteString( pszCode );
 	out.Close();
 

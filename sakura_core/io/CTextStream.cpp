@@ -123,10 +123,15 @@ std::wstring CTextInputStream::ReadLineW()
 //                     CTextOutputStream                       //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CTextOutputStream::CTextOutputStream(const WCHAR* pszPath, ECodeType eCodeType, bool bExceptionMode, bool bBom)
-: COutputStream(pszPath,L"wb",bExceptionMode)
+CTextOutputStream::CTextOutputStream(
+	const std::filesystem::path& path,
+	ECodeType eCodeType,
+	bool bExceptionMode,
+	bool bBom
+)
+	: COutputStream(path.c_str(), L"wb", bExceptionMode)
+	, m_pcCodeBase{ CCodeFactory::CreateCodeBase(eCodeType) }
 {
-	m_pcCodeBase = CCodeFactory::CreateCodeBase(eCodeType,0);
 	if(Good() && bBom){
 		//BOM付加
 		CMemory cmemBom;
@@ -139,9 +144,34 @@ CTextOutputStream::CTextOutputStream(const WCHAR* pszPath, ECodeType eCodeType, 
 
 CTextOutputStream::~CTextOutputStream()
 {
-	delete m_pcCodeBase;
+	return;
 }
 
+/*!
+ * @brief 1行書込。行内に改行コードは含まれない想定。
+ */
+void CTextOutputStream::WriteLineW(
+	std::wstring_view line	//!< 書き込む文字列
+) const
+{
+	if (!line.empty()) {
+		//1行を出力。行内に L'\n' や L'\r' は含まれない想定。
+		CNativeW cSrc(line.data(), line.length());
+		CMemory cDst;
+		m_pcCodeBase->UnicodeToCode(cSrc, &cDst); //コード変換
+		::fwrite(cDst.GetRawPtr(), 1, cDst.GetRawLength(), GetFp());
+	}
+
+	//CRLF改行を出力
+	constexpr auto& CRLF = "\r\n";
+	::fwrite(CRLF, 1, std::size(CRLF) - 1, GetFp());
+}
+
+/*!
+ * @brief テキスト書込。
+ *
+ * @note 既存コード互換のため残しておく。
+ */
 void CTextOutputStream::WriteString(
 	const wchar_t*	szData,	//!< 書き込む文字列
 	int				nLen	//!< 書き込む文字列長。-1を渡すと自動計算。
@@ -169,15 +199,7 @@ void CTextOutputStream::WriteString(
 
 		if(lf){
 			//\nの前まで(p～lf)出力
-			CNativeW cSrc(p,lf-p);
-			CMemory cDst;
-			m_pcCodeBase->UnicodeToCode(cSrc,&cDst); //コード変換
-			fwrite(cDst.GetRawPtr(),1,cDst.GetRawLength(),GetFp());
-
-			//\r\nを出力
-			cSrc.SetString(L"\r\n");
-			m_pcCodeBase->UnicodeToCode(cSrc,&cDst);
-			fwrite(cDst.GetRawPtr(),1,cDst.GetRawLength(),GetFp());
+			WriteLineW(std::wstring_view(p, lf - p));
 
 			//次へ
 			p=lf+1;

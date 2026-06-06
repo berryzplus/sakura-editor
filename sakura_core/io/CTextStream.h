@@ -45,16 +45,23 @@ private:
 //テキスト出力ストリーム
 // 2008.01.26 kobake 出力文字コードを任意で指定できるように変更
 class CTextOutputStream final : public COutputStream{
+private:
+	using CCodeBaseHolder = std::unique_ptr<CCodeBase>;
+
+	using Base = COutputStream;
 	using Me = CTextOutputStream;
 
 public:
 	//コンストラクタ・デストラクタ
-	CTextOutputStream(const WCHAR* pszPath, ECodeType eCodeType = CODE_UTF8, bool bExceptionMode = false, bool bBom = true);
+	explicit CTextOutputStream(const std::filesystem::path& path, ECodeType eCodeType = CODE_UTF8, bool bExceptionMode = false, bool bBom = true);
+
 	CTextOutputStream(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
-	CTextOutputStream(Me&&) noexcept = delete;
-	Me& operator = (Me&&) noexcept = delete;
-	virtual ~CTextOutputStream();
+
+	~CTextOutputStream() override;
+
+	//操作
+	void WriteLineW(std::wstring_view line = L"") const;
 
 	//文字列書込。改行を入れたい場合は、文字列内に'\n'を含めること。(クラス側で適切な改行コードに変換して出力します)
 	void WriteString(const wchar_t* szData, int nLen = -1);
@@ -64,7 +71,7 @@ public:
 	void WriteInt(int n);
 
 private:
-	CCodeBase* m_pcCodeBase;
+	CCodeBaseHolder	m_pcCodeBase;
 };
 
 //テキスト入力ストリーム。相対パスの場合はINIファイルのパスからの相対パスとして開く。
