@@ -273,15 +273,15 @@ bool CProfile::_WriteFile(
 	std::span<const std::wstring>	lines			//!< [out] 文字列格納先
 )
 {
-	CTextOutputStream out(path.c_str());
-	if(!out){
+	CTextOutputStream out{ path };
+	if (!out) {
 		return false;
 	}
 
-	for(const auto &line : lines){
-		// 出力
+	// 出力
+	for (const auto& line : lines) {
 		out.WriteString(line.c_str());
-		out.WriteString(L"\n");
+		out.WriteLineW();
 	}
 
 	out.Close();
