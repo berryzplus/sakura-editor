@@ -333,6 +333,38 @@ cxx::ProcessHolder CreateControlProcess(std::wstring_view profileName)
 }
 
 /*!
+ * @brief プロセスを起動する
+ *
+ * @tparam T コマンドライン引数のコンテナ型
+ * @param args コマンドライン引数
+ * @param profileName プロファイル名
+ * @return 起動したプロセスオブジェクト
+ * @note 使い物になるかどうか試作してみた
+ */
+template<class T>
+	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, std::wstring_view>
+cxx::ProcessHolder CreateSakuraProcess(
+	const T& args,
+	std::wstring_view profileName
+)
+{
+	// コマンドライン引数の編集用vector
+	std::vector<std::wstring> commandArgs{ std::begin(args), std::end(args) };
+
+	// スタートアップ情報（入力用構造体なので値を入れる）
+	STARTUPINFO si = { sizeof(STARTUPINFO) };
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = SW_SHOWDEFAULT;
+
+	// エディタープロセスを起動する
+	auto ep = CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+	EXPECT_THAT(ep, NotNull());
+
+	// プロセスオブジェクトを返す
+	return cxx::ProcessHolder{ ep.release(), ep.dwProcessId, ep.dwThreadId };
+}
+
+/*!
  * @brief エディタープロセスを起動する
  *
  * @tparam T コマンドライン引数のコンテナ型
@@ -361,7 +393,19 @@ cxx::ProcessHolder CreateEditorProcess(
 	si.dwFlags = STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_SHOWDEFAULT;
 
-	return CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+	// エディタープロセスを起動する
+	auto ep = CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+	EXPECT_THAT(ep, NotNull());
+
+	// 初期化完了イベントを作成する
+	SFilePath initEventName{ std::format(GSTR_EVENT_SAKURA_EP_INITIALIZED, ep.dwThreadId) };
+	cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
+
+	// 初期化完了を待つ
+	hEvent.lock();
+
+	// プロセスオブジェクトを返す
+	return cxx::ProcessHolder{ ep.release(), ep.dwProcessId, ep.dwThreadId };
 }
 
 //! 外部ウインドウにクローズを要求する
@@ -992,29 +1036,25 @@ TEST_F(WinMainFuncTest, ShowDlgGrep101)
 		EXPECT_THAT(cp, NotNull());
 
 		// エディタープロセスを起動する
-		auto ep = testing::CreateEditorProcess(std::array{ LR"(-GREPDLG)", LR"(-GREPMODE)" }, profileName);
+		auto ep = testing::CreateSakuraProcess(std::array{ LR"(-GREPDLG)", LR"(-GREPMODE)" }, profileName);
+		EXPECT_THAT(ep, NotNull());
 
 		// Grepダイアログが表示されるのを待って閉じる
-		const auto hWndDlgGrep = WaitForDialog(L"Grep");
-		EmulateInvokeButton(hWndDlgGrep, L"キャンセル(X)");
+		const auto hDlgGrep = WaitForDialog(L"Grep", 30000);
+		EXPECT_THAT(hDlgGrep, NotNull());
 
-		bool dlgClosed = false;
-		for (const auto startTick = ::GetTickCount64(); ::GetTickCount64() - startTick < 5000;) {
-			if (const auto hWndFound = ::FindWindowW(MAKEINTRESOURCEW(dialog::ModalDialogCloser::DIALOG_CLASS), L"Grep"); !hWndFound) {
-				dlgClosed = true;
-				break;
-			}
-			Sleep(10);  // 10msスリープしてリトライ
-		}
+		// Grepダイアログを閉じる
+		EmulateInvokeButton(hDlgGrep, L"キャンセル(X)");
 
-		EXPECT_TRUE(dlgClosed) << "Grep dialog should be closed.";
+		// 編集ウインドウが有効になるのを待つ
+		const auto hWndFound = WaitForEditor();
+		EXPECT_THAT(hWndFound, NotNull());
 
-		// 編集ウインドウを閉じる
-		const auto hWndFound = cxx::FindWindowW(GSTR_EDITWINDOWNAME);
+		// 編集ウインドウにクローズを要求する
 		testing::RequestForeignWindowClose(hWndFound);
 
-		// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-		testing::WaitForForeignProcessExit(ep);
+		// エディタープロセスが終了するのを待つ
+		ep.lock();
 
 		// コントロールプロセスに終了指示を出して終了を待つ
 		testing::TerminateControlProcess(profileName, cp.dwProcessId);
@@ -1033,14 +1073,18 @@ TEST_F(WinMainFuncTest, ShowDlgProfileMgr101)
 		const auto profileName{ GetProfileName() };
 
 		// エディタープロセスを起動する
-		auto ep = testing::CreateEditorProcess(std::array{ LR"(-PROFMGR)" }, profileName);
+		auto ep = testing::CreateSakuraProcess(std::array{ LR"(-PROFMGR)" }, profileName);
+		EXPECT_THAT(ep, NotNull());
 
 		// プロファイルマネージャが表示されるのを待って閉じる
 		const auto hWndDlgProfileMgr = WaitForDialog(L"プロファイルマネージャ");
+		EXPECT_THAT(hWndDlgProfileMgr, NotNull());
+
+		// プロファイルマネージャを閉じる
 		EmulateInvokeButton(hWndDlgProfileMgr, L"閉じる(X)");
 
-		// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
-		testing::WaitForForeignProcessExit(ep);
+		// エディタープロセスが終了するのを待つ
+		ep.lock();
 	});
 }
 

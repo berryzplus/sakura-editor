@@ -165,6 +165,15 @@ bool CNormalProcess::InitializeProcess()
 		return false;	// 2009.06.23 ryoji CEditWnd::Create()失敗のため終了
 	}
 
+	// エディター初期化完了イベントを開く
+	SFilePath initEventName{ std::format(GSTR_EVENT_SAKURA_EP_INITIALIZED, ::GetCurrentThreadId()) };
+	using HandleHolder = cxx::ResourceHolder<&::CloseHandle>;
+	HandleHolder hEvent{ ::OpenEventW(STANDARD_RIGHTS_REQUIRED | EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, initEventName) };
+
+	// スコープを抜けるときシグナル状態になるようにする
+	using InitEventHolder = cxx::ResourceHolder<&::SetEvent>;
+	InitEventHolder initEvent{ hEvent.get() };
+
 	/* コマンドラインの解析 */	 // 2002/2/8 aroka ここに移動
 	bDebugMode = CCommandLine::getInstance()->IsDebugMode();
 	bGrepMode  = CCommandLine::getInstance()->IsGrepMode();
@@ -434,6 +443,8 @@ bool CNormalProcess::InitializeProcess()
 
 	// 複数ファイル読み込み
 	OpenFiles( pEditWnd->GetHwnd() );
+
+	initEvent = nullptr;
 
 	return pEditWnd->GetHwnd() ? true : false;
 }
