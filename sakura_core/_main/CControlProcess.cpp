@@ -132,17 +132,6 @@ bool CControlProcess::InitializeProcess()
 
 	const auto pszProfileName = GetProfileName();
 
-	// 初期化完了イベントを作成する
-	std::wstring strInitEvent = GSTR_EVENT_SAKURA_CP_INITIALIZED;
-	strInitEvent += pszProfileName;
-	m_hEventCPInitialized = ::CreateEvent( nullptr, TRUE, FALSE, strInitEvent.c_str() );
-	if( nullptr == m_hEventCPInitialized )
-	{
-		ErrorBeep();
-		TopErrorMessage( nullptr, L"CreateEvent()失敗。\n終了します。" );
-		return false;
-	}
-
 	/* コントロールプロセスの目印 */
 	std::wstring strCtrlProcEvent = GSTR_MUTEX_SAKURA_CP;
 	strCtrlProcEvent += pszProfileName;
@@ -196,12 +185,16 @@ bool CControlProcess::InitializeProcess()
 	}
 	SetMainWindow(hwnd);
 
-	// 初期化完了イベントをシグナル状態にする
-	if( !::SetEvent( m_hEventCPInitialized ) ){
-		ErrorBeep();
-		TopErrorMessage( nullptr, LS(STR_ERR_CTRLMTX4) );
-		return false;
-	}
+	// 初期化完了イベントを開く
+	SFilePath szInitEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
+	szInitEventName.append(profileName);
+	cxx::HandleHolder hEvent{ ::OpenEventW(STANDARD_RIGHTS_REQUIRED | EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, szInitEventName) };
+
+	// スコープを抜けるときシグナル状態になるようにする
+	using InitEventHolder = cxx::ResourceHolder<&::SetEvent>;
+	InitEventHolder initEvent{ hEvent };
+
+	initEvent = nullptr;
 
 	return true;
 }
@@ -237,10 +230,6 @@ CControlProcess::~CControlProcess()
 {
 	delete m_pcTray;
 
-	if( m_hEventCPInitialized ){
-		::ResetEvent( m_hEventCPInitialized );
-	}
-	::CloseHandle( m_hEventCPInitialized );
 	if( m_hMutexCP ){
 		::ReleaseMutex( m_hMutexCP );
 	}

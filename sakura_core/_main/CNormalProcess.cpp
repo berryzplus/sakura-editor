@@ -79,6 +79,16 @@ bool CNormalProcess::InitializeProcess()
 		return false;
 	}
 
+	// コントロールプロセスを起動する
+	try {
+		CProcess::CreateControlProcess();
+
+	} catch (const std::system_error&) {
+		// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。"
+		ErrorMessage(nullptr, LS(STR_ERR_DLGNRMPROC2));
+		return false;
+	}
+
 	/* 共有メモリを初期化する */
 	GetShareData().OpenShareData(profileName);
 

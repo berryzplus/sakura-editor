@@ -40,6 +40,42 @@ std::wstring GetLocalPath(const std::wstring_view& filename)
 }
 
 /*!
+ * @brief コマンドライン引数を引用符で囲むの仕様
+ * @remark 空白を含む引数は引用符で囲まれる
+ */
+TEST(CCommandLine, QuoteArg001)
+{
+	EXPECT_THAT(CCommandLine::QuoteArg(LR"(C:\Program Files\sakura-editor\sakura.exe)"), StrEq(LR"("C:\Program Files\sakura-editor\sakura.exe")"));
+}
+
+/*!
+ * @brief コマンドライン引数を引用符で囲むの仕様
+ * @remark 末尾が引用符で終わる場合、空白を含んでいても囲まれない
+ */
+TEST(CCommandLine, QuoteArg002)
+{
+	EXPECT_THAT(CCommandLine::QuoteArg(LR"(-arg="test arg")"), StrEq(LR"(-arg="test arg")"));
+}
+
+/*!
+ * @brief コマンドライン引数を引用符で囲むの仕様
+ * @remark 空白を含まない引数は囲まれない
+ */
+TEST(CCommandLine, QuoteArg003)
+{
+	EXPECT_THAT(CCommandLine::QuoteArg(LR"(-test=arg)"), StrEq(LR"(-test=arg)"));
+}
+
+/*!
+ * @brief コマンドライン引数を引用符で囲むの仕様
+ * @remark 引用符を含んでいて、末尾が引用符で終わっていない場合、囲まれる
+ */
+TEST(CCommandLine, QuoteArg004)
+{
+	EXPECT_THAT(CCommandLine::QuoteArg(LR"(-macro="test arg";)"), StrEq(LR"("-macro=""test arg"";")"));
+}
+
+/*!
  * @brief コンストラクタ(パラメータなし)の仕様
  * @remark パラメータを何も指定しなかった状態になる
  */

@@ -54,7 +54,6 @@ private:
 
 	HANDLE			m_hMutex = nullptr;					//!< アプリケーション実行検出用ミューテックス
 	HANDLE			m_hMutexCP = nullptr;				//!< コントロールプロセスミューテックス
-	HANDLE			m_hEventCPInitialized = nullptr;	//!< コントロールプロセス初期化完了イベント 2006.04.10 ryoji
 	CControlTray*	m_pcTray = nullptr;
 };
 

@@ -43,37 +43,6 @@ void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& o
 namespace cxx {
 
 /*!
- * @brief システムエラーを例外として発生させる
- *
- * @param message 追加のエラーメッセージ
- * @throw std::system_error システムエラー例外
- * @note 使い物になるかどうか試作してみただけ
- */
-NORETURN void raise_system_error(const std::string& message) {
-	throw std::system_error(int(::GetLastError()), std::system_category(), message);
-}
-
-/*!
- * @brief トップレベルウインドウを検索する
- */
-HWND FindWindowW(std::wstring_view className, const std::optional<std::wstring>& optWindowName = std::nullopt)
-{
-	return ::FindWindowW(std::data(std::wstring(className)), optWindowName.has_value() ? std::data(*optWindowName) : nullptr);
-}
-
-/*!
- * @brief システムディレクトリのパスを取得する
- *
- * @return システムディレクトリのパス
- */
-std::filesystem::path GetSystemDirectoryW()
-{
-	SFilePath buf;
-	::GetSystemDirectoryW(buf, int(std::size(buf)));
-	return LPCWSTR(buf);
-}
-
-/*!
  * @brief テキストファイルを書き出す
  *
  * @param outPath 出力先パス
@@ -107,39 +76,6 @@ void writeTextFile(
 
 	fs.close();
 }
-
-/*!
- * @brief 起動したプロセスオブジェクト
- *
- * @note 使い物になるかどうか試作してみた
- */
-class ProcessHolder : public cxx::HandleHolder
-{
-private:
-	using Base = cxx::HandleHolder;
-	using Me = ProcessHolder;
-
-public:
-	explicit ProcessHolder(
-		HANDLE hProcess,
-		DWORD dwProcessId,
-		DWORD dwThreadId
-	)
-		: Base(hProcess)
-		, dwProcessId(dwProcessId)
-		, dwThreadId(dwThreadId)
-	{
-	}
-
-	ProcessHolder(const Me&) = delete;
-	Me& operator=(const Me&) = delete;
-
-	ProcessHolder(Me&& other) noexcept = default;
-	Me& operator=(Me&& rhs) noexcept = default;
-
-	DWORD dwProcessId;
-	DWORD dwThreadId;
-};
 
 /*!
  * @brief 起動したエディタープロセスオブジェクト
@@ -178,98 +114,6 @@ public:
 namespace testing {
 
 /*!
- * @brief コマンドライン引数を引用符で囲む
- *
- * @param arg [in] コマンドライン引数
- * @return 引用符で囲まれたコマンドライン引数
- */
-std::wstring QuoteArg(const std::wstring_view arg)
-{
-	const auto endsWithQuote = arg.ends_with(LR"(")");
-	const auto containsQuotes = std::wstring_view::npos != arg.find_first_of(LR"(")");
-	if (const auto needsEscape = std::wstring_view::npos != arg.find_first_of(L"\t ");
-		!endsWithQuote && containsQuotes)
-	{
-		return std::format(LR"("{:s}")", std::regex_replace(arg.data(), std::wregex(LR"(")"), LR"("")"));
-	}
-	else if (!endsWithQuote && needsEscape)
-	{
-		return std::format(LR"("{:s}")", arg);
-	}
-	else
-	{
-		return std::wstring(arg);
-	}
-}
-
-/*!
- * @brief サクラエディタのプロセスを起動する
- *
- * @param si スタートアップ情報
- * @param args コマンドライン引数
- * @param optWorkingDir カレントディレクトリ（省略した場合は起動元と同じ）
- * @param optProfileName プロファイル名（省略した場合は指定なし）
- * @return 起動したプロセスオブジェクト
- * @note 使い物になるかどうか試作してみた
- */
-cxx::ProcessHolder CreateSakuraProcess(
-	STARTUPINFO& si,
-	std::vector<std::wstring>& args,
-	const std::optional<std::filesystem::path>& optWorkingDir = std::nullopt,
-	const std::optional<std::wstring_view>& optProfileName = std::nullopt
-)
-{
-	const auto exePath = GetExeFileName();
-
-	if (optProfileName.has_value()) {
-		args.emplace(args.begin(), std::format(LR"(-PROF="{}")", *optProfileName));
-	}
-
-	args.emplace(args.begin(), std::format(LR"("{:s}")", exePath.native()));
-
-	auto strCommandLine = std::accumulate(args.begin(), args.end(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return std::format(LR"({} {})", a, QuoteArg(b)); });
-	strCommandLine.erase(strCommandLine.cbegin());	// 先頭のスペースを削除
-
-	auto lpszCommandLine = std::data(strCommandLine);
-
-	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
-
-	LPCWSTR lpszWorkingDir = nullptr;
-	if (optWorkingDir.has_value()) {
-		if (const auto attr = ::GetFileAttributesW(optWorkingDir->c_str());
-			INVALID_FILE_ATTRIBUTES != attr && (attr & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			lpszWorkingDir = optWorkingDir->c_str();
-		}
-	}
-
-	// プロセス情報（出力用構造体なので値は入れない）
-	PROCESS_INFORMATION pi{};
-
-	// コントロールプロセスを起動する
-	if (!::CreateProcessW(
-		exePath.c_str(),	// 実行可能モジュールパス
-		lpszCommandLine,	// コマンドラインバッファ
-		nullptr,			// プロセスのセキュリティ記述子
-		nullptr,			// スレッドのセキュリティ記述子
-		FALSE,				// ハンドルの継承オプション(継承させない)
-		dwCreationFlag,		// 作成のフラグ
-		nullptr,			// 環境変数(変更しない)
-		lpszWorkingDir,		// カレントディレクトリ(変更しない)
-		&si,				// スタートアップ情報
-		&pi					// プロセス情報(作成されたプロセス情報を格納する構造体)
-	))
-	{
-		cxx::raise_system_error("create process failed.");
-	}
-
-	// 開いたハンドルは使わないので閉じておく
-	::CloseHandle(pi.hThread);
-
-	return cxx::ProcessHolder{ pi.hProcess, pi.dwProcessId, pi.dwThreadId };
-}
-
-/*!
  * @brief コントロールプロセスを起動する
  *
  * @param profileName プロファイル名
@@ -278,35 +122,7 @@ cxx::ProcessHolder CreateSakuraProcess(
  */
 cxx::ProcessHolder CreateControlProcess(std::wstring_view profileName)
 {
-	// 初期化完了イベントの名前を決める
-	SFilePath initEventName{ GSTR_EVENT_SAKURA_CP_INITIALIZED };
-	initEventName += profileName;
-
-	// プロセス起動前に初期化完了イベントを作成する
-	cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
-	if (!hEvent || ERROR_ALREADY_EXISTS == ::GetLastError()) {
-		cxx::raise_system_error("create event failed.");
-	}
-
-	std::wstring title{ L"sakura control process" };
-
-	// スタートアップ情報（入力用構造体なので値を入れる）
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.lpTitle = std::data(title);
-	si.wShowWindow = SW_SHOWDEFAULT;
-
-	std::vector<std::wstring> commandArgs{ LR"(-NOWIN)" };
-
-	// コントロールプロセスを起動する
-	auto cp = CreateSakuraProcess(si, commandArgs, cxx::GetSystemDirectoryW(), profileName);
-	EXPECT_THAT(cp, NotNull());
-
-	// 初期化完了を待つ
-	hEvent.lock();
-
-	// プロセスオブジェクトを返す
-	return cxx::ProcessHolder{ cp.release(), cp.dwProcessId, cp.dwThreadId };
+	return CProcess::CreateControlProcess(std::wstring{ profileName });
 }
 
 /*!
@@ -334,11 +150,11 @@ cxx::ProcessHolder CreateSakuraProcess(
 	si.wShowWindow = SW_SHOWDEFAULT;
 
 	// エディタープロセスを起動する
-	auto ep = CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+	auto ep = CProcess::CreateSakuraProcess(si, commandArgs, std::nullopt, std::wstring{ profileName });
 	EXPECT_THAT(ep, NotNull());
 
 	// プロセスオブジェクトを返す
-	return cxx::ProcessHolder{ ep.release(), ep.dwProcessId, ep.dwThreadId };
+	return ep;
 }
 
 /*!
@@ -389,7 +205,7 @@ cxx::EditorProcessHolder CreateEditorProcess(
 	si.wShowWindow = SW_SHOWDEFAULT;
 
 	// エディタープロセスを起動する
-	auto ep = CreateSakuraProcess(si, commandArgs, std::nullopt, profileName);
+	auto ep = CProcess::CreateSakuraProcess(si, commandArgs, std::nullopt, std::wstring{ profileName });
 	EXPECT_THAT(ep, NotNull());
 
 	// 初期化完了イベントを作成する
@@ -482,6 +298,11 @@ TEST(HandleHolder, Lock101)
 	// ハンドルを開かずにロックを試み、失敗させる
 	cxx::HandleHolder handle{};
 	EXPECT_THAT(handle.Lock(), IsFalse());
+}
+
+TEST(raise_system_error, test01)
+{
+	EXPECT_THROW({ raise_system_error("test"); }, std::system_error);
 }
 
 } // namespace cxx

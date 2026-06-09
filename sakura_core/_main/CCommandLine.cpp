@@ -12,7 +12,7 @@
 	Copyright (C) 2005, D.S.Koba, genta, susu
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -171,6 +171,28 @@ int CCommandLine::CheckCommandLine(
 		}
 	}
 	return 0;	//	該当無し
+}
+
+/*!
+ * @brief コマンドライン引数を引用符で囲む
+ *
+ * @param arg [in] コマンドライン引数
+ * @return 引用符で囲まれたコマンドライン引数
+ */
+/* static */ std::wstring CCommandLine::QuoteArg(const std::wstring_view arg)
+{
+	const auto endsWithQuote = arg.ends_with(LR"(")");
+	const auto containsQuotes = std::wstring_view::npos != arg.find_first_of(LR"(")");
+	if (const auto needsEscape = std::wstring_view::npos != arg.find_first_of(L"\t ");
+		containsQuotes && !endsWithQuote) {
+		std::wstring quoted(LR"(")");
+		std::regex_replace(std::back_inserter(quoted), arg.begin(), arg.end(), std::wregex(LR"(")"), LR"("")");
+		quoted += L'"';
+		return quoted;
+	} else if (!needsEscape || endsWithQuote) {
+		return std::wstring(arg);
+	}
+	return std::format(LR"("{:s}")", arg);
 }
 
 /*! 

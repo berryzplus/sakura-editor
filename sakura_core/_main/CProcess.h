@@ -22,6 +22,71 @@
 #include "env/CShareData.h"
 #include "util/design_template.h"
 
+namespace cxx {
+
+/*!
+ * @brief システムエラーを例外として発生させる
+ *
+ * @param message 追加のエラーメッセージ
+ * @throw std::system_error システムエラー例外
+ */
+[[noreturn]] inline void raise_system_error(const std::string& message) { throw std::system_error(int(::GetLastError()), std::system_category(), message); }
+
+/*!
+ * @brief トップレベルウインドウを検索する
+ */
+inline HWND FindWindowW(std::wstring_view className, const std::optional<std::wstring>& optWindowName = std::nullopt)
+{
+	return ::FindWindowW(std::data(std::wstring(className)), optWindowName.has_value() ? std::data(*optWindowName) : nullptr);
+}
+
+/*!
+ * @brief システムディレクトリのパスを取得する
+ *
+ * @return システムディレクトリのパス
+ */
+inline std::filesystem::path GetSystemDirectoryW()
+{
+	SFilePath buf;
+	::GetSystemDirectoryW(buf, int(std::size(buf)));
+	return LPCWSTR(buf);
+}
+
+/*!
+ * @brief 起動したプロセスオブジェクト
+ */
+class ProcessHolder : public cxx::HandleHolder
+{
+private:
+	using Base = cxx::HandleHolder;
+	using Me = ProcessHolder;
+
+public:
+	explicit ProcessHolder(
+		HANDLE hProcess,
+		DWORD dwProcessId,
+		DWORD dwThreadId
+	)
+		: Base(hProcess)
+		, dwProcessId(dwProcessId)
+		, dwThreadId(dwThreadId)
+	{
+	}
+
+	ProcessHolder() = default;
+
+	ProcessHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	ProcessHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
+	DWORD dwProcessId = 0;
+	DWORD dwThreadId = 0;
+};
+
+} // namespace cxx
+
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
@@ -30,6 +95,17 @@
 */
 class CProcess : public TSingleInstance<CProcess> {
 public:
+	static cxx::ProcessHolder CreateSakuraProcess(
+		STARTUPINFO& si,
+		std::vector<std::wstring>& args,
+		const std::optional<std::filesystem::path>& optWorkingDir = std::nullopt,
+		const std::optional<std::wstring>& optProfileName = std::nullopt
+	);
+
+	static cxx::ProcessHolder CreateControlProcess(
+		const std::optional<std::wstring>& optProfileName = std::nullopt
+	);
+
 	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
 	~CProcess() override = default;
 
