@@ -630,7 +630,9 @@ struct TWinMainTest : public T, public window::UiaTestSuite {
 		constexpr std::array iniLines = {
 			// 全般設定を出力
 			u8"[Common]"sv,
-			u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+			u8"szLanguageDll="sv,			// 言語DLLの指定(空にすると日本語になる)
+			u8"bTaskTrayUse=1"sv,			// タスクトレイのアイコンを使う
+			u8"bTaskTrayStay=1"sv,			// タスクトレイのアイコンを常駐
 		};
 		cxx::writeTextFile(iniPath, iniLines);
 	}
@@ -698,6 +700,9 @@ TEST_P(WinMainTest, runWithNoWin)
 {
 	// テスト用プロファイル名
 	const auto profileName(GetParam());
+
+	// 設定ファイルの出力を確認したいので、テストスイートの設定ファイルを削除する
+	std::filesystem::remove(iniPath);
 
 	// コントロールプロセスを起動し、終了指示を出して、終了を待つ
 	CControlProcess_StartAndTerminate(profileName);
