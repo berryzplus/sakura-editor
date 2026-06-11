@@ -107,15 +107,6 @@ def parse_args(argv: list[str]) -> tuple[str, str, str, str] | int:
     return in_file, out_file, mode_name, enum_name
 
 
-def needs_regeneration(in_file: Path, out_file: Path) -> bool:
-    try:
-        in_mtime = in_file.stat().st_mtime
-        out_mtime = out_file.stat().st_mtime
-    except OSError:
-        return True
-    return in_mtime > out_mtime
-
-
 def strip_comments_keep_state(line: str, in_block_comment: bool) -> tuple[str, bool]:
     out_chars: list[str] = []
     i = 0
@@ -251,10 +242,6 @@ def main_impl(in_file: str, out_file: str, mode_name: str, enum_name: str) -> in
         print(f"  Specified: {out_path}")
         return 4
 
-    if not needs_regeneration(in_path, out_path):
-        print(f"OutputFile[{out_file}] needs no change.")
-        return 0
-
     entries = list(iter_definitions(in_path))
     text = render_output(in_file, mode, enum_name, entries)
 
@@ -266,19 +253,17 @@ def main_impl(in_file: str, out_file: str, mode_name: str, enum_name: str) -> in
 
 
 def main(argv: list[str]) -> int:
+    if len(argv) <= 1:
+        return usage()
+
     parsed = parse_args(argv)
     if isinstance(parsed, int):
         return parsed
 
     in_file, out_file, mode_name, enum_name = parsed
 
-    print("\nSTART HeaderMake.")
-    print("CMDLINE: " + " ".join(argv) + " ")
-    print("")
-
     result = main_impl(in_file, out_file, mode_name, enum_name)
 
-    print("\nEND HeaderMake.\n")
     return result
 
 

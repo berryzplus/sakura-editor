@@ -6,7 +6,6 @@ Tests cover:
 - Comment stripping (line, block, nested)
 - Token extraction and filtering
 - Output formatting (define and enum modes)
-- Timestamp-based regeneration skipping
 - End-to-end execution flows
 """
 
@@ -249,52 +248,6 @@ class TestOutputFormatting:
         assert "#ifndef" in output
         assert "#define" in output
         assert "#endif" in output
-
-
-class TestTimestampSkipping:
-    """Test timestamp-based regeneration skipping."""
-    
-    def test_needs_regeneration_when_output_missing(self):
-        """Regeneration needed when output file doesn't exist."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            in_file = Path(tmpdir) / "input.txt"
-            in_file.write_text("MY_ID = 42\n")
-            out_file = Path(tmpdir) / "output.txt"
-            
-            result = header_make.needs_regeneration(in_file, out_file)
-            assert result is True
-    
-    def test_needs_regeneration_when_input_newer(self):
-        """Regeneration needed when input mtime > output mtime."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            in_file = Path(tmpdir) / "input.txt"
-            out_file = Path(tmpdir) / "output.txt"
-            
-            # Create output first (older)
-            out_file.write_text("old content")
-            time.sleep(0.01)
-            
-            # Create input later (newer)
-            in_file.write_text("MY_ID = 42\n")
-            
-            result = header_make.needs_regeneration(in_file, out_file)
-            assert result is True
-    
-    def test_skip_regeneration_when_output_newer(self):
-        """Skip regeneration when output mtime > input mtime."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            in_file = Path(tmpdir) / "input.txt"
-            out_file = Path(tmpdir) / "output.txt"
-            
-            # Create input first (older)
-            in_file.write_text("MY_ID = 42\n")
-            time.sleep(0.01)
-            
-            # Create output later (newer)
-            out_file.write_text("fresh content")
-            
-            result = header_make.needs_regeneration(in_file, out_file)
-            assert result is False
 
 
 class TestMainExecution:
