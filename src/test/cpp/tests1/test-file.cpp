@@ -9,17 +9,21 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 
+#include <fcntl.h>
+#include <io.h>
+
 #include <cstdlib>
 #include <fstream>
 
-#include "config/maxdata.h"
-#include "basis/primitive.h"
-#include "debug/Debug2.h"
+#include "_main/CProcessFactory.h"
 #include "basis/CMyString.h"
+#include "basis/primitive.h"
+#include "config/maxdata.h"
+#include "debug/Debug2.h"
+#include "env/CDataProfile.h"
+#include "io/CTextStream.h"
 #include "mem/CNativeW.h"
 #include "env/DLLSHAREDATA.h"
-#include "_main/CProcessFactory.h"
-#include "env/CDataProfile.h"
 #include "util/file.h"
 
 std::filesystem::path GetIniFileNameForIO(bool bWrite);
@@ -99,19 +103,140 @@ private:
 
 #endif // defined(_MSC_VER) && defined(_DEBUG)
 
-TEST(CopyDirDir, test001)
+/*!
+ * 
+ */
+TEST(CFileAttribute, test101)
 {
-	WCHAR szTemp[_MAX_PATH];
-	EXPECT_THAT(CopyDirDir(szTemp, L"Windows", LR"(C:)"), StrEq(LR"(C:\Windows\)"));
+	// 一時フォルダーのパスを取得する
+	SFilePath szTempDir;	//本当は _MAX_PATH + 1
+	::GetTempPath2W(std::size(szTempDir), szTempDir);
+	const auto tempDir = std::filesystem::path{ szTempDir };
+
+	std::wstring_view prefix{ L"tests1_" };
+	std::wstring_view ext{ L".tmp" };
+
+	std::filesystem::path path;
+	for(;;) {
+		path =
+			tempDir /
+			std::format(L"{:s}{:x}{:s}", prefix, LOWORD(::GetTickCount64()), ext);
+
+		// ファイル出力ストリームを開いてデータを書き込む
+		std::ofstream os(path);
+		os << "test" << std::endl;
+		os.close();
+
+		break;
+	}
+
+	// ファイルの属性を取得
+	auto dwAttribute_Old = ::GetFileAttributesW(path.c_str());
+
+	FILE* fp = nullptr;
+
+	// 通常ファイルは開ける
+	EXPECT_THAT(0 == ::_wfopen_s(&fp, path.c_str(), L"w+b"), IsTrue());
+	if (fp) ::fclose(fp);
+
+	auto pStream = std::make_unique<CStream>(path.c_str(), L"w+b");
+	EXPECT_THAT(*pStream, IsTrue());
+	pStream->SeekEnd(0);	//呼ぶだけ
+	pStream = nullptr;
+
+	// 隠し属性を付与したら開けなくなる
+	::SetFileAttributesW(path.c_str(), dwAttribute_Old | FILE_ATTRIBUTE_HIDDEN);
+	EXPECT_THAT(0 == ::_wfopen_s(&fp, path.c_str(), L"w+b"), IsFalse());
+	if (fp) ::fclose(fp);
+
+	auto file1 = FileHolder::OpenFilePath(path, L"w+b");
+	EXPECT_THAT(file1, IsTrue());
+	file1 = nullptr;
+
+	// システム属性を付与したら開けなくなる
+	::SetFileAttributesW(path.c_str(), dwAttribute_Old | FILE_ATTRIBUTE_SYSTEM);
+	EXPECT_THAT(0 == ::_wfopen_s(&fp, path.c_str(), L"w+b"), IsFalse());
+	if (fp) ::fclose(fp);
+
+	auto file2 = FileHolder::OpenFilePath(path, L"w+b");
+	EXPECT_THAT(file2, IsTrue());
+	file2 = nullptr;
+
+	std::error_code ec;
+	std::filesystem::remove(path, ec);
 }
 
-TEST(CopyDirDir, test002)
+/*!
+ * @brief FileHolder コンストラクターのテスト
+ *
+ * ファイルディスクリプターを指定してCストリームを開く。
+ */
+TEST(FileHolder, openByFd101)
 {
-	WCHAR szTemp[_MAX_PATH];
-	EXPECT_THAT(CopyDirDir(szTemp, LR"(C:\Windows)", LR"(A:)"), StrEq(LR"(C:\Windows\)"));
+#if defined(_MSC_VER) && defined(_DEBUG)
+
+	// 一時フォルダーのパスを取得する
+	SFilePath szTempDir;	//本当は _MAX_PATH + 1
+	::GetTempPath2W(std::size(szTempDir), szTempDir);
+	const auto tempDir = std::filesystem::path{ szTempDir };
+
+	std::wstring_view prefix{ L"tests1_" };
+	std::wstring_view ext{ L".tmp" };
+
+	int fd;
+	for(;;) {
+		auto path =
+			tempDir /
+			std::format(L"{:s}{:x}{:s}", prefix, LOWORD(::GetTickCount64()), ext);
+
+		HANDLE hFile = ::CreateFileW(
+			path.c_str(),
+			GENERIC_READ | DELETE,
+			FILE_SHARE_READ | FILE_SHARE_DELETE,
+			nullptr,
+			CREATE_NEW,
+			FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+			nullptr
+		);
+
+		if (INVALID_HANDLE_VALUE == hFile) {
+			continue;
+		}
+
+		// OSのファイルハンドルからファイル記述子を開く
+		fd = ::_open_osfhandle(
+			intptr_t(hFile),
+			_O_RDONLY | _O_BINARY
+		);
+
+		// 失敗した場合、-1 になる
+		if (-1 == fd) {
+			// 成功時と挙動を合わせるため、自分で閉じておく
+			::CloseHandle(hFile);
+
+			continue;
+		}
+
+		// hFileの所有権はCRTに移っている
+		break;
+	}
+
+	MsvcInvalidParameterHandlerDisabler disabler{};	// 無効なパラメーターハンドラーを無効化
+
+	MsvcReportMode reportMode{}; // アサーションダイアログを抑制
+
+	auto file = cxx::FileHolder{ fd, L"" };	// 不正なモードを指定して失敗させる
+	EXPECT_THAT(file, IsFalse());
+
+#endif // defined(_MSC_VER) && defined(_DEBUG)
 }
 
-TEST(CopyDirDir, test101)
+/*!
+ * @brief OpenFromHandle() のテスト
+ *
+ * OSハンドルを指定してCストリームを開くメソッド。
+ */
+TEST(FileHolder, OpenFromHandle101)
 {
 #if defined(_MSC_VER) && defined(_DEBUG)
 
@@ -119,38 +244,66 @@ TEST(CopyDirDir, test101)
 
 	MsvcReportMode reportMode{}; // アサーションダイアログを抑制
 
-	WCHAR szTemp5[5];	// バッファ不足を発生させる
-	EXPECT_THAT(CopyDirDir(szTemp5, L"Windows", LR"(C:)"), StrEq(L""));	// 入りきらない場合、バッファは空になる
+	auto file = FileHolder::OpenFromHandle(INVALID_HANDLE_VALUE, L"path/to/file");	// 無効なOSハンドルを指定して失敗させる
+	EXPECT_THAT(file, IsFalse());
 
 #endif // defined(_MSC_VER) && defined(_DEBUG)
 }
 
-TEST(CopyDirDir, test102)
+TEST(CStream, MoveAssignment001)
 {
-#if defined(_MSC_VER) && defined(_DEBUG)
+	const auto tempPath = std::filesystem::temp_directory_path() /
+		std::format(L"tests1_stream_move_assign_{:x}.tmp", LOWORD(::GetTickCount64()));
 
-	MsvcInvalidParameterHandlerDisabler disabler{};	// 無効なパラメーターハンドラーを無効化
+	CStream src(tempPath.c_str(), L"w+b");
+	EXPECT_THAT(src, IsTrue());
 
-	MsvcReportMode reportMode{}; // アサーションダイアログを抑制
+	CStream dst{ std::move(src) };
 
-	WCHAR szTemp3[3];	// バッファ不足を発生させる
-	EXPECT_THAT(CopyDirDir(szTemp3, L"Windows", LR"(C:)"), StrEq(L""));	// 入りきらない場合、バッファは空になる
+	EXPECT_THAT(dst, IsTrue());
+	EXPECT_THAT(src, IsFalse());
 
-#endif // defined(_MSC_VER) && defined(_DEBUG)
+	constexpr char kData[] = "abc";
+	EXPECT_THAT(::fwrite(kData, 1, std::size(kData) - 1, dst.GetFp()), Eq(std::size(kData) - 1));
+
+	dst = std::move(dst);
+
+	dst.Close();
+	EXPECT_THAT(dst, IsFalse());
+
+	std::error_code ec;
+	std::filesystem::remove(tempPath, ec);
 }
 
-TEST(CopyDirDir, test103)
+TEST(CTextOutputStream, CreateTempFile001)
 {
-#if defined(_MSC_VER) && defined(_DEBUG)
+	auto file = CTextOutputStream::CreateTempFile(L"tests1_", std::nullopt, L".txt");
+	EXPECT_THAT(file, IsTrue());
+}
 
-	MsvcInvalidParameterHandlerDisabler disabler{};	// 無効なパラメーターハンドラーを無効化
+TEST(CTextOutputStream, MoveAssignment001)
+{
+	auto src = CTextOutputStream::CreateTempFile(L"tests1_textstream_move_src_", std::nullopt, L".txt");
+	auto dst = CTextOutputStream::CreateTempFile(L"tests1_textstream_move_dst_", std::nullopt, L".txt");
 
-	MsvcReportMode reportMode{}; // アサーションダイアログを抑制
+	EXPECT_THAT(src, IsTrue());
+	EXPECT_THAT(dst, IsTrue());
 
-	WCHAR szTemp11[11];	// バッファ不足を発生させる
-	EXPECT_THAT(CopyDirDir(szTemp11, L"Windows", LR"(C:)"), StrEq(L""));	// 入りきらない場合、バッファは空になる
+	dst = std::move(src);
 
-#endif // defined(_MSC_VER) && defined(_DEBUG)
+	EXPECT_THAT(dst, IsTrue());
+	EXPECT_THAT(src, IsFalse());
+
+	// ムーブ後も WriteLineW/WriteString が利用可能なことを確認
+	dst.WriteLineW(L"line1");
+	dst.WriteString(L"line2");
+	EXPECT_THAT(dst, IsTrue());
+
+	dst = std::move(dst);
+
+	auto dst2{ std::move(dst) };
+	EXPECT_THAT(dst2, IsTrue());
+	EXPECT_THAT(dst, IsFalse());
 }
 
 } // namespace cxx

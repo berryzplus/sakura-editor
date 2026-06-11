@@ -1,13 +1,129 @@
 ﻿/*! @file */
 /*
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
 #include "StdAfx.h"
 #include "io/CFile.h"
+
 #include "window/CEditWnd.h" // 変更予定
+
+#include <sys/types.h>
+#include <sys/stat.h>	// _fstat で必要。先に sys/types.h をincludeする必要がある。
+
+#include <fcntl.h>
+#include <io.h>
+
 #include "CSelectLang.h"
+
+namespace cxx {
+
+/* static */ NamedFileHolder FileHolder::CreateTempFile(
+	const std::filesystem::path& path
+)
+{
+	HANDLE hFile = ::CreateFileW(
+		path.c_str(),
+		GENERIC_READ | GENERIC_WRITE | DELETE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+		nullptr,
+		CREATE_NEW,
+		FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+		nullptr
+	);
+
+	return OpenFromHandle(hFile, path);
+}
+
+/* static */ NamedFileHolder FileHolder::OpenFilePath(
+	const std::filesystem::path& path,
+	std::wstring_view mode
+)
+{
+	// パスは必須。既存コードが空パスで呼ぶので、エラーにできない。
+	if (path.empty()) return NamedFileHolder{};
+
+	// モードも必須。省略すると fopen で落ちる。
+	if (mode.empty()) throw std::invalid_argument("missing mode");
+
+	const std::wstring strPath{ path };
+	const std::wstring strMode{ mode };
+
+	const auto pszPath = strPath.c_str();
+	const auto pszMode = strMode.c_str();
+
+	if (FILE* fp = nullptr; 0 == ::_wfopen_s(&fp, pszPath, pszMode)) {
+		// 通常ファイルはここで開けるはず
+		return NamedFileHolder{ FileHolder{ fp }, path };
+	}
+
+	DWORD dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+    DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+
+	// OSのファイルハンドルを開く
+	HANDLE hFile = ::CreateFileW(
+		pszPath,
+		dwDesiredAccess | DELETE,
+		dwShareMode | FILE_SHARE_DELETE,
+		nullptr,
+		OPEN_EXISTING,
+		0L,				// 属性は指定しない
+		nullptr
+	);
+
+	if (INVALID_HANDLE_VALUE == hFile) {
+		// 削除権限を要求せずリトライする
+		hFile = ::CreateFileW(
+			pszPath,
+			dwDesiredAccess,
+			dwShareMode,
+			nullptr,
+			OPEN_EXISTING,
+			0L,
+			nullptr
+		);
+	}
+
+	return OpenFromHandle(hFile, path);
+}
+
+/* static */ NamedFileHolder FileHolder::OpenFromHandle(HANDLE hFile, const std::filesystem::path& path)
+{
+	// OSのファイルハンドルからファイル記述子を開く
+	const auto fd = ::_open_osfhandle(
+		intptr_t(hFile),
+		_O_RDWR | _O_BINARY
+	);
+
+	// 失敗した場合、-1 になる
+	if (-1 == fd) {
+		// 成功時と挙動を合わせるため、自分で閉じておく
+		::CloseHandle(hFile);
+
+		return NamedFileHolder{};	// 開けなかった
+	}
+
+	// hFileの所有権はCRTに移っている
+
+	return NamedFileHolder{ FileHolder{ fd, L"w+b" }, path};
+}
+
+FileHolder::FileHolder(int fd, std::wstring_view mode)
+{
+	assert(fd != -1);
+
+	// fdからCストリームを開く
+	if (FILE* fp = ::_wfdopen(fd, std::data(mode))) {
+		reset(fp);
+	}
+	// 開けなかった場合、有効なfdなら_closeしておく
+	else {
+		::_close(fd); // 元のhFileも閉じられる
+	}
+}
+
+} // namespace cxx
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //

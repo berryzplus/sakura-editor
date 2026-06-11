@@ -16,12 +16,8 @@
 #define SAKURA_CTEXTSTREAM_CF4FEC73_4575_4B80_98F7_CFCBC0B433CD_H_
 #pragma once
 
-#include <string>
-
-#include "CStream.h"
-#include "charset/charset.h"
-
-class CCodeBase;
+#include "charset/CCodeBase.h"
+#include "io/CStream.h"
 
 //テキスト入力ストリーム (UTF-8, SJIS)
 class CTextInputStream : public CStream{
@@ -52,11 +48,22 @@ private:
 	using Me = CTextOutputStream;
 
 public:
+	static Me CreateTempFile(
+		std::wstring_view prefix,
+		const std::optional<std::filesystem::path>& optTempDir = std::nullopt,
+		const std::optional<std::wstring>& optExt = std::nullopt
+	);
+
 	//コンストラクタ・デストラクタ
+	CTextOutputStream() = default;
+	explicit CTextOutputStream(cxx::NamedFileHolder&& file, ECodeType eCodeType = CODE_UTF8, bool bBom = true, bool bExceptionMode = false);
 	explicit CTextOutputStream(const std::filesystem::path& path, ECodeType eCodeType = CODE_UTF8, bool bExceptionMode = false, bool bBom = true);
 
 	CTextOutputStream(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
+
+	CTextOutputStream(Me&& rhs) noexcept;
+	Me& operator = (Me&& rhs) noexcept;
 
 	~CTextOutputStream() override;
 
@@ -73,7 +80,7 @@ public:
 private:
 	void WriteString(std::wstring_view text);
 
-	CCodeBaseHolder	m_pcCodeBase;
+	CCodeBaseHolder			m_pcCodeBase = nullptr;
 };
 
 //テキスト入力ストリーム。相対パスの場合はINIファイルのパスからの相対パスとして開く。

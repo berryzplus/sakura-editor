@@ -25,17 +25,17 @@ std::wstring_view MultiByteToWideChar(UINT codePage, std::string_view source, st
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 CTextInputStream::CTextInputStream(const std::filesystem::path& path)
-	: CStream(path.c_str(), L"rb")
+	: CStream(OpenFilePath(path, L"rb"))
 {
-	constexpr std::array UTF8_BOM = {
-		static_cast<char8_t>(0xEF),
-		static_cast<char8_t>(0xBB),
-		static_cast<char8_t>(0xBF),
-	};
-
-	assert(std::size(UTF8_BOM) <= std::size(m_Buffer));
-
 	if(Good()){
+		constexpr std::array UTF8_BOM = {
+			static_cast<char8_t>(0xEF),
+			static_cast<char8_t>(0xBB),
+			static_cast<char8_t>(0xBF),
+		};
+
+		assert(std::size(UTF8_BOM) <= std::size(m_Buffer));
+
 		//BOM確認 -> m_bIsUtf8
 		if (const auto cbUtf8Bom = std::size(UTF8_BOM);
 			cbUtf8Bom == ::fread(std::data(m_Buffer), 1, cbUtf8Bom, GetFp())) {
@@ -44,7 +44,7 @@ CTextInputStream::CTextInputStream(const std::filesystem::path& path)
 
 		//UTF-8じゃなければ、ファイルポインタを元に戻す
 		if(!m_bIsUtf8){
-			fseek(GetFp(),0,SEEK_SET);
+			SeekSet(0);
 		}
 	}
 }
@@ -123,23 +123,97 @@ std::wstring CTextInputStream::ReadLineW()
 //                     CTextOutputStream                       //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
+/*!
+ * 新しいテンポラリファイルパスを生成する
+ * Windows APIが生成したパスを「開いて閉じる」ため、呼ぶとファイルが生成される
+ *
+ * 生成されるパスの形式は以下の通り。
+ * C:\Users\berryzplus\AppData\Local\Temp\tesC85A.tmp
+ *
+ * @param [in] prefix ファイル名の前に付ける3文字の接頭辞。
+ * @param [in, opt] optTempDir 一時フォルダーのパス。指定しない場合はシステムの一時フォルダーを使う。
+ */
+/* static */ CTextOutputStream CTextOutputStream::CreateTempFile(
+	std::wstring_view prefix,
+	const std::optional<std::filesystem::path>& optTempDir,
+	const std::optional<std::wstring>& optExt
+)
+{
+	// 一時フォルダーのパスを取得する
+	std::filesystem::path tempDir;
+	if (!optTempDir.has_value() || !fexist(*optTempDir)) {
+		SFilePath szTempDir;	//本当は _MAX_PATH + 1
+		::GetTempPath2W(std::size(szTempDir), szTempDir);
+		tempDir = std::filesystem::path{ szTempDir };
+	} else {
+		tempDir = optTempDir.value();
+	}
+
+	// 一時ファイルの拡張子を取得する
+	std::wstring_view ext;
+	if (!optExt.has_value()) {
+		ext = L".tmp";
+	} else {
+		ext = optExt.value();
+	}
+
+	NamedFileHolder file;
+	while (!file) {
+		auto path =
+			tempDir /
+			std::format(L"{:s}{:x}{:s}", prefix, LOWORD(::GetTickCount64()), ext);
+
+		file = FileHolder::CreateTempFile(path);
+	}
+
+	return CTextOutputStream{ std::move(file) };
+}
+
+CTextOutputStream::CTextOutputStream(
+	cxx::NamedFileHolder&& file,
+	ECodeType eCodeType,
+	bool bBom,
+	bool bExceptionMode
+)
+	: CStream(std::move(file), bExceptionMode)
+	, m_pcCodeBase { CCodeFactory::CreateCodeBase(eCodeType) }
+{
+	if(Good() && bBom){
+		//BOM付加
+		CMemory cmemBom;
+		m_pcCodeBase->GetBom(&cmemBom);
+		if (0 < cmemBom.GetRawLength()) {
+			::fwrite(cmemBom.GetRawPtr(), cmemBom.GetRawLength(), 1, GetFp());
+		}
+	}
+}
+
 CTextOutputStream::CTextOutputStream(
 	const std::filesystem::path& path,
 	ECodeType eCodeType,
 	bool bExceptionMode,
 	bool bBom
 )
-	: CStream(path.c_str(), L"wb", bExceptionMode)
-	, m_pcCodeBase{ CCodeFactory::CreateCodeBase(eCodeType) }
+	: CTextOutputStream(OpenFilePath(path, L"wb"), eCodeType, bBom, bExceptionMode)
 {
-	if(Good() && bBom){
-		//BOM付加
-		CMemory cmemBom;
-		m_pcCodeBase->GetBom(&cmemBom);
-		if(cmemBom.GetRawLength()>0){
-			fwrite(cmemBom.GetRawPtr(),cmemBom.GetRawLength(),1,GetFp());
-		}
+}
+
+CTextOutputStream::CTextOutputStream(Me&& rhs) noexcept
+	: Base(std::move(rhs))
+	, m_pcCodeBase(std::move(rhs.m_pcCodeBase))
+{
+}
+
+CTextOutputStream& CTextOutputStream::operator = (Me&& rhs) noexcept
+{
+	if (this == &rhs) {
+		return *this;
 	}
+
+	Base::operator = (std::move(rhs));
+	m_pcCodeBase = std::move(rhs.m_pcCodeBase);
+
+	return *this;
 }
 
 CTextOutputStream::~CTextOutputStream()

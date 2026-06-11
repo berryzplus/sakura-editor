@@ -10,7 +10,79 @@
 #pragma once
 
 #include "basis/CMyString.h" //CFilePath
+#include "cxx/ResourceHolder.hpp"
 #include "util/file.h"
+
+namespace cxx {
+
+class NamedFileHolder;
+
+/*!
+ * @brief Cストリーム型のスマートポインター
+ */
+class FileHolder : public cxx::ResourceHolder<&::fclose>
+{
+private:
+	using Base = cxx::ResourceHolder<&::fclose>;
+	using Me = FileHolder;
+
+public:
+	static NamedFileHolder CreateTempFile(const std::filesystem::path& path);
+
+	static NamedFileHolder OpenFilePath(const std::filesystem::path& path, std::wstring_view mode);
+
+	static NamedFileHolder OpenFromHandle(HANDLE hFile, const std::filesystem::path& path);
+
+	/*!
+	 * コンストラクタは流用する
+	 */
+	using Base::Base;
+
+	explicit FileHolder(int fd, std::wstring_view mode);
+
+	FileHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	FileHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+};
+
+/*!
+ * @brief Cストリーム型のスマートポインター
+ */
+class NamedFileHolder : public cxx::FileHolder
+{
+private:
+	using Base = cxx::FileHolder;
+	using Me = NamedFileHolder;
+
+public:
+	/*!
+	 * コンストラクタは流用する
+	 */
+	using Base::Base;
+
+	explicit NamedFileHolder(FileHolder&& file, const std::filesystem::path& path)
+		: Base(std::move(file))
+		, m_Path{ path }
+	{
+	}
+
+	NamedFileHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	NamedFileHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
+	virtual ~NamedFileHolder() = default;
+
+	std::filesystem::path	GetPath() const noexcept { return m_Path; }
+
+private:
+	std::filesystem::path m_Path;
+};
+
+} // namespace cxx
 
 //!ファイルの排他制御モード  2007.10.11 kobake 作成
 enum EShareMode{
