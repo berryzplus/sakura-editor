@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -22,9 +22,22 @@ public:
 	int Read(void* pBuffer, size_t nSizeInBytes);
 };
 
-class CBinaryOutputStream final : public COutputStream{
+class CBinaryOutputStream final : public CStream{
+private:
+	using Base = CStream;
+	using Me = CBinaryOutputStream;
+
 public:
 	CBinaryOutputStream(LPCWSTR pszFilePath, bool bExceptionMode = false);
+
+	//! データを無変換で書き込む。戻り値は書き込んだバイト数。
+	template <typename T>
+	int Write(const T* pBuffer, size_t nSizeInBytes) const
+	{
+		size_t nRet = ::fwrite(pBuffer, 1, nSizeInBytes, GetFp());
+		if (nRet != nSizeInBytes && IsExceptionMode()) throw CError_FileWrite();
+		return static_cast<int>(nRet);
+	}
 };
 
 #endif /* SAKURA_CBINARYSTREAM_856F71C1_27E0_4075_BA32_245D18E142BA_H_ */

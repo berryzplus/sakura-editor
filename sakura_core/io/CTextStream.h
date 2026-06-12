@@ -44,11 +44,11 @@ private:
 
 //テキスト出力ストリーム
 // 2008.01.26 kobake 出力文字コードを任意で指定できるように変更
-class CTextOutputStream final : public COutputStream{
+class CTextOutputStream final : public CStream {
 private:
 	using CCodeBaseHolder = std::unique_ptr<CCodeBase>;
 
-	using Base = COutputStream;
+	using Base = CStream;
 	using Me = CTextOutputStream;
 
 public:

@@ -29,6 +29,6 @@ int CBinaryInputStream::Read(void* pBuffer, size_t nSizeInBytes)
 }
 
 CBinaryOutputStream::CBinaryOutputStream(LPCWSTR pszFilePath, bool bExceptionMode)
-: COutputStream(pszFilePath,L"wb",bExceptionMode)
+	: CStream(pszFilePath, L"wb", bExceptionMode)
 {
 }

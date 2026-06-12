@@ -129,7 +129,7 @@ CTextOutputStream::CTextOutputStream(
 	bool bExceptionMode,
 	bool bBom
 )
-	: COutputStream(path.c_str(), L"wb", bExceptionMode)
+	: CStream(path.c_str(), L"wb", bExceptionMode)
 	, m_pcCodeBase{ CCodeFactory::CreateCodeBase(eCodeType) }
 {
 	if(Good() && bBom){

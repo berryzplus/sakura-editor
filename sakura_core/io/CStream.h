@@ -72,19 +72,4 @@ private:
 	bool			m_bExceptionMode;
 };
 
-class COutputStream : public CStream{
-public:
-	COutputStream(const WCHAR* pszPath, const WCHAR* pszMode, bool bExceptionMode = false)
-	: CStream(pszPath, pszMode, bExceptionMode)
-	{
-	}
-
-	//! データを無変換で書き込む。戻り値は書き込んだバイト数。
-	int Write(const void* pBuffer, size_t nSizeInBytes)
-	{
-		size_t nRet = ::fwrite(pBuffer, 1, nSizeInBytes, GetFp());
-		if(nRet!=nSizeInBytes && IsExceptionMode())throw CError_FileWrite();
-		return static_cast<int>(nRet);
-	}
-};
 #endif /* SAKURA_CSTREAM_0083EDD7_A671_4315_801D_41FED1A2E3DA_H_ */
