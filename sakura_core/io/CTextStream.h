@@ -71,6 +71,8 @@ public:
 	void WriteInt(int n);
 
 private:
+	void WriteString(std::wstring_view text);
+
 	CCodeBaseHolder	m_pcCodeBase;
 };
 

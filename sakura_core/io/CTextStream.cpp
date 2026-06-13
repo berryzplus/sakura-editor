@@ -177,10 +177,28 @@ void CTextOutputStream::WriteString(
 	int				nLen	//!< 書き込む文字列長。-1を渡すと自動計算。
 )
 {
+	std::wstring_view text;
+
+	if (nLen < 0) {
+		text = std::wstring_view{ szData };
+	} else {
+		text = std::wstring_view{ szData, static_cast<size_t>(nLen) };
+	}
+
+	WriteString(text);
+}
+
+/*!
+ * @brief テキスト書込。
+ */
+void CTextOutputStream::WriteString(
+	std::wstring_view text	//!< 書き込む文字列
+)
+{
 	//$$メモ: 文字変換時にいちいちコピーを作ってるので効率が悪い。後々効率改善予定。
 
-	int nDataLen = nLen;
-	if(nDataLen<0)nDataLen = (int)wcslen(szData);
+	const auto szData = std::data(text);
+	const auto nDataLen = std::size(text);
 	const wchar_t* pData = szData;
 	const wchar_t* pEnd = szData + nDataLen;
 
@@ -221,11 +239,11 @@ void CTextOutputStream::WriteF(const wchar_t* format, ...)
 	static wchar_t buf[16*1024]; //$$ 確保しすぎかも？
 	va_list v;
 	va_start(v,format);
-	auto_vsprintf_s(buf, std::size(buf),format,v);
+	const auto count = auto_vsprintf_s(buf, std::size(buf), format, v);
 	va_end(v);
 
 	//出力
-	WriteString(buf);
+	WriteString(buf, count);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
