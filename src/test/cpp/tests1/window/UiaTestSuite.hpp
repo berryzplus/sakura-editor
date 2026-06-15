@@ -116,6 +116,20 @@ struct UiaTestSuite
 		EXPECT_THAT(SendInput(inputs), Eq(std::size(inputs)));
 	}
 
+	void EmulateSetComboBoxValue(HWND hWndDlg, const bstr_t& caption, const bstr_t& value) const
+	{
+		// コンボボックスの検索条件を構築する
+		auto pControlTypeCondition = CreatePropertyCondition(UIA_ControlTypePropertyId, UIA_ComboBoxControlTypeId);
+		auto pNameCondition = CreatePropertyCondition(UIA_NamePropertyId, caption);
+		auto pFinalCondition = CreateAndCondition(pControlTypeCondition, pNameCondition);
+
+		// コンボボックスを検索する
+		auto pItem = FindFirst(hWndDlg, TreeScope_Subtree, pFinalCondition);
+
+		// テキストを設定する
+		EmulateSetValue(pItem, value);
+	}
+
 	IUIAutomationElementPtr FindFirst(
 		_In_ HWND hWndDlg,
 		TreeScope scope,
