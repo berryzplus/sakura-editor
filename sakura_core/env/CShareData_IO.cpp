@@ -20,6 +20,8 @@
 #include "plugin/CPlugin.h"
 #include "config/app_constants.h"
 
+CAppMainWnd* GetMainWnd();
+
 void ShareData_IO_Sub_LogFont( CDataProfile& cProfile, const WCHAR* pszSecName,
 	const WCHAR* pszKeyLf, const WCHAR* pszKeyPointSize, const WCHAR* pszKeyFaceName, LOGFONT& lf, INT& nPointSize );
 
@@ -131,7 +133,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	}
 //	MYTRACE( L"Iniファイル処理 0 所要時間(ミリ秒) = %d\n", cRunningTimer.Read() );
 
-	auto menuDrawer = std::make_unique<CMenuDrawer>();
+	auto menuDrawer = std::make_unique<CMenuDrawer>(GetMainWnd()->m_hIcons);
 	const auto pcMenuDrawer = menuDrawer.get();
 
 	if( bRead ){

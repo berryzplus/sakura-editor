@@ -22,7 +22,6 @@
 #include "debug/CRunningTimer.h"
 #include "env/CPropertyManager.h"
 #include "env/CShareData.h"
-#include "uiparts/CImageListMgr.h"
 #include "uiparts/CMenuDrawer.h"
 #include "util/design_template.h"
 #include "util/tchar_convert.h"
@@ -196,7 +195,7 @@ struct CAppMainWnd
 	DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
 
 	CImageListMgr	m_hIcons;
-	CMenuDrawer		m_cMenuDrawer;
+	CMenuDrawer		m_cMenuDrawer{ m_hIcons };
 
 	CPropertyManagerHolder	m_pcPropertyManager = std::make_unique<CPropertyManager>();
 };

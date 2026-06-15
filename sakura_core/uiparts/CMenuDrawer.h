@@ -10,7 +10,7 @@
 	Copyright (C) 2003, MIK
 	Copyright (C) 2005, aroka, genta
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -20,13 +20,11 @@
 #define SAKURA_CMENUDRAWER_F2B94603_89D1_4064_A93E_3634A0A6FAD4_H_
 #pragma once
 
+#include "env/DLLSHAREDATA.h"
+#include "uiparts/CImageListMgr.h"
+
 #include "Funccode_enum.h"
 #include "mem/CNativeW.h"
-
-class CMenuDrawer;
-
-class CImageListMgr;// 2002/2/10 aroka
-struct DLLSHAREDATA;
 
 //#define MAX_MENUPOS	10
 //	Jul. 2, 2005 genta : マクロをたくさん登録すると上限を超えてしまうので
@@ -53,7 +51,7 @@ public:
 	/*
 	||  Constructors
 	*/
-	CMenuDrawer();
+	explicit CMenuDrawer(CImageListMgr& hIcons);
 	CMenuDrawer(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
 	CMenuDrawer(Me&&) noexcept = delete;
@@ -93,7 +91,7 @@ private:
 	int ToolbarNoToIndex( int nToolbarNo ) const;
 
 private:
-	DLLSHAREDATA*	m_pShareData;
+	DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
 
 	HINSTANCE		m_hInstance = nullptr;
 	HWND			m_hWndOwner = nullptr;
@@ -128,7 +126,7 @@ private:
 public:
 	// 2010.01.30 syat アイコンイメージリストをprivate->public
 	//	Oct. 16, 2000 genta
-	CImageListMgr	*m_pcIcons = nullptr;	//	Image List
+	CImageListMgr	*m_pcIcons;	//	Image List
 
 protected:
 
@@ -137,4 +135,5 @@ protected:
 						 BYTE fsState, BYTE fsStyle, DWORD_PTR dwData,
 						 INT_PTR iString ) const;	/* TBBUTTON構造体にデータをセット */
 };
+
 #endif /* SAKURA_CMENUDRAWER_F2B94603_89D1_4064_A93E_3634A0A6FAD4_H_ */

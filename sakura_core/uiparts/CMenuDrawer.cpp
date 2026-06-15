@@ -14,15 +14,15 @@
 	Copyright (C) 2006, aroka, fon
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2008, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 #include "StdAfx.h"
-#include "CMenuDrawer.h"
+#include "uiparts/CMenuDrawer.h"
+
 #include "env/CShareData.h"
-#include "env/DLLSHAREDATA.h"
 #include "window/CSplitBoxWnd.h"
 #include "CImageListMgr.h"
 #include "func/CKeyBind.h"
@@ -35,12 +35,9 @@
 #include <uxtheme.h>
 #include <vssym32.h>
 
-//	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CMenuDrawer::CMenuDrawer()
+CMenuDrawer::CMenuDrawer(CImageListMgr& hIcons)
+	: m_pcIcons(&hIcons)
 {
-	/* 共有データ構造体のアドレスを返す */
-	m_pShareData = &GetDllShareData();
-
 //@@@ 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。	/* ツールバーのボタン TBBUTTON構造体 */
 	/* ツールバーのボタン TBBUTTON構造体 */
 	/*
