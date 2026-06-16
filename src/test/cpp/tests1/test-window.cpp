@@ -104,6 +104,26 @@ TEST_F(TrayWndTest, convertHotKeyMods001)
 	EXPECT_THAT(convertHotKeyMods(HOTKEYF_SHIFT) & MOD_SHIFT, IsTrue());
 }
 
+TEST_F(TrayWndTest, OpenNewEditor101)
+{
+	GetDllShareData().m_sNodes.m_nEditArrNum = MAX_EDITWINDOWS;
+
+	SLoadInfo sLoadInfo{};
+	EXPECT_THAT(CControlTray::OpenNewEditor(nullptr, HWND(nullptr), sLoadInfo), IsFalse());
+
+	GetDllShareData().m_sNodes.m_nEditArrNum = 0;
+}
+
+TEST_F(TrayWndTest, OpenNewEditor2101)
+{
+	GetDllShareData().m_sNodes.m_nEditArrNum = MAX_EDITWINDOWS;
+
+	EditInfo fi{};
+	EXPECT_THAT(CControlTray::OpenNewEditor2(nullptr, HWND(nullptr), &fi, false), IsFalse());
+
+	GetDllShareData().m_sNodes.m_nEditArrNum = 0;
+}
+
 TEST_F(TrayWndTest, WndProc101)
 {
 	EXPECT_THAT(CControlTray::WndProc(nullptr, WM_NULL, 0L, 0L), IsFalse());

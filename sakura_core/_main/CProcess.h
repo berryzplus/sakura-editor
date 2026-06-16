@@ -90,6 +90,38 @@ public:
 };
 
 /*!
+ * @brief 起動したエディタープロセスオブジェクト
+ */
+class EditorProcessHolder : public cxx::ProcessHolder
+{
+private:
+	using Base = cxx::ProcessHolder;
+	using Me = EditorProcessHolder;
+
+public:
+	explicit EditorProcessHolder(
+		HANDLE hProcess,
+		DWORD dwProcessId,
+		DWORD dwThreadId,
+		HWND hWnd
+	)
+		: Base(hProcess, dwProcessId, dwThreadId)
+		, hWnd(hWnd)
+	{
+	}
+
+	EditorProcessHolder() = default;
+
+	EditorProcessHolder(const Me&) = delete;
+	Me& operator=(const Me&) = delete;
+
+	EditorProcessHolder(Me&& other) noexcept = default;
+	Me& operator=(Me&& rhs) noexcept = default;
+
+	HWND hWnd = nullptr;
+};
+
+/*!
  * @brief ロックしたミューテックスオブジェクト
  */
 struct MutexHolder : public cxx::HandleHolder {
@@ -224,6 +256,15 @@ public:
 
 	static cxx::ProcessHolder CreateControlProcess(
 		const std::optional<std::wstring>& optProfileName = std::nullopt
+	);
+
+	static cxx::EditorProcessHolder CreateEditorProcess(
+		std::vector<std::wstring>& args,
+		std::wstring_view cmdLineoptions = L"",
+		const std::optional<std::filesystem::path>& optWorkingDir = std::nullopt,
+		const std::optional<std::wstring>& optProfileName = std::nullopt,
+		bool bNewWindow = false,
+		bool sync = true
 	);
 
 	CProcess(HINSTANCE hInstance, CCommandLineHolder&& pCommandLine);

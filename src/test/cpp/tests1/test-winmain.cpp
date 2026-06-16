@@ -77,38 +77,6 @@ void writeTextFile(
 	fs.close();
 }
 
-/*!
- * @brief 起動したエディタープロセスオブジェクト
- *
- * @note 使い物になるかどうか試作してみた
- */
-class EditorProcessHolder : public cxx::ProcessHolder
-{
-private:
-	using Base = cxx::ProcessHolder;
-	using Me = EditorProcessHolder;
-
-public:
-	explicit EditorProcessHolder(
-		HANDLE hProcess,
-		DWORD dwProcessId,
-		DWORD dwThreadId,
-		HWND hWnd
-	)
-		: Base(hProcess, dwProcessId, dwThreadId)
-		, hWnd(hWnd)
-	{
-	}
-
-	EditorProcessHolder(const Me&) = delete;
-	Me& operator=(const Me&) = delete;
-
-	EditorProcessHolder(Me&& other) noexcept = default;
-	Me& operator=(Me&& rhs) noexcept = default;
-
-	HWND hWnd;
-};
-
 } // namespace cxx
 
 namespace testing {
@@ -158,28 +126,6 @@ cxx::ProcessHolder CreateSakuraProcess(
 }
 
 /*!
- * @brief 編集ウィンドウを列挙するコールバック関数
- *
- * @param hWnd 列挙されたウィンドウのハンドル
- * @param lParam 列挙の呼び出し元から渡されたパラメータ（HWND* を期待）
- * @retval TRUE 列挙続行（編集ウィンドウではなかった。）
- * @retval FALSE 列挙停止（編集ウィンドウが見付かった。）
- */
-BOOL CALLBACK EnumEditorWindowProc(
-	_In_ HWND   hWnd,
-	_In_ LPARAM lParam
-)
-{
-	if (!hWnd || !lParam || !IsSakuraMainWindow(hWnd)) return TRUE;	// 検索続行
-
-	auto phWndFound = std::bit_cast<HWND*>(lParam);
-
-	*phWndFound = hWnd;
-
-	return FALSE;
-}
-
-/*!
  * @brief エディタープロセスを起動する
  *
  * @tparam T コマンドライン引数のコンテナ型
@@ -199,40 +145,13 @@ cxx::EditorProcessHolder CreateEditorProcess(
 	// コマンドライン引数の編集用vector
 	std::vector<std::wstring> commandArgs{ std::begin(args), std::end(args) };
 
-	// スタートアップ情報（入力用構造体なので値を入れる）
-	STARTUPINFO si = { sizeof(STARTUPINFO) };
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_SHOWDEFAULT;
-
 	// エディタープロセスを起動する
-	auto ep = CProcess::CreateSakuraProcess(si, commandArgs, std::nullopt, std::wstring{ profileName });
+	auto ep = CProcess::CreateEditorProcess(commandArgs, L"", optWorkingDir, std::wstring{ profileName });
 	EXPECT_THAT(ep, NotNull());
-
-	// 初期化完了イベントを作成する
-	SFilePath initEventName{ std::format(GSTR_EVENT_SAKURA_EP_INITIALIZED, ep.dwThreadId) };
-	cxx::HandleHolder hEvent = ::CreateEventW(nullptr, TRUE, FALSE, initEventName);
-
-	const auto startTick = ::GetTickCount64();
-
-	// メインウインドウを取得する
-	HWND hWndFound = nullptr;
-	do {
-		// スレッドに含まれるウインドウを列挙する
-		::EnumThreadWindows(ep.dwThreadId, EnumEditorWindowProc, LPARAM(&hWndFound));
-
-		if (hWndFound) break;
-
-		Sleep(100);  // 100msスリープしてリトライ
-	}
-	while (::GetTickCount64() - startTick < 30000);
-
-	EXPECT_THAT(hWndFound, NotNull());
-
-	// 初期化完了を待つ
-	hEvent.lock();
+	EXPECT_THAT(ep.hWnd, NotNull());
 
 	// プロセスオブジェクトを返す
-	return cxx::EditorProcessHolder{ ep.release(), ep.dwProcessId, ep.dwThreadId, hWndFound };
+	return ep;
 }
 
 //! 外部ウインドウにクローズを要求する
@@ -291,7 +210,20 @@ void TerminateControlProcess(
 
 } // namespace testing
 
+std::vector<std::wstring> SplitLegacyCommandLine(std::wstring_view s);
+
 namespace cxx {
+
+TEST(EditorProcessHolder, test001)
+{
+	EditorProcessHolder ep{};
+
+	EXPECT_THAT(ep, IsFalse());
+	EXPECT_THAT(ep, IsNull());
+	EXPECT_THAT(ep.dwProcessId, 0);
+	EXPECT_THAT(ep.dwThreadId, 0);
+	EXPECT_THAT(ep.hWnd, IsNull());
+}
 
 TEST(HandleHolder, Lock101)
 {
@@ -303,6 +235,42 @@ TEST(HandleHolder, Lock101)
 TEST(raise_system_error, test01)
 {
 	EXPECT_THROW({ raise_system_error("test"); }, std::system_error);
+}
+
+TEST(SplitLegacyCommandLine, test001)
+{
+	const auto args1 = SplitLegacyCommandLine(LR"(test.exe arg1 -arg2="test arg" "the ""3rd"" arg" finalArg)");
+	EXPECT_THAT(args1[0], StrEq(LR"(test.exe)"));
+	EXPECT_THAT(args1[1], StrEq(LR"(arg1)"));
+	EXPECT_THAT(args1[2], StrEq(LR"(-arg2="test arg")"));
+	EXPECT_THAT(args1[3], StrEq(LR"("the ""3rd"" arg")"));
+	EXPECT_THAT(args1[4], StrEq(LR"(finalArg)"));
+
+	const auto args2 = SplitLegacyCommandLine(L"arg1 arg2 ");
+	EXPECT_THAT(args2, ::testing::SizeIs(2));
+	EXPECT_THAT(args2[0], StrEq(L"arg1"));
+	EXPECT_THAT(args2[1], StrEq(L"arg2"));
+
+	const auto args3 = SplitLegacyCommandLine(L"   ");
+	EXPECT_THAT(args3, ::testing::IsEmpty());
+
+	// "C:\path\to\file" の \ はリテラルとして扱われ、トークン全体が1引数になる
+	const auto args4 = SplitLegacyCommandLine(LR"(exe "C:\path\to\file")");
+	EXPECT_THAT(args4, ::testing::SizeIs(2));
+	EXPECT_THAT(args4[0], StrEq(L"exe"));
+	EXPECT_THAT(args4[1], StrEq(LR"("C:\path\to\file")"));
+
+	// "te\"st" は \" をエスケープとして扱い、トークン全体が1引数になる
+	const auto args5 = SplitLegacyCommandLine(LR"(exe "te\"st")");
+	EXPECT_THAT(args5, ::testing::SizeIs(2));
+	EXPECT_THAT(args5[0], StrEq(L"exe"));
+	EXPECT_THAT(args5[1], StrEq(LR"("te\"st")"));
+
+	// 閉じ引用符なし → 残り全部を最後の引数として扱う
+	const auto args6 = SplitLegacyCommandLine(L"arg1 \"open here arg3");
+	EXPECT_THAT(args6, ::testing::SizeIs(2));
+	EXPECT_THAT(args6[0], StrEq(L"arg1"));
+	EXPECT_THAT(args6[1], StrEq(L"\"open here arg3"));
 }
 
 } // namespace cxx
@@ -808,10 +776,12 @@ TEST_F(WinMainFuncTest, _CalcInitialRect001)
 		EXPECT_THAT(cp, NotNull());
 
 		// 1つ目のエディタープロセスを起動する
-		auto ep1 = testing::CreateEditorProcess(std::array{ gm_TestDataPath1.native(), LR"(-Y=3)"s}, profileName);
+		std::vector<std::wstring> args1{ gm_TestDataPath1.native() };
+		auto ep1 = CProcess::CreateEditorProcess(args1, LR"(-Y=3)"s, std::nullopt, std::wstring{ profileName }, true);
 
 		// 2つ目のエディタープロセスを起動する
-		auto ep2 = testing::CreateEditorProcess(std::array{ gm_TestDataPath2.native(), LR"(-Y=3)"s }, profileName);
+		std::vector<std::wstring> args2{ gm_TestDataPath2.native() };
+		auto ep2 = CProcess::CreateEditorProcess(args2, LR"(-Y=3)", LR"(C:\Windows\System32)", std::wstring{ profileName }, false);
 
 		// 編集ウインドウにクローズを要求する
 		::PostMessageW(ep1.hWnd, WM_CLOSE, 0, 0);
@@ -912,6 +882,39 @@ TEST_F(WinMainFuncTest, CreateControlProcess103)
 
 	// コントロールプロセスを起動する
 	EXPECT_ANY_THROW(CProcess::CreateControlProcess(std::wstring{ profileName }));
+}
+
+/*!
+ * @brief WinMainを起動してみるテスト
+ *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
+ *  長いコマンドラインを指定して一時ファイルが使われるケースをテストする。
+ */
+TEST_F(WinMainFuncTest, CreateEditorProcess001)
+{
+	RunGuiTest([this]{
+		// テスト用プロファイル名
+		const auto profileName{ GetProfileName() };
+
+		// コントロールプロセスを起動する
+		auto cp = testing::CreateControlProcess(profileName);
+		EXPECT_THAT(cp, NotNull());
+
+		// エディタープロセスを起動する
+		std::vector<std::wstring> args{ gm_TestDataPath2.native(), LR"(-MTYPE=js)"s };
+		auto options = std::format(LR"(-M="a = '{:a<1024}';")", L'a');	// 実体として何もしないマクロで制限文字数を越えさせる
+		auto ep = CProcess::CreateEditorProcess(args, options, std::nullopt, std::wstring{ profileName }, true);
+		EXPECT_THAT(ep, NotNull());
+		EXPECT_THAT(ep.hWnd, NotNull());
+
+		// 編集ウインドウにクローズを要求する
+		testing::RequestForeignWindowClose(ep.hWnd);
+
+		// エディタープロセスが終了するのを待つ
+		ep.lock();
+
+		// コントロールプロセスに終了指示を出して終了を待つ
+		testing::TerminateControlProcess(profileName);
+	});
 }
 
 /*!
