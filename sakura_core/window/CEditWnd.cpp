@@ -686,23 +686,8 @@ HWND CEditWnd::CreateMainWnd(
 
 	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
 	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
-		// 戻り値取得用変数（成功するとhWndが返って来る）
-		DWORD_PTR dwRes = 0;
-
 		// コントロールプロセスにMYWM_UIPI_CHECKを送る
-		::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd), SMTO_NORMAL, 10000, &dwRes);
-
-		// メッセージ返送を回収する（とれない場合もあるが問題はない。）
-		::PeekMessageW(&msg, hWnd, MYWM_UIPI_CHECK, MYWM_UIPI_CHECK, PM_REMOVE | PM_QS_SENDMESSAGE);
-
-		if (!dwRes) {	// 送信失敗
-			TopErrorMessage( GetHwnd(),
-				LS(STR_ERR_DLGEDITWND02)
-			);
-			::DestroyWindow( GetHwnd() );
-			m_hWnd = hWnd = nullptr;
-			return hWnd;
-		}
+		::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd), SMTO_NORMAL, 10000, nullptr);
 	}
 
 	CShareData::getInstance()->SetTraceOutSource( GetHwnd() );	// TraceOut()起動元ウィンドウの設定	// 2006.06.26 ryoji
