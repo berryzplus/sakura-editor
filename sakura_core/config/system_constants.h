@@ -589,6 +589,13 @@
 inline constexpr std::wstring_view GSTR_EVENT_SAKURA_EP_INITIALIZED = L"EventSakuraEditorEPInitialized_{:d}";
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//                         セマフォ                            //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+//! 操作キュー
+inline constexpr std::wstring_view GSTR_SAKURA_CP_QUEUE = L"SakuraEditorCPQueue_{:s}";
+
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                     ウィンドウクラス                        //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 

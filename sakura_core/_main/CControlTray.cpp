@@ -51,7 +51,6 @@
 #include "grep/CGrepEnumKeys.h"
 #include "apiwrap/StdApi.h"
 #include "sakura_rc.h"
-#include "config/system_constants.h"
 #include "config/app_constants.h"
 #include "apiwrap/DarkMode.h"
 
@@ -297,6 +296,25 @@ EFunctionCode TrackPopupMenu(
 
 } // namespace window
 
+struct QueuedCommand
+{
+	EFunctionCode funcCode = F_0;
+	bool bStopRequested = true;
+
+	QueuedCommand() = default;
+
+	explicit QueuedCommand(EFunctionCode funcCode_)
+		: funcCode(funcCode_)
+		, bStopRequested(false)
+	{
+	}
+
+	explicit operator bool() const noexcept
+	{
+		return !bStopRequested;
+	}
+};
+
 //Stonee, 2001/03/21
 //Stonee, 2001/07/01  多重起動された場合は前回のダイアログを前面に出すようにした。
 void CControlTray::DoGrep()
@@ -457,16 +475,67 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CControlTray::CControlTray()
 {
-	return;
+	// 操作キューを作成する
+	SFilePath queueName{ std::format(GSTR_SAKURA_CP_QUEUE, GetProfileName()) };
+	m_hQueue = ::CreateSemaphoreW(nullptr, 0, 1, queueName);
+
+	// ワーカーを起動する
+	m_Worker = std::jthread([this](std::stop_token st) {
+		AsyncCommandProc(st);
+	});
 }
 
 CControlTray::~CControlTray()
 {
-	return;
+	// ワーカーがまだ動いているなら、終了指示を出す
+	if (m_Worker.joinable()) {
+		m_Worker.request_stop();
+		m_QueueCv.notify_one();
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CControlTray メンバ関数
+
+void CControlTray::AsyncCommandProc(std::stop_token st)
+{
+	const auto peek_queue = [this, st]()
+	{
+		std::unique_lock lock{ m_QueueMutex };
+
+		m_QueueCv.wait( lock, [this, st] {
+			return !m_Queue.empty() || st.stop_requested();
+		} );
+
+		if (st.stop_requested() || m_Queue.empty()) return QueuedCommand{};
+
+		const auto value = m_Queue.front();
+
+		m_Queue.pop();
+		m_QueueCv.notify_one();
+
+		return QueuedCommand{ value };
+	};
+
+	while (!st.stop_requested()) {
+
+		// リクエストキューから次の値を取得する
+		const auto next = peek_queue();
+
+		if (!next || st.stop_requested()) {
+			break;
+		}
+
+		// 操作キューのロック取得を試行
+		if (const auto dwRet = ::WaitForSingleObject(m_hQueue, 5000); WAIT_OBJECT_0 == dwRet) {
+			// コマンドを実行する
+			ExecCommand(next.funcCode);
+
+			// 操作キューを解放
+			::ReleaseSemaphore(m_hQueue, 1, nullptr);
+		}
+	}
+}
 
 /* 作成 */
 HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]])
@@ -669,6 +738,15 @@ int CControlTray::MessageLoop() const
 	return static_cast<int>(msg.wParam);
 }
 
+void CControlTray::PushCommand(EFunctionCode funcCode)
+{
+	std::unique_lock lock{ m_QueueMutex };
+
+	m_Queue.push( funcCode );
+
+	m_QueueCv.notify_one();
+}
+
 //! ホットキーを登録する
 void CControlTray::RegisterHotKey(HWND hWnd) noexcept
 {
@@ -855,9 +933,11 @@ LRESULT CControlTray::DispatchEvent(
 //	From Here Oct. 12, 2000 JEPRO 左右とも同一処理になっていたのを別々に処理するように変更
 		case WM_RBUTTONUP:	// Dec. 24, 2002 towest UPに変更
 			/* ポップアップメニュー(トレイ右ボタン) */
-			if (const auto nFuncCode = CreatePopUpMenu_R(); 0 < nFuncCode) {
-				ExecCommand(static_cast<EFunctionCode>(nFuncCode));
+			if (const auto eFuncCode = TrackPopupMenu_R(hWnd); F_0 != eFuncCode) {
+				PushCommand(eFuncCode);
 			}
+			// 操作キューを解放
+			::ReleaseSemaphore(m_hQueue, 1, nullptr);
 			return 0L;
 //	To Here Oct. 12, 2000
 
@@ -865,6 +945,7 @@ LRESULT CControlTray::DispatchEvent(
 			//	Mar. 29, 2003 genta 念のためフラグクリア
 			bLDClick = false;
 			return 0L;
+
 		case WM_LBUTTONUP:	// Dec. 24, 2002 towest UPに変更
 //			MYTRACE( L"WM_LBUTTONDOWN\n" );
 			/* 03/02/20 左ダブルクリック後はメニューを表示しない ai Start */
@@ -874,10 +955,13 @@ LRESULT CControlTray::DispatchEvent(
 			}
 			/* 03/02/20 ai End */
 			/* ポップアップメニュー(トレイ左ボタン) */
-			if (const auto nFuncCode = CreatePopUpMenu_L(); 0 < nFuncCode) {
-				ExecCommand(static_cast<EFunctionCode>(nFuncCode));
+			if (const auto eFuncCode = TrackPopupMenu_L(hWnd); F_0 != eFuncCode) {
+				PushCommand(eFuncCode);
 			}
+			// 操作キューを解放
+			::ReleaseSemaphore(m_hQueue, 1, nullptr);
 			return 0L;
+
 		case WM_LBUTTONDBLCLK:
 			bLDClick = true;		/* 03/02/20 ai */
 			/* 新規編集ウィンドウの追加 */
@@ -885,8 +969,10 @@ LRESULT CControlTray::DispatchEvent(
 			// Apr. 1, 2003 genta この後で表示されたメニューは閉じる
 			::PostMessageAny( GetTrayHwnd(), WM_CANCELMODE, 0, 0 );
 			return 0L;
+
 		case WM_RBUTTONDBLCLK:
 			return 0L;
+
 		default:
 			break;
 		}
@@ -949,6 +1035,9 @@ bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	// 最後の方でシャットダウンするアプリケーションにする
 	::SetProcessShutdownParameters(0x180, 0);
 
+	// 操作キューを利用可能にする
+	::ReleaseSemaphore(m_hQueue, 1, nullptr);
+
 	// 最前面にする（トレイからのポップアップウィンドウが最前面になるように）
 	::SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
@@ -970,6 +1059,12 @@ void CControlTray::OnDestroy(HWND hWnd)
 {
 	if (!GetTrayHwnd()) {
 		return;	// 既に破棄されている
+	}
+
+	// ワーカーがまだ動いているなら、終了指示を出す
+	if (m_Worker.joinable()) {
+		m_Worker.request_stop();
+		m_QueueCv.notify_one();
 	}
 
 	// ホットキーの破棄
@@ -1510,7 +1605,7 @@ BOOL CControlTray::CloseAllEditor(
 }
 
 /*! ポップアップメニュー(トレイ左ボタン) */
-int	CControlTray::CreatePopUpMenu_L( void )
+EFunctionCode CControlTray::TrackPopupMenu_L(HWND hWnd)
 {
 	int			i;
 	int			j;
@@ -1520,9 +1615,7 @@ int	CControlTray::CreatePopUpMenu_L( void )
 	WCHAR		szMenu[100 + MAX_PATH * 2];	//	Jan. 19, 2001 genta
 	EditInfo*	pfi;
 
-	//本当はセマフォにしないとだめ
-	if( m_bUseTrayMenu ) return -1;
-	m_bUseTrayMenu = true;
+	if (const auto dwRet = ::WaitForSingleObject(m_hQueue, 0); WAIT_TIMEOUT == dwRet) return F_0;
 
 	m_cMenuDrawer.ResetContents();
 	CFileNameManager::getInstance()->TransformFileName_MakeCache();
@@ -1601,8 +1694,6 @@ int	CControlTray::CreatePopUpMenu_L( void )
 
 	MenuHolder menuHolder{ hMenuTop };
 
-	const auto hWnd = GetHwnd();
-
 	const auto eFuncCode = window::TrackPopupMenu(
 		hMenu,
 		TPM_BOTTOMALIGN
@@ -1614,23 +1705,19 @@ int	CControlTray::CreatePopUpMenu_L( void )
 
 	menuHolder = nullptr;
 
-	m_bUseTrayMenu = false;
-
-	return static_cast<int>(eFuncCode);
+	return eFuncCode;
 }
 
 //キーワード：トレイ右クリックメニュー順序
 //	Oct. 12, 2000 JEPRO ポップアップメニュー(トレイ左ボタン) を参考にして新たに追加した部分
 
 /*! ポップアップメニュー(トレイ右ボタン) */
-int	CControlTray::CreatePopUpMenu_R( void )
+EFunctionCode CControlTray::TrackPopupMenu_R(HWND hWnd)
 {
 	HMENU	hMenuTop;
 	HMENU	hMenu;
 
-	//本当はセマフォにしないとだめ
-	if( m_bUseTrayMenu ) return -1;
-	m_bUseTrayMenu = true;
+	if (const auto dwRet = ::WaitForSingleObject(m_hQueue, 0); WAIT_TIMEOUT == dwRet) return F_0;
 
 	m_cMenuDrawer.ResetContents();
 
@@ -1653,8 +1740,6 @@ int	CControlTray::CreatePopUpMenu_R( void )
 
 	MenuHolder menuHolder{ hMenuTop };
 
-	const auto hWnd = GetHwnd();
-
 	const auto eFuncCode = window::TrackPopupMenu(
 		hMenu,
 		TPM_BOTTOMALIGN
@@ -1666,7 +1751,5 @@ int	CControlTray::CreatePopUpMenu_R( void )
 
 	menuHolder = nullptr;
 
-	m_bUseTrayMenu = false;
-
-	return static_cast<int>(eFuncCode);
+	return eFuncCode;
 }

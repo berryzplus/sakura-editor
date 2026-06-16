@@ -120,6 +120,20 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, pub
 
 		TearDownUia();
 	}
+
+	void SetUp() override
+	{
+		// 操作キューを開く
+		SFilePath queueName{ std::format(GSTR_SAKURA_CP_QUEUE, GetProfileName()) };
+		cxx::HandleHolder hQueue = ::OpenSemaphoreW(SYNCHRONIZE | SEMAPHORE_MODIFY_STATE, FALSE, queueName);
+
+		LONG previousCount = -1;
+
+		// 操作キューを利用可能にする
+		const auto ret = ::ReleaseSemaphore(hQueue, 1, &previousCount);
+
+		(void)ret;
+	}
 };
 
 TEST_F(TrayWndTest, convertHotKeyMods001)
@@ -561,6 +575,100 @@ TEST_F(TrayWndTest, ShowPropType001)
 
 	t2.join();
 	t1.join();
+}
+
+/*!
+ * トレイ右クリックメニューの表示テスト
+ */
+TEST_F(TrayWndTest, ShowTrayContextMenu001)
+{
+	std::jthread t1([this] {
+		// ポップアップメニュー項目を選択させる
+		EmulateSelectPopupMenu(L"バージョン情報(A)");
+	});
+
+	// 表示されたバージョン情報ダイアログを閉じるためのスレッドを起動する
+	std::jthread t2 = StartWindowCloser(LS(F_ABOUT), [this] (HWND hWndDlg) {
+		// OKボタンを押下して閉じる
+		EmulateInvokeButton(hWndDlg, L"OK");
+	});
+
+	// 操作キューを開く
+	SFilePath queueName{ std::format(GSTR_SAKURA_CP_QUEUE, GetProfileName()) };
+	cxx::HandleHolder hQueue = ::OpenSemaphoreW(SYNCHRONIZE | SEMAPHORE_MODIFY_STATE, FALSE, queueName);
+
+	// 操作キューをロックする
+	hQueue.lock();
+
+	// 操作キューを利用可能にする
+	::ReleaseSemaphore(hQueue, 1, nullptr);
+
+	// ポップアップメニューは親ウィンドウを指定する必要があるのでダミーウィンドウを作る
+	const auto hInstance = G_AppInstance();
+	const auto hWnd = ::CreateWindowExW(0, WC_STATIC, L"test", 0, 1, 1, 1, 1, HWND(nullptr), HMENU(nullptr), hInstance, nullptr);
+	using WindowHolder = cxx::ResourceHolder<&::DestroyWindow>;
+	WindowHolder hWndHolder{ hWnd };
+
+	// トレイアイコン右クリックメニューを表示させる
+	HWND hWndTray = hWnd;
+	pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_RBUTTONDOWN);
+	pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_RBUTTONUP);
+
+	t2.join();
+	t1.join();
+
+	// 操作キューをロックする
+	hQueue.lock();
+
+	// 操作キューを利用可能にする
+	::ReleaseSemaphore(hQueue, 1, nullptr);
+}
+
+/*!
+ * トレイ左クリックメニューの表示テスト
+ */
+TEST_F(TrayWndTest, ShowTrayMenu001)
+{
+	std::jthread t1([this] {
+		// ポップアップメニュー項目を選択させる
+		EmulateSelectPopupMenu(L"Grep(G)...");
+	});
+
+	// 表示されたGrepダイアログを閉じるためのスレッドを起動する
+	std::jthread t2 = StartWindowCloser(LS(F_GREP), [this] (HWND hWndDlg) {
+		// Grepダイアログを閉じる
+		EmulateInvokeButton(hWndDlg, L"キャンセル(X)");
+	});
+
+	// 操作キューを開く
+	SFilePath queueName{ std::format(GSTR_SAKURA_CP_QUEUE, GetProfileName()) };
+	cxx::HandleHolder hQueue = ::OpenSemaphoreW(SYNCHRONIZE | SEMAPHORE_MODIFY_STATE, FALSE, queueName);
+
+	// 操作キューをロックする
+	hQueue.lock();
+
+	// 操作キューを利用可能にする
+	::ReleaseSemaphore(hQueue, 1, nullptr);
+
+	// ポップアップメニューは親ウィンドウを指定する必要があるのでダミーウィンドウを作る
+	const auto hInstance = G_AppInstance();
+	const auto hWnd = ::CreateWindowExW(0, WC_STATIC, L"test", 0, 1, 1, 1, 1, HWND(nullptr), HMENU(nullptr), hInstance, nullptr);
+	using WindowHolder = cxx::ResourceHolder<&::DestroyWindow>;
+	WindowHolder hWndHolder{ hWnd };
+
+	// トレイアイコン左クリックメニューを表示させる
+	HWND hWndTray = hWnd;
+	pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_LBUTTONDOWN);
+	pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_LBUTTONUP);
+
+	t2.join();
+	t1.join();
+
+	// 操作キューをロックする
+	hQueue.lock();
+
+	// 操作キューを利用可能にする
+	::ReleaseSemaphore(hQueue, 1, nullptr);
 }
 
 struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, public window::UiaTestSuite {

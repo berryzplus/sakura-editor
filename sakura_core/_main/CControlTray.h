@@ -28,6 +28,7 @@
 #pragma once
 
 #include "_main/CProcess.h"
+#include "config/system_constants.h"
 #include "dlg/CDlgGrep.h"
 
 struct SLoadInfo;
@@ -79,9 +80,6 @@ public:
 
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
-	int	CreatePopUpMenu_L( void );	/* ポップアップメニュー(トレイ左ボタン) */
-	int	CreatePopUpMenu_R( void );	/* ポップアップメニュー(トレイ右ボタン) */
-
 	//ウィンドウ管理
 	static bool OpenNewEditor(							//!< 新規編集ウィンドウの追加 ver 0
 		HINSTANCE			hInstance,					//!< [in] インスタンスID (実は未使用)
@@ -115,8 +113,16 @@ public:
 	static void DoGrepCreateWindow(HINSTANCE hinst, HWND, CDlgGrep& cDlgGrep);
 
 private:
+	void	AsyncCommandProc(std::stop_token st);
+
 	void	DoGrep();	//Stonee, 2001/03/21
+
+	void	PushCommand(EFunctionCode funcCode);
+
 	void	RegisterHotKey(HWND hWnd) noexcept;
+
+	EFunctionCode	TrackPopupMenu_L(HWND hWnd);
+	EFunctionCode	TrackPopupMenu_R(HWND hWnd);
 
 	void OnNewEditor(bool bNewWindow); //!< 2003.05.30 genta 新規ウィンドウ作成処理を切り出し
 
@@ -140,13 +146,19 @@ private:
 
 	BOOL			m_bCreatedTrayIcon = FALSE;		//!< トレイにアイコンを作った
 
+	cxx::HandleHolder	m_hQueue = nullptr;
+
+	std::jthread		m_Worker;
+
+	std::mutex					m_QueueMutex;
+	std::queue<EFunctionCode>	m_Queue;
+	std::condition_variable		m_QueueCv;
+
 	// DispatchEventから切り出した変数群（そのうちリネームする）
 	HWND			hwndHtmlHelp = nullptr;
 	WORD			wHotKeyMods = 0;
 	WORD			wHotKeyCode = 0;
 	bool			bLDClick = false;		//<! 左ダブルクリックをしたか
-
-	bool			m_bUseTrayMenu = false;	//<! トレイメニュー表示中
 
 	CDlgGrep		m_cDlgGrep;
 	int				m_nCurSearchKeySequence = -1;
