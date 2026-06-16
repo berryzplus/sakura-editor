@@ -40,6 +40,7 @@ struct EditInfo;
 */
 class CControlTray final
 	: public CAppMainWnd
+	, public TSingleInstance<CControlTray>
 {
 private:
 	/*!
