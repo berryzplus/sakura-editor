@@ -258,7 +258,8 @@ BOOL CKeyMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const WCHAR* pszPath )
 					}
 					WCHAR cQuote = szLine[i];
 					++i;
-					nBgn = nEnd = i;	//	nBgnは引数の先頭の文字
+					nBgn = i;	//	nBgnは引数の先頭の文字
+					nEnd = i;
 					//	Jun. 16, 2002 genta
 					//	行末の検出のため，ループ回数を1増やした
 					for( ; i <= nLineLen; ++i ){		//	最後の文字+1までスキャン
@@ -357,7 +358,8 @@ BOOL CKeyMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const WCHAR* pszPath )
 						m_nReady = false;
 						break;
 					}
-					nBgn = nEnd = i;	//	nBgnは引数の先頭の文字
+					nBgn = i;	//	nBgnは引数の先頭の文字
+					nEnd = i;
 					//	行末の検出のため，ループ回数を1増やした
 					for( i = nBgn + 1; i <= nLineLen; ++i ){		//	最後の文字+1までスキャン
 						if( Is09(szLine[i]) ){	// まだ数値
@@ -387,7 +389,8 @@ BOOL CKeyMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const WCHAR* pszPath )
 				else {
 					//	Parse Error:文法エラーっぽい。
 					//	Jun. 16, 2002 genta
-					nBgn = nEnd = i;
+					nBgn = i;
+					nEnd = i;
 					::MYMESSAGEBOX( nullptr, MB_OK | MB_ICONSTOP | MB_TOPMOST, MACRO_ERROR_TITLE,
 						LS(STR_ERR_DLGKEYMACMGR7), line, i + 1 );
 					m_nReady = false;

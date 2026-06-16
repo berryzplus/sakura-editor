@@ -74,7 +74,8 @@ bool CSearchStringPattern::SetPattern(
 {
 	auto nPatternLen = int(cchPattern);
 	Reset();
-	m_pszCaseKeyRef = m_pszKey = pszPattern;
+	m_pszCaseKeyRef = pszPattern;
+	m_pszKey = pszPattern;
 	m_nPatternLen = nPatternLen;
 	m_psSearchOption = &sSearchOption;
 	m_pRegexp = regexp;
