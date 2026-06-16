@@ -389,8 +389,6 @@ BOOL CKeyMacroMgr::LoadKeyMacro( HINSTANCE hInstance, const WCHAR* pszPath )
 				else {
 					//	Parse Error:文法エラーっぽい。
 					//	Jun. 16, 2002 genta
-					nBgn = i;
-					nEnd = i;
 					::MYMESSAGEBOX( nullptr, MB_OK | MB_ICONSTOP | MB_TOPMOST, MACRO_ERROR_TITLE,
 						LS(STR_ERR_DLGKEYMACMGR7), line, i + 1 );
 					m_nReady = false;
