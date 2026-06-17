@@ -170,6 +170,36 @@ bool SendTrayMessage(
 	return ::Shell_NotifyIconW(dwMessage, &tnd);
 }
 
+EFunctionCode TrackPopupMenu(
+	HMENU hMenu,
+	UINT uFlags,
+	HWND hWnd
+)
+{
+	POINT pt{};
+	::GetCursorPos(&pt);
+	pt.y -= DpiScaleY(4);
+
+	::SetActiveWindow(hWnd);
+	::SetForegroundWindow(hWnd);
+
+	const auto id = ::TrackPopupMenu(
+		hMenu,
+		uFlags
+		| TPM_RETURNCMD
+		,
+		pt.x,
+		pt.y,
+		0,
+		hWnd,
+		nullptr
+	);
+
+	::PostMessageW(hWnd, WM_USER + 1, 0L, 0L);
+
+	return static_cast<EFunctionCode>(id);
+}
+
 } // namespace window
 
 //Stonee, 2001/03/21
@@ -600,8 +630,6 @@ LRESULT CControlTray::DispatchEvent(
 //キーワード：トレイ右クリックメニュー設定
 //	From Here Oct. 12, 2000 JEPRO 左右とも同一処理になっていたのを別々に処理するように変更
 		case WM_RBUTTONUP:	// Dec. 24, 2002 towest UPに変更
-			::SetActiveWindow( GetTrayHwnd() );
-			::SetForegroundWindow( GetTrayHwnd() );
 			/* ポップアップメニュー(トレイ右ボタン) */
 			nId = CreatePopUpMenu_R();
 			switch( nId ){
@@ -699,8 +727,6 @@ LRESULT CControlTray::DispatchEvent(
 				return 0L;
 			}
 			/* 03/02/20 ai End */
-			::SetActiveWindow( GetTrayHwnd() );
-			::SetForegroundWindow( GetTrayHwnd() );
 			/* ポップアップメニュー(トレイ左ボタン) */
 			nId = CreatePopUpMenu_L();
 			switch( nId ){
@@ -1506,13 +1532,10 @@ int	CControlTray::CreatePopUpMenu_L( void )
 {
 	int			i;
 	int			j;
-	int			nId;
 	HMENU		hMenuTop;
 	HMENU		hMenu;
 	HMENU		hMenuPopUp;
 	WCHAR		szMenu[100 + MAX_PATH * 2];	//	Jan. 19, 2001 genta
-	POINT		po;
-	RECT		rc;
 	EditInfo*	pfi;
 
 	//本当はセマフォにしないとだめ
@@ -1594,38 +1617,24 @@ int	CControlTray::CreatePopUpMenu_L( void )
 	//	Jun. 9, 2001 genta ソフトウェア名改称
 	m_cMenuDrawer.MyAppendMenu( hMenu, MF_BYPOSITION | MF_STRING, F_EXITALL, L"", L"X", FALSE );	//Dec. 26, 2000 JEPRO F_に変更
 
-	po.x = 0;
-	po.y = 0;
-	::GetCursorPos( &po );
-	po.y -= 4;
+	MenuHolder menuHolder{ hMenuTop };
 
-	rc.left = 0;
-	rc.right = 0;
-	rc.top = 0;
-	rc.bottom = 0;
+	const auto hWnd = GetHwnd();
 
-	::SetForegroundWindow( GetTrayHwnd() );
-	nId = ::TrackPopupMenu(
+	const auto eFuncCode = window::TrackPopupMenu(
 		hMenu,
 		TPM_BOTTOMALIGN
 		| TPM_RIGHTALIGN
-		| TPM_RETURNCMD
 		| TPM_LEFTBUTTON
-		/*| TPM_RIGHTBUTTON*/
 		,
-		po.x,
-		po.y,
-		0,
-		GetTrayHwnd(),
-		&rc
+		hWnd
 	);
-	::PostMessageAny( GetTrayHwnd(), WM_USER + 1, 0, 0 );
-	::DestroyMenu( hMenuTop );
-//	MYTRACE( L"nId=%d\n", nId );
+
+	menuHolder = nullptr;
 
 	m_bUseTrayMenu = false;
 
-	return nId;
+	return static_cast<int>(eFuncCode);
 }
 
 //キーワード：トレイ右クリックメニュー順序
@@ -1634,11 +1643,8 @@ int	CControlTray::CreatePopUpMenu_L( void )
 /*! ポップアップメニュー(トレイ右ボタン) */
 int	CControlTray::CreatePopUpMenu_R( void )
 {
-	int		nId;
 	HMENU	hMenuTop;
 	HMENU	hMenu;
-	POINT	po;
-	RECT	rc;
 
 	//本当はセマフォにしないとだめ
 	if( m_bUseTrayMenu ) return -1;
@@ -1663,36 +1669,22 @@ int	CControlTray::CreatePopUpMenu_R( void )
 	//	Jun. 18, 2001 genta ソフトウェア名改称
 	m_cMenuDrawer.MyAppendMenu( hMenu, MF_BYPOSITION | MF_STRING, F_EXITALL, L"", L"X", FALSE );
 
-	po.x = 0;
-	po.y = 0;
-	::GetCursorPos( &po );
-	po.y -= 4;
+	MenuHolder menuHolder{ hMenuTop };
 
-	rc.left = 0;
-	rc.right = 0;
-	rc.top = 0;
-	rc.bottom = 0;
+	const auto hWnd = GetHwnd();
 
-	::SetForegroundWindow( GetTrayHwnd() );
-	nId = ::TrackPopupMenu(
+	const auto eFuncCode = window::TrackPopupMenu(
 		hMenu,
 		TPM_BOTTOMALIGN
 		| TPM_RIGHTALIGN
-		| TPM_RETURNCMD
 		| TPM_LEFTBUTTON
-		/*| TPM_RIGHTBUTTON*/
 		,
-		po.x,
-		po.y,
-		0,
-		GetTrayHwnd(),
-		&rc
+		hWnd
 	);
-	::PostMessageAny( GetTrayHwnd(), WM_USER + 1, 0, 0 );
-	::DestroyMenu( hMenuTop );
-//	MYTRACE( L"nId=%d\n", nId );
+
+	menuHolder = nullptr;
 
 	m_bUseTrayMenu = false;
 
-	return nId;
+	return static_cast<int>(eFuncCode);
 }

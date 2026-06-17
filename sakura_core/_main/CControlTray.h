@@ -43,6 +43,8 @@ class CControlTray final
 	, public TSingleInstance<CControlTray>
 {
 private:
+	using MenuHolder = cxx::ResourceHolder<&::DestroyMenu>;
+
 	/*!
 	 * トレイアイコン再登録要求のメッセージID。
 	 *
