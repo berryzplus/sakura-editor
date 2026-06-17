@@ -75,6 +75,8 @@ public:
 	*/
 	HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unused]]) override;
 
+	void	ExecCommand(EFunctionCode funcCode);
+
 	int		MessageLoop() const override;
 
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;

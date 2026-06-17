@@ -61,7 +61,18 @@ CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg);
 CMyRect _CalcInitialRect(int nCmdShow, const STabGroupInfo& sTabGroupInfo);
 STabGroupInfo _GetTabGroupInfo(int nGroup);
 
-struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
+bool ActivateOpenedEditor(int openEditorIndex);
+
+bool OpenSelectedMruFile(int mruIndex);
+
+void SelectAndOpenFiles(
+	const std::filesystem::path& defaultDir,
+	const std::vector<LPCWSTR>& vOPENFOLDER
+);
+
+bool SelectAndOpenFilesFromMruFolder(int mruFolderIndex);
+
+struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, public window::UiaTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
 	/*!
@@ -69,6 +80,8 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	 */
 	static void SetUpTestSuite()
 	{
+		SetUpUia();
+
 		SetUpShareData();
 	}
 
@@ -78,6 +91,8 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite {
 	static void TearDownTestSuite()
 	{
 		TearDownShareData();
+
+		TearDownUia();
 	}
 
 	CControlTrayHolder pcTrayWnd = nullptr;
@@ -351,6 +366,193 @@ TEST_F(TrayWndTest, OnChangeSetting001)
 	GetDllShareData().m_Common.m_sWindow.m_szLanguageDll = L"";
 
 	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_CHANGESETTING, 0, int(PM_CHANGESETTING_ALL)), 0);
+}
+
+TEST_F(TrayWndTest, OnNotifyIcon101)
+{
+	HWND hWndTray = nullptr;
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_LBUTTONDOWN), IsFalse());
+	EXPECT_THAT(pcTrayWnd->DispatchEvent(hWndTray, MYWM_NOTIFYICON, 0L, WM_RBUTTONDBLCLK), IsFalse());
+}
+
+TEST_F(TrayWndTest, ActivateOpenedEditor101)
+{
+	GetDllShareData().m_sNodes.m_nEditArrNum = 1;
+
+	EXPECT_THAT(window::ActivateOpenedEditor(0), IsTrue());	// アクティブ化を試みたらtrueを返す
+
+	GetDllShareData().m_sNodes.m_nEditArrNum = 0;
+}
+
+TEST_F(TrayWndTest, AsyncCommand101)
+{
+	EXPECT_THAT(window::ActivateOpenedEditor(-1), IsFalse());
+	EXPECT_THAT(window::ActivateOpenedEditor(256), IsFalse());
+	EXPECT_THAT(window::ActivateOpenedEditor(1), IsFalse());
+	EXPECT_THAT(window::OpenSelectedMruFile(-1), IsFalse());
+	EXPECT_THAT(window::OpenSelectedMruFile(999), IsFalse());
+	EXPECT_THAT(window::OpenSelectedMruFile(1), IsFalse());
+	EXPECT_THAT(window::SelectAndOpenFilesFromMruFolder(-1), IsFalse());
+	EXPECT_THAT(window::SelectAndOpenFilesFromMruFolder(999), IsFalse());
+	EXPECT_THAT(window::SelectAndOpenFilesFromMruFolder(1), IsFalse());
+
+	pcTrayWnd->ExecCommand(static_cast<EFunctionCode>(static_cast<int>(IDM_SELOPENFOLDER) + 999));
+}
+
+TEST_F(TrayWndTest, ExitAllEdtors101)
+{
+	pcTrayWnd->ExecCommand(F_EXITALLEDITORS);
+}
+
+TEST_F(TrayWndTest, ExitAll101)
+{
+	pcTrayWnd->ExecCommand(F_EXITALL);
+}
+
+TEST_F(TrayWndTest, SelectAndOpenFilesFromMruFolder101)
+{
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	GetDllShareData().m_sHistory.m_nOPENFOLDERArrNum = 1;
+
+	// ファイルを開くダイアログを表示する
+	pcTrayWnd->ExecCommand(static_cast<EFunctionCode>(IDM_SELOPENFOLDER));
+
+	GetDllShareData().m_sHistory.m_nOPENFOLDERArrNum = 0;
+}
+
+TEST_F(TrayWndTest, SaveAllFiles101)
+{
+	pcTrayWnd->ExecCommand(F_FILESAVEALL);
+}
+
+/*!
+ * バージョン情報ダイアログの表示テスト
+ */
+TEST_F(TrayWndTest, ShowDlgAbout101)
+{
+	// 表示されたモーダルダイアログをOKボタンで閉じるようにする
+	dialog::ModalDialogCloser closer([] (HWND hWndDlg) {
+		::SendMessageW(hWndDlg, WM_COMMAND, MAKELONG(IDOK, BN_CLICKED), 0);
+	});
+
+	pcTrayWnd->ExecCommand(F_ABOUT);
+}
+
+/*!
+ * 履歴とお気に入りの管理ダイアログの表示テスト
+ */
+TEST_F(TrayWndTest, ShowDlgFavorite001)
+{
+	// 表示されたモーダルダイアログをOKボタンで閉じるようにする
+	dialog::ModalDialogCloser closer([] (HWND hWndDlg) {
+		::SendMessageW(hWndDlg, WM_COMMAND, MAKELONG(IDOK, BN_CLICKED), 0);
+	});
+
+	pcTrayWnd->ExecCommand(F_FAVORITE);
+}
+
+/*!
+ * Grepダイアログの表示テスト
+ */
+TEST_F(TrayWndTest, ShowDlgGrep101)
+{
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	// 検索条件
+	CSearchKeywordManager().AddToSearchKeyArr(LR"(localhost)");
+
+	// 検索フォルダー
+	CSearchKeywordManager().AddToGrepFolderArr(LR"(C:\WINDOWS\System32\Drivers)");
+
+	// 検索ファイル
+	CSearchKeywordManager().AddToGrepFileArr(LR"(*.*)");
+
+	// 除外フォルダー
+	CSearchKeywordManager().AddToExcludeFolderArr(LR"(en-US;DriverData;UMDF;udc;mde;wd;)");
+
+	// 除外ファイル
+	CSearchKeywordManager().AddToExcludeFileArr(LR"(*.sys;*.dll;*.exe;*.mui;*.nls;*.chm;*.dat;*.tmp;*.wdf)");
+
+	// Grepダイアログを表示する
+	pcTrayWnd->ExecCommand(F_GREP_DIALOG);
+
+	GetDllShareData().m_sSearchKeywords.m_aSearchKeys.clear();
+	GetDllShareData().m_sSearchKeywords.m_aGrepFolders.clear();
+	GetDllShareData().m_sSearchKeywords.m_aGrepFiles.clear();
+	GetDllShareData().m_sSearchKeywords.m_aExcludeFolders.clear();
+	GetDllShareData().m_sSearchKeywords.m_aExcludeFiles.clear();
+}
+
+/*!
+ * ファイルを開くダイアログの表示テスト
+ */
+TEST_F(TrayWndTest, ShowDlgOpenFile101)
+{
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	// ファイルを開くダイアログを表示する
+	pcTrayWnd->ExecCommand(F_FILEOPEN);
+}
+
+/*!
+ * タイプ別設定一覧ダイアログの表示テスト
+ */
+TEST_F(TrayWndTest, ShowDlgTypeList101)
+{
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	// タイプ別設定一覧ダイアログを表示する
+	pcTrayWnd->ExecCommand(F_TYPE_LIST);
+}
+
+/*!
+ * 共通設定プロパティーシートの表示テスト
+ */
+TEST_F(TrayWndTest, ShowPropCommon001)
+{
+	// 表示された共通設定を閉じるためのスレッドを起動する
+	std::jthread t = StartWindowCloser(LS(STR_PROPCOMMON), [&] (HWND hWndDlg) {
+		// キャンセルボタンを押下して閉じる
+		const auto hCancel = ::GetDlgItem(hWndDlg, IDCANCEL);
+		std::wstring text(0x100, L'\0');
+		::GetWindowTextW(hCancel, std::data(text), int(std::size(text)));
+		EmulateInvokeButton(hWndDlg, text.c_str());
+	});
+
+	// 共通設定プロパティーシートを表示する
+	pcTrayWnd->ExecCommand(F_OPTION);
+}
+
+/*!
+ * タイプ別設定プロパティーシートの表示テスト
+ */
+TEST_F(TrayWndTest, ShowPropType001)
+{
+	// 表示されたタイプ別設定一覧を閉じるためのスレッドを起動する
+	std::jthread t1 = StartWindowCloser(L"タイプ別設定一覧", [&] (HWND hWndDlg) {
+		// 設定変更ボタンを押下して閉じる
+		EmulateInvokeButton(hWndDlg, L"設定変更(S)...");
+	});
+
+	// 表示されたタイプ別設定を閉じるためのスレッドを起動する
+	std::jthread t2 = StartWindowCloser(LS(STR_PROPTYPE), [&] (HWND hWndDlg) {
+		// キャンセルボタンを押下して閉じる
+		const auto hCancel = ::GetDlgItem(hWndDlg, IDCANCEL);
+		std::wstring text(0x100, L'\0');
+		::GetWindowTextW(hCancel, std::data(text), int(std::size(text)));
+		EmulateInvokeButton(hWndDlg, text.c_str());
+	});
+
+	// タイプ別設定一覧ダイアログを表示する
+	pcTrayWnd->ExecCommand(F_TYPE_LIST);
+
+	t2.join();
+	t1.join();
 }
 
 struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, public window::UiaTestSuite {

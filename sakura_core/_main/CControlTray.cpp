@@ -87,6 +87,27 @@ bool SendTrayMessage(
 	const std::optional<std::wstring>& optTipText = std::nullopt
 );
 
+bool ActivateOpenedEditor(int openEditorIndex)
+{
+	// 開いているエディターをアクティブにする
+	const auto& pEditArr = GetDllShareData().m_sNodes.m_pEditArr;
+
+	if (openEditorIndex < 0 || std::ssize(pEditArr) <= openEditorIndex) return false;
+
+	const auto safeSize = std::max(0, GetDllShareData().m_sNodes.m_nEditArrNum);
+	const auto actualSize = std::min<size_t>(safeSize, std::size(pEditArr));
+
+	if (actualSize <= openEditorIndex) return false;
+
+	const auto nodes = std::span{ pEditArr, actualSize };
+
+	const auto hEditWnd = nodes[openEditorIndex].GetHwnd();
+
+	ActivateFrameWindow(hEditWnd);
+
+	return true;
+}
+
 /*!
  * @brief タスクトレイにアイコンを作成する
  *
@@ -129,6 +150,80 @@ bool CreateTrayIcon(
 
 	//タスクトレイにメッセージを送信する
 	return window::SendTrayMessage(hWndTray, 0, NIM_ADD, hIcon, tipText);
+}
+
+bool OpenSelectedMruFile(int mruIndex)
+{
+	if (mruIndex < 0 || 999 <= mruIndex) return false;
+
+	EditInfo openEditInfo;
+	if (!CMRUFile().GetEditInfo(mruIndex, &openEditInfo)) return false;
+
+	HINSTANCE unusedArg1 = nullptr;
+	HWND unusedArg2 = nullptr;
+
+	if (GetDllShareData().m_Common.m_sFile.GetRestoreCurPosition()) {
+		CControlTray::OpenNewEditor2(unusedArg1, unusedArg2, &openEditInfo, false);
+	}
+	else {
+		SLoadInfo sLoadInfo;
+		sLoadInfo.cFilePath = openEditInfo.m_szPath;
+		sLoadInfo.eCharCode = openEditInfo.m_nCharCode;
+		sLoadInfo.bViewMode = false;
+		CControlTray::OpenNewEditor(unusedArg1, unusedArg2, sLoadInfo, L"", true, nullptr, GetDllShareData().m_Common.m_sTabBar.m_bNewWindow);
+	}
+
+	return true;
+}
+
+void SelectAndOpenFiles(
+	const std::filesystem::path& defaultDir,
+	const std::vector<LPCWSTR>& vOPENFOLDER
+)
+{
+	/* ファイルオープンダイアログの初期化 */
+	CDlgOpenFile cDlgOpenFile;
+	cDlgOpenFile.Create(
+		HINSTANCE(nullptr),
+		HWND(nullptr),
+		L"*.*",
+		defaultDir.c_str(),
+		CMRUFile().GetPathList(),
+		vOPENFOLDER
+	);
+	SLoadInfo sLoadInfo( L"", CODE_AUTODETECT, false);
+	std::vector<std::wstring> files;
+	if (!cDlgOpenFile.DoModalOpenDlg(&sLoadInfo, &files)) {
+		return;
+	}
+
+	// 新たな編集ウィンドウを起動
+	size_t nSize = files.size();
+	for( size_t f = 0; f < nSize; f++ ){
+		sLoadInfo.cFilePath = files[f].c_str();
+		CControlTray::OpenNewEditor(nullptr, nullptr, sLoadInfo, nullptr, true, nullptr, GetDllShareData().m_Common.m_sTabBar.m_bNewWindow);
+	}
+}
+
+bool SelectAndOpenFilesFromMruFolder(int mruFolderIndex)
+{
+	if (mruFolderIndex < 0 || 999 <= mruFolderIndex) return false;
+
+	/* OPENFOLDERリストのファイルのリスト */
+	auto vOPENFOLDER = CMRUFolder().GetPathList();
+	if (std::ssize(vOPENFOLDER) <= mruFolderIndex) return false;
+	const auto selectedMruFolder = vOPENFOLDER[mruFolderIndex];
+
+	//Stonee, 2001/12/21 UNCであれば接続を試みる
+	NetConnect(selectedMruFolder);
+
+	/* ファイルオープンダイアログの初期化 */
+	window::SelectAndOpenFiles(
+		selectedMruFolder,
+		vOPENFOLDER
+	);
+
+	return true;
 }
 
 /*!
@@ -426,6 +521,138 @@ HWND CControlTray::CreateMainWnd(HINSTANCE hInstance, int nCmdShow [[maybe_unuse
 }
 
 /*!
+ * @brief コマンドを実行する
+ */
+void CControlTray::ExecCommand(EFunctionCode id)
+{
+	const auto hWnd = GetHwnd();
+
+	switch (id) {
+	case F_FILENEW:	/* 新規作成 */
+		/* 新規編集ウィンドウの追加 */
+		OnNewEditor(false);	//既存タブグループがあればまとめる
+		break;
+
+	case F_FILEOPEN:	/* 開く */
+		window::SelectAndOpenFiles(
+			CSakuraEnvironment::GetDlgInitialDir(true),
+			CMRUFolder().GetPathList()
+		);
+		break;
+
+	case F_GREP_DIALOG:
+		/* Grep */
+		DoGrep();  //Stonee, 2001/03/21  Grepを別関数に
+		break;
+
+	case F_FAVORITE:
+		{
+			CDlgFavorite cDlgFavorite;
+			cDlgFavorite.DoModal(m_hInstance, hWnd, (LPARAM)nullptr);
+		}
+		break;
+
+	case F_FILESAVEALL:	// Jan. 24, 2005 genta 全て上書き保存
+		CAppNodeGroupHandle(0).PostMessageToAllEditors(
+			WM_COMMAND,
+			MAKELONG( F_FILESAVE_QUIET, 0 ),
+			(LPARAM)0,
+			nullptr
+		);
+		break;
+
+	case F_HELP_CONTENTS:
+		/* ヘルプ目次 */
+		ShowWinHelpContents( GetTrayHwnd() );	//	目次を表示する
+		break;
+
+	case F_HELP_SEARCH:
+		/* ヘルプキーワード検索 */
+		MyWinHelp( GetTrayHwnd(), HELP_KEY, (ULONG_PTR)L"" );	// 2006.10.10 ryoji MyWinHelpに変更に変更
+		break;
+
+	case F_EXTHELP1:
+		/* 外部ヘルプ１ */
+		do{
+			if( CHelpManager().ExtWinHelpIsSet() ) {	//	共通設定のみ確認
+				break;
+			}
+			else{
+				ErrorBeep();
+			}
+		}while(IDYES == ::MYMESSAGEBOX(
+				nullptr, MB_YESNOCANCEL | MB_ICONEXCLAMATION | MB_APPLMODAL | MB_TOPMOST,
+				GSTR_APPNAME,
+				LS(STR_TRAY_EXTHELP1))
+		);/*do-while*/
+
+		break;
+
+	case F_EXTHTMLHELP:
+		/* 外部HTMLヘルプ */
+		{
+//					CEditView::Command_EXTHTMLHELP();
+		}
+		break;
+
+	case F_TYPE_LIST:	// タイプ別設定一覧
+		{
+			CDlgTypeList			cDlgTypeList;
+			CDlgTypeList::SResult	sResult;
+			sResult.cDocumentType = CTypeConfig(0);
+			sResult.bTempChange = false;
+			if (cDlgTypeList.DoModal(G_AppInstance(), GetTrayHwnd(), &sResult)) {
+				// タイプ別設定
+				CPluginManager::getInstance()->LoadAllPlugin();
+				m_pcPropertyManager->OpenPropertySheetTypes(nullptr, -1, sResult.cDocumentType);
+				CPluginManager::getInstance()->UnloadAllPlugin();
+			}
+		}
+		break;
+
+	case F_OPTION:	// 共通設定
+		CPluginManager::getInstance()->LoadAllPlugin();
+		// アイコンの登録
+		GetIcons().ResetExtend();
+		for (const auto plug : CJackManager::getInstance()->GetPlugs(PP_COMMAND)) {
+			const auto iBitmap = plug->m_sIcon.empty()
+				? CMenuDrawer::TOOLBAR_ICON_PLUGCOMMAND_DEFAULT - 1
+				: GetIcons().Add(plug->m_cPlugin.GetFilePath( plug->m_sIcon ).c_str());
+
+			m_cMenuDrawer.AddToolButton( iBitmap, plug->GetFunctionCode() );
+		}
+		// 共通設定プロフパティシートの表示は、たまにクラッシュして戻らない。
+		m_pcPropertyManager->OpenPropertySheet( nullptr, -1, true );
+		CPluginManager::getInstance()->UnloadAllPlugin();
+		break;
+
+	case F_ABOUT:
+		/* バージョン情報 */
+		{
+			CDlgAbout cDlgAbout;
+			cDlgAbout.DoModal(m_hInstance, hWnd);
+		}
+		break;
+
+	case F_EXITALLEDITORS:
+		/* 編集の全終了 */
+		CloseAllEditor(TRUE, hWnd, TRUE, 0);
+		break;
+
+	case F_EXITALL:
+		/* サクラエディタの全終了 */
+		TerminateApplication(hWnd);
+		break;
+
+	default:
+		window::ActivateOpenedEditor(static_cast<int>(id) - IDM_SELWINDOW) ||
+			window::OpenSelectedMruFile(static_cast<int>(id) - IDM_SELMRU) ||
+			window::SelectAndOpenFilesFromMruFolder(static_cast<int>(id) - IDM_SELOPENFOLDER);
+		break;
+	}
+}
+
+/*!
  * @brief メッセージループ
  *
  * @return PostQuitMessage()で指定された終了コード
@@ -478,9 +705,6 @@ LRESULT CControlTray::DispatchEvent(
 )
 {
 	const auto hWnd = hwnd;
-
-	int				nId;
-	HWND			hwndWork;
 
 	int			nRowNum;
 	EditNode*	pEditNodeArr;
@@ -631,86 +855,8 @@ LRESULT CControlTray::DispatchEvent(
 //	From Here Oct. 12, 2000 JEPRO 左右とも同一処理になっていたのを別々に処理するように変更
 		case WM_RBUTTONUP:	// Dec. 24, 2002 towest UPに変更
 			/* ポップアップメニュー(トレイ右ボタン) */
-			nId = CreatePopUpMenu_R();
-			switch( nId ){
-			case F_HELP_CONTENTS:
-				/* ヘルプ目次 */
-				ShowWinHelpContents( GetTrayHwnd() );	//	目次を表示する
-				break;
-			case F_HELP_SEARCH:
-				/* ヘルプキーワード検索 */
-				MyWinHelp( GetTrayHwnd(), HELP_KEY, (ULONG_PTR)L"" );	// 2006.10.10 ryoji MyWinHelpに変更に変更
-				break;
-			case F_EXTHELP1:
-				/* 外部ヘルプ１ */
-				do{
-					if( CHelpManager().ExtWinHelpIsSet() ) {	//	共通設定のみ確認
-						break;
-					}
-					else{
-						ErrorBeep();
-					}
-				}while(IDYES == ::MYMESSAGEBOX(
-						nullptr, MB_YESNOCANCEL | MB_ICONEXCLAMATION | MB_APPLMODAL | MB_TOPMOST,
-						GSTR_APPNAME,
-						LS(STR_TRAY_EXTHELP1))
-				);/*do-while*/
-
-				break;
-			case F_EXTHTMLHELP:
-				/* 外部HTMLヘルプ */
-				{
-//					CEditView::Command_EXTHTMLHELP();
-				}
-				break;
-			case F_TYPE_LIST:	// タイプ別設定一覧
-				{
-					CDlgTypeList			cDlgTypeList;
-					CDlgTypeList::SResult	sResult;
-					sResult.cDocumentType = CTypeConfig(0);
-					sResult.bTempChange = false;
-					if( cDlgTypeList.DoModal( G_AppInstance(), GetTrayHwnd(), &sResult ) ){
-						// タイプ別設定
-						CPluginManager::getInstance()->LoadAllPlugin();
-						m_pcPropertyManager->OpenPropertySheetTypes( nullptr, -1, sResult.cDocumentType );
-						CPluginManager::getInstance()->UnloadAllPlugin();
-					}
-				}
-				break;
-			case F_OPTION:	// 共通設定
-				{
-					CPluginManager::getInstance()->LoadAllPlugin();
-					{
-						// アイコンの登録
-						const CPlug::Array& plugs = CJackManager::getInstance()->GetPlugs( PP_COMMAND );
-						m_cMenuDrawer.m_pcIcons->ResetExtend();
-						for( CPlug::ArrayIter it = plugs.cbegin(); it != plugs.cend(); it++ ) {
-							int iBitmap = CMenuDrawer::TOOLBAR_ICON_PLUGCOMMAND_DEFAULT - 1;
-							const CPlug* plug = *it;
-							if( !plug->m_sIcon.empty() ){
-								iBitmap = m_cMenuDrawer.m_pcIcons->Add( plug->m_cPlugin.GetFilePath( plug->m_sIcon ).c_str() );
-							}
-							m_cMenuDrawer.AddToolButton( iBitmap, plug->GetFunctionCode() );
-						}
-					}
-					m_pcPropertyManager->OpenPropertySheet( nullptr, -1, true );
-					CPluginManager::getInstance()->UnloadAllPlugin();
-				}
-				break;
-			case F_ABOUT:
-				/* バージョン情報 */
-				{
-					CDlgAbout cDlgAbout;
-					cDlgAbout.DoModal( m_hInstance, GetTrayHwnd() );
-				}
-				break;
-//			case IDM_EXITALL:
-			case F_EXITALL:	//Dec. 26, 2000 JEPRO F_に変更
-				/* サクラエディタの全終了 */
-				CControlTray::TerminateApplication( GetTrayHwnd() );	// 2006.12.25 ryoji 引数追加
-				break;
-			default:
-				break;
+			if (const auto nFuncCode = CreatePopUpMenu_R(); 0 < nFuncCode) {
+				ExecCommand(static_cast<EFunctionCode>(nFuncCode));
 			}
 			return 0L;
 //	To Here Oct. 12, 2000
@@ -728,148 +874,8 @@ LRESULT CControlTray::DispatchEvent(
 			}
 			/* 03/02/20 ai End */
 			/* ポップアップメニュー(トレイ左ボタン) */
-			nId = CreatePopUpMenu_L();
-			switch( nId ){
-			case F_FILENEW:	/* 新規作成 */
-				/* 新規編集ウィンドウの追加 */
-				OnNewEditor( false );
-				break;
-			case F_FILEOPEN:	/* 開く */
-				{
-					// ファイルオープンダイアログの初期化
-					SLoadInfo sLoadInfo;
-					sLoadInfo.cFilePath = L"";
-					sLoadInfo.eCharCode = CODE_AUTODETECT;	// 文字コード自動判別
-					sLoadInfo.bViewMode = false;
-					// 2013.03.21 novice カレントディレクトリ変更(MRUは使用しない)
-					CDlgOpenFile	cDlgOpenFile;
-					cDlgOpenFile.Create(
-						m_hInstance,
-						nullptr,
-						L"*.*",
-						CSakuraEnvironment::GetDlgInitialDir(true).c_str(),
-						CMRUFile().GetPathList(),
-						CMRUFolder().GetPathList()	// OPENFOLDERリストのファイルのリスト
-					);
-					std::vector<std::wstring> files;
-					if( !cDlgOpenFile.DoModalOpenDlg( &sLoadInfo, &files ) ){
-						break;
-					}
-					if( nullptr == GetTrayHwnd() ){
-						break;
-					}
-
-					// 新たな編集ウィンドウを起動
-					size_t nSize = files.size();
-					for( size_t f = 0; f < nSize; f++ ){
-						sLoadInfo.cFilePath = files[f].c_str();
-						CControlTray::OpenNewEditor( m_hInstance, GetTrayHwnd(), sLoadInfo,
-							nullptr, true, nullptr, m_pShareData->m_Common.m_sTabBar.m_bNewWindow? true : false );
-					}
-				}
-				break;
-			case F_GREP_DIALOG:
-				/* Grep */
-				DoGrep();  //Stonee, 2001/03/21  Grepを別関数に
-				break;
-			case F_FAVORITE:
-				if (CDlgFavorite cDlgFavorite;
-					cDlgFavorite.GetHwnd() == nullptr)
-				{
-					cDlgFavorite.DoModal(m_hInstance, GetTrayHwnd(), (LPARAM)nullptr);
-				}
-				break;
-			case F_FILESAVEALL:	// Jan. 24, 2005 genta 全て上書き保存
-				CAppNodeGroupHandle(0).PostMessageToAllEditors(
-					WM_COMMAND,
-					MAKELONG( F_FILESAVE_QUIET, 0 ),
-					(LPARAM)0,
-					nullptr
-				);
-				break;
-			case F_EXITALLEDITORS:	//Oct. 17, 2000 JEPRO 名前を変更(F_FILECLOSEALL→F_WIN_CLOSEALL)	// 2007.02.13 ryoji →F_EXITALLEDITORS
-				/* 編集の全終了 */
-				CControlTray::CloseAllEditor( TRUE, GetTrayHwnd(), TRUE, 0 );	// 2006.12.25, 2007.02.13 ryoji 引数追加
-				break;
-			case F_EXITALL:	//Dec. 26, 2000 JEPRO F_に変更
-				/* サクラエディタの全終了 */
-				CControlTray::TerminateApplication( GetTrayHwnd() );	// 2006.12.25 ryoji 引数追加
-				break;
-			default:
-				if( nId - IDM_SELWINDOW  >= 0 && nId - IDM_SELWINDOW  < m_pShareData->m_sNodes.m_nEditArrNum ){
-					hwndWork = m_pShareData->m_sNodes.m_pEditArr[nId - IDM_SELWINDOW].GetHwnd();
-
-					/* アクティブにする */
-					ActivateFrameWindow( hwndWork );
-				}
-				else if( nId-IDM_SELMRU >= 0 && nId-IDM_SELMRU < 999 ){
-
-					/* 新しい編集ウィンドウを開く */
-					//	From Here Oct. 27, 2000 genta	カーソル位置を復元しない機能
-					const CMRUFile cMRU;
-					EditInfo openEditInfo;
-					cMRU.GetEditInfo(nId - IDM_SELMRU, &openEditInfo);
-
-					if( m_pShareData->m_Common.m_sFile.GetRestoreCurPosition() ){
-						CControlTray::OpenNewEditor2( m_hInstance, GetTrayHwnd(), &openEditInfo, false );
-					}
-					else {
-						SLoadInfo sLoadInfo;
-						sLoadInfo.cFilePath = openEditInfo.m_szPath;
-						sLoadInfo.eCharCode = openEditInfo.m_nCharCode;
-						sLoadInfo.bViewMode = false;
-						CControlTray::OpenNewEditor(
-							m_hInstance,
-							GetTrayHwnd(),
-							sLoadInfo,
-							nullptr,
-							false,
-							nullptr,
-							m_pShareData->m_Common.m_sTabBar.m_bNewWindow? true : false
-						);
-					}
-					//	To Here Oct. 27, 2000 genta
-				}
-				else if( nId - IDM_SELOPENFOLDER  >= 0 && nId - IDM_SELOPENFOLDER  < 999 ){
-					/* MRUリストのファイルのリスト */
-					const CMRUFile cMRU;
-					std::vector<LPCWSTR> vMRU = cMRU.GetPathList();
-
-					/* OPENFOLDERリストのファイルのリスト */
-					const CMRUFolder cMRUFolder;
-					std::vector<LPCWSTR> vOPENFOLDER = cMRUFolder.GetPathList();
-
-					//Stonee, 2001/12/21 UNCであれば接続を試みる
-					NetConnect( cMRUFolder.GetPath( nId - IDM_SELOPENFOLDER ) );
-
-					/* ファイルオープンダイアログの初期化 */
-					CDlgOpenFile	cDlgOpenFile;
-					cDlgOpenFile.Create(
-						m_hInstance,
-						nullptr,
-						L"*.*",
-						vOPENFOLDER[ nId - IDM_SELOPENFOLDER ],
-						vMRU,
-						vOPENFOLDER
-					);
-					SLoadInfo sLoadInfo( L"", CODE_AUTODETECT, false);
-					std::vector<std::wstring> files;
-					if( !cDlgOpenFile.DoModalOpenDlg( &sLoadInfo, &files ) ){
-						break;
-					}
-					if( nullptr == GetTrayHwnd() ){
-						break;
-					}
-
-					// 新たな編集ウィンドウを起動
-					size_t nSize = files.size();
-					for( size_t f = 0; f < nSize; f++ ){
-						sLoadInfo.cFilePath = files[f].c_str();
-						CControlTray::OpenNewEditor( m_hInstance, GetTrayHwnd(), sLoadInfo,
-							nullptr, true, nullptr, m_pShareData->m_Common.m_sTabBar.m_bNewWindow? true : false );
-					}
-				}
-				break;
+			if (const auto nFuncCode = CreatePopUpMenu_L(); 0 < nFuncCode) {
+				ExecCommand(static_cast<EFunctionCode>(nFuncCode));
 			}
 			return 0L;
 		case WM_LBUTTONDBLCLK:
