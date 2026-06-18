@@ -218,18 +218,6 @@ TEST(string_ex, strprintfA_small_output)
 }
 
 /*!
-	@brief u8文字列を標準文字列に変換する。
- */
-TEST(string_ex, u8stowcs)
-{
-	// u8→wcs変換ができること
-	ASSERT_STREQ(u8stowcs((LPCSTR)u8"This is 運命").data(), L"This is 運命");
-
-	// 空文字列も問題なく変換できること
-	ASSERT_STREQ(u8stowcs((LPCSTR)u8"").data(), L"");
-}
-
-/*!
 	@brief 独自定義の文字列比較関数。
  */
 TEST(string_ex, strncmp_literal)

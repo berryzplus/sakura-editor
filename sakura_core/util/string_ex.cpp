@@ -418,21 +418,6 @@ std::string strprintf(const CHAR* pszFormat, ...)
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                      文字コード変換                         //
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-/*!
-	@brief u8文字列を標準文字列に変換する。
-		動的にバッファを確保する簡易バージョン
-	@param[in]  strInput	u8文字列
-	@returns 標準文字列
- */
-std::wstring u8stowcs(std::string_view strInput)
-{
-	return cxx::to_wstring(strInput, CP_UTF8);
-}
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                          メモリ                             //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
