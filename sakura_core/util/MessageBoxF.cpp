@@ -46,7 +46,7 @@ int Wrap_MessageBox(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
 	// 標準エラー出力が存在する場合
 	if(::GetStdHandle(STD_ERROR_HANDLE)){
 		// lpText を標準エラー出力に書き出す
-		std::clog << (lpText ? wcstou8s(lpText) : "") << std::endl;
+		std::clog << cxx::to_string(lpText ? lpText : L"", CP_UTF8) << std::endl;
 
 		// いい加減な戻り値を返す。(返り値0は未定義なので本来返らない値を返している)
 		return 0;
