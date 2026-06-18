@@ -208,7 +208,6 @@ std::string strprintf(const CHAR* pszFormat, ...);
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 std::wstring u8stowcs(std::string_view strInput);
-std::string wcstou8s(std::wstring_view strInput);
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                       リテラル比較                          //
