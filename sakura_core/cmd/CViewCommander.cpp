@@ -728,14 +728,13 @@ ptrdiff_t CViewCommander::ConvertEol(const wchar_t* pszText, ptrdiff_t nTextLen,
 
 	@date 2010.04.21 ryoji	新規作成（数カ所で用いられていた類似コードの共通化）
 */
-void CViewCommander::AlertNotFound(HWND hwnd, bool bReplaceAll, LPCWSTR format, ...)
+void CViewCommander::AlertNotFound(bool bReplaceAll, LPCWSTR format, ...) const
 {
+	const auto hwnd = m_pCommanderView->GetHwnd();
+
 	if( GetDllShareData().m_Common.m_sSearch.m_bNOTIFYNOTFOUND
 		&& !bReplaceAll
 	){
-		if( nullptr == hwnd ){
-			hwnd = m_pCommanderView->GetHwnd();
-		}
 		//InfoMessage(hwnd, format, __VA_ARGS__);
 		va_list p;
 		va_start(p, format);

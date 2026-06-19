@@ -390,7 +390,7 @@ public:
 
 private:
 	void MoveViewTopLine(CLayoutInt nViewTopLine);
-	void AlertNotFound(HWND hwnd, bool bReplaceAll, LPCWSTR format, ...);
+	void AlertNotFound(bool bReplaceAll, LPCWSTR format, ...) const;
 	void DelCharForOverwrite(const wchar_t* pszInput, int nLen);	// 上書き用の一文字削除	// 2009.04.11 ryoji
 	bool Sub_PreProcTagJumpByTagsFile( WCHAR* szCurrentPath, int count ); // タグジャンプの前処理
 public:

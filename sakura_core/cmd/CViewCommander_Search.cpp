@@ -316,15 +316,10 @@ end_of_func:;
 			if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 				KeyName.AppendString( L"..." );
 			}
-			AlertNotFound(
-				hwndParent,
-				bReplaceAll,
-				LS(STR_ERR_SRNEXT3),
-				KeyName.GetStringPtr()
-			);
+			AlertNotFound(bReplaceAll, LS(STR_ERR_SRNEXT3), KeyName.GetStringPtr());
 		}
 		else{
-			AlertNotFound(hwndParent, bReplaceAll, L"%ls", pszNotFoundMessage);
+			AlertNotFound(bReplaceAll, L"%ls", pszNotFoundMessage);
 		}
 	}
 }
@@ -473,12 +468,7 @@ end_of_func:;
 		if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 			KeyName.AppendString( L"..." );
 		}
-		AlertNotFound(
-			hwndParent,
-			false,
-			LS(STR_ERR_SRPREV3),	//Jan. 25, 2001 jepro メッセージを若干変更
-			KeyName.GetStringPtr()
-		);
+		AlertNotFound(false, LS(STR_ERR_SRPREV3), KeyName.GetStringPtr());
 	}
 	return;
 }
