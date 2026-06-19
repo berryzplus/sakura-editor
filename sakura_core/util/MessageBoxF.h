@@ -31,7 +31,6 @@
 int Wrap_MessageBox(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
 
 //テキスト整形機能付きMessageBox
-int VMessageBoxF( HWND hwndOwner, UINT uType, LPCWSTR lpCaption, LPCWSTR lpText, va_list& v );
 int MessageBoxF ( HWND hwndOwner, UINT uType, LPCWSTR lpCaption, LPCWSTR lpText, ... );
 
 //                ユーザー用メッセージボックス                   //
