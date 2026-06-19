@@ -79,7 +79,7 @@ void CViewCommander::Command_SEARCH_NEXT(
 	bool			bChangeCurRegexp,
 	bool			bRedraw,
 	bool			bReplaceAll,
-	HWND			hwndParent,
+	HWND			hwndParent [[maybe_unused]],
 	const WCHAR*	pszNotFoundMessage,
 	CLogicRange*	pcSelectLogic		//!< [out] 選択範囲のロジック版。マッチ範囲を返す。すべて置換/高速モードで使用
 )
@@ -316,16 +316,20 @@ end_of_func:;
 			if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 				KeyName.AppendString( L"..." );
 			}
-			AlertNotFound(bReplaceAll, LS(STR_ERR_SRNEXT3), KeyName.GetStringPtr());
+			// L"前方(↓) に文字列 '%ls' が１つも見つかりません。"
+			AlertNotFound(strprintf(LS(STR_ERR_SRNEXT3), KeyName.GetStringPtr()), bReplaceAll);
 		}
 		else{
-			AlertNotFound(bReplaceAll, L"%ls", pszNotFoundMessage);
+			AlertNotFound(pszNotFoundMessage, bReplaceAll);
 		}
 	}
 }
 
 /* 前を検索 */
-void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
+void CViewCommander::Command_SEARCH_PREV(
+	bool			bReDraw,
+	HWND			hwndParent [[maybe_unused]]
+)
 {
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;
@@ -468,7 +472,8 @@ end_of_func:;
 		if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 			KeyName.AppendString( L"..." );
 		}
-		AlertNotFound(false, LS(STR_ERR_SRPREV3), KeyName.GetStringPtr());
+		// L"後方(↑) に文字列 '%ls' が１つも見つかりません。"
+		AlertNotFound(strprintf(LS(STR_ERR_SRPREV3), KeyName.GetStringPtr()));
 	}
 	return;
 }
