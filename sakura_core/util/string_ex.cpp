@@ -574,9 +574,11 @@ int __cdecl my_internal_icmp( const char *s1, const char *s2, unsigned int n, un
 
 	p1 = (unsigned char*)s1;
 	p2 = (unsigned char*)s2;
-	prev1 = prev2 = false;
+	prev1 = false;
+	prev2 = false;
 #ifdef MY_ICMP_MBS
-	mba1 = mba2 = false;
+	mba1 = false;
+	mba2 = false;
 #endif  /* MY_ICMP_MBS */
 
 	/* 指定長だけ繰り返す */

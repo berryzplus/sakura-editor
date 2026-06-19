@@ -81,6 +81,30 @@ TEST(string_ex, auto_sprintfW)
 }
 
 /*!
+ * @brief 独自定義のstricmp関数。使わないでください。
+ */
+TEST(string_ex, my_stricmp)
+{
+	// 大文字小文字を区別せず比較する
+	EXPECT_THAT(0 == my_stricmp("test", "TEST"), IsTrue());
+
+	EXPECT_THAT(0 == my_stricmp("test", "Tes"), IsFalse());
+}
+
+/*!
+ * @brief 独自定義のstrnicmp関数。使わないでください。
+ */
+TEST(string_ex, my_strnicmp)
+{
+	// 大文字小文字を区別せず比較する
+	EXPECT_THAT(0 == my_strnicmp("test", "TEST", 4), IsTrue());
+
+	EXPECT_THAT(0 == my_strnicmp("test", "Tes", 3), IsTrue());
+
+	EXPECT_THAT(0 == my_strnicmp("test", "Tes", 4), IsFalse());
+}
+
+/*!
 	@brief 独自定義のフォーマット関数。
 
 	C関数をC++に移植する作業を簡便化する目的で作成。
