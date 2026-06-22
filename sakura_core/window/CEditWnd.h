@@ -139,6 +139,7 @@ public:
 
 	//各種イベント
 	void	OnDestroy(HWND hWnd);
+	void	OnClose(HWND hWnd) const;
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);

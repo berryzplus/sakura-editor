@@ -1092,6 +1092,7 @@ LRESULT CEditWnd::DispatchEvent(
 	switch (uMsg) {
 // clang-format off
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
 // clang-format on
 
 	default:
@@ -1482,11 +1483,6 @@ LRESULT CEditWnd::DispatchEvent(
 		else{
 			return FALSE;
 		}
-	case WM_CLOSE:
-		if( OnClose( nullptr, false ) ){
-			::DestroyWindow( hwnd );
-		}
-		return 0L;
 
 	case WM_THEMECHANGED:
 		// 2006.06.17 ryoji
@@ -2052,6 +2048,23 @@ void CEditWnd::OnDestroy(HWND hWnd)
 
 	// Windows にスレッドの終了を要求します。
 	::PostQuitMessage(0);
+}
+
+/*!
+ * WM_CLOSEハンドラ
+ *
+ * ウインドウクローズが要求されたときに呼ばれる
+ * このメッセージに戻り値はありません。
+ */
+void CEditWnd::OnClose(HWND hWnd) const
+{
+	//終了してよいかチェックする
+	if (!GetEditWnd().OnClose(nullptr, false)) {
+		return;	//終了しない
+	}
+
+	//ウィンドウを破棄する(DefWindowProcと同じだが、あえて書いておく)
+	::DestroyWindow(hWnd);
 }
 
 /*! 終了時の処理
