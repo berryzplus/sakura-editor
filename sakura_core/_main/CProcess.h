@@ -208,6 +208,8 @@ struct CAppMainWnd
 {
 	using CPropertyManagerHolder = std::unique_ptr<CPropertyManager>;
 
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+
 	virtual ~CAppMainWnd() = default;
 
 	virtual HWND	CreateMainWnd(HINSTANCE hInstance, int nCmdShow) = 0;

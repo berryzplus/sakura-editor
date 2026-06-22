@@ -409,7 +409,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
  *
  * @date 2003/09/06 KEITA Use SetWindowLongPtr for WIN64
  */
-/* static */ LRESULT CALLBACK CControlTray::WndProc(
+/* static */ LRESULT CALLBACK CAppMainWnd::WndProc(
 	HWND	hWnd,	// handle of window
 	UINT	uMsg,	// message identifier
 	WPARAM	wParam,	// first message parameter
@@ -423,7 +423,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 		lpCreateStruct->lpCreateParams)
 	{
 		// ウインドウ作成パラメーターには this ポインターが渡されている
-		auto pcWnd = std::bit_cast<CControlTray*>(lpCreateStruct->lpCreateParams);
+		auto pcWnd = std::bit_cast<CAppMainWnd*>(lpCreateStruct->lpCreateParams);
 
 		// ウインドウハンドルを関連付ける
 		pcWnd->m_hWnd = hWnd;
@@ -440,7 +440,7 @@ void CControlTray::DoGrepCreateWindow(HINSTANCE hinst, HWND msgParent, CDlgGrep&
 	}
 
 	// ウインドウに関連付けられたオブジェクトに処理を委譲
-	if (auto pcWnd = std::bit_cast<CControlTray*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
+	if (auto pcWnd = std::bit_cast<CAppMainWnd*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA))) {
 		const auto ret = pcWnd->DispatchEvent(hWnd, uMsg, wParam, lParam);
 		if (WM_DESTROY == uMsg) {
 			pcWnd->m_hWnd = nullptr;

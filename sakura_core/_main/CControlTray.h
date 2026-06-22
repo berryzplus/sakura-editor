@@ -62,8 +62,6 @@ private:
 	using Me = CControlTray;
 
 public:
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
-
 	/*
 	||  Constructors
 	*/
