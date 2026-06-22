@@ -977,15 +977,19 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
+	case WM_PAINTICON:
+	case WM_ICONERASEBKGND:
+		return 0;	// 何もしない
+
+	case WM_MENUCHAR:
+		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
+		return m_cMenuDrawer.OnMenuChar(hWnd, uMsg, wParam, lParam);
+
 	default:
 		break;
 	}
 
 	switch (uMsg) {
-	case WM_PAINTICON:
-		return 0;
-	case WM_ICONERASEBKGND:
-		return 0;
 	case WM_LBUTTONDOWN:
 		return OnLButtonDown( wParam, lParam );
 	case WM_MOUSEMOVE:
@@ -998,10 +1002,6 @@ LRESULT CEditWnd::DispatchEvent(
 		return OnHScroll( wParam, lParam );
 	case WM_VSCROLL:
 		return OnVScroll( wParam, lParam );
-
-	case WM_MENUCHAR:
-		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
-		return m_cMenuDrawer.OnMenuChar( hwnd, uMsg, wParam, lParam );
 
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:

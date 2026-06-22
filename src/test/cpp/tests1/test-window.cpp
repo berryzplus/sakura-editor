@@ -677,10 +677,28 @@ TEST_F(EditWndTest, OnClose101)
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_CLOSE, 0L, 0L), IsFalse());
 }
 
+TEST_F(EditWndTest, OnPaintIcon101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_PAINTICON, 0L, 0L), IsFalse());
+}
+
+TEST_F(EditWndTest, OnIconEraseBkgnd101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_ICONERASEBKGND, 0L, 0L), IsFalse());
+}
+
 TEST_F(EditWndTest, OnTimer101)
 {
 	HWND hWndEdit = nullptr;
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_TIMER, 2 /* IDT_EDITCHECK */, 0L), IsFalse());
+}
+
+TEST_F(EditWndTest, OnMenuChar101)
+{
+	HWND hWndEdit = nullptr;
+	pcEditWnd->DispatchEvent(hWndEdit, WM_MENUCHAR, 0L, 0L);
 }
 
 //デスクトップからはみ出さないように矩形を調整する。
