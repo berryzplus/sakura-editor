@@ -223,6 +223,8 @@ struct CAppMainWnd
 	CImageListMgr&	GetIcons() { return m_hIcons; }
 	CMenuDrawer&	GetMenuDrawer() { return m_cMenuDrawer; }
 
+	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
+
 	HINSTANCE		m_hInstance = nullptr;
 	HWND			m_hWnd = nullptr;
 

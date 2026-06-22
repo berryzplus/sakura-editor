@@ -932,17 +932,9 @@ LRESULT CControlTray::DispatchEvent(
  */
 bool CControlTray::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-	if (!lpCreateStruct) {
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
-
-	m_hInstance = lpCreateStruct->hInstance;
-	assert(m_hInstance);
-
-	m_hIcons.Create(m_hInstance);
-	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
-
-	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	m_pShareData->m_sHandles.m_hwndTray = hWnd;
 

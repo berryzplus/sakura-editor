@@ -1897,17 +1897,9 @@ LRESULT CEditWnd::DispatchEvent(
  */
 bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 {
-	if (!lpCreateStruct) {
+	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
-
-	m_hInstance = lpCreateStruct->hInstance;
-	assert(m_hInstance);
-
-	m_hIcons.Create(m_hInstance);
-	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
-
-	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	//イメージ、ヘルパなどの作成
 	m_cToolbar.Create(&m_hIcons);

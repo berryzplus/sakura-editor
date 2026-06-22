@@ -91,6 +91,21 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, pub
 
 		// トレイウィンドウをインスタンス化する
 		pcTrayWnd = std::make_unique<CControlTray>();
+
+		pcTrayWnd->m_hIcons.Create(G_AppInstance());
+
+		pcTrayWnd->m_cMenuDrawer.Create(
+			CSelectLang::getLangRsrcInstance(),
+			pcTrayWnd->GetHwnd(),
+			&pcTrayWnd->m_hIcons
+		);
+
+		//プロパティ管理
+		pcTrayWnd->m_pcPropertyManager->Create(
+			pcTrayWnd->GetHwnd(),
+			&pcTrayWnd->m_hIcons,
+			&pcTrayWnd->GetMenuDrawer()
+		);
 	}
 
 	/*!

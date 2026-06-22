@@ -76,6 +76,14 @@ namespace window {
 	//ドキュメントの作成
 	pcEditDoc->Create();
 
+	pcEditWnd->m_hIcons.Create(G_AppInstance());
+
+	pcEditWnd->m_cMenuDrawer.Create(
+		CSelectLang::getLangRsrcInstance(),
+		pcEditWnd->GetHwnd(),
+		&pcEditWnd->m_hIcons
+	);
+
 	//プロパティ管理
 	pcEditWnd->m_pcPropertyManager->Create(
 		pcEditWnd->GetHwnd(),

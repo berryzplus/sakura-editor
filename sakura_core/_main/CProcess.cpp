@@ -107,6 +107,32 @@ std::vector<std::wstring> SplitLegacyCommandLine(std::wstring_view s)
 }
 
 /*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CAppMainWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!hWnd || !lpCreateStruct) {
+		return false;
+	}
+
+	const auto hInstance = lpCreateStruct->hInstance;
+	assert(hInstance);
+
+	m_hIcons.Create(hInstance);
+	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+
+	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
+
+	return true;
+}
+
+/*!
  * @brief サクラエディタのプロセスを起動する
  *
  * @param si スタートアップ情報
