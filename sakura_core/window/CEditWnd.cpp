@@ -1075,6 +1075,8 @@ LRESULT CEditWnd::DispatchEvent(
 	LPARAM	lParam 	// second message parameter
 )
 {
+	const auto hWnd = hwnd;
+
 	int					nRet;
 	LPNMHDR				pnmh;
 	int					nPane;
@@ -1087,7 +1089,16 @@ LRESULT CEditWnd::DispatchEvent(
 	LRESULT				lRes;
 	CTypeConfig			cTypeNew;
 
-	switch( uMsg ){
+	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
+// clang-format on
+
+	default:
+		break;
+	}
+
+	switch (uMsg) {
 	case WM_PAINTICON:
 		return 0;
 	case WM_ICONERASEBKGND:
@@ -1475,39 +1486,6 @@ LRESULT CEditWnd::DispatchEvent(
 		if( OnClose( nullptr, false ) ){
 			::DestroyWindow( hwnd );
 		}
-		return 0L;
-	case WM_DESTROY:
-		if( m_pShareData->m_sFlags.m_bRecordingKeyMacro ){					/* キーボードマクロの記録中 */
-			if( m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd() ){	/* キーボードマクロを記録中のウィンドウ */
-				m_pShareData->m_sFlags.m_bRecordingKeyMacro = FALSE;			/* キーボードマクロの記録中 */
-				m_pShareData->m_sFlags.m_hwndRecordingKeyMacro = nullptr;		/* キーボードマクロを記録中のウィンドウ */
-			}
-		}
-
-		/* タイマーを削除 */
-		::KillTimer( GetHwnd(), IDT_TOOLBAR );
-
-		/* ドロップされたファイルを受け入れるのを解除 */
-		::DragAcceptFiles( hwnd, FALSE );
-		m_pcDropTarget->Revoke_DropTarget();	// 右ボタンドロップ用	// 2008.06.20 ryoji
-
-		/* 編集ウィンドウリストからの削除 */
-		CAppNodeGroupHandle(GetHwnd()).DeleteEditWndList( GetHwnd() );
-
-		if( m_pShareData->m_sHandles.m_hwndDebug == GetHwnd() ){
-			m_pShareData->m_sHandles.m_hwndDebug = nullptr;
-		}
-		m_hWnd = nullptr;
-
-		/* 編集ウィンドウオブジェクトからのオブジェクト削除要求 */
-		::PostMessageAny( m_pShareData->m_sHandles.m_hwndTray, MYWM_DELETE_ME, 0, 0 );
-
-		/* プラグイン解放 */
-		CPluginManager::getInstance()->UnloadAllPlugin();		// Mpve here	2010/7/11 Uchi
-
-		/* Windows にスレッドの終了を要求します */
-		::PostQuitMessage( 0 );
-
 		return 0L;
 
 	case WM_THEMECHANGED:
@@ -2033,6 +2011,47 @@ LRESULT CEditWnd::DispatchEvent(
 #endif
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 	}
+}
+
+/*!
+ * WM_DESTROYハンドラ
+ *
+ * WM_DESTROYはDestroyWindow関数によるウインドウ破棄中にポストされます。
+ * このメッセージに戻り値はありません。
+ */
+void CEditWnd::OnDestroy(HWND hWnd)
+{
+	if (!hWnd) {
+		return;
+	}
+
+	/* タイマーを削除 */
+	::KillTimer(hWnd, IDT_TOOLBAR );
+
+	/* ドロップされたファイルを受け入れるのを解除 */
+	::DragAcceptFiles(hWnd, FALSE);
+	m_pcDropTarget->Revoke_DropTarget();	// 右ボタンドロップ用	// 2008.06.20 ryoji
+
+	/* 編集ウィンドウリストからの削除 */
+	CAppNodeGroupHandle(hWnd).DeleteEditWndList(hWnd);
+
+	/* 編集ウィンドウオブジェクトからのオブジェクト削除要求 */
+	::PostMessageW(m_pShareData->m_sHandles.m_hwndTray, MYWM_DELETE_ME, 0, 0);
+
+	/* プラグイン解放 */
+	CPluginManager::getInstance()->UnloadAllPlugin();
+
+	if (m_pShareData->m_sFlags.m_bRecordingKeyMacro && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == hWnd) {
+		m_pShareData->m_sFlags.m_bRecordingKeyMacro = FALSE;			/* キーボードマクロの記録中 */
+		m_pShareData->m_sFlags.m_hwndRecordingKeyMacro = nullptr;		/* キーボードマクロを記録中のウィンドウ */
+	}
+
+	if (m_pShareData->m_sHandles.m_hwndDebug == hWnd) {
+		m_pShareData->m_sHandles.m_hwndDebug = nullptr;
+	}
+
+	// Windows にスレッドの終了を要求します。
+	::PostQuitMessage(0);
 }
 
 /*! 終了時の処理
