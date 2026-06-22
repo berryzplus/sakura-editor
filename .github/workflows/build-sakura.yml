@@ -215,7 +215,7 @@ jobs:
       shell: cmd
 
     - name: MSBuild
-      if: ${{ matrix.platform != 'x64' || matrix.config != 'Debug' }}
+      if: ${{ !(matrix.platform == 'x64' && matrix.config == 'Debug') }}
       run: build-sln.bat ${{ matrix.platform }} ${{ matrix.config }}
       shell: cmd
 
