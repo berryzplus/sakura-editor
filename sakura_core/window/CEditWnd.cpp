@@ -1093,6 +1093,7 @@ LRESULT CEditWnd::DispatchEvent(
 // clang-format off
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
+	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
 	default:
@@ -1992,11 +1993,6 @@ LRESULT CEditWnd::DispatchEvent(
 		::KillTimer( GetHwnd(), IDT_CAPTION );	// タイマーが残っていたら削除する（遅延タイトルを破棄）
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 
-	case WM_TIMER:
-		if( !OnTimer(wParam, lParam) )
-			return 0L;
-		return DefWindowProc( hwnd, uMsg, wParam, lParam );
-
 	default:
 #if 0
 // << 20020331 aroka 再変換対応 for 95/NT
@@ -2830,39 +2826,47 @@ void CEditWnd::OnDropFiles( HDROP hDrop )
 	return;
 }
 
-/*! WM_TIMER 処理
-	@date 2007.04.03 ryoji 新規
-	@date 2008.04.19 ryoji IDT_FIRST_IDLE での MYWM_FIRST_IDLE ポスト処理を追加
-	@date 2013.06.09 novice コントロールプロセスへの MYWM_FIRST_IDLE ポスト処理を追加
-*/
-LRESULT CEditWnd::OnTimer( WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+/*!
+ * WM_TIMERハンドラ
+ *
+ * このメッセージの戻り値は0固定です。
+ *
+ * @date 2007.04.03 ryoji 新規
+ * @date 2008.04.19 ryoji IDT_FIRST_IDLE での MYWM_FIRST_IDLE ポスト処理を追加
+ * @date 2013.06.09 novice コントロールプロセスへの MYWM_FIRST_IDLE ポスト処理を追加
+ */
+void CEditWnd::OnTimer(HWND hWnd, UINT id)
 {
+	const auto wParam = (WPARAM)id;
+
 	// タイマー ID で処理を振り分ける
-	switch( wParam )
-	{
+	switch (id) {
 	case IDT_EDIT:
 		OnEditTimer();
 		break;
+
 	case IDT_TOOLBAR:
 		m_cToolbar.OnToolbarTimer();
 		break;
+
 	case IDT_CAPTION:
 		OnCaptionTimer();
 		break;
+
 	case IDT_SYSMENU:
 		OnSysMenuTimer();
 		break;
+
 	case IDT_FIRST_IDLE:
 		m_cDlgFuncList.m_bEditWndReady = true;	// エディタ画面の準備完了
 		CAppNodeGroupHandle(0).PostMessageToAllEditors( MYWM_FIRST_IDLE, ::GetCurrentProcessId(), 0, nullptr );	// プロセスの初回アイドリング通知	// 2008.04.19 ryoji
-		::PostMessage( m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), (LPARAM)0 );
-		::KillTimer( m_hWnd, wParam );
+		::PostMessageW(m_pShareData->m_sHandles.m_hwndTray, MYWM_FIRST_IDLE, (WPARAM)::GetCurrentProcessId(), 0L);
+		::KillTimer(hWnd, wParam);
 		break;
-	default:
-		return 1L;
-	}
 
-	return 0L;
+	default:
+		break;
+	}
 }
 
 /*! キャプション更新用タイマーの処理

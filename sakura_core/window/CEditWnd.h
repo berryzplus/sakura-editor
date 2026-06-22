@@ -153,7 +153,7 @@ public:
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
 	BOOL OnPrintPageSetting( void );/* 印刷ページ設定 */
-	LRESULT OnTimer(WPARAM wParam, LPARAM lParam);	// WM_TIMER 処理	// 2007.04.03 ryoji
+	void	OnTimer(HWND hWnd, UINT id);
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );

@@ -662,6 +662,12 @@ TEST_F(EditWndTest, OnClose101)
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_CLOSE, 0L, 0L), IsFalse());
 }
 
+TEST_F(EditWndTest, OnTimer101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_TIMER, 2 /* IDT_EDITCHECK */, 0L), IsFalse());
+}
+
 //デスクトップからはみ出さないように矩形を調整する。
 TEST_F(EditWndTest, _AdjustInMonitor001)
 {
