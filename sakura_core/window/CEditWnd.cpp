@@ -961,7 +961,6 @@ LRESULT CEditWnd::DispatchEvent(
 	LPNMHDR				pnmh;
 	int					nPane;
 	EditInfo*			pfi;
-	LPHELPINFO			lphi;
 
 	UINT				idCtl;	/* コントロールのID */
 	LPDRAWITEMSTRUCT	lpdis;	/* 項目描画情報 */
@@ -980,6 +979,10 @@ LRESULT CEditWnd::DispatchEvent(
 	case WM_PAINTICON:
 	case WM_ICONERASEBKGND:
 		return 0;	// 何もしない
+
+	case WM_HELP:
+		OnHelp(hWnd, LPHELPINFO(lParam));
+		return TRUE;
 
 	case WM_MENUCHAR:
 		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
@@ -1083,17 +1086,6 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_COPY:
 		return GetActiveView().GetCommander().HandleCommand( F_COPY, true, 0, 0, 0, 0 );
-
-	case WM_HELP:
-		lphi = (LPHELPINFO) lParam;
-		switch( lphi->iContextType ){
-		case HELPINFO_MENUITEM:
-			MyWinHelp( hwnd, HELP_CONTEXT, FuncID_To_HelpContextID( (EFunctionCode)lphi->iCtrlId ) );
-			break;
-		default:
-			break;
-		}
-		return TRUE;
 
 	case WM_ACTIVATEAPP:
 		m_bIsActiveApp = (wParam != 0);	// 自アプリがアクティブかどうか

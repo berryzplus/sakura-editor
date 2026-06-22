@@ -25,6 +25,7 @@
 #include "env/DLLSHAREDATA.h"
 #include "io/CTextStream.h"
 #include "util/module.h"
+#include "util/shell.h"
 
 #include "CSelectLang.h"
 
@@ -130,6 +131,22 @@ bool CAppMainWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
 
 	return true;
+}
+
+/*!
+ * WM_HELPハンドラ
+ *
+ * このメッセージの戻り値はTRUE固定です。
+ * 
+ * @note windowsx.h に定義がないので独自に定義
+ */
+void CAppMainWnd::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept
+{
+	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
+		return;
+	}
+
+	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
 }
 
 /*!

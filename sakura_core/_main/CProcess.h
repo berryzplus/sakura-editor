@@ -225,6 +225,8 @@ struct CAppMainWnd
 
 	virtual bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct);
 
+	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
+
 	HINSTANCE		m_hInstance = nullptr;
 	HWND			m_hWnd = nullptr;
 

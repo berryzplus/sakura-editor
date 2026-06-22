@@ -1082,22 +1082,6 @@ void CControlTray::OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlag
 }
 
 /*!
- * WM_HELPハンドラ
- *
- * このメッセージの戻り値はTRUE固定です。
- * 
- * @note windowsx.h に定義がないので独自に定義
- */
-void CControlTray::OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept
-{
-	if (!lpHelpInfo || HELPINFO_MENUITEM != lpHelpInfo->iContextType) {
-		return;
-	}
-
-	MyWinHelp(hWnd, HELP_CONTEXT, FuncID_To_HelpContextID(EFunctionCode(lpHelpInfo->iCtrlId)));
-}
-
-/*!
  * WM_TIMERハンドラ
  *
  * このメッセージの戻り値は0固定です。

@@ -125,7 +125,6 @@ private:
 	void	OnClose(HWND hWnd) const;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
 	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags);
-	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
 	void	OnTimer(HWND hWnd, UINT id);
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;
 

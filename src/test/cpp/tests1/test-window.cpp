@@ -689,6 +689,16 @@ TEST_F(EditWndTest, OnIconEraseBkgnd101)
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_ICONERASEBKGND, 0L, 0L), IsFalse());
 }
 
+TEST_F(EditWndTest, OnHelp101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_HELP, 0L, 0L), IsTrue());
+
+	HELPINFO hi{};
+	hi.iContextType = HELPINFO_WINDOW;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_HELP, 0L, LPARAM(&hi)), IsTrue());
+}
+
 TEST_F(EditWndTest, OnTimer101)
 {
 	HWND hWndEdit = nullptr;
