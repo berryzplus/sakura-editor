@@ -191,20 +191,6 @@ CViewFont* GetViewFont(bool isMiniMap)
 	return GetEditWnd().GetViewFont(isMiniMap);
 }
 
-LRESULT CALLBACK CEditWndProc(
-	HWND	hwnd,	// handle of window
-	UINT	uMsg,	// message identifier
-	WPARAM	wParam,	// first message parameter
-	LPARAM	lParam 	// second message parameter
-)
-{
-	CEditWnd* pcWnd = ( CEditWnd* )::GetWindowLongPtr( hwnd, GWLP_USERDATA );
-	if( pcWnd ){
-		return pcWnd->DispatchEvent( hwnd, uMsg, wParam, lParam );
-	}
-	return ::DefWindowProc( hwnd, uMsg, wParam, lParam );
-}
-
 namespace window {
 
 CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg)
@@ -422,7 +408,7 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGr
 	//	Apr. 27, 2000 genta
 	//	サイズ変更時のちらつきを抑えるためCS_HREDRAW | CS_VREDRAW を外した
 	wc.style			= CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW;
-	wc.lpfnWndProc		= CEditWndProc;
+	wc.lpfnWndProc		= &WndProc;
 	wc.cbClsExtra		= 0;
 	wc.cbWndExtra		= sizeof(LONG_PTR) * 1;                                  //拡張領域を1個確保。
 	wc.hInstance		= hInstance;
@@ -462,7 +448,7 @@ HWND CEditWnd::_CreateMainWindow(HINSTANCE hInstance, int nCmdShow, const STabGr
 		HWND(nullptr),		// handle to parent or owner window
 		HMENU(nullptr),		// handle to menu or child-window identifier
 		hInstance,			// handle to application instance
-		nullptr				// pointer to window-creation data
+		this				// pointer to window-creation data
 	);
 }
 
@@ -548,8 +534,6 @@ HWND CEditWnd::CreateMainWnd(
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CEditWnd::Create" );
 
-	auto pcIcons = &m_hIcons;
-
 	// グループIDを取得
 	int nGroup = CCommandLine::getInstance()->GetGroupId();
 	if (m_pShareData->m_Common.m_sTabBar.m_bNewWindow && nGroup == -1) {
@@ -575,20 +559,15 @@ HWND CEditWnd::CreateMainWnd(
 		return nullptr;
 	}
 
+	//コモンコントロール初期化
+	MyInitCommonControls();
+
 	//タブグループ情報取得
 	const auto sTabGroupInfo = window::_GetTabGroupInfo(nGroup);
 
 	// -- -- -- -- ウィンドウ作成 -- -- -- -- //
 	HWND hWnd = _CreateMainWindow(hInstance, nCmdShow, sTabGroupInfo);
 	if(!hWnd)return nullptr;
-	m_hWnd = hWnd;
-
-	DarkMode::setDarkTitleBarEx(hWnd, true);
-
-	// 初回アイドリング検出用のゼロ秒タイマーをセットする	// 2008.04.19 ryoji
-	// ゼロ秒タイマーが発動（初回アイドリング検出）したら MYWM_FIRST_IDLE を起動元プロセスにポストする。
-	// ※起動元での起動先アイドリング検出については CControlTray::OpenNewEditor を参照
-	::SetTimer( GetHwnd(), IDT_FIRST_IDLE, 0, nullptr );
 
 	/* 編集ウィンドウリストへの登録 */
 	// 2011.01.12 ryoji この処理は以前はウィンドウ可視化よりも後の位置にあった
@@ -601,69 +580,7 @@ HWND CEditWnd::CreateMainWnd(
 		return hWnd;
 	}
 
-	//コモンコントロール初期化
-	MyInitCommonControls();
-
-	//イメージ、ヘルパなどの作成
-	m_cMenuDrawer.Create( hInstance, hWnd, pcIcons );
-	m_cToolbar.Create( pcIcons );
-
-	// プラグインコマンドを登録する
-	RegisterPluginCommand();
-
-	SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL ); // Init
-	InitCharWidthCache( m_pcViewFontMiniMap->GetLogfont(), CWM_FONT_MINIMAP );
-	SelectCharWidthCache( CWM_FONT_EDIT, GetLogfontCacheMode() );
-	InitCharWidthCache( GetLogfont() );
-
-	// -- -- -- -- 子ウィンドウ作成 -- -- -- -- //
-
-	/* 分割フレーム作成 */
-	m_cSplitterWnd.Create( GetHwnd() );
-
-	/* ビュー */
-	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false  );
-	GetView(0).OnSetFocus();
-
-	/* 子ウィンドウの設定 */
-	HWND        hWndArr[2];
-	hWndArr[0] = GetView(0).GetHwnd();
-	hWndArr[1] = nullptr;
-	m_cSplitterWnd.SetChildWndArr( hWndArr );
-
-	MY_TRACETIME( cRunningTimer, L"View created" );
-
-	// -- -- -- -- 各種バー作成 -- -- -- -- //
-
-	// メインメニュー
-	LayoutMainMenu();
-
-	/* ツールバー */
-	LayoutToolBar();
-
-	/* ステータスバー */
-	LayoutStatusBar();
-
-	/* ファンクションキー バー */
-	LayoutFuncKey();
-
-	/* タブウインドウ */
-	LayoutTabBar();
-
-	// ミニマップ
-	LayoutMiniMap();
-
-	/* バーの配置終了 */
-	EndLayoutBars( FALSE );
-
-	DarkMode::setChildCtrlsTheme(hWnd);
-	DarkMode::setWindowMenuBarSubclass(hWnd);
-	DarkMode::setChildCtrlsSubclassAndTheme(hWnd);
-
 	// -- -- -- -- その他調整など -- -- -- -- //
-
-	// 画面表示直前にDispatchEventを有効化する
-	::SetWindowLongPtr( GetHwnd(), GWLP_USERDATA, (LONG_PTR)this );
 
 	if (sTabGroupInfo)	// タブまとめ有効時
 	{
@@ -671,47 +588,10 @@ HWND CEditWnd::CreateMainWnd(
 		_AdjustInMonitor(sTabGroupInfo);
 	}
 
-	// ドロップされたファイルを受け入れる
-	::DragAcceptFiles( GetHwnd(), TRUE );
-	m_pcDropTarget->Register_DropTarget( m_hWnd );	// 右ボタンドロップ用	// 2008.06.20 ryoji
-
 	//アクティブ情報
 	m_bIsActiveApp = ( ::GetActiveWindow() == GetHwnd() );	// 2007.03.08 ryoji
 
-	// PeekMessageの結果を受け取る構造体
-	MSG msg{};
-
-	// メッセージキューを作成する
-	::PeekMessageW(&msg, hWnd, WM_USER, WM_USER, PM_NOREMOVE);
-
-	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
-	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
-		// コントロールプロセスにMYWM_UIPI_CHECKを送る
-		::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd), SMTO_NORMAL, 10000, nullptr);
-	}
-
-	CShareData::getInstance()->SetTraceOutSource( GetHwnd() );	// TraceOut()起動元ウィンドウの設定	// 2006.06.26 ryoji
-
-	//	Aug. 29, 2003 wmlhq
-	m_nTimerCount = 0;
-	/* タイマーを起動 */ // タイマーのIDと間隔を変更 20060128 aroka
-	if( 0 == ::SetTimer( GetHwnd(), IDT_EDIT, 500, nullptr ) ){
-		WarningMessage( GetHwnd(), LS(STR_ERR_DLGEDITWND03) );
-	}
-	// ツールバーのタイマーを分離した 20060128 aroka
-	Timer_ONOFF( true );
-
-	//デフォルトのIMEモード設定
-	GetDocument()->m_cDocEditor.SetImeMode( GetDocument()->m_cDocType.GetDocumentAttribute().m_nImeState );
-
-	//プロパティ管理
-	m_pcPropertyManager->Create(
-		GetHwnd(),
-		&m_hIcons,
-		&GetMenuDrawer()
-	);
-
-	return GetHwnd();
+	return hWnd;
 }
 
 //! 起動時のファイルオープン処理
@@ -1091,6 +971,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 	switch (uMsg) {
 // clang-format off
+	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
@@ -2003,6 +1884,125 @@ LRESULT CEditWnd::DispatchEvent(
 #endif
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
 	}
+}
+
+/*!
+ * WM_CREATEハンドラ
+ *
+ * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
+ * メッセージの戻り値はウインドウの作成を続行するかどうかの判断に使われます。
+ *
+ * @retval true  ウィンドウの作成を続行する
+ * @retval false ウィンドウの作成を中止する
+ */
+bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
+{
+	if (!lpCreateStruct) {
+		return false;
+	}
+
+	m_hInstance = lpCreateStruct->hInstance;
+	assert(m_hInstance);
+
+	m_hIcons.Create(m_hInstance);
+	m_cMenuDrawer.Create(CSelectLang::getLangRsrcInstance(), hWnd, &m_hIcons);
+
+	m_pcPropertyManager->Create(hWnd, &m_hIcons, &m_cMenuDrawer);
+
+	//イメージ、ヘルパなどの作成
+	m_cToolbar.Create(&m_hIcons);
+
+	// プラグインコマンドを登録する
+	RegisterPluginCommand();
+
+	SelectCharWidthCache( CWM_FONT_MINIMAP, CWM_CACHE_LOCAL ); // Init
+	InitCharWidthCache( m_pcViewFontMiniMap->GetLogfont(), CWM_FONT_MINIMAP );
+	SelectCharWidthCache( CWM_FONT_EDIT, GetLogfontCacheMode() );
+	InitCharWidthCache( GetLogfont() );
+
+	// -- -- -- -- 子ウィンドウ作成 -- -- -- -- //
+
+	/* 分割フレーム作成 */
+	m_cSplitterWnd.Create(hWnd);
+
+	/* ビュー */
+	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false);
+	GetView(0).OnSetFocus();
+
+	/* 子ウィンドウの設定 */
+	std::array<HWND, 2> hWndArr = {
+		GetView(0).GetHwnd(),
+		nullptr
+	};
+	m_cSplitterWnd.SetChildWndArr(std::data(hWndArr));
+
+	MY_TRACETIME( cRunningTimer, L"View created" );
+
+	// -- -- -- -- 各種バー作成 -- -- -- -- //
+
+	// メインメニュー
+	LayoutMainMenu();
+
+	/* ツールバー */
+	LayoutToolBar();
+
+	/* ステータスバー */
+	LayoutStatusBar();
+
+	/* ファンクションキー バー */
+	LayoutFuncKey();
+
+	/* タブウインドウ */
+	LayoutTabBar();
+
+	// ミニマップ
+	LayoutMiniMap();
+
+	/* バーの配置終了 */
+	EndLayoutBars( FALSE );
+
+	DarkMode::setDarkTitleBarEx(hWnd, true);
+
+	DarkMode::setChildCtrlsTheme(hWnd);
+	DarkMode::setWindowMenuBarSubclass(hWnd);
+	DarkMode::setChildCtrlsSubclassAndTheme(hWnd);
+
+	// ドロップされたファイルを受け入れる
+	::DragAcceptFiles(hWnd, TRUE);
+	m_pcDropTarget->Register_DropTarget(hWnd);	// 右ボタンドロップ用	// 2008.06.20 ryoji
+
+	// PeekMessageの結果を受け取る構造体
+	MSG msg{};
+
+	// メッセージキューを作成する
+	::PeekMessageW(&msg, hWnd, WM_USER, WM_USER, PM_NOREMOVE);
+
+	// エディタ－トレイ間でのUI特権分離の確認（Vista UIPI機能） 2007.06.07 ryoji
+	if (const auto hWndTray = m_pShareData->m_sHandles.m_hwndTray) {
+		// コントロールプロセスにMYWM_UIPI_CHECKを送る
+		::SendMessageTimeoutW(hWndTray, MYWM_UIPI_CHECK, 0L, LPARAM(hWnd), SMTO_NORMAL, 10000, nullptr);
+	}
+
+	CShareData::getInstance()->SetTraceOutSource(hWnd);	// TraceOut()起動元ウィンドウの設定	// 2006.06.26 ryoji
+
+	//	Aug. 29, 2003 wmlhq
+	m_nTimerCount = 0;
+	/* タイマーを起動 */ // タイマーのIDと間隔を変更 20060128 aroka
+	if( 0 == ::SetTimer( hWnd, IDT_EDIT, 500, nullptr ) ){
+		WarningMessage( hWnd, LS(STR_ERR_DLGEDITWND03) );
+	}
+	// ツールバーのタイマーを分離した 20060128 aroka
+	Timer_ONOFF( true );
+
+	// 初回アイドリング検出用のゼロ秒タイマーをセットする	// 2008.04.19 ryoji
+	// ゼロ秒タイマーが発動（初回アイドリング検出）したら MYWM_FIRST_IDLE を起動元プロセスにポストする。
+	// ※起動元での起動先アイドリング検出については CControlTray::OpenNewEditor を参照
+	::SetTimer(hWnd, IDT_FIRST_IDLE, 0, nullptr);
+
+	//デフォルトのIMEモード設定
+	GetDocument()->m_cDocEditor.SetImeMode( GetDocument()->m_cDocType.GetDocumentAttribute().m_nImeState );
+
+	return true;
 }
 
 /*!

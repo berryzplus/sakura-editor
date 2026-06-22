@@ -650,6 +650,13 @@ struct EditWndTest : public ::testing::Test, public window::EditorTestSuite, pub
 	}
 };
 
+
+TEST_F(EditWndTest, OnCreate101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+}
+
 TEST_F(EditWndTest, OnDestroy101)
 {
 	HWND hWndEdit = nullptr;
