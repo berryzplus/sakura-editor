@@ -145,6 +145,7 @@ public:
 	LRESULT OnPaint(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
 	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
+	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode);
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
@@ -159,7 +160,6 @@ public:
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );
-	void OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);
 	LRESULT OnLButtonDblClk(WPARAM wp, LPARAM lp);

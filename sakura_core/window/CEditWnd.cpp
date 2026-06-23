@@ -193,6 +193,12 @@ CViewFont* GetViewFont(bool isMiniMap)
 
 namespace window {
 
+bool ActivateOpenedEditor(int openEditorIndex);
+
+bool OpenSelectedMruFile(int mruIndex);
+
+bool SelectAndOpenFilesFromMruFolder(int mruFolderIndex);
+
 CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg)
 {
 	auto x = rcOrg.left;
@@ -973,6 +979,7 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
+	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
@@ -1178,7 +1185,7 @@ LRESULT CEditWnd::DispatchEvent(
 				PrintPreviewModeONOFF();	// 印刷プレビューモードのオン/オフ
 				return 0L;
 			}
-			OnCommand( 0, (WORD)CKeyBind::GetDefFuncCode( VK_F4, _ALT ), nullptr );
+			FORWARD_WM_COMMAND(hWnd, CKeyBind::GetDefFuncCode(VK_F4, _ALT), nullptr, 0, DispatchEvent);
 			return 0L;
 		}
 		return DefWindowProc( hwnd, uMsg, wParam, lParam );
@@ -1335,16 +1342,14 @@ LRESULT CEditWnd::DispatchEvent(
 			{
 				int	nId;
 				nId = CreateFileDropDownMenu( pnmh->hwndFrom );
-				if( nId != 0 ) OnCommand( (WORD)0 /*メニュー*/, (WORD)nId, nullptr );
+				if( nId != 0 ) FORWARD_WM_COMMAND(hWnd, nId, nullptr, 0, DispatchEvent);
 			}
 			return FALSE;
 		default:
 			break;
 		}
 		return 0L;
-	case WM_COMMAND:
-		OnCommand( HIWORD(wParam), LOWORD(wParam), (HWND) lParam );
-		return 0L;
+
 	case WM_INITMENUPOPUP:
 		InitMenu( (HMENU)wParam, (UINT)LOWORD( lParam ), (BOOL)HIWORD( lParam ) );
 		return 0L;
@@ -2147,12 +2152,23 @@ bool CEditWnd::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const
 	return true;
 }
 
-/*! WM_COMMAND処理
-	@date 2000.11.15 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行(F_HELP_CONTENTS,F_HELP_SEARCH)を修正・復活
-	@date 2013.05.09 novice 重複するメッセージ処理削除
-*/
-void CEditWnd::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
+/*!
+ * @brief WM_COMMANDハンドラ
+ *
+ * メニュー項目がクリックされたときなどに呼ばれる。
+ * このメッセージに戻り値はありません。
+ *
+ * @date 2000.11.15 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行(F_HELP_CONTENTS,F_HELP_SEARCH)を修正・復活
+ * @date 2013.05.09 novice 重複するメッセージ処理削除
+ */
+void CEditWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+
+	const auto wID = WORD(id);
+	const auto hwndCtl = hWndCtl;
+	const auto wNotifyCode = notifyCode;
+
 	// 検索ボックスからの WM_COMMAND はすべてコンボボックス通知
 	// ##### 検索ボックス処理はツールバー側の WindowProc に集約するほうがスマートかも
 	if( m_cToolbar.GetSearchHwnd() && hwndCtl == m_cToolbar.GetSearchHwnd() ){
@@ -2184,48 +2200,17 @@ void CEditWnd::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
 		return;	// CBN_SELCHANGE(1) がアクセラレータと誤認されないようにここで抜ける（rev1886 の問題の抜本対策）
 	}
 
-	switch( wNotifyCode ){
+	switch (notifyCode) {
 	/* メニューからのメッセージ */
 	case 0:
 	case CMD_FROM_MOUSE: // 2006.05.19 genta マウスから呼びだされた場合
-		//ウィンドウ切り替え
-		if( wID - IDM_SELWINDOW >= 0 && wID - IDM_SELWINDOW < m_pShareData->m_sNodes.m_nEditArrNum ){
-			ActivateFrameWindow( m_pShareData->m_sNodes.m_pEditArr[wID - IDM_SELWINDOW].GetHwnd() );
-		}
-		//最近使ったファイル
-		else if( wID - IDM_SELMRU >= 0 && wID - IDM_SELMRU < 999){
-			/* 指定ファイルが開かれているか調べる */
-			const CMRUFile cMRU;
-			EditInfo checkEditInfo;
-			cMRU.GetEditInfo(wID - IDM_SELMRU, &checkEditInfo);
-			SLoadInfo sLoadInfo(checkEditInfo.m_szPath, checkEditInfo.m_nCharCode, false);
-			GetDocument()->m_cDocFileOperation.FileLoad( &sLoadInfo );	//	Oct.  9, 2004 genta 共通関数化
-		}
-		//最近使ったフォルダー
-		else if( wID - IDM_SELOPENFOLDER >= 0 && wID - IDM_SELOPENFOLDER < 999){
-			//フォルダー取得
-			const CMRUFolder cMRUFolder;
-			LPCWSTR pszFolderPath = cMRUFolder.GetPath( wID - IDM_SELOPENFOLDER );
-
-			//Stonee, 2001/12/21 UNCであれば接続を試みる
-			NetConnect( pszFolderPath );
-
-			//「ファイルを開く」ダイアログ
-			SLoadInfo sLoadInfo(L"", CODE_AUTODETECT, false);
-			CDocFileOperation& cDocOp = GetDocument()->m_cDocFileOperation;
-			std::vector<std::wstring> files;
-			if( cDocOp.OpenFileDialog(GetHwnd(), pszFolderPath, &sLoadInfo, files) ){
-				sLoadInfo.cFilePath = files[0].c_str();
-				//開く
-				cDocOp.FileLoad( &sLoadInfo );
-
-				// 新たな編集ウィンドウを起動
-				size_t nSize = files.size();
-				for( size_t f = 1; f < nSize; f++ ){
-					sLoadInfo.cFilePath = files[f].c_str();
-					CControlTray::OpenNewEditor( G_AppInstance(), GetHwnd(), sLoadInfo, nullptr, true );
-				}
-			}
+		if (window::ActivateOpenedEditor(id - static_cast<int>(IDM_SELWINDOW)) ||	// ウィンドウ切り替え
+			window::OpenSelectedMruFile(id - static_cast<int>(IDM_SELMRU)) ||	//最近使ったファイル
+			window::SelectAndOpenFilesFromMruFolder(id - static_cast<int>(IDM_SELOPENFOLDER))	//最近使ったフォルダー
+		)
+		{
+			// ウィンドウ切り替え、最近使ったファイル、最近使ったフォルダーのいずれかが処理された場合はこれ以上処理しない
+			break;
 		}
 		//その他コマンド
 		else{

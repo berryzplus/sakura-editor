@@ -705,6 +705,26 @@ TEST_F(EditWndTest, OnHelp101)
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_HELP, 0L, LPARAM(&hi)), IsTrue());
 }
 
+TEST_F(EditWndTest, OnCommand101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_COMMAND, 0L, 0L), IsFalse());
+}
+
+TEST_F(EditWndTest, OnCommand102)
+{
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	GetDllShareData().m_sHistory.m_nOPENFOLDERArrNum = 1;
+
+	// ファイルを開くダイアログを表示する
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_COMMAND, MAKEWPARAM(IDM_SELOPENFOLDER, 0), 0L), IsFalse());
+
+	GetDllShareData().m_sHistory.m_nOPENFOLDERArrNum = 0;
+}
+
 TEST_F(EditWndTest, OnTimer101)
 {
 	HWND hWndEdit = nullptr;
