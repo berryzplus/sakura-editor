@@ -75,6 +75,8 @@ bool SelectAndOpenFilesFromMruFolder(int mruFolderIndex);
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, public window::UiaTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
+	static inline CControlTrayHolder pcTrayWnd = nullptr;
+
 	/*!
 	 * テストスイートの開始前に1回だけ呼ばれる関数
 	 */
@@ -82,7 +84,13 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, pub
 	{
 		SetUpUia();
 
+		// 言語環境を初期化する
+		CSelectLang::InitializeLanguageEnvironment();
+
 		SetUpShareData();
+
+		// トレイウィンドウをインスタンス化する
+		pcTrayWnd = std::make_unique<CControlTray>();
 	}
 
 	/*!
@@ -90,27 +98,12 @@ struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, pub
 	 */
 	static void TearDownTestSuite()
 	{
+		// トレイウィンドウのインスタンスを破棄する
+		pcTrayWnd = nullptr;
+
 		TearDownShareData();
 
 		TearDownUia();
-	}
-
-	CControlTrayHolder pcTrayWnd = nullptr;
-
-	/*!
-	 * テストが起動される直前に毎回呼ばれる関数
-	 */
-	void SetUp() override {
-		// テストクラスをインスタンス化する
-		pcTrayWnd = std::make_unique<CControlTray>();
-	}
-
-	/*!
-	 * テストが実行された直後に毎回呼ばれる関数
-	 */
-	void TearDown() override {
-		// テストクラスのインスタンスを破棄する
-		pcTrayWnd = nullptr;
 	}
 };
 
