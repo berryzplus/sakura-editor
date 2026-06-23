@@ -976,6 +976,9 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
+	case WM_QUERYENDSESSION:
+		return OnQueryEndSession(hWnd, UINT(lParam));
+
 	case WM_PAINTICON:
 	case WM_ICONERASEBKGND:
 		return 0;	// 何もしない
@@ -1349,14 +1352,6 @@ LRESULT CEditWnd::DispatchEvent(
 		/* ファイルがドロップされた */
 		OnDropFiles( (HDROP) wParam );
 		return 0L;
-	case WM_QUERYENDSESSION:	//OSの終了
-		if( OnClose( nullptr, false ) ){
-			::DestroyWindow( hwnd );
-			return TRUE;
-		}
-		else{
-			return FALSE;
-		}
 
 	case WM_THEMECHANGED:
 		// 2006.06.17 ryoji
@@ -2123,6 +2118,33 @@ int	CEditWnd::OnClose(HWND hWndActive, bool bGrepNoConfirm )
 #endif	// 0
 
 	return nRet;
+}
+
+/*!
+ * WM_QUERYENDSESSIONハンドラ
+ *
+ * WM_QUERYENDSESSIONはシステム終了が要求されたときにポストされます。
+ *
+ * @note windowsx.h の定義が微妙なので独自に定義
+ *
+ * @retval true  システム終了を続行する
+ * @retval false システム終了を中止する
+ */
+bool CEditWnd::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const
+{
+	UNREFERENCED_PARAMETER(endSessionFlags);
+
+	// ここの実装は要改修
+	//
+	// 5秒以内に終わらない処理を走らせるなら、ShutdownBlockReasonCreateを呼ぶ必要があります。
+
+	if (!GetEditWnd().OnClose(nullptr, false)) {
+		return false;
+	}
+
+	::DestroyWindow(hWnd);
+
+	return true;
 }
 
 /*! WM_COMMAND処理

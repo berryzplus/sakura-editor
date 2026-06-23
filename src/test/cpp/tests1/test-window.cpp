@@ -677,6 +677,12 @@ TEST_F(EditWndTest, OnClose101)
 	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_CLOSE, 0L, 0L), IsFalse());
 }
 
+TEST_F(EditWndTest, OnQueryEndSession101)
+{
+	HWND hWndEdit = nullptr;
+	EXPECT_THAT(pcEditWnd->DispatchEvent(hWndEdit, WM_QUERYENDSESSION, 0L, 0L), IsTrue());
+}
+
 TEST_F(EditWndTest, OnPaintIcon101)
 {
 	HWND hWndEdit = nullptr;
