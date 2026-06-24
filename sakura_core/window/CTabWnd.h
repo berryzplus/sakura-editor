@@ -40,6 +40,71 @@ private:
 	using Me = CTabWnd;
 
 public:
+	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };
+	enum CaptureSrc { CAPT_NONE, CAPT_CLOSE };
+
+	struct TabCtrl final : public CCustomizedWnd {
+		explicit TabCtrl(CTabWnd& tabWnd) : CCustomizedWnd(), m_ParentWnd(tabWnd) {}
+
+		void	BreakDrag( void ) { if (::GetCapture() == m_hwndTab) ::ReleaseCapture(); m_eDragState = DRAG_NONE; m_nTabCloseCapture = -1; }	/*!< ドラッグ状態解除処理 */
+		LRESULT	ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
+		void	GetTabCloseBtnRect( const LPRECT lprcClient, LPRECT lprc, bool selected );	/*!< タブを閉じるボタンの矩形取得処理 */	// 2012.04.14 syat
+
+		int		FindTabIndexByHWND( HWND hWnd );
+		void	AdjustWindowPlacement( void );							/*!< 編集ウィンドウの位置合わせ */	// 2007.04.03 ryoji
+		int		SetCarmWindowPlacement( HWND hwnd, const WINDOWPLACEMENT* pWndpl );	/* アクティブ化の少ない SetWindowPlacement() を実行する */	// 2007.11.30 ryoji
+		void	ShowHideWindow( HWND hwnd, BOOL bDisp );
+		void	HideOtherWindows( HWND hwndExclude );					/*!< 他の編集ウィンドウを隠す */	// 2007.05.17 ryoji
+		void	ForceActiveWindow( HWND hwnd );
+		void	TabWnd_ActivateFrameWindow( HWND hwnd, bool bForce = true );	//2004.08.27 Kazika 引数追加
+
+		void	DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
+		void	DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
+		void	DrawCloseFigure( CGraphics& gr, const RECT& btnRect );			/*!< 閉じるマーク描画処理 */
+		void	DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
+		void	DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool selected, bool bHover );	/*!< タブを閉じるボタン描画処理 */		// 2012.04.14 syat
+		void	DrawTopBand( const CGraphics& gr, const RECT& rcClient, int nTabIndex ) const;
+
+		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+		void	OnTimer(HWND hWnd, UINT id) override;
+		void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
+		void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+		void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
+		void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+		void	OnRButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
+		void	OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+		void	OnMButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
+		void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
+
+		CTabWnd&		m_ParentWnd;
+
+		DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
+
+		HWND&			m_hwndTab = m_hWnd;
+
+		BOOL			m_bVisualStyle = FALSE;			//!< ビジュアルスタイルかどうか	// 2007.04.01 ryoji
+
+		DragState		m_eDragState = DRAG_NONE;			//!< ドラッグ状態
+		int				m_nSrcTab = 0;				//!< 移動元タブ
+		POINT			m_ptSrcCursor{};			//!< ドラッグ開始カーソル位置
+		HCURSOR			m_hDefaultCursor = nullptr;		//!< ドラッグ開始時のカーソル
+
+		BOOL			m_bListBtnHilighted = FALSE;
+		BOOL			m_bCloseBtnHilighted = FALSE;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
+		CaptureSrc		m_eCaptureSrc = CAPT_NONE;			//!< キャプチャ元
+		BOOL			m_bTabSwapped = FALSE;			//!< ドラッグ中にタブの入れ替えがあったかどうか
+		LONG*			m_nTabBorderArray = nullptr;		//!< ドラッグ前のタブ境界位置配列
+		LOGFONT			m_lf{};					//!< 表示フォントの特性情報
+
+		// タブ内の閉じるボタン用変数
+		int				m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
+		bool			m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
+		int				m_nTabCloseCapture = -1;		//!< 閉じるボタンがマウス押下されているタブ（無いときは-1）
+	};
+
+	TabCtrl			m_TabCtrl{ *this };
+
 	/*
 	||  Constructors
 	*/
@@ -61,7 +126,6 @@ public:
 	void JoinNext( void );			/* 次のグループに移動 */	// 2007.06.20 ryoji
 	void JoinPrev( void );			/* 前のグループに移動 */	// 2007.06.20 ryoji
 
-	LRESULT TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
 
 	void SizeBox_ONOFF( bool bSizeBox );
@@ -80,13 +144,6 @@ protected:
 	/*
 	|| 実装ヘルパ系
 	*/
-	int FindTabIndexByHWND( HWND hWnd );
-	void AdjustWindowPlacement( void );							/*!< 編集ウィンドウの位置合わせ */	// 2007.04.03 ryoji
-	int SetCarmWindowPlacement( HWND hwnd, const WINDOWPLACEMENT* pWndpl );	/* アクティブ化の少ない SetWindowPlacement() を実行する */	// 2007.11.30 ryoji
-	void ShowHideWindow( HWND hwnd, BOOL bDisp );
-	void HideOtherWindows( HWND hwndExclude );					/*!< 他の編集ウィンドウを隠す */	// 2007.05.17 ryoji
-	void ForceActiveWindow( HWND hwnd );
-	void TabWnd_ActivateFrameWindow( HWND hwnd, bool bForce = true );	//2004.08.27 Kazika 引数追加
 	HWND GetNextGroupWnd( void );	/* 次のグループの先頭ウィンドウを探す */	// 2007.06.20 ryoji
 	HWND GetPrevGroupWnd( void );	/* 前のグループの先頭ウィンドウを探す */	// 2007.06.20 ryoji
 	void GetTabName( EditNode* pEditNode, BOOL bFull, BOOL bDupamp, LPWSTR pszName, int nLen );	/* タブ名取得処理 */	// 2007.06.28 ryoji 新規作成
@@ -113,40 +170,17 @@ protected:
 
 	void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
 
-	// 2005.09.01 ryoji ドラッグアンドドロップでタブの順序変更を可能に
-	/* サブクラス化した Tab でのメッセージ処理 */
-	LRESULT OnTabLButtonDown( WPARAM wParam, LPARAM lParam );	/*!< タブ部 WM_LBUTTONDOWN 処理 */
-	LRESULT OnTabLButtonUp( WPARAM wParam, LPARAM lParam );		/*!< タブ部 WM_LBUTTONUP 処理 */
-	LRESULT OnTabMouseMove( WPARAM wParam, LPARAM lParam );		/*!< タブ部 WM_MOUSEMOVE 処理 */
-	LRESULT OnTabTimer( WPARAM wParam, LPARAM lParam );			/*!< タブ部 WM_TIMER処理 */
-	LRESULT OnTabCaptureChanged( WPARAM wParam, LPARAM lParam );	/*!< タブ部 WM_CAPTURECHANGED 処理 */
-	LRESULT OnTabRButtonDown( WPARAM wParam, LPARAM lParam );	/*!< タブ部 WM_RBUTTONDOWN 処理 */
-	LRESULT OnTabRButtonUp( WPARAM wParam, LPARAM lParam );		/*!< タブ部 WM_RBUTTONUP 処理 */
-	LRESULT OnTabMButtonDown( WPARAM wParam, LPARAM lParam );	/*!< タブ部 WM_MBUTTONDOWN 処理 */
-	LRESULT OnTabMButtonUp( WPARAM wParam, LPARAM lParam );		/*!< タブ部 WM_MBUTTONUP 処理 */
-	LRESULT OnTabNotify( WPARAM wParam, LPARAM lParam );		/*!< タブ部 WM_NOTIFY 処理 */
-
 	//実装補助インターフェース
-	void BreakDrag( void ) { if( ::GetCapture() == m_hwndTab ) ::ReleaseCapture(); m_eDragState = DRAG_NONE; m_nTabCloseCapture = -1; }	/*!< ドラッグ状態解除処理 */
 	BOOL ReorderTab( int nSrcTab, int nDstTab );	/*!< タブ順序変更処理 */
 	void BroadcastRefreshToGroup( void );
 	BOOL SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptDrop );	/*!< タブ分離処理 */	// 2007.06.20 ryoji
-	LRESULT ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
 	bool	LayoutTab(int cx);
 
 	HIMAGELIST InitImageList( void );				/*!< イメージリストの初期化処理 */
 	int GetImageIndex( EditNode* pNode );			/*!< イメージリストのインデックス取得処理 */
 
-	// 2006.02.01 ryoji タブ一覧を追加
-	void DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
-	void DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
-	void DrawCloseFigure( CGraphics& gr, const RECT &btnRect );			/*!< 閉じるマーク描画処理 */
-	void DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
-	void DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool selected, bool bHover );	/*!< タブを閉じるボタン描画処理 */		// 2012.04.14 syat
-	void DrawTopBand( const CGraphics& gr, const RECT& rcClient, int nTabIndex ) const;
 	void GetListBtnRect( const LPRECT lprcClient, LPRECT lprc );	/*!< 一覧ボタンの矩形取得処理 */
 	void GetCloseBtnRect( const LPRECT lprcClient, LPRECT lprc );	/*!< 閉じるボタンの矩形取得処理 */	// 2006.10.21 ryoji
-	void GetTabCloseBtnRect( const LPRECT lprcClient, LPRECT lprc, bool selected );	/*!< タブを閉じるボタンの矩形取得処理 */	// 2012.04.14 syat
 
 	HFONT CreateMenuFont( void )
 	{
@@ -158,26 +192,16 @@ protected:
 		return ::CreateFontIndirect( &ncm.lfMenuFont );
 	}
 
-protected:
-	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };
-	enum CaptureSrc { CAPT_NONE, CAPT_CLOSE };
-
 	/*
 	|| メンバ変数
 	*/
 public:
-	DLLSHAREDATA*	m_pShareData;	/*!< 共有データ */
+	DLLSHAREDATA*	m_pShareData = &GetDllShareData();	/*!< 共有データ */
 	FontHolder		m_hFont = nullptr;			//!< 表示用フォント
 	HWND			m_hwndTab = nullptr;		/*!< タブコントロール */
 	HWND			m_hwndToolTip = nullptr;	/*!< ツールチップ（ボタン用） */
 	WCHAR			m_szTextTip[1024];	/*!< ツールチップのテキスト（タブ用） */
 	ETabPosition	m_eTabPosition = TabPosition_None;	//!< タブ表示位置
-
-private:
-	DragState	m_eDragState = DRAG_NONE;			//!< ドラッグ状態
-	int			m_nSrcTab;				//!< 移動元タブ
-	POINT		m_ptSrcCursor;			//!< ドラッグ開始カーソル位置
-	HCURSOR		m_hDefaultCursor;		//!< ドラッグ開始時のカーソル
 
 	ImageListHolder	m_hIml = nullptr;					//!< イメージリスト
 	HICON		m_hIconApp;				//!< アプリケーションアイコン
@@ -185,20 +209,8 @@ private:
 	int			m_iIconApp;				//!< アプリケーションアイコンのインデックス
 	int			m_iIconGrep;			//!< Grepアイコンのインデックス
 
-	BOOL		m_bVisualStyle = FALSE;			//!< ビジュアルスタイルかどうか	// 2007.04.01 ryoji
 	BOOL		m_bHovering = FALSE;
-	BOOL		m_bListBtnHilighted = FALSE;
-	BOOL		m_bCloseBtnHilighted = FALSE;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
-	CaptureSrc	m_eCaptureSrc = CAPT_NONE;			//!< キャプチャ元
-	BOOL		m_bTabSwapped;			//!< ドラッグ中にタブの入れ替えがあったかどうか
-	LONG*		m_nTabBorderArray = nullptr;		//!< ドラッグ前のタブ境界位置配列
-	LOGFONT		m_lf;					//!< 表示フォントの特性情報
 	bool		m_bMultiLine;			//!< 複数行
-
-	// タブ内の閉じるボタン用変数
-	int			m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
-	bool		m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
-	int			m_nTabCloseCapture = -1;		//!< 閉じるボタンがマウス押下されているタブ（無いときは-1）
 
 	HWND		m_hwndSizeBox = nullptr;
 	bool		m_bSizeBox = false;
