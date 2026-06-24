@@ -140,14 +140,7 @@ struct TSakuraEnvironmentTest : public Base, public window::EditorTestSuite {
 
 	std::wstring ExpandParameter(std::wstring_view source, std::optional<size_t> optBufSize = std::nullopt) const
 	{
-		// 受け取り用バッファを用意する
-		const auto bufSize = optBufSize.value_or(_MAX_PATH);
-		std::wstring buffer(bufSize, L'\0');
-
-		CSakuraEnvironment::ExpandParameter(std::data(source), std::data(buffer), int(std::size(buffer)));
-		buffer.resize(::wcsnlen(std::data(buffer), std::size(buffer)));
-
-		return buffer;
+		return CSakuraEnvironment::ExpandParameter(source, optBufSize);
 	}
 
 	std::wstring ResolvePath(const std::filesystem::path& link) const

@@ -15,6 +15,8 @@ class CEditWnd;
 
 class CSakuraEnvironment{
 public:
+	static std::wstring	ExpandParameter(std::wstring_view source, std::optional<size_t> optBufSize = std::nullopt);
+
 	static CEditWnd* GetMainWindow();
 	static void ExpandParameter(const wchar_t* pszSource, wchar_t* pszBuffer, int nBufferLen);
 	static std::wstring GetDlgInitialDir(bool bControlProcess = false);

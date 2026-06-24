@@ -53,6 +53,19 @@ static SExpParamName SExpParamNameTable[] = {
 };
 wchar_t* ExParam_LongName( wchar_t* q, wchar_t* q_max, EExpParamName eLongParam );
 
+std::wstring CSakuraEnvironment::ExpandParameter(std::wstring_view source, std::optional<size_t> optBufSize)
+{
+	// 受け取り用バッファを用意する
+	const auto bufSize = optBufSize.value_or(4096);
+	std::wstring buffer(bufSize, L'\0');
+
+	ExpandParameter(std::data(source), std::data(buffer), int(bufSize));
+
+	const auto len = ::wcsnlen(std::data(buffer), bufSize);
+	buffer.resize(len);
+	return buffer;
+}
+
 /*!	$xの展開
 
 	特殊文字は以下の通り
