@@ -367,8 +367,8 @@ BOOL CUrlWnd::SetSubclassWindow( HWND hWnd )
 	std::wstring strText;
 	if( ApiWrap::Wnd_GetText( hWnd, strText ) ){
 		// サイズを調整する
-		auto retSetText = OnSetText( strText.data(), strText.length() );
-		return retSetText ? TRUE : FALSE;
+		OnSetText(hWnd, std::data(strText));
+		return TRUE;
 	}
 
 	return FALSE;
@@ -383,6 +383,10 @@ LRESULT CUrlWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	RECT rc;
 
 	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_SETTEXT,						OnSetText);
+// clang-format on
+
 	case WM_SETCURSOR:
 		// カーソル形状変更
 		SetHandCursor();		// Hand Cursorを設定 2013/1/29 Uchi
@@ -482,8 +486,6 @@ LRESULT CUrlWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		pUrlWnd->m_hFont = nullptr;
 		pUrlWnd->m_bHilighted = FALSE;
 		return (LRESULT)0;
-	case WM_SETTEXT:
-		return pUrlWnd->OnSetText( (LPCWSTR)lParam ) ? TRUE : FALSE;
 
 	default:
 		break;
@@ -496,9 +498,9 @@ LRESULT CUrlWnd::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 //WM_SETTEXTハンドラ
 //https://docs.microsoft.com/en-us/windows/desktop/winmsg/wm-settext
-bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) const
+void CUrlWnd::OnSetText(HWND hWnd, _In_z_ LPCWSTR pchText) const
 {
-	const auto hWnd = GetHwnd();
+	if (!pchText) return;
 
 	// 標準のメッセージハンドラに処理させる
 	FORWARD_WM_SETTEXT(hWnd, pchText, Base::DefWndProcW);
@@ -514,7 +516,7 @@ bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) c
 	// DrawText関数を使ってサイズを計測する
 	// ※この処理は実際には描かない
 	CMyRect rcText;
-	const auto retDrawText = ::DrawTextW(hDC, pchText, static_cast<int>(cchText), &rcText, DT_CALCRECT);
+	const auto retDrawText = ::DrawTextW(hDC, pchText, -1, &rcText, DT_CALCRECT);
 
 	// DCの後始末
 	hObj = nullptr;
@@ -522,7 +524,7 @@ bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) c
 
 	// サイズを取得できなければ処理失敗とする
 	if (!retDrawText) {
-		return false;
+		return;
 	}
 
 	// マージン用にシステム設定値を取得する。
@@ -536,7 +538,5 @@ bool CUrlWnd::OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText ) c
 	size.cy = cyEdge + rcText.Height() + cyEdge;
 
 	// マージン込みのサイズをウインドウに反映する
-	auto retSetPos = ::SetWindowPos( GetHwnd(), nullptr, 0, 0, size.cx, size.cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER );
-
-	return retSetPos != FALSE;
+	::SetWindowPos(hWnd, nullptr, 0, 0, size.cx, size.cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREPOSITION | SWP_NOSENDCHANGING);
 }

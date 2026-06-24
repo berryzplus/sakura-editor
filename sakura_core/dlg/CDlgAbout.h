@@ -45,7 +45,7 @@ public:
 
 	LRESULT	DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-	bool	OnSetText( _In_opt_z_ LPCWSTR pchText, _In_opt_ size_t cchText = 0 ) const;
+	void	OnSetText(HWND hWnd, _In_z_ LPCWSTR pchText) const;
 
 	FontHolder	m_hFont = nullptr;
 	BOOL m_bHilighted = FALSE;
