@@ -1004,6 +1004,9 @@ LRESULT CEditWnd::DispatchEvent(
 		/* メニューアクセスキー押下時の処理(WM_MENUCHAR処理) */
 		return m_cMenuDrawer.OnMenuChar(hWnd, uMsg, wParam, lParam);
 
+	case WM_MOUSEWHEEL:
+		return Views_DispatchEvent(hWnd, WM_MOUSEWHEEL, wParam, lParam);
+
 	default:
 		break;
 	}
@@ -1015,8 +1018,6 @@ LRESULT CEditWnd::DispatchEvent(
 		return OnMouseMove( wParam, lParam );
 	case WM_LBUTTONUP:
 		return OnLButtonUp( wParam, lParam );
-	case WM_MOUSEWHEEL:
-		return OnMouseWheel( wParam, lParam );
 
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
@@ -3354,11 +3355,6 @@ LRESULT CEditWnd::OnMouseMove( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 	return 0;
-}
-
-LRESULT CEditWnd::OnMouseWheel( WPARAM wParam, LPARAM lParam )
-{
-	return Views_DispatchEvent( GetHwnd(), WM_MOUSEWHEEL, wParam, lParam );
 }
 
 /** マウスホイール処理

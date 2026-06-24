@@ -148,7 +148,6 @@ public:
 	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
 	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
-	LRESULT OnMouseWheel(WPARAM wParam, LPARAM lParam);
 	BOOL DoMouseWheel( WPARAM wParam, LPARAM lParam );	// マウスホイール処理	// 2007.10.16 ryoji
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
