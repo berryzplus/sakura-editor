@@ -19,6 +19,8 @@ class CAutoScrollWnd : public COriginalWnd
 {
 private:
 	using BitmapHolder = cxx::ResourceHolder<&::DeleteObject, HBITMAP>;
+	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
+	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
 
 	using Base = COriginalWnd;
 	using Me = CAutoScrollWnd;
@@ -37,35 +39,20 @@ public:
 
 protected:
 	/* 仮想関数 */
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
-	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
-	void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
-	void	OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+
+	void	ExitAutoScroll(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
 
 private:
 	int				m_BitMapId;
 	int				m_CursorId;
 	BitmapHolder	m_hCenterImg = nullptr;
 	CEditView*		m_cView = nullptr;
-};
-
-struct CAutoScrollCWnd final : public CAutoScrollWnd
-{
-	CAutoScrollCWnd() : CAutoScrollWnd(true, true) {}
-};
-
-struct CAutoScrollVWnd final : public CAutoScrollWnd
-{
-	CAutoScrollVWnd() : CAutoScrollWnd(true, false) {}
-};
-
-struct CAutoScrollHWnd final : public CAutoScrollWnd
-{
-	CAutoScrollHWnd() : CAutoScrollWnd(false, false) {}
 };
 
 #endif /* SAKURA_CAUTOSCROLLWND_F588E196_7D77_4DFA_AAB0_A2D95FFB8849_H_ */

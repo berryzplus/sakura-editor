@@ -50,6 +50,21 @@ int AutoScrollCursorId(bool bVertical, bool bHorizontal)
 
 } // namespace window
 
+struct CAutoScrollCWnd final : public CAutoScrollWnd
+{
+	CAutoScrollCWnd() : CAutoScrollWnd(true, true) {}
+};
+
+struct CAutoScrollVWnd final : public CAutoScrollWnd
+{
+	CAutoScrollVWnd() : CAutoScrollWnd(true, false) {}
+};
+
+struct CAutoScrollHWnd final : public CAutoScrollWnd
+{
+	CAutoScrollHWnd() : CAutoScrollWnd(false, false) {}
+};
+
 /* static */ std::unique_ptr<CAutoScrollWnd> CAutoScrollWnd::CreateInstance(bool bVertical, bool bHorizontal)
 {
 	if (bVertical && bHorizontal) {
@@ -93,6 +108,37 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 
 	/* 基底クラスメンバ呼び出し */
 	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
+}
+
+/*!
+ * @brief オートスクロールウィンドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CAutoScrollWnd::DispatchEvent(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
+)
+{
+	switch (uMsg) {
+// clang-format off
+	HANDLE_MSG(hWnd, WM_LBUTTONDOWN,					ExitAutoScroll);
+	HANDLE_MSG(hWnd, WM_RBUTTONDOWN,					ExitAutoScroll);
+	HANDLE_MSG(hWnd, WM_MBUTTONDOWN,					ExitAutoScroll);
+// clang-format on
+
+	default:
+		break;
+	}
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -147,45 +193,15 @@ void CAutoScrollWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 
 	HDC hdc = ps.hdc;
 
-	using MemDcHolder = cxx::ResourceHolder<&::DeleteDC>;
 	MemDcHolder hCompDc{ ::CreateCompatibleDC(hdc) };
 
-	using SelectionHolder = cxx::ResourceHolder<&::SelectObject>;
-	SelectionHolder hBitmap_Old{ hCompDc };
-	hBitmap_Old = ::SelectObject(hCompDc, m_hCenterImg);
+	SelectionHolder hBitmapOld{ hCompDc };
+	hBitmapOld = ::SelectObject(hCompDc, m_hCenterImg);
 
 	::BitBlt(hdc, 0, 0, 32, 32, hCompDc, 0, 0, SRCCOPY);
 }
 
-void CAutoScrollWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
-{
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(x);
-	UNREFERENCED_PARAMETER(y);
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	if (!hWnd) return;
-
-	if( m_cView->m_nAutoScrollMode ){
-		m_cView->AutoScrollExit();
-	}
-}
-
-void CAutoScrollWnd::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
-{
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(x);
-	UNREFERENCED_PARAMETER(y);
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	if( m_cView->m_nAutoScrollMode ){
-		m_cView->AutoScrollExit();
-	}
-}
-
-void CAutoScrollWnd::OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
+void CAutoScrollWnd::ExitAutoScroll(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
 	UNREFERENCED_PARAMETER(hWnd);
 	UNREFERENCED_PARAMETER(fDoubleClick);
