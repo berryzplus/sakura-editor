@@ -796,17 +796,26 @@ void CEditWnd::LayoutFuncKey( void )
 {
 	if( m_pShareData->m_Common.m_sWindow.m_bDispFUNCKEYWND ){	/* ファンクションキーを表示する */
 		if( nullptr == m_cFuncKeyWnd.GetHwnd() ){
+			const auto hWnd = GetHwnd();
+
+			CMyRect rc{};
+			::GetClientRect(hWnd, &rc);
+
+			const auto cyMenu = GetSystemMetrics(SM_CYMENU);
+			rc.SetSize(rc.Width(), cyMenu);
+
 			bool	bSizeBox;
 			if( m_pShareData->m_Common.m_sWindow.m_nFUNCKEYWND_Place == 0 ){	/* ファンクションキー表示位置／0:上 1:下 */
 				bSizeBox = false;
 			}else{
 				bSizeBox = true;
+				rc.SetPos(0, rc.Height() - cyMenu);
 				/* ステータスバーがあるときはサイズボックスを表示しない */
 				if( m_cStatusBar.GetStatusHwnd() ){
 					bSizeBox = false;
 				}
 			}
-			m_cFuncKeyWnd.Open( G_AppInstance(), GetHwnd(), GetDocument(), bSizeBox );
+			m_cFuncKeyWnd.Open(hWnd, rc, bSizeBox);
 		}
 	}else{
 		m_cFuncKeyWnd.Close();

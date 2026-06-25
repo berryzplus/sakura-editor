@@ -38,8 +38,6 @@ CFuncKeyWnd::CFuncKeyWnd()
 {
 	int		i;
 	LOGFONT	lf;
-	/* 共有データ構造体のアドレスを返す */
-	m_pShareData = &GetDllShareData();
 	for( i = 0; i < int(std::size(m_szFuncNameArr)); ++i ){
 		m_szFuncNameArr[i][0] = L'\0';
 	}
@@ -78,14 +76,12 @@ CFuncKeyWnd::~CFuncKeyWnd()
 }
 
 /* ウィンドウ オープン */
-HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDoc, bool bSizeBox )
+HWND CFuncKeyWnd::Open(HWND hWndParent, const CMyRect& rc, bool bSizeBox)
 {
-	UNREFERENCED_PARAMETER(hInstance);
+	size_t windowId = 0;	// 外部から指定できる必要はない
 
-	m_pcEditDoc = pCEditDoc;
 	m_bSizeBox = bSizeBox;
 	m_hwndSizeBox = nullptr;
-	m_nCurrentKeyState = -1;
 
 	// 2002.11.04 Moca 変更できるように
 	m_nButtonGroupNum = m_pShareData->m_Common.m_sWindow.m_nFUNCKEYWND_GroupNum;
@@ -96,16 +92,8 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(nullptr, IDC_ARROW));
 
-	const auto cyMenu = GetSystemMetrics(SM_CYMENU);
-
-	CMyRect rc;
-	::GetClientRect(hwndParent, &rc);
-
-	rc.SetPos(0, rc.Height() - cyMenu);
-	rc.SetSize(rc.Width(), cyMenu);
-
 	/* 基底クラスメンバ呼び出し */
-	return Base::CreateWnd(atom, WS_CHILD | WS_CLIPCHILDREN, hwndParent, 0, rc, m_ClassName);
+	return Base::CreateWnd(atom, WS_CHILD | WS_CLIPCHILDREN, hWndParent, windowId, rc, m_ClassName);
 }
 
 #if 0//////////////////////////////////////////////////////////////
@@ -138,7 +126,7 @@ LRESULT CFuncKeyWnd::DispatchEvent(
 #endif//////////////////////////////////////////////////////////////
 
 /*! ボタンのサイズを計算 */
-int CFuncKeyWnd::CalcButtonWidth(int cx)
+int CFuncKeyWnd::CalcButtonWidth(int cx) const
 {
 	const auto nButtonNum = int(std::size(m_hwndButtonArr));
 
@@ -272,6 +260,8 @@ bool CFuncKeyWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	if (!Base::OnCreate(hWnd, lpCreateStruct)) {
 		return false;
 	}
+
+	m_nCurrentKeyState = -1;
 
 	const auto hInstance = lpCreateStruct->hInstance;
 

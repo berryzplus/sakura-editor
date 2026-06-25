@@ -18,11 +18,9 @@
 #pragma once
 
 #include "_main/global.h"
-#include "window/CWnd.h"
+#include "doc/CEditDoc.h"
 #include "env/DLLSHAREDATA.h"
-
-struct DLLSHAREDATA;
-class CEditDoc; // 2002/2/10 aroka
+#include "window/CWnd.h"
 
 //! ファンクションキーウィンドウ
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
@@ -44,7 +42,7 @@ public:
 	/*
 	|| メンバ関数
 	*/
-	HWND Open( HINSTANCE, HWND, CEditDoc*, bool );	/* ウィンドウ オープン */
+	HWND	Open(HWND hWndParent, const CMyRect& rc, bool bSizeBox);
 
 	void SizeBox_ONOFF(bool bSizeBox);	/* サイズボックスの表示／非表示切り替え */
 	void Timer_ONOFF(bool bStart); /* 更新の開始／停止 20060126 aroka */
@@ -53,8 +51,8 @@ public:
 	*/
 private:
 	// 20060126 aroka すべてPrivateにして、初期化順序に合わせて並べ替え
-	CEditDoc*		m_pcEditDoc = nullptr;
-	DLLSHAREDATA*	m_pShareData;
+	DLLSHAREDATA*	m_pShareData = &GetDllShareData();
+	CEditDoc*		m_pcEditDoc = GetDocument();
 	int				m_nCurrentKeyState = -1;
 	WCHAR			m_szFuncNameArr[12][256];
 	HWND			m_hwndButtonArr[12];
@@ -69,7 +67,7 @@ protected:
 	|| 実装ヘルパ系
 	*/
 	void	CreateButtons(HWND hWnd, HINSTANCE hInstance, int cx, int cy);
-	int		CalcButtonWidth(int cx);
+	int		CalcButtonWidth(int cx) const;
 
 	/* 仮想関数 */
 
