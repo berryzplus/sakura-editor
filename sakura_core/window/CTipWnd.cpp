@@ -51,31 +51,16 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 {
 	UNREFERENCED_PARAMETER(hInstance);
 
-	LPCWSTR pszClassName = m_ClassName.c_str();
-
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_INFOBK + 1), ::LoadCursorW(nullptr, IDC_ARROW));
 
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	}
+	CMyRect rc;
+	rc.SetXYWH(CW_USEDEFAULT, 0, CW_USEDEFAULT, 0);
 
 	/* 基底クラスメンバ呼び出し */
 	// 2006.01.09 ryoji 初期状態を不可視にする
 	//	実質的には見えないCTipWndが最前面にあると判断されてしまう場合があるため
-	Base::Create(
-		hwndParent,
-		WS_EX_TOOLWINDOW, // extended window style	// 2002/2/3 GAE
-		pClassName,	// Pointer to a null-terminated string or is an atom.
-		pszClassName, // pointer to window name
-		WS_POPUP | WS_CLIPCHILDREN | WS_BORDER, // window style
-		CW_USEDEFAULT, // horizontal position of window
-		0, // vertical position of window
-		CW_USEDEFAULT, // window width
-		0, // window height
-		nullptr // handle to menu, or child-window identifier
-	);
+	Base::CreateWnd(atom, WS_POPUP | WS_CLIPCHILDREN | WS_BORDER, hwndParent, 0, rc, m_ClassName, WS_EX_TOOLWINDOW);
 
 	return;
 }

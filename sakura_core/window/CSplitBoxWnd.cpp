@@ -51,49 +51,35 @@ CSplitBoxWnd::CSplitBoxWnd(bool bVertical)
 
 CSplitBoxWnd::~CSplitBoxWnd()
 {
+	return;
 }
 
 HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
 {
 	UNREFERENCED_PARAMETER(hInstance);
 
-	LPCWSTR pszClassName = m_ClassName.c_str();
-	HCURSOR hCursor = ::LoadCursorW(nullptr, m_CursorName);
-	
-	int			nCyHScroll;
-	int			nCxVScroll;
-	RECT		rc;
-
 	/* ウィンドウクラス作成 */
-
-	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), hCursor);
-
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	}
+	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(nullptr, m_CursorName));
 
 	m_bVertical = bVertical;
-	/* システムマトリックスの取得 */
-	nCyHScroll = ::GetSystemMetrics( SM_CYHSCROLL );	/* 水平スクロールバーの高さ */
-	nCxVScroll = ::GetSystemMetrics( SM_CXVSCROLL );	/* 垂直スクロールバーの幅 */
 
 	/* 親ウィンドウのクライアント領域のサイズを取得 */
+	CMyRect rc;
 	::GetClientRect( GetParentHwnd(), &rc );
 
-	/* 基底クラスメンバ呼び出し */
-	return Base::Create(
-		hwndParent,
-		0, // extended window style
-		pClassName,	// Pointer to a null-terminated string or is an atom.
-		pszClassName, // pointer to window name
-		WS_CHILD | WS_VISIBLE, // window style
-		bVertical ? ( rc.right - nCxVScroll ):( 0 ), // horizontal position of window
-		bVertical ? ( 0 ):( rc.bottom - nCyHScroll ), // vertical position of window
-		bVertical ? ( nCxVScroll ):( 7 ), // window width
-		bVertical ? ( 7 ):( nCyHScroll ), // window height
-		nullptr // handle to menu, or child-window identifier
-	);
+	/* システムマトリックスの取得 */
+	const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);	/* 水平スクロールバーの高さ */
+	const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);	/* 垂直スクロールバーの幅 */
+
+	if (bVertical) {
+		rc.SetPos(rc.Width() - cxVScroll, 0);
+		rc.SetSize(cxVScroll, 7);
+	} else {
+		rc.SetPos(0, rc.Height() - cyHScroll);
+		rc.SetSize(7, cyHScroll);
+	}
+
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
 }
 
 /* 描画処理 */

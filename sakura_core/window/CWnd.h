@@ -106,7 +106,7 @@ public:
  * 
  * @par 独自ウィンドウの使用方法は以下の手順
  * @li RegisterClassW()	ウィンドウクラス登録
- * @li Create()		ウィンドウ作成
+ * @li CreateWnd()		ウィンドウ作成
  */
 class COriginalWnd : public CWnd
 {
@@ -136,18 +136,15 @@ public:
 	) const;
 
 	//ウィンドウ作成
-	HWND Create(
-		HWND		hwndParent,
-		DWORD		dwExStyle,		// extended window style
-		LPCWSTR		lpszClassName,	// Pointer to a null-terminated string or is an atom.
-		LPCWSTR		lpWindowName,	// pointer to window name
-		DWORD		dwStyle,		// window style
-		int			x,				// horizontal position of window
-		int			y,				// vertical position of window
-		int			nWidth,			// window width
-		int			nHeight,		// window height
-		HMENU		hMenu			// handle to menu, or child-window identifier
-	);
+	HWND CreateWnd(
+		ATOM				atom,			// Pointer to a null-terminated string or is an atom.
+		DWORD				dwStyle,		// window style
+		HWND				hWndParent,
+		size_t				windowId,		// handle to menu, or child-window identifier
+		const CMyRect&		rc,				// window rect
+		const std::optional<std::wstring>& optCaption = std::nullopt,
+		DWORD				dwExStyle = 0
+	) const;
 
 	HINSTANCE	GetAppInstance() const noexcept { return m_hInstance; }
 	HWND		GetParentHwnd() const noexcept { return m_hwndParent; }

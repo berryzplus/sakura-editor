@@ -823,8 +823,6 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 {
 	UNREFERENCED_PARAMETER(hInstance);
 
-	LPCWSTR pszClassName = m_ClassName.c_str();
-
 	/* 初期化 */
 	m_hwndTab    = nullptr;
 	gm_pOldWndProc = nullptr;
@@ -841,30 +839,13 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 	// 2006.01.30 ryoji 背景は WM_PAINT で描画するほうがちらつかない（と思う）
 	const auto atom = RegisterClassW(HBRUSH(nullptr), ::LoadCursorW(nullptr, IDC_ARROW));
 
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	}
-
-	int left = 0;
-	int top = 0;
-
-	RECT rc;
+	CMyRect rc;
 	::GetClientRect(hwndParent, &rc);
 
+	rc.bottom = rc.top + TAB_WINDOW_HEIGHT;
+
 	/* 基底クラスメンバ呼び出し */
-	return Base::Create(
-		hwndParent,
-		0,									// extended window style
-		pClassName,						// Pointer to a null-terminated string or is an atom.
-		pszClassName,						// pointer to window name
-		WS_CHILD | WS_VISIBLE,			// window style	// 2007.03.08 ryoji WS_VISIBLE 除去
-		left,						// horizontal position of window
-		top,									// vertical position of window
-		rc.right - rc.left,		// window width
-		TAB_WINDOW_HEIGHT,					// window height
-		nullptr								// handle to menu, or child-window identifier
-	);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
 }
 
 void CTabWnd::UpdateStyle()

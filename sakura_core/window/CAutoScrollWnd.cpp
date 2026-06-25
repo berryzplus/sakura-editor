@@ -79,32 +79,20 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 	UNREFERENCED_PARAMETER(bVertical);
 	UNREFERENCED_PARAMETER(bHorizontal);
 
-	LPCWSTR pszClassName = m_ClassName.c_str();
-
 	m_cView = view;
 
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId)));
 
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	}
+	const auto cxIcon = ::GetSystemMetrics(SM_CXICON);
+	const auto cyIcon = ::GetSystemMetrics(SM_CYICON);
+
+	CMyRect rc;
+	rc.SetPos(point.x - cxIcon / 2, point.y - cyIcon / 2);
+	rc.SetSize(cxIcon, cyIcon);
 
 	/* 基底クラスメンバ呼び出し */
-	return Base::Create(
-		/* 初期化 */
-		hwndParent,
-		0,
-		pClassName,	// Pointer to a null-terminated string or is an atom.
-		pszClassName, // pointer to window name
-		WS_CHILD | WS_VISIBLE, // window style
-		point.x-16, // horizontal position of window
-		point.y-16, // vertical position of window
-		32, // window width
-		32, // window height
-		nullptr // handle to menu, or child-window identifier
-	);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
 }
 
 void CAutoScrollWnd::Close()

@@ -82,8 +82,6 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 {
 	UNREFERENCED_PARAMETER(hInstance);
 
-	LPCWSTR pszClassName = m_ClassName.c_str();
-
 	m_pcEditDoc = pCEditDoc;
 	m_bSizeBox = bSizeBox;
 	m_hwndSizeBox = nullptr;
@@ -98,29 +96,16 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(nullptr, IDC_ARROW));
 
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	}
-
-	RECT rc{};
-	::GetClientRect(hwndParent, &rc);
-
 	const auto cyMenu = GetSystemMetrics(SM_CYMENU);
 
+	CMyRect rc;
+	::GetClientRect(hwndParent, &rc);
+
+	rc.SetPos(0, rc.Height() - cyMenu);
+	rc.SetSize(rc.Width(), cyMenu);
+
 	/* 基底クラスメンバ呼び出し */
-	return Base::Create(
-		hwndParent,
-		0, // extended window style
-		pClassName,	// Pointer to a null-terminated string or is an atom.
-		pszClassName, // pointer to window name
-		WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPCHILDREN, // window style	// 2006.06.17 ryoji WS_CLIPCHILDREN 追加	// 2007.03.08 ryoji WS_VISIBLE 除去
-		0, // horizontal position of window
-		rc.bottom - rc.top - cyMenu, // vertical position of window
-		rc.right - rc.left, // window width	// 2007.02.05 ryoji 100->0（半端なサイズで一瞬表示されるより見えないほうがいい）
-		cyMenu, // window height
-		nullptr // handle to menu, or child-window identifier
-	);
+	return Base::CreateWnd(atom, WS_CHILD | WS_CLIPCHILDREN, hwndParent, 0, rc, m_ClassName);
 }
 
 /* ウィンドウ クローズ */

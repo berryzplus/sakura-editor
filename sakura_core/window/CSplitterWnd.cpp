@@ -50,33 +50,18 @@ CSplitterWnd::~CSplitterWnd()
 /* 初期化 */
 HWND CSplitterWnd::Create( HWND hwndParent )
 {
-	LPCWSTR pszClassName = m_ClassName.c_str();
-
 	/* 初期化 */
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(nullptr), HCURSOR(nullptr));
-
-	LPCWSTR pClassName = m_ClassName.c_str();
-	if (atom) {
-		pClassName = MAKEINTATOM(atom);
-	} else {
+	if (!atom) {
 		ErrorMessage( nullptr, LS(STR_ERR_CSPLITTER01) );
 	}
 
+	CMyRect rc{};
+	::GetClientRect(hwndParent, &rc);
+
 	/* 基底クラスメンバ呼び出し */
-	HWND hWnd = Base::Create(
-		hwndParent,
-		0, // extended window style
-		pClassName,	// Pointer to a null-terminated string or is an atom.
-		pszClassName, // pointer to window name
-		WS_CHILD | WS_VISIBLE, // window style
-		CW_USEDEFAULT, // horizontal position of window
-		0, // vertical position of window
-		CW_USEDEFAULT, // window width
-		0, // window height
-		nullptr // handle to menu, or child-window identifier
-	);
-	return hWnd;
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
 }
 
 /* 子ウィンドウの設定

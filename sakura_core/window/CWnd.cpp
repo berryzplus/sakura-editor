@@ -302,37 +302,45 @@ ATOM COriginalWnd::RegisterClassW(
 	return ::RegisterClassExW(&wc);
 }
 
-/* 作成 */
-HWND COriginalWnd::Create(
-	/* CreateWindowEx()用 */
-	HWND		hwndParent,
-	DWORD		dwExStyle,		// extended window style
-	LPCWSTR		lpszClassName,	// Pointer to a null-terminated string or is an atom.
-	LPCWSTR		lpWindowName,	// pointer to window name
-	DWORD		dwStyle,		// window style
-	int			x,				// horizontal position of window
-	int			y,				// vertical position of window
-	int			nWidth,			// window width
-	int			nHeight,		// window height
-	HMENU		hMenu			// handle to menu, or child-window identifier
-)
+/*!
+ * @brief 独自ウィンドウを作成する。
+ *
+ * @retval != 0 作成されたウィンドウハンドル。
+ * @retval == 0 作成に失敗した。
+ *
+ * @note CreateからCreateWndに改称。
+ */
+HWND COriginalWnd::CreateWnd(
+	ATOM				atom,			//!< registered class atom, or pointer to a null-terminated string.
+	DWORD				dwStyle,		//!< window style
+	HWND				hWndParent,		//!< handle to parent window
+	size_t				windowId,		//!< child-window identifier, or handle to menu for top-level windows
+	const CMyRect&		rc,				//!< window rect
+	const std::optional<std::wstring>& optCaption,
+	DWORD				dwExStyle
+) const
 {
-	const auto hWnd = ::CreateWindowExW(
-		dwExStyle, // extended window style
-		lpszClassName, // pointer to registered class name
-		lpWindowName, // pointer to window name
-		dwStyle, // window style
-		x, // horizontal position of window
-		y, // vertical position of window
-		nWidth, // window width
-		nHeight, // window height
-		hwndParent, // handle to parent or owner window
-		hMenu, // handle to menu, or child-window identifier
-		G_AppInstance(), // handle to application instance
-		(LPVOID)this	// pointer to window-creation data
-	);
+	auto pClassName = std::data(m_ClassName);
+	if (atom) {
+		pClassName = MAKEINTATOM(atom);
+	}
 
-	return hWnd;
+	const auto caption = optCaption.value_or(L"");
+
+	return ::CreateWindowExW(
+		dwExStyle,				// extended window style
+		pClassName,				// pointer to registered class name
+		std::data(caption),		// pointer to window name
+		dwStyle,				// window style
+		rc.left,				// horizontal position of window
+		rc.top,					// vertical position of window
+		rc.Width(),				// window width
+		rc.Height(),			// window height
+		hWndParent,				// handle to parent or owner window
+		HMENU(windowId),		// child-window identifier, or handle to menu for top-level windows
+		G_AppInstance(),		// handle to application instance
+		LPVOID(this)			// pointer to window-creation data
+	);
 }
 
 /*!
