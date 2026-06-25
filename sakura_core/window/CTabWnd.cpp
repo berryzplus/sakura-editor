@@ -795,26 +795,26 @@ CTabWnd::~CTabWnd()
 }
 
 /* ウィンドウ オープン */
-HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
+HWND CTabWnd::Open(
+	HWND hWndParent,
+	CMyRect& rc
+)
 {
-	UNREFERENCED_PARAMETER(hInstance);
-
 	/* 初期化 */
 	m_hwndTab    = nullptr;
 	m_hwndToolTip = nullptr;
 	m_eTabPosition = TabPosition_None;
 
+	size_t windowId = 0;	// 外部から指定できる必要はない
+
 	/* ウィンドウクラス作成 */
 	// 2006.01.30 ryoji 背景は WM_PAINT で描画するほうがちらつかない（と思う）
 	const auto atom = RegisterClassW(HBRUSH(nullptr), ::LoadCursorW(nullptr, IDC_ARROW));
 
-	CMyRect rc;
-	::GetClientRect(hwndParent, &rc);
-
-	rc.bottom = rc.top + TAB_WINDOW_HEIGHT;
+	rc.SetSize(rc.Width(), TAB_WINDOW_HEIGHT);
 
 	/* 基底クラスメンバ呼び出し */
-	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hWndParent, windowId, rc, m_ClassName);
 }
 
 void CTabWnd::UpdateStyle()

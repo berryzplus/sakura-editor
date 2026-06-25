@@ -113,7 +113,7 @@ public:
 	/*
 	|| メンバ関数
 	*/
-	HWND Open( HINSTANCE hInstance, HWND hwndParent );		/*!< ウィンドウ オープン */
+	HWND	Open(HWND hWndParent, CMyRect& rc);
 
 	void TabWindowNotify( WPARAM wParam, LPARAM lParam );
 	void Refresh( BOOL bEnsureVisible = TRUE, BOOL bRebuild = FALSE );			// 2006.02.06 ryoji 引数削除
