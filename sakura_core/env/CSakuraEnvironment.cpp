@@ -110,7 +110,6 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 
 	// Apr. 03, 2003 genta 固定文字列をまとめる
 	const std::wstring	PRINT_PREVIEW_ONLY		= LS( STR_PREVIEW_ONLY );	//L"(印刷プレビューでのみ使用できます)";
-	const auto			PRINT_PREVIEW_ONLY_LEN	= int(PRINT_PREVIEW_ONLY.length());
 	const std::wstring	NO_TITLE				= LS( STR_NO_TITLE1 );	//L"(無題)";
 	const auto			NO_TITLE_LEN			= int(NO_TITLE.length());
 	const std::wstring	NOT_SAVED				= LS( STR_NOT_SAVED );	//L"(保存されていません)";
@@ -367,33 +366,25 @@ void CSakuraEnvironment::ExpandParameter(const wchar_t* pszSource, wchar_t* pszB
 			}
 			break;
 		case L'p':	//	現在のページ
-			{
-				CEditWnd*	pcEditWnd = GetMainWindow();	//	Sep. 10, 2002 genta
-				if (pcEditWnd->m_pPrintPreview){
-					wchar_t szText[1024];
-					_itow(pcEditWnd->m_pPrintPreview->GetCurPageNum() + 1, szText, 10);
-					q = wcs_pushW( q, q_max - q, szText, wcslen(szText));
-					++p;
-				}
-				else {
-					q = wcs_pushW( q, q_max - q, PRINT_PREVIEW_ONLY.c_str(), PRINT_PREVIEW_ONLY_LEN );
-					++p;
-				}
+			if (const auto pcEditWnd = GetEditWndPtr(); pcEditWnd && pcEditWnd->m_pPrintPreview) {
+				const auto text = std::to_wstring(pcEditWnd->m_pPrintPreview->GetCurPageNum() + 1);
+				q = wcs_pushW(q, q_max - q, std::data(text), std::size(text));
+				++p;
+			}
+			else {
+				q = wcs_pushW(q, q_max - q, std::data(PRINT_PREVIEW_ONLY), std::size(PRINT_PREVIEW_ONLY));
+				++p;
 			}
 			break;
 		case L'P':	//	総ページ
-			{
-				CEditWnd*	pcEditWnd = GetMainWindow();	//	Sep. 10, 2002 genta
-				if (pcEditWnd->m_pPrintPreview){
-					wchar_t szText[1024];
-					_itow(pcEditWnd->m_pPrintPreview->GetAllPageNum(), szText, 10);
-					q = wcs_pushW( q, q_max - q, szText);
-					++p;
-				}
-				else {
-					q = wcs_pushW( q, q_max - q, PRINT_PREVIEW_ONLY.c_str(), PRINT_PREVIEW_ONLY_LEN );
-					++p;
-				}
+			if (const auto pcEditWnd = GetEditWndPtr(); pcEditWnd && pcEditWnd->m_pPrintPreview) {
+				const auto text = std::to_wstring(pcEditWnd->m_pPrintPreview->GetAllPageNum());
+				q = wcs_pushW(q, q_max - q, std::data(text), std::size(text));
+				++p;
+			}
+			else {
+				q = wcs_pushW(q, q_max - q, std::data(PRINT_PREVIEW_ONLY), std::size(PRINT_PREVIEW_ONLY));
+				++p;
 			}
 			break;
 		case L'D':	//	タイムスタンプ

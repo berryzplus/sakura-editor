@@ -16,7 +16,6 @@ class CNativeW;
 // Aug. 16, 2007 kobake
 wchar_t *wcs_pushW(wchar_t *dst, size_t dst_count, const wchar_t* src, size_t src_count);
 wchar_t *wcs_pushW(wchar_t *dst, size_t dst_count, const wchar_t* src);
-#define wcs_pushW wcs_pushW
 
 int AddLastChar( WCHAR* pszPath, int nMaxLen, WCHAR c );/* 2003.06.24 Moca 最後の文字が指定された文字でないときは付加する */
 size_t LimitStringLengthW( LPCWSTR pszData, size_t nDataLength, size_t nLimitLength, CNativeW& cmemDes );/* データを指定「文字数」以内に切り詰める */
