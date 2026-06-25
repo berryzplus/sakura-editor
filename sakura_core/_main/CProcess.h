@@ -224,6 +224,9 @@ struct CAppMainWnd : public COriginalWnd
 
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 
+	virtual void	OnClose(HWND hWnd) const = 0;
+	virtual bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const = 0;
+
 	void	OnHelp(HWND hWnd, const HELPINFO* lpHelpInfo) const noexcept;
 
 	DLLSHAREDATA*	m_pShareData = &::GetDllShareData();

@@ -128,8 +128,8 @@ private:
 
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
-	void	OnClose(HWND hWnd) const;
-	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
+	void	OnClose(HWND hWnd) const override;
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const override;
 	void	OnEndSession(HWND hWnd, bool bEndSession, UINT endSessionFlags);
 	void	OnTimer(HWND hWnd, UINT id) override;
 	void	OnHotKey(HWND hWnd, int idHotKey, UINT fuModifiers, UINT vk) const;

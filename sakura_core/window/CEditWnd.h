@@ -140,8 +140,8 @@ public:
 	//各種イベント
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
-	void	OnClose(HWND hWnd) const;
-	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
+	void	OnClose(HWND hWnd) const override;
+	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
 	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;
