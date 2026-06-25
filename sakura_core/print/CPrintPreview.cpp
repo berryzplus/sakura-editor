@@ -48,26 +48,6 @@
 #define		PAGE_RANGE_X	160		/* 水平方向の１回のページスクロール幅 */
 #define		PAGE_RANGE_Y	160		/* 垂直方向の１回のページスクロール幅 */
 
-LRESULT CALLBACK CPrintPreview::SubclassProc(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam,
-	UINT_PTR uIdSubclass,
-	DWORD_PTR dwRefData
-)
-{
-	if (WM_DESTROY == uMsg) {
-		::RemoveWindowSubclass(hWnd, &SubclassProc, uIdSubclass);
-	}
-
-	if (auto pcPrintPreview = std::bit_cast<CPrintPreview*>(dwRefData)) {
-		return pcPrintPreview->DispatchEvent(hWnd, uMsg, wParam, lParam);
-	}
-
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
-}
-
 CPrint CPrintPreview::m_cPrint;		//!< 現在のプリンター情報 2003.05.02 かろと
 
 /*! コンストラクタ
@@ -173,7 +153,7 @@ LRESULT CPrintPreview::DispatchEvent(
 		break;
 	}
 
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	return Base::DefWndProcW(hWnd, uMsg, wParam, lParam);
 }
 
 /*!	印刷プレビュー時の、WM_PAINTを処理

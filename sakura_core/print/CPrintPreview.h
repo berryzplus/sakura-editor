@@ -21,6 +21,7 @@
 #include "util/design_template.h"
 #include "CPrint.h" // 2002/2/10 aroka
 #include "types/CType.h"
+#include "window/CWnd.h"
 
 class CColorStrategy;
 class CColorStrategyPool;
@@ -30,28 +31,23 @@ class CLayout;
 class CLayoutMgr;
 class CStringRef;
 
-class CPrintPreview {
+class CPrintPreview final : public CCustomizedWnd {
+private:
+	using Base = CCustomizedWnd;
+	using Me = CPrintPreview;
+
 	static constexpr auto COMPAT_BMP_BASE =      1;   /* COMPAT_BMP_SCALEピクセル幅を複写する画面ピクセル幅 */
 	static constexpr auto COMPAT_BMP_SCALE =     2;   /* 互換BMPのCOMPAT_BMP_BASEに対する倍率(1以上の整数倍) */
 
 /* メンバ関数宣言 */
 public:
-	static LRESULT CALLBACK SubclassProc(
-		HWND hWnd,
-		UINT uMsg,
-		WPARAM wParam,
-		LPARAM lParam,
-		UINT_PTR uIdSubclass,
-		DWORD_PTR dwRefData
-	);
-
 	/*
 	||  コンストラクタ
 	*/
 	CPrintPreview( class CEditWnd* pParentWnd );
 	~CPrintPreview();
 
-	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
 	/*
 	||	イベント

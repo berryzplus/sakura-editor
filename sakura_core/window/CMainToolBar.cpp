@@ -76,7 +76,7 @@ void CMainToolBar::ProcSearchBox( MSG *msg )
 	@author ryoji
 	@date 2006.09.06 ryoji
 */
-LRESULT CALLBACK CMainToolBar::ToolBarWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, [[maybe_unused]] DWORD_PTR dwRefData )
+LRESULT CMainToolBar::DispatchEvent(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch( msg )
 	{
@@ -86,14 +86,10 @@ LRESULT CALLBACK CMainToolBar::ToolBarWndProc( HWND hWnd, UINT msg, WPARAM wPara
 	case WM_RBUTTONUP:
 		return 0L;				// 右ボタンの UP/DOWN は本来のウィンドウプロシージャに渡さない
 
-	case WM_DESTROY:
-		// サブクラス化解除
-		::RemoveWindowSubclass(hWnd, &ToolBarWndProc, uIdSubclass);
-		return 0L;
 	default:
 		break;
 	}
-	return ::DefSubclassProc( hWnd, msg, wParam, lParam );
+	return Base::DefWndProcW(hWnd, msg, wParam, lParam);
 }
 
 /* ツールバー作成
@@ -178,7 +174,7 @@ void CMainToolBar::CreateToolBar( void )
 	}
 	else{
 		// 2006.09.06 ryoji ツールバーをサブクラス化する
-		::SetWindowSubclass(m_hwndToolBar, &ToolBarWndProc, 0, 0);
+		Attach(m_hwndToolBar, 0);
 
 		// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 		const int cxBorder = DpiScaleX( 1 );

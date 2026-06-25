@@ -2871,7 +2871,7 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 	if( m_pPrintPreview ){
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		/*	印刷プレビューモードを解除します。	*/
-		::RemoveWindowSubclass(hWnd, &CPrintPreview::SubclassProc, uIdSubclass);
+		m_pPrintPreview->Detach(hWnd);
 		m_pPrintPreview = nullptr;	//	NULLか否かで、プリントプレビューモードか判断するため。
 
 		/*	通常モードに戻す	*/
@@ -2926,7 +2926,8 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 		m_pPrintPreview = std::make_unique<CPrintPreview>(this);
-		::SetWindowSubclass(hWnd, &CPrintPreview::SubclassProc, uIdSubclass, DWORD_PTR(m_pPrintPreview.get()));
+		m_pPrintPreview->Attach(hWnd, uIdSubclass);
+
 		/* 現在の印刷設定 */
 		m_pPrintPreview->SetPrintSetting(
 			&m_pShareData->m_PrintSettingArr[

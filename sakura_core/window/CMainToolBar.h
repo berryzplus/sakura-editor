@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -10,13 +10,18 @@
 #pragma once
 
 #include "recent/CRecentSearch.h"
+#include "window/CWnd.h"
 
 class CEditWnd;
 class CImageListMgr;
 
-class CMainToolBar{
+class CMainToolBar final : public CCustomizedWnd {
+private:
+	using Base = CCustomizedWnd;
+	using Me = CMainToolBar;
+
 public:
-	CMainToolBar(CEditWnd* pOwner);
+	explicit CMainToolBar(CEditWnd* pOwner);
 
 	void Create( CImageListMgr* pcIcons );
 
@@ -45,7 +50,7 @@ public:
 	void SetFocusSearchBox( void ) const;		/* ツールバー検索ボックスへフォーカスを移動 */	// 2006.06.04 yukihane
 
 private:
-	static LRESULT CALLBACK ToolBarWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData );
+	LRESULT	DispatchEvent(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 	CEditWnd*	m_pOwner;
 	HWND		m_hwndToolBar = nullptr;
@@ -62,4 +67,5 @@ private:
 	HIMAGELIST				m_hImageList = nullptr;
 	HIMAGELIST				m_hDisabledImageList = nullptr;
 };
+
 #endif /* SAKURA_CMAINTOOLBAR_FEA7E388_DFEC_4E15_94CC_90A7E779797B_H_ */
