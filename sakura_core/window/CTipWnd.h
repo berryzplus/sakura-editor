@@ -41,7 +41,7 @@ public:
 	CTipWnd();
 	~CTipWnd() override;
 
-	void Create( HINSTANCE hInstance, HWND hwndParent );	/* 初期化 */
+	void	Create(HWND hWndParent);
 
 	/*
 	||  Attributes & Operations

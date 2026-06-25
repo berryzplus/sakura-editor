@@ -201,7 +201,7 @@ BOOL CEditView::Create(
 	}
 
 	/* 辞書Tip表示ウィンドウ作成 */
-	m_cTipWnd.Create( G_AppInstance(), GetHwnd()/*GetDllShareData().m_sHandles.m_hwndTray*/ );
+	m_cTipWnd.Create(GetHwnd());
 
 	/* 再描画用コンパチブルＤＣ */
 	// 2007.09.09 Moca 互換BMPによる画面バッファ

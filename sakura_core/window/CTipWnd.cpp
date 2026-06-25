@@ -47,9 +47,11 @@ CTipWnd::~CTipWnd()
 }
 
 /* 初期化 */
-void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
+void CTipWnd::Create(
+	HWND hWndParent
+)
 {
-	UNREFERENCED_PARAMETER(hInstance);
+	size_t windowId = 0;	// 外部から指定できる必要はない
 
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_INFOBK + 1), ::LoadCursorW(nullptr, IDC_ARROW));
@@ -60,7 +62,7 @@ void CTipWnd::Create( HINSTANCE hInstance, HWND hwndParent )
 	/* 基底クラスメンバ呼び出し */
 	// 2006.01.09 ryoji 初期状態を不可視にする
 	//	実質的には見えないCTipWndが最前面にあると判断されてしまう場合があるため
-	Base::CreateWnd(atom, WS_POPUP | WS_CLIPCHILDREN | WS_BORDER, hwndParent, 0, rc, m_ClassName, WS_EX_TOOLWINDOW);
+	Base::CreateWnd(atom, WS_POPUP | WS_CLIPCHILDREN | WS_BORDER, hWndParent, windowId, rc, m_ClassName, WS_EX_TOOLWINDOW);
 
 	return;
 }
