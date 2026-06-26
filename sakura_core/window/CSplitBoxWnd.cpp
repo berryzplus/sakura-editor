@@ -15,10 +15,12 @@
 */
 #include "StdAfx.h"
 #include "window/CSplitBoxWnd.h"
-#include "uiparts/CGraphics.h"
+
 #include "apiwrap/StdApi.h"
 #include "apiwrap/DarkMode.h"
 #include "config/system_constants.h"
+#include "util/window.h"
+#include "uiparts/CGraphics.h"
 
 namespace window {
 
@@ -54,32 +56,31 @@ CSplitBoxWnd::~CSplitBoxWnd()
 	return;
 }
 
-HWND CSplitBoxWnd::Create( HINSTANCE hInstance, HWND hwndParent, int bVertical )
+HWND CSplitBoxWnd::Create(
+	HWND hWndParent,
+	const CMyRect& rcParent
+)
 {
-	UNREFERENCED_PARAMETER(hInstance);
-
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(nullptr, m_CursorName));
-
-	m_bVertical = bVertical;
-
-	/* 親ウィンドウのクライアント領域のサイズを取得 */
-	CMyRect rc;
-	::GetClientRect( GetParentHwnd(), &rc );
 
 	/* システムマトリックスの取得 */
 	const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);	/* 水平スクロールバーの高さ */
 	const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);	/* 垂直スクロールバーの幅 */
 
-	if (bVertical) {
-		rc.SetPos(rc.Width() - cxVScroll, 0);
-		rc.SetSize(cxVScroll, 7);
+	size_t windowId = 0;
+
+	CMyRect rc{};
+
+	if (m_bVertical) {
+		rc.SetPos(rcParent.Width() - cxVScroll, 0);
+		rc.SetSize(cxVScroll, DpiScaleY(7));
 	} else {
-		rc.SetPos(0, rc.Height() - cyHScroll);
-		rc.SetSize(7, cyHScroll);
+		rc.SetPos(0, rcParent.Height() - cyHScroll);
+		rc.SetSize(DpiScaleX(7), cyHScroll);
 	}
 
-	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hWndParent, windowId, rc, m_ClassName);
 }
 
 /* 描画処理 */

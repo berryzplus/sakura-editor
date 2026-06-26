@@ -187,8 +187,8 @@ BOOL CEditView::Create(
 	rc.SetXYWH(CW_USEDEFAULT, 0, CW_USEDEFAULT, 0);
 
 	/* エディタウィンドウの作成 */
-	m_hWnd = Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, hwndParent, 100 + nMyIndex, rc, GSTR_VIEWNAME, WS_EX_STATICEDGE);
-	if( nullptr == GetHwnd() ){
+	const auto hWnd = Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, hwndParent, 100 + nMyIndex, rc, GSTR_VIEWNAME, WS_EX_STATICEDGE);
+	if (!hWnd) {
 		return FALSE;
 	}
 	if (IsDarkModeActive()) {
@@ -200,6 +200,8 @@ BOOL CEditView::Create(
 		m_pcDropTarget->Register_DropTarget( GetHwnd() );
 	}
 
+	::GetClientRect(hWnd, &rc);
+
 	/* 辞書Tip表示ウィンドウ作成 */
 	m_cTipWnd.Create(GetHwnd());
 
@@ -210,10 +212,10 @@ BOOL CEditView::Create(
 
 	/* 垂直分割ボックス */
 	m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>();
-	m_pcsbwVSplitBox->Create( G_AppInstance(), GetHwnd(), TRUE );
+	m_pcsbwVSplitBox->Create(hWnd, rc);
 	/* 水平分割ボックス */
 	m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>();
-	m_pcsbwHSplitBox->Create( G_AppInstance(), GetHwnd(), FALSE );
+	m_pcsbwHSplitBox->Create(hWnd, rc);
 
 	/* スクロールバー作成 */
 	CreateScrollBar();		// 2006.12.19 ryoji
@@ -1660,10 +1662,15 @@ void CEditView::CopyViewStatus( CEditView* pView ) const
 /* 縦・横の分割ボックス・サイズボックスのＯＮ／ＯＦＦ */
 void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 {
+	const auto hWnd = GetHwnd();
+
+	CMyRect rc{};
+	::GetClientRect(hWnd, &rc);
+
 	if( bVert ){
 		if( m_pcsbwVSplitBox == nullptr ){	/* 垂直分割ボックス */
 			m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>();
-			m_pcsbwVSplitBox->Create( G_AppInstance(), GetHwnd(), TRUE );
+			m_pcsbwVSplitBox->Create(hWnd, rc);
 		}
 	}
 	else{
@@ -1672,7 +1679,7 @@ void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 	if( bHorz ){
 		if( m_pcsbwHSplitBox == nullptr ){	/* 水平分割ボックス */
 			m_pcsbwHSplitBox = std::make_unique<CHSplitBoxWnd>();
-			m_pcsbwHSplitBox->Create( G_AppInstance(), GetHwnd(), FALSE );
+			m_pcsbwHSplitBox->Create(hWnd, rc);
 		}
 	}
 	else{
@@ -1687,9 +1694,6 @@ void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 		::ShowWindow( m_hwndSizeBoxPlaceholder, SW_SHOW );
 	}
 
-	const auto hWnd = GetHwnd();
-	CMyRect rc{};
-	::GetClientRect(hWnd, &rc);
 	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc.Width(), rc.Height(), ::SendMessageW);
 }
 

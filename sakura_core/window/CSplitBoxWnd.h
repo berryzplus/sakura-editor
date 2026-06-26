@@ -39,7 +39,7 @@ protected:
 public:
 	~CSplitBoxWnd() override;
 
-	HWND Create(HINSTANCE hInstance, HWND hwndParent, int bVertical);
+	HWND	Create(HWND hWndParent, const CMyRect& rcParent);
 
 	static void Draw3dRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight);
 	static void FillSolidRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clr);
