@@ -704,7 +704,7 @@ void CEditView::AutoScrollEnter()
 		return;
 	}
 	m_nAutoScrollMode = 2;
-	m_pAutoScrollWnd->Create(G_AppInstance(), GetHwnd(), m_bAutoScrollVertical, m_bAutoScrollHorizontal, m_cAutoScrollMousePos, this);
+	m_pAutoScrollWnd->Open(this, m_cAutoScrollMousePos);
 	::SetTimer(GetHwnd(), 2, 200, AutoScrollTimerProc);
 	HCURSOR hCursor;
 	hCursor = ::LoadCursor(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDC_CURSOR_AUTOSCROLL_CENTER));

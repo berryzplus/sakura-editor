@@ -34,13 +34,12 @@ protected:
 public:
 	~CAutoScrollWnd() override;
 
-	HWND Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal,
-				 const CMyPoint& point, CEditView* view );
+	HWND	Open(CEditView* pcEditView, const CMyPoint& pt);
 
-protected:
 	/* 仮想関数 */
 	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
+protected:
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;

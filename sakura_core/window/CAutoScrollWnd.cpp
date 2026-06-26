@@ -89,25 +89,25 @@ CAutoScrollWnd::~CAutoScrollWnd()
 	return;
 }
 
-HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal, const CMyPoint& point, CEditView* view )
+HWND CAutoScrollWnd::Open(CEditView* pcEditView, const CMyPoint& pt)
 {
-	UNREFERENCED_PARAMETER(bVertical);
-	UNREFERENCED_PARAMETER(bHorizontal);
+	m_cView = pcEditView;
 
-	m_cView = view;
+	const auto hInstance = pcEditView->GetAppInstance();
+	const auto hWndParent = pcEditView->GetHwnd();
 
 	/* ウィンドウクラス作成 */
 	const auto atom = RegisterClassW(HBRUSH(COLOR_3DFACE + 1), ::LoadCursorW(hInstance, MAKEINTRESOURCE(m_CursorId)));
 
-	const auto cxIcon = ::GetSystemMetrics(SM_CXICON);
-	const auto cyIcon = ::GetSystemMetrics(SM_CYICON);
+	const auto cxIcon = GetSystemMetrics(SM_CXICON);
+	const auto cyIcon = GetSystemMetrics(SM_CYICON);
 
 	CMyRect rc;
-	rc.SetPos(point.x - cxIcon / 2, point.y - cyIcon / 2);
+	rc.SetPos(pt.x - cxIcon / 2, pt.y - cyIcon / 2);
 	rc.SetSize(cxIcon, cyIcon);
 
 	/* 基底クラスメンバ呼び出し */
-	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hWndParent, 0, rc, m_ClassName);
 }
 
 /*!
@@ -156,10 +156,8 @@ bool CAutoScrollWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		return false;
 	}
 
-	m_hCenterImg = (HBITMAP)::LoadImageW(lpCreateStruct->hInstance, MAKEINTRESOURCE(m_BitMapId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	if (!m_hCenterImg) {
-		return false;
-	}
+	m_hCenterImg = (HBITMAP)::LoadImageW(GetAppInstance(), MAKEINTRESOURCE(m_BitMapId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+	if (!m_hCenterImg) return false;
 
 	return true;
 }
@@ -203,13 +201,16 @@ void CAutoScrollWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 
 void CAutoScrollWnd::ExitAutoScroll(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
-	UNREFERENCED_PARAMETER(hWnd);
 	UNREFERENCED_PARAMETER(fDoubleClick);
 	UNREFERENCED_PARAMETER(x);
 	UNREFERENCED_PARAMETER(y);
 	UNREFERENCED_PARAMETER(keyFlags);
 
-	if( m_cView->m_nAutoScrollMode ){
+	if (!hWnd) {
+		return;
+	}
+
+	if (m_cView && m_cView->m_nAutoScrollMode) {
 		m_cView->AutoScrollExit();
 	}
 }

@@ -1113,14 +1113,35 @@ TEST_F(EditWndTest, FileSaveWithBackupAgent001)
 	std::filesystem::remove(backupPath, ec);
 }
 
+//! オートスクロールのテスト
 TEST_F(EditWndTest, AutoScrollEnter)
 {
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
 	const auto center = CAutoScrollWnd::CreateInstance(true, true);
 	const auto vertical = CAutoScrollWnd::CreateInstance(true, false);
 	const auto horizontal = CAutoScrollWnd::CreateInstance(false, true);
 	EXPECT_THAT(center, NotNull());
 	EXPECT_THAT(vertical, NotNull());
 	EXPECT_THAT(horizontal, NotNull());
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, center->DispatchEvent);
+	FORWARD_WM_RBUTTONDOWN(nullptr, false, 0, 0, 0, center->DispatchEvent);
+	FORWARD_WM_MBUTTONDOWN(nullptr, false, 0, 0, 0, center->DispatchEvent);
+
+	EXPECT_THAT(center->DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	EXPECT_THAT(center->DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	// 無理矢理動かす
+	const auto hWnd = ::GetDesktopWindow();
+	pcEditWnd->GetView(0)._SetHwnd(hWnd);
+	FORWARD_WM_COMMAND(hWnd, F_AUTOSCROLL, nullptr, 0, pcEditWnd->DispatchEvent);
+	const auto hWndAutoScroll = pcEditWnd->GetView(0).m_pAutoScrollWnd->GetHwnd();
+	::ShowWindow(hWndAutoScroll, SW_SHOW);
+	::UpdateWindow(hWndAutoScroll);
+	FORWARD_WM_LBUTTONDOWN(hWndAutoScroll, false, 0, 0, 0L, ::SendMessageW);
+	pcEditWnd->GetView(0)._SetHwnd(nullptr);
 }
 
 /*!
