@@ -34,7 +34,6 @@ public:
 
 	HWND Create( HINSTANCE hInstance, HWND hwndParent, bool bVertical, bool bHorizontal,
 				 const CMyPoint& point, CEditView* view );
-	void Close();
 
 protected:
 	/* 仮想関数 */

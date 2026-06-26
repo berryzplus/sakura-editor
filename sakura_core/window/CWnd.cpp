@@ -463,6 +463,17 @@ LRESULT COriginalWnd::CallDefWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+/*!
+ * @brief ウィンドウを閉じる
+ *
+ * あちこちに実装されていたのを共通化したもの。
+ */
+void COriginalWnd::Close() const
+{
+	// ウィンドウを閉じる
+	DestroyWindow();
+}
+
 /* ウィンドウを破棄 */
 void COriginalWnd::DestroyWindow() const
 {

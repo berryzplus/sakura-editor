@@ -842,15 +842,6 @@ void CTabWnd::UpdateTheme()
 	::InvalidateRect( GetHwnd(), nullptr, TRUE );
 }
 
-/* ウィンドウ クローズ */
-void CTabWnd::Close( void )
-{
-	if( GetHwnd() )
-	{
-		this->DestroyWindow();
-	}
-}
-
 /*!
  * @brief タブウィンドウのメッセージ配送
  *

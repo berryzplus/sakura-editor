@@ -150,7 +150,6 @@ public:
 	CEditView( void );
 	~CEditView() override;
 
-	void Close();
 	/* 初期化系メンバ関数 */
 	BOOL Create(
 		HWND		hwndParent,	//!< 親
@@ -159,6 +158,7 @@ public:
 		BOOL		bShow,		//!< 作成時に表示するかどうか
 		bool		bMiniMap
 	);
+	void	Close() const override final;
 	void CopyViewStatus( CEditView* ) const;					/* 自分の表示状態を他のビューにコピー */
 
 	void InvalidateRect(LPCRECT lpRect, BOOL bErase = TRUE) { ::InvalidateRect(m_hWnd, lpRect, bErase); }

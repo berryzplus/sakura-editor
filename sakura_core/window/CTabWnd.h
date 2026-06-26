@@ -114,7 +114,7 @@ public:
 	|| メンバ関数
 	*/
 	HWND Open( HINSTANCE hInstance, HWND hwndParent );		/*!< ウィンドウ オープン */
-	void Close( void );					/*!< ウィンドウ クローズ */
+
 	void TabWindowNotify( WPARAM wParam, LPARAM lParam );
 	void Refresh( BOOL bEnsureVisible = TRUE, BOOL bRebuild = FALSE );			// 2006.02.06 ryoji 引数削除
 	void NextGroup( void );			/* 次のグループ */			// 2007.06.20 ryoji

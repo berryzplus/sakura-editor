@@ -258,24 +258,17 @@ BOOL CEditView::Create(
 CEditView::~CEditView()
 {
 	Close();
-}
-
-void CEditView::Close()
-{
-	if( GetHwnd() != nullptr ){
-		::DestroyWindow( GetHwnd() );
-	}
-
-	/* 再描画用コンパチブルＤＣ */
-	//	2007.09.30 genta 関数化
-	//	m_hbmpCompatBMPもここで削除される．
-	UseCompatibleDC(FALSE);
 
 	delete m_pcDropTarget;
 	m_pcDropTarget = nullptr;
 
 	delete m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
 	m_cRegexKeyword = nullptr;
+}
+
+void CEditView::Close() const
+{
+	Base::Close();
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -776,6 +769,11 @@ void CEditView::OnDestroy(HWND hWnd)
 		::DestroyWindow(m_hwndSizeBoxPlaceholder);
 		m_hwndSizeBoxPlaceholder = nullptr;
 	}
+
+	/* 再描画用コンパチブルＤＣ */
+	//	2007.09.30 genta 関数化
+	//	m_hbmpCompatBMPもここで削除される．
+	UseCompatibleDC(FALSE);
 
 	Base::OnDestroy(hWnd);
 }

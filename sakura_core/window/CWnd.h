@@ -217,6 +217,8 @@ public:
 		return CallDefWndProc(hWnd, uMsg, wParam, lParam);
 	}
 
+	virtual void	Close() const;
+
 	//ウィンドウ標準操作
 	void	DestroyWindow() const;
 

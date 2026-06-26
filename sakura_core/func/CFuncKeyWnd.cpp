@@ -108,12 +108,6 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	return Base::CreateWnd(atom, WS_CHILD | WS_CLIPCHILDREN, hwndParent, 0, rc, m_ClassName);
 }
 
-/* ウィンドウ クローズ */
-void CFuncKeyWnd::Close( void )
-{
-	this->DestroyWindow();
-}
-
 #if 0//////////////////////////////////////////////////////////////
 LRESULT CFuncKeyWnd::DispatchEvent(
 	HWND	hwnd,	// handle of window

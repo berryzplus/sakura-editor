@@ -45,7 +45,7 @@ public:
 	|| メンバ関数
 	*/
 	HWND Open( HINSTANCE, HWND, CEditDoc*, bool );	/* ウィンドウ オープン */
-	void Close( void );	/* ウィンドウ クローズ */
+
 	void SizeBox_ONOFF(bool bSizeBox);	/* サイズボックスの表示／非表示切り替え */
 	void Timer_ONOFF(bool bStart); /* 更新の開始／停止 20060126 aroka */
 	/*

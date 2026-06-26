@@ -95,11 +95,6 @@ HWND CAutoScrollWnd::Create( HINSTANCE hInstance, HWND hwndParent, bool bVertica
 	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
 }
 
-void CAutoScrollWnd::Close()
-{
-	this->DestroyWindow();
-}
-
 /*!
  * WM_CREATEハンドラ
  *
