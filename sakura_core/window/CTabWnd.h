@@ -43,8 +43,8 @@ public:
 	enum DragState { DRAG_NONE, DRAG_CHECK, DRAG_DRAG };
 	enum CaptureSrc { CAPT_NONE, CAPT_CLOSE };
 
-	struct TabCtrl final : public CCustomizedWnd {
-		explicit TabCtrl(CTabWnd& tabWnd) : CCustomizedWnd(), m_ParentWnd(tabWnd) {}
+	struct TabCtrl final : public TCustomizedCtrl<CTabWnd> {
+		explicit TabCtrl(CTabWnd& tabWnd) : TCustomizedCtrl(tabWnd) {}
 
 		void	BreakDrag( void ) { if (::GetCapture() == m_hwndTab) ::ReleaseCapture(); m_eDragState = DRAG_NONE; m_nTabCloseCapture = -1; }	/*!< ドラッグ状態解除処理 */
 		LRESULT	ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
@@ -77,8 +77,6 @@ public:
 		void	OnMButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
 		void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
 
-		CTabWnd&		m_ParentWnd;
-
 		DLLSHAREDATA*	m_pShareData = &::GetDllShareData();
 
 		HWND&			m_hwndTab = m_hWnd;
@@ -101,6 +99,7 @@ public:
 		int				m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
 		bool			m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
 		int				m_nTabCloseCapture = -1;		//!< 閉じるボタンがマウス押下されているタブ（無いときは-1）
+
 	};
 
 	TabCtrl			m_TabCtrl{ *this };
@@ -203,6 +202,7 @@ public:
 	WCHAR			m_szTextTip[1024];	/*!< ツールチップのテキスト（タブ用） */
 	ETabPosition	m_eTabPosition = TabPosition_None;	//!< タブ表示位置
 
+private:
 	ImageListHolder	m_hIml = nullptr;					//!< イメージリスト
 	HICON		m_hIconApp;				//!< アプリケーションアイコン
 	HICON		m_hIconGrep;			//!< Grepアイコン

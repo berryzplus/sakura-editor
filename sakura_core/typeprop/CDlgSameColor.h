@@ -32,12 +32,10 @@ private:
 	using Me = CDlgSameColor;
 
 public:
-	struct ColorStatic final : public CCustomizedWnd {
-		explicit ColorStatic(CDlgSameColor& cDlgSameColor) : CCustomizedWnd(), m_ParentWnd(cDlgSameColor) {}
+	struct ColorStatic final : public TCustomizedCtrl<CDlgSameColor> {
+		explicit ColorStatic(CDlgSameColor& cDlgSameColor) : TCustomizedCtrl(cDlgSameColor) {}
 
 		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
-		CDlgSameColor& m_ParentWnd;
 	};
 
 	struct ColorList final : public CCustomizedWnd {
