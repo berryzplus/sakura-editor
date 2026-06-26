@@ -1866,8 +1866,16 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	// -- -- -- -- 子ウィンドウ作成 -- -- -- -- //
 
+	CMyRect rc{};
+	rc.SetXYWH(
+		lpCreateStruct->x,
+		lpCreateStruct->y,
+		lpCreateStruct->cx,
+		lpCreateStruct->cy
+	);
+
 	/* 分割フレーム作成 */
-	m_cSplitterWnd.Create(hWnd);
+	if (!m_cSplitterWnd.Create(hWnd, rc)) return false;
 
 	/* ビュー */
 	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false);

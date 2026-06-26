@@ -64,7 +64,8 @@ private: // 2002/2/3 aroka
 	int				m_nDragPosY = 0;			/* ドラッグ位置Ｙ */
 	int				m_nActivePane = 0;			/* アクティブなペイン */
 public: // 2002/2/3 aroka
-	HWND Create( HWND hwndParent );	/* 初期化 */
+	HWND	Create(HWND hWndParent, const CMyRect& rc);
+
 	void SetChildWndArr(HWND* hwndEditViewArr);	/* 子ウィンドウの設定 */
 	void DoSplit(int nHorizontal, int nVertical);	/* ウィンドウの分割 */
 	void SetActivePane(int nIndex);	/* アクティブペインの設定 */

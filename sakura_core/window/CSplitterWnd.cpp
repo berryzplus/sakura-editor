@@ -45,10 +45,14 @@ CSplitterWnd::CSplitterWnd()
 
 CSplitterWnd::~CSplitterWnd()
 {
+	return;
 }
 
 /* 初期化 */
-HWND CSplitterWnd::Create( HWND hwndParent )
+HWND CSplitterWnd::Create(
+	HWND hWndParent,
+	const CMyRect& rc
+)
 {
 	/* 初期化 */
 	/* ウィンドウクラス作成 */
@@ -57,11 +61,10 @@ HWND CSplitterWnd::Create( HWND hwndParent )
 		ErrorMessage( nullptr, LS(STR_ERR_CSPLITTER01) );
 	}
 
-	CMyRect rc{};
-	::GetClientRect(hwndParent, &rc);
+	size_t windowId = 0;
 
 	/* 基底クラスメンバ呼び出し */
-	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hwndParent, 0, rc, m_ClassName);
+	return Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE, hWndParent, windowId, rc, m_ClassName);
 }
 
 /* 子ウィンドウの設定
