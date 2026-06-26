@@ -133,6 +133,23 @@ public:
 };
 
 /*!
+ * @brief カスタムコントロールの基底クラス
+ */
+template<typename T>
+class TCustomizedCtrl : public CCustomizedWnd
+{
+private:
+	using Base = CCustomizedWnd;
+	using Me = TCustomizedCtrl<T>;
+
+protected:
+	explicit TCustomizedCtrl(T& parentWnd) : CCustomizedWnd(), m_ParentWnd(parentWnd) {}
+
+public:
+	T&	m_ParentWnd;
+};
+
+/*!
  * @brief 独自ウィンドウの基本クラス
  * 
  * @par CWndクラスの基本的な機能
