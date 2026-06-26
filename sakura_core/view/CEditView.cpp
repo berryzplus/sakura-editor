@@ -49,29 +49,7 @@
 #include "CSelectLang.h"
 #include "apiwrap/DarkMode.h"
 
-VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
-
 #define IDT_ROLLMOUSE	1
-
-/*
-||  タイマーメッセージのコールバック関数
-||
-||	現在は、マウスによる領域選択時のスクロール処理のためにタイマーを使用しています。
-*/
-VOID CALLBACK EditViewTimerProc(
-	HWND hwnd,		// handle of window for timer messages
-	UINT uMsg,		// WM_TIMER message
-	UINT_PTR idEvent,	// timer identifier
-	DWORD dwTime 	// current system time
-)
-{
-	CEditView*	pCEditView;
-	pCEditView = ( CEditView* )::GetWindowLongPtr( hwnd, GWLP_USERDATA );
-	if( nullptr != pCEditView ){
-		pCEditView->OnTimer( hwnd, uMsg, idEvent, dwTime );
-	}
-	return;
-}
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        生成と破棄                           //
@@ -260,10 +238,7 @@ BOOL CEditView::Create(
 	}
 	/* リピート速度の設定をミリ秒に変換 */
 	UINT uElapse = 400 - dwKeyBoardSpeed * (400 - 33) / keyboardRepeatSpeedMax;
-	/* タイマー起動 */
-	if( 0 == ::SetTimer( GetHwnd(), IDT_ROLLMOUSE, uElapse, EditViewTimerProc ) ){
-		WarningMessage( GetHwnd(), LS(STR_VIEW_TIMER) );
-	}
+	::SetTimer(GetHwnd(), IDT_ROLLMOUSE, uElapse, nullptr);
 
 	m_bHideMouse = false;
 	CRegKey reg;
@@ -337,10 +312,6 @@ LRESULT CEditView::DispatchEvent(
 		}
 		return 0L;
 	// To Here 2007.09.09 Moca
-
-	case WM_SIZE:
-		OnSize( LOWORD( lParam ), HIWORD( lParam ) );
-		return 0L;
 
 	case WM_SETFOCUS:
 		OnSetFocus();
@@ -816,10 +787,16 @@ void CEditView::OnMove( int x, int y, int nWidth, int nHeight )
 }
 
 /* ウィンドウサイズの変更処理 */
-void CEditView::OnSize( int cx, int cy )
+void CEditView::OnSize(
+	HWND hWnd,
+	UINT state,
+	int cx,
+	int cy
+)
 {
-	if( nullptr == GetHwnd()
-		|| ( cx == 0 && cy == 0 ) ){
+	UNREFERENCED_PARAMETER(state);
+
+	if (hWnd || ( cx == 0 && cy == 0 ) ){
 		// From Here 2007.09.09 Moca 互換BMPによる画面バッファ
 		// ウィンドウ無効時にも互換BMPを破棄する
 		DeleteCompatibleBitmap();
@@ -1208,13 +1185,14 @@ bool CEditView::IsCurrentPositionURL(
 //                         イベント                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-VOID CEditView::OnTimer(
-	[[maybe_unused]] HWND hwnd,		// handle of window for timer messages
-	[[maybe_unused]] UINT uMsg,		// WM_TIMER message
-	[[maybe_unused]] UINT_PTR idEvent,	// timer identifier
-	[[maybe_unused]] DWORD dwTime 	// current system time
-	)
+void CEditView::OnTimer(
+	HWND hWnd,
+	UINT id
+)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(id);
+
 	POINT		po;
 	RECT		rc;
 
@@ -1608,10 +1586,11 @@ int	CEditView::CreatePopUpMenuSub( HMENU hMenu, int nMenuIdx, int* pParentMenus,
 /* 設定変更を反映させる */
 void CEditView::OnChangeSetting()
 {
+	const auto hWnd = GetHwnd();
 	if( nullptr == GetHwnd() ){
 		return;
 	}
-	RECT		rc;
+	CMyRect rc{};
 
 	GetTextArea().SetTopYohaku(DpiScaleY(GetDllShareData().m_Common.m_sWindow.m_nRulerBottomSpace)); 		/* ルーラーとテキストの隙間 */
 	GetTextArea().SetAreaTop( GetTextArea().GetTopYohaku() );									/* 表示域の上端座標 */
@@ -1639,8 +1618,8 @@ void CEditView::OnChangeSetting()
 	UseCompatibleDC( GetDllShareData().m_Common.m_sWindow.m_bUseCompatibleBMP );
 
 	/* ウィンドウサイズの変更処理 */
-	::GetClientRect( GetHwnd(), &rc );
-	OnSize( rc.right, rc.bottom );
+	::GetClientRect(hWnd, &rc);
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc.Width(), rc.Height(), ::SendMessageW);
 
 	/* フォントが変わった */
 	m_cTipWnd.ChangeFont( &(GetDllShareData().m_Common.m_sHelper.m_lf) );
@@ -1683,7 +1662,6 @@ void CEditView::CopyViewStatus( CEditView* pView ) const
 /* 縦・横の分割ボックス・サイズボックスのＯＮ／ＯＦＦ */
 void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 {
-	RECT	rc;
 	if( bVert ){
 		if( m_pcsbwVSplitBox == nullptr ){	/* 垂直分割ボックス */
 			m_pcsbwVSplitBox = std::make_unique<CVSplitBoxWnd>();
@@ -1711,8 +1689,10 @@ void CEditView::SplitBoxOnOff( BOOL bVert, BOOL bHorz, BOOL bSizeBox )
 		::ShowWindow( m_hwndSizeBoxPlaceholder, SW_SHOW );
 	}
 
-	::GetClientRect( GetHwnd(), &rc );
-	OnSize( rc.right, rc.bottom );
+	const auto hWnd = GetHwnd();
+	CMyRect rc{};
+	::GetClientRect(hWnd, &rc);
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc.Width(), rc.Height(), ::SendMessageW);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

@@ -199,16 +199,16 @@ public:
 
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
 	void	OnDestroy(HWND hWnd) override;
+	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
+	void	OnTimer(HWND hWnd, UINT id) override;
 
 	//
 	void OnChangeSetting();										/* 設定変更を反映させる */
 	void OnPaint(HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp);			/* 通常の描画処理 */
 	void OnPaint2(HDC _hdc, PAINTSTRUCT *pPs, BOOL bDrawFromComptibleBmp);			/* 通常の描画処理 */
 	void DrawBackImage(HDC hdc, RECT& rcPaint, HDC hdcBgImg);
-	void OnTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	//ウィンドウ
-	void OnSize(int cx, int cy);							/* ウィンドウサイズの変更処理 */
 	void OnMove(int x, int y, int nWidth, int nHeight);
 	//フォーカス
 	void OnSetFocus( void );
