@@ -101,11 +101,21 @@ LRESULT CPrintPreview::DispatchEvent(
 )
 {
 	switch (uMsg) {
-	case WM_PAINT:
-		return OnPaint(hWnd, uMsg, wParam, lParam);
+// clang-format off
+	HANDLE_MSG(hWnd, WM_SIZE,							OnSize);
+	HANDLE_MSG(hWnd, WM_MOUSEMOVE,						OnMouseMove);
+// clang-format on
 
-	case WM_SIZE:
-		return OnSize(wParam, lParam);
+	case WM_PAINT:
+		// 描画処理を開始する
+		if (PAINTSTRUCT ps; ::BeginPaint(hWnd, &ps)) {
+			// 更新領域が空でない場合、描画を行う
+			OnPaint(hWnd, ps);
+
+			// 描画処理を終了する
+			::EndPaint(hWnd, &ps);
+		}
+		return 0L;
 
 	case WM_SETFOCUS:
 		SetFocusToPrintPreviewBar();
@@ -123,9 +133,6 @@ LRESULT CPrintPreview::DispatchEvent(
 
 	case WM_HSCROLL:
 		return OnHScroll(wParam, lParam);
-
-	case WM_MOUSEMOVE:
-		return OnMouseMove(wParam, lParam);
 
 	case WM_MOUSEWHEEL:
 		return OnMouseWheel(wParam, lParam);
@@ -161,15 +168,15 @@ LRESULT CPrintPreview::DispatchEvent(
 	@date 2007.02.11 Moca プレビューを滑らかにする機能．
 		拡大描画してから縮小することでアンチエイリアス効果を出す．
 */
-LRESULT CPrintPreview::OnPaint(
-	HWND			hwnd,	// handle of window
-	[[maybe_unused]] UINT			uMsg,	// message identifier
-	[[maybe_unused]] WPARAM			wParam,	// first message parameter
-	[[maybe_unused]] LPARAM			lParam 	// second message parameter
+void CPrintPreview::OnPaint(
+	HWND hWnd,
+	PAINTSTRUCT& ps
 )
 {
-	PAINTSTRUCT		ps;
-	HDC				hdcOld = ::BeginPaint( hwnd, &ps );
+	const auto hwnd = hWnd;
+
+	const auto hdcOld = ps.hdc;
+
 	HDC				hdc = m_hdcCompatDC;	//	親ウィンドウのComatibleDCに描く
 
 	/* 印刷プレビュー 操作バー */
@@ -368,14 +375,16 @@ LRESULT CPrintPreview::OnPaint(
 		);
 		SetStretchBltMode( hdcOld, stretchModeOld );
 	}
-	::EndPaint( hwnd, &ps );
-	return 0L;
 }
 
-LRESULT CPrintPreview::OnSize( WPARAM wParam, LPARAM lParam )
+void CPrintPreview::OnSize(
+	HWND hWnd,
+	UINT state,
+	int cx,
+	int cy
+)
 {
-	int	cx = LOWORD( lParam );
-	int	cy = HIWORD( lParam );
+	const auto wParam = WPARAM(state);
 
 	/* 印刷プレビュー 操作バー */
 	int nToolBarHeight = 0;
@@ -457,7 +466,9 @@ LRESULT CPrintPreview::OnSize( WPARAM wParam, LPARAM lParam )
 	
 	m_pParentWnd->SetDragPosOrg(CMyPoint(0,0));
 	m_pParentWnd->SetDragMode(true);
-	OnMouseMove( 0, MAKELONG( 0, 0 ) );
+
+	FORWARD_WM_MOUSEMOVE(hWnd, 0, 0, 0, ::SendMessageW);
+
 	m_pParentWnd->SetDragMode(false);
 	//	SizeBox問題テスト
 	if( nullptr != m_hwndSizeBox ){
@@ -475,7 +486,6 @@ LRESULT CPrintPreview::OnSize( WPARAM wParam, LPARAM lParam )
 		}
 	}
 	::InvalidateRect( m_pParentWnd->GetHwnd(), nullptr, TRUE );
-	return 0L;
 }
 
 /*!
@@ -618,12 +628,17 @@ LRESULT CPrintPreview::OnHScroll( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-LRESULT CPrintPreview::OnMouseMove( [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CPrintPreview::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(keyFlags);
+
+	const auto lParam = MAKELPARAM(x, y);
+
 	/* 手カーソル */
 	SetHandCursor();		// Hand Cursorを設定 2013/1/29 Uchi
 	if( !m_pParentWnd->GetDragMode() ){
-		return 0;
+		return;
 	}
 //	WPARAM		fwKeys = wParam;			// key flags
 	int			xPos = LOWORD( lParam );	// horizontal position of cursor
@@ -634,7 +649,7 @@ LRESULT CPrintPreview::OnMouseMove( [[maybe_unused]] WPARAM wParam, LPARAM lPara
 	po.x = xPos;
 	po.y = yPos;
 	if( !PtInRect( &rc, po ) ){	//	プレビュー内かチェック。
-		return 0;
+		return;
 	}
 
 	//	Y軸
@@ -692,7 +707,6 @@ LRESULT CPrintPreview::OnMouseMove( [[maybe_unused]] WPARAM wParam, LPARAM lPara
 	m_pParentWnd->SetDragPosOrg(CMyPoint(xPos,yPos));
 	/* 描画 */
 	ScrollWindowEx( m_pParentWnd->GetHwnd(), nMoveX, nMoveY, nullptr, nullptr, nullptr , nullptr, SW_ERASE | SW_INVALIDATE );
-	return 0;
 }
 
 LRESULT CPrintPreview::OnMouseWheel( WPARAM wParam, [[maybe_unused]] LPARAM lParam )
@@ -735,6 +749,8 @@ void CPrintPreview::OnChangeSetting()
 
 void CPrintPreview::OnChangePrintSetting( void )
 {
+	const auto hWnd = m_pParentWnd->GetHwnd();
+
 	HDC		hdc = ::GetDC( m_pParentWnd->GetHwnd() );
 	::SetMapMode( hdc, MM_LOMETRIC ); //MM_HIMETRIC それぞれの論理単位は、0.01 mm にマップされます
 	::SetMapMode( hdc, MM_ANISOTROPIC );
@@ -881,9 +897,9 @@ void CPrintPreview::OnChangePrintSetting( void )
 	}
 
 	/* WM_SIZE 処理 */
-	RECT	rc;
+	CMyRect rc;
 	::GetClientRect( m_pParentWnd->GetHwnd(), &rc );
-	OnSize( SIZE_RESTORED, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ) );
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc.Width(), rc.Height(), ::SendMessageW);
 	::ReleaseDC( m_pParentWnd->GetHwnd(), hdc );
 	/* プレビュー ページ指定 */
 	OnPreviewGoPage( m_nCurPageNum );
@@ -1035,9 +1051,10 @@ void CPrintPreview::OnPreviewZoom( BOOL bZoomUp )
 	ApiWrap::DlgItem_SetText( m_hwndPrintPreviewBar, IDC_STATIC_ZOOM, szEdit );
 
 	/* WM_SIZE 処理 */
-	RECT		rc1;
-	::GetClientRect( m_pParentWnd->GetHwnd(), &rc1 );
-	OnSize( SIZE_RESTORED, MAKELONG( rc1.right - rc1.left, rc1.bottom - rc1.top ) );
+	const auto hWnd = m_pParentWnd->GetHwnd();
+	CMyRect rc1{};
+	::GetClientRect(hWnd, &rc1);
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc1.Width(), rc1.Height(), ::SendMessageW);
 
 	/* 印刷プレビュー スクロールバー初期化 */
 	InitPreviewScrollBar();
@@ -1054,9 +1071,10 @@ void CPrintPreview::OnPreviewZoom( BOOL bZoomUp )
 void CPrintPreview::OnCheckAntialias( void )
 {
 	/* WM_SIZE 処理 */
-	RECT	rc;
-	::GetClientRect( m_pParentWnd->GetHwnd(), &rc );
-	OnSize( SIZE_RESTORED, MAKELONG( rc.right - rc.left, rc.bottom - rc.top ) );
+	const auto hWnd = m_pParentWnd->GetHwnd();
+	CMyRect rc;
+	::GetClientRect(hWnd, &rc);
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc.Width(), rc.Height(), ::SendMessageW);
 }
 
 /*!
@@ -2053,10 +2071,11 @@ void CPrintPreview::CreatePrintPreviewControls( void )
 	::ShowScrollBar(m_hwndHScrollBar, SB_CTL, TRUE);
 	::ShowWindow(m_hwndPrintPreviewBar, SW_SHOW);
 
-	/* WM_SIZE 処理 */
-	RECT		rc1;
-	::GetClientRect( m_pParentWnd->GetHwnd(), &rc1 );
-	OnSize( SIZE_RESTORED, MAKELONG( rc1.right - rc1.left, rc1.bottom - rc1.top ) );
+	const auto hWnd = m_pParentWnd->GetHwnd();
+	CMyRect rc1{};
+	::GetClientRect(hWnd, &rc1);
+	FORWARD_WM_SIZE(hWnd, SIZE_RESTORED, rc1.Width(), rc1.Height(), ::SendMessageW);
+
 	return;
 }
 

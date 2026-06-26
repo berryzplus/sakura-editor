@@ -31,6 +31,9 @@ class CLayout;
 class CLayoutMgr;
 class CStringRef;
 
+/*!
+ * @brief 印刷プレビュークラス
+ */
 class CPrintPreview final : public CCustomizedWnd {
 private:
 	using Base = CCustomizedWnd;
@@ -53,11 +56,11 @@ public:
 	||	イベント
 	*/
 	//	Window Messages
-	LRESULT OnPaint(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);	/* 描画処理 */
-	LRESULT OnSize(WPARAM wParam, LPARAM lParam);				/* WM_SIZE 処理 */
+	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
+	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	LRESULT OnVScroll( WPARAM wParam, LPARAM lParam );
 	LRESULT OnHScroll( WPARAM wParam, LPARAM lParam );
-	LRESULT OnMouseMove( WPARAM wParam, LPARAM lParam );
+	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	LRESULT OnMouseWheel( WPARAM wParam, LPARAM lParam );
 
 	//	User Messages
