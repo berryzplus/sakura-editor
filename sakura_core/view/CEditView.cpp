@@ -56,27 +56,24 @@
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-CEditView::CEditView( void )
+CEditView::CEditView(int index, bool bMiniMap)
 	: COriginalWnd(GSTR_VIEWNAME)
 	, CViewCalc(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cViewSelect(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cParser(this)				// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cTextDrawer(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
 , m_cCommander(this)			// warning C4355: 'this' : ベース メンバー初期化子リストで使用されました。
+	, m_nMyIndex(index)
+	, m_bMiniMap(bMiniMap)
 {
 }
 
 // 2007.10.23 kobake コンストラクタ内の処理をすべてCreateに移しました。(初期化処理が不必要に分散していたため)
 BOOL CEditView::Create(
-	HWND		hwndParent,	//!< 親
-	[[maybe_unused]] CEditDoc* pcEditDoc,	//!< 参照するドキュメント
-	int			nMyIndex,	//!< ビューのインデックス
-	BOOL		bShow,		//!< 作成時に表示するかどうか
-	bool		bMiniMap
+	HWND hWndParent,	//!< 親
+	const CMyRect& rc	//!< ウィンドウ位置
 )
 {
-	m_bMiniMap = bMiniMap;
-
 	m_pcViewFont = GetEditWnd().GetViewFont(m_bMiniMap);
 
 	m_cRegexKeyword = nullptr;				// 2007.04.08 ryoji
@@ -89,8 +86,6 @@ BOOL CEditView::Create(
 	m_sCurSearchOption.Reset();				// 検索／置換 オプション
 	m_bCurSearchUpdate = false;
 	m_nCurSearchKeySequence = -1;
-
-	m_nMyIndex = 0;
 
 	//	Dec. 4, 2002 genta
 	//	メニューバーへのメッセージ表示機能はCEditWndへ移管
@@ -165,9 +160,6 @@ BOOL CEditView::Create(
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//↓今までCreateでやってたこと
 
-	m_hwndParent = hwndParent;
-	m_nMyIndex = nMyIndex;
-
 	//	2007.08.18 genta 初期化にShareDataの値が必要になった
 	m_cRegexKeyword = new CRegexKeyword( GetDllShareData().m_Common.m_sSearch.m_szRegexpLib );	//@@@ 2001.11.17 add MIK
 	m_cRegexKeyword->RegexKeySetTypes(m_pTypeData);	//@@@ 2001.11.17 add MIK
@@ -183,11 +175,8 @@ BOOL CEditView::Create(
 	/* ウィンドウクラスの登録 */
 	const auto atom = RegisterClassW(HBRUSH(nullptr), HCURSOR(nullptr), CS_DBLCLKS | CS_BYTEALIGNCLIENT | CS_BYTEALIGNWINDOW, 0, ::LoadIconW(nullptr, IDI_APPLICATION));
 
-	CMyRect rc;
-	rc.SetXYWH(CW_USEDEFAULT, 0, CW_USEDEFAULT, 0);
-
 	/* エディタウィンドウの作成 */
-	const auto hWnd = Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, hwndParent, 100 + nMyIndex, rc, GSTR_VIEWNAME, WS_EX_STATICEDGE);
+	const auto hWnd = Base::CreateWnd(atom, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, hWndParent, 100 + m_nMyIndex, rc, GSTR_VIEWNAME, WS_EX_STATICEDGE);
 	if (!hWnd) {
 		return FALSE;
 	}
@@ -199,8 +188,6 @@ BOOL CEditView::Create(
 		m_pcDropTarget = new CDropTarget( this );
 		m_pcDropTarget->Register_DropTarget( GetHwnd() );
 	}
-
-	::GetClientRect(hWnd, &rc);
 
 	/* 辞書Tip表示ウィンドウ作成 */
 	m_cTipWnd.Create(GetHwnd());
@@ -221,10 +208,6 @@ BOOL CEditView::Create(
 	CreateScrollBar();		// 2006.12.19 ryoji
 
 	SetFont(GetHwnd());
-
-	if( bShow ){
-		ShowWindow( GetHwnd(), SW_SHOW );
-	}
 
 	/* キーボードの現在のリピート間隔を取得 */
 	DWORD dwKeyBoardSpeed;

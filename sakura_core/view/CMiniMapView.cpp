@@ -11,10 +11,9 @@
 
 #include "doc/CEditDoc.h"
 
-BOOL CMiniMapView::Create( HWND hWndParent )
+CMiniMapView::CMiniMapView()
+	: CEditView(4, true)
 {
-	auto pcEditDoc = CEditDoc::getInstance();
-	return CEditView::Create( hWndParent, pcEditDoc, -1, FALSE, true );
 }
 
 void CMiniMapView::OnSetFocus()

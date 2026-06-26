@@ -357,7 +357,7 @@ CEditWnd::CEditWnd()
 		cLayoutMgr.GetMaxLineKetas(), CLayoutXInt(-1), &GetLogfont() );
 
 	// [0] - [3] まで作成・初期化していたものを[0]だけ作る。ほかは分割されるまで何もしない
-	m_pcEditViewArr[0] = std::make_unique<CEditView>();
+	m_pcEditViewArr[0] = std::make_unique<CEditView>(0);
 	m_pcEditView = m_pcEditViewArr[0].get();
 }
 
@@ -856,7 +856,11 @@ void CEditWnd::LayoutMiniMap( void )
 {
 	if( m_pShareData->m_Common.m_sWindow.m_bDispMiniMap ){	/* タブバーを表示する */
 		if( !m_cMiniMapView.GetHwnd() ){
-			m_cMiniMapView.Create( GetHwnd() );
+			const auto hWnd = GetHwnd();
+
+			CMyRect rc{};
+
+			m_cMiniMapView.Create(hWnd, rc);
 		}
 	}else{
 		if( m_cMiniMapView.GetHwnd() ){
@@ -1876,10 +1880,6 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 
 	/* 分割フレーム作成 */
 	if (!m_cSplitterWnd.Create(hWnd, rc)) return false;
-
-	/* ビュー */
-	GetView(0).Create( m_cSplitterWnd.GetHwnd(), GetDocument(), 0, TRUE, false);
-	GetView(0).OnSetFocus();
 
 	/* 子ウィンドウの設定 */
 	std::array<HWND, 2> hWndArr = {
@@ -4190,8 +4190,9 @@ bool CEditWnd::CreateEditViewBySplit(int nViewCount )
 	if( GetAllViewCount() < nViewCount ){
 		for( int i = GetAllViewCount(); i < nViewCount; i++ ){
 			assert( nullptr == m_pcEditViewArr[i] );
-			m_pcEditViewArr[i] = std::make_unique<CEditView>();
-			m_pcEditViewArr[i]->Create( m_cSplitterWnd.GetHwnd(), GetDocument(), i, FALSE, false );
+			m_pcEditViewArr[i] = std::make_unique<CEditView>(i);
+			CMyRect rc{};
+			m_pcEditViewArr[i]->Create(m_cSplitterWnd.GetHwnd(), rc);
 		}
 		m_nEditViewCount = nViewCount;
 

@@ -21,10 +21,7 @@ private:
 	using Me = CMiniMapView;
 
 public:
-	//コンストラクタは流用する
-	using Base::Base;
-
-	BOOL Create( HWND hWndParent );
+	CMiniMapView();
 
 	void	SetFont(HWND hWnd) override;
 

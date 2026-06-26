@@ -776,6 +776,19 @@ bool CSplitterWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		return false;
 	}
 
+	CMyRect rc{};
+	rc.SetXYWH(
+		lpCreateStruct->x,
+		lpCreateStruct->y,
+		lpCreateStruct->cx,
+		lpCreateStruct->cy
+	);
+
+	/* ビュー作成 */
+	if (!GetEditWnd().GetView(0).Create(hWnd, rc)) return false;
+
+	GetEditWnd().GetView(0).OnSetFocus();
+
 	DarkMode::setDarkWndSafe(hWnd);
 
 	return true;

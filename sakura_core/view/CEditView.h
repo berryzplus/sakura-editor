@@ -147,18 +147,15 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 public:
 	/* Constructors */
-	CEditView( void );
+	explicit CEditView(int index, bool bMiniMap = false);
 	~CEditView() override;
 
 	/* 初期化系メンバ関数 */
 	BOOL Create(
-		HWND		hwndParent,	//!< 親
-		CEditDoc*	pcEditDoc,	//!< 参照するドキュメント
-		int			nMyIndex,	//!< ビューのインデックス
-		BOOL		bShow,		//!< 作成時に表示するかどうか
-		bool		bMiniMap
+		HWND hWndParent,	//!< 親
+		const CMyRect& rc	//!< ウィンドウサイズ
 	);
-	void	Close() const override final;
+	void	Close() const final;
 	void CopyViewStatus( CEditView* ) const;					/* 自分の表示状態を他のビューにコピー */
 
 	void InvalidateRect(LPCRECT lpRect, BOOL bErase = TRUE) { ::InvalidateRect(m_hWnd, lpRect, bErase); }
