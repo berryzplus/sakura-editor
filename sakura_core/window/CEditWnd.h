@@ -142,12 +142,12 @@ public:
 	void	OnDestroy(HWND hWnd) override;
 	void	OnClose(HWND hWnd) const;
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const;
-	LRESULT OnSize(WPARAM wParam, LPARAM lParam);	/* WM_SIZE 処理 */
+	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
 	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;
-	LRESULT OnLButtonUp(WPARAM wParam, LPARAM lParam);
-	LRESULT OnLButtonDown(WPARAM wParam, LPARAM lParam);
-	LRESULT OnMouseMove(WPARAM wParam, LPARAM lParam);
+	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
+	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	BOOL DoMouseWheel( WPARAM wParam, LPARAM lParam );	// マウスホイール処理	// 2007.10.16 ryoji
 	int	OnClose(HWND hWndActive, bool bGrepNoConfirm);	/* 終了時の処理 */
 	void OnDropFiles(HDROP hDrop);	/* ファイルがドロップされた */
@@ -158,7 +158,7 @@ public:
 	void OnSysMenuTimer( void );
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);
-	LRESULT OnLButtonDblClk(WPARAM wp, LPARAM lp);
+	void	OnLButtonDblClk(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           通知                              //

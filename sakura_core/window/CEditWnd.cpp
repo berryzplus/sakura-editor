@@ -962,6 +962,14 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
+	case WM_SIZE:
+		/* WM_SIZE 処理 */
+		if (SIZE_MINIMIZED == wParam) {
+			UpdateCaption();
+		}
+		OnSize(hWnd, UINT(wParam), GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		return 0;
+
 	case WM_PAINT:
 		if (PAINTSTRUCT ps; ::BeginPaint(hWnd, &ps)) {
 			::EndPaint(hWnd, &ps);
@@ -991,13 +999,6 @@ LRESULT CEditWnd::DispatchEvent(
 	}
 
 	switch (uMsg) {
-	case WM_LBUTTONDOWN:
-		return OnLButtonDown( wParam, lParam );
-	case WM_MOUSEMOVE:
-		return OnMouseMove( wParam, lParam );
-	case WM_LBUTTONUP:
-		return OnLButtonUp( wParam, lParam );
-
 	// 2007.09.09 Moca 互換BMPによる画面バッファ
 	case WM_SHOWWINDOW:
 		if( !wParam ){
@@ -1122,14 +1123,6 @@ LRESULT CEditWnd::DispatchEvent(
 	case MYWM_SHOWOWNEDPOPUPS:
 		::ShowOwnedPopups( m_hWnd, (BOOL)wParam );	// 2007.10.22 ryoji
 		return 0L;
-
-	case WM_SIZE:
-//		MYTRACE( L"WM_SIZE\n" );
-		/* WM_SIZE 処理 */
-		if( SIZE_MINIMIZED == wParam ){
-			this->UpdateCaption();
-		}
-		return OnSize( wParam, lParam );
 
 	//From here 2003.05.31 MIK
 	case WM_MOVE:
@@ -1774,9 +1767,6 @@ LRESULT CEditWnd::DispatchEvent(
 
 	case WM_NCLBUTTONUP:
 		return OnNcLButtonUp(wParam, lParam);
-
-	case WM_LBUTTONDBLCLK:
-		return OnLButtonDblClk(wParam, lParam);
 
 #if 0
 	case WM_IME_NOTIFY:	// Nov. 26, 2006 genta
@@ -2963,9 +2953,12 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 }
 
 /* WM_SIZE 処理 */
-LRESULT CEditWnd::OnSize( WPARAM wParam, LPARAM lParam )
+void CEditWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 {
-	return OnSize2(wParam, lParam, true);
+	UNREFERENCED_PARAMETER(hWnd);
+	const auto wParam = WPARAM(state);
+	const auto lParam = MAKELPARAM(cx, cy);
+	OnSize2(wParam, lParam, true);
 }
 
 LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
@@ -3271,22 +3264,32 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 	return 0L;
 }
 
-LRESULT CEditWnd::OnLButtonDown( [[maybe_unused]] WPARAM wParam, LPARAM lParam )
+void CEditWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
+	const auto lParam = MAKELPARAM(x, y);
+
+	if (fDoubleClick) {
+		OnLButtonDblClk(hWnd, fDoubleClick, x, y, keyFlags);
+		return;
+	}
+
 	//by 鬼(2) キャプチャして押されたら非クライアントでもこっちに来る
 	if(m_IconClicked != icNone)
-		return 0;
+		return;
 
 	m_ptDragPosOrg.x = LOWORD(lParam);	// horizontal position of cursor
 	m_ptDragPosOrg.y = HIWORD(lParam);	// vertical position of cursor
 	m_bDragMode      = true;
 	SetCapture( GetHwnd() );
-
-	return 0;
 }
 
-LRESULT CEditWnd::OnLButtonUp( [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
+void CEditWnd::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(hWnd);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
+
 	//by 鬼 2002/04/18
 	if(m_IconClicked != icNone)
 	{
@@ -3296,23 +3299,23 @@ LRESULT CEditWnd::OnLButtonUp( [[maybe_unused]] WPARAM wParam, [[maybe_unused]] 
 			//by 鬼(2) タイマー(IDは適当です)
 			SetTimer(GetHwnd(), IDT_SYSMENU, GetDoubleClickTime(), nullptr);
 		}
-		return 0;
+		return;
 	}
 
 	m_bDragMode = false;
 //	MYTRACE( L"m_bDragMode = FALSE (OnLButtonUp)\n");
 	ReleaseCapture();
 	::InvalidateRect( GetHwnd(), nullptr, TRUE );
-	return 0;
 }
 
 /*!	WM_MOUSEMOVE処理
 	@date 2008.05.05 novice メモリリーク修正
 */
-LRESULT CEditWnd::OnMouseMove( WPARAM wParam, LPARAM lParam )
+void CEditWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
-	UNREFERENCED_PARAMETER(wParam);
-	UNREFERENCED_PARAMETER(lParam);
+	UNREFERENCED_PARAMETER(x);
+	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
 
 	//by 鬼
 	if(m_IconClicked != icNone)
@@ -3323,7 +3326,7 @@ LRESULT CEditWnd::OnMouseMove( WPARAM wParam, LPARAM lParam )
 			POINT pt{};
 			::GetCursorPos(&pt); //スクリーン座標
 
-			if (HTSYSMENU == ::SendMessageW(GetHwnd(), WM_NCHITTEST, 0, pt.x | (pt.y << 16))) return 0L;
+			if (HTSYSMENU == FORWARD_WM_NCHITTEST(hWnd, pt.x, pt.y, ::SendMessageW)) return;
 
 			::ReleaseCapture();
 
@@ -3336,9 +3339,7 @@ LRESULT CEditWnd::OnMouseMove( WPARAM wParam, LPARAM lParam )
 				drop.DoDragDrop(pDataObject, DROPEFFECT_COPY | DROPEFFECT_LINK);
 			}
 		}
-		return 0;
 	}
-	return 0;
 }
 
 /** マウスホイール処理
@@ -3541,24 +3542,19 @@ LRESULT CEditWnd::OnNcLButtonUp(WPARAM wp, LPARAM lp)
 	return Result;
 }
 
-LRESULT CEditWnd::OnLButtonDblClk(WPARAM wp, LPARAM lp) //by 鬼(2)
+void CEditWnd::OnLButtonDblClk(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) //by 鬼(2)
 {
-	LRESULT Result;
 	if(m_IconClicked != icNone)
 	{
 		ReleaseCapture();
 		m_IconClicked = icDoubleClicked;
 
-		SendMessage(GetHwnd(), WM_SYSCOMMAND, SC_CLOSE, 0);
-
-		Result = 0;
+		FORWARD_WM_SYSCOMMAND(hWnd, SC_CLOSE, 0, 0, ::SendMessageW);
 	}
 	else {
 		//	2004.05.23 Moca メッセージミス修正
-		Result = DefWindowProc(GetHwnd(), WM_LBUTTONDBLCLK, wp, lp);
+		FORWARD_WM_LBUTTONDOWN(hWnd, fDoubleClick, x, y, keyFlags, ::DefWindowProcW);
 	}
-
-	return Result;
 }
 
 /*! ドロップダウンメニュー(開く) */	//@@@ 2002.06.15 MIK
