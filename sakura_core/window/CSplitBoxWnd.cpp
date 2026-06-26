@@ -262,7 +262,7 @@ void CSplitBoxWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 	HBRUSH		hBrush;
 	HBRUSH		hBrushOld;
 
-	if (::GetCapture() == hWnd) {
+	if (!hWnd || ::GetCapture() == hWnd) {
 		return;
 	}
 
