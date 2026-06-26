@@ -79,7 +79,7 @@ void CViewCommander::Command_SEARCH_NEXT(
 	bool			bChangeCurRegexp,
 	bool			bRedraw,
 	bool			bReplaceAll,
-	HWND			hwndParent [[maybe_unused]],
+	HWND			hwndParent,
 	const WCHAR*	pszNotFoundMessage,
 	CLogicRange*	pcSelectLogic		//!< [out] 選択範囲のロジック版。マッチ範囲を返す。すべて置換/高速モードで使用
 )
@@ -316,20 +316,21 @@ end_of_func:;
 			if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 				KeyName.AppendString( L"..." );
 			}
-			// L"前方(↓) に文字列 '%ls' が１つも見つかりません。"
-			AlertNotFound(strprintf(LS(STR_ERR_SRNEXT3), KeyName.GetStringPtr()), bReplaceAll);
+			AlertNotFound(
+				hwndParent,
+				bReplaceAll,
+				LS(STR_ERR_SRNEXT3),
+				KeyName.GetStringPtr()
+			);
 		}
 		else{
-			AlertNotFound(pszNotFoundMessage, bReplaceAll);
+			AlertNotFound(hwndParent, bReplaceAll, L"%ls", pszNotFoundMessage);
 		}
 	}
 }
 
 /* 前を検索 */
-void CViewCommander::Command_SEARCH_PREV(
-	bool			bReDraw,
-	HWND			hwndParent [[maybe_unused]]
-)
+void CViewCommander::Command_SEARCH_PREV( bool bReDraw, HWND hwndParent )
 {
 	bool		bSelecting;
 	bool		bSelectingLock_Old = false;
@@ -472,8 +473,12 @@ end_of_func:;
 		if( (size_t)KeyName.GetStringLength() < m_pCommanderView->m_strCurSearchKey.size() ){
 			KeyName.AppendString( L"..." );
 		}
-		// L"後方(↑) に文字列 '%ls' が１つも見つかりません。"
-		AlertNotFound(strprintf(LS(STR_ERR_SRPREV3), KeyName.GetStringPtr()));
+		AlertNotFound(
+			hwndParent,
+			false,
+			LS(STR_ERR_SRPREV3),	//Jan. 25, 2001 jepro メッセージを若干変更
+			KeyName.GetStringPtr()
+		);
 	}
 	return;
 }

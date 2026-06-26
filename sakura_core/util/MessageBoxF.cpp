@@ -89,7 +89,7 @@ HWND GetMessageBoxOwner(HWND hWndOwner)
 	引数で与えられた情報をダイアログボックスで表示する．
 	デバッグ目的以外でも使用できる．
 */
-inline int VMessageBoxF(
+int VMessageBoxF(
 	HWND		hwndOwner,	//!< [in] オーナーウィンドウのハンドル
 	UINT		uType,		//!< [in] メッセージボックスのスタイル (MessageBoxと同じ形式)
 	LPCWSTR		lpCaption,	//!< [in] メッセージボックスのタイトル

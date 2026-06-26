@@ -444,7 +444,7 @@ re_do:;
 	}
 	else{
 		m_pCommanderView->SendStatusMessage( LS(STR_ERR_SRNEXT2) );
-		AlertNotFound(LS(STR_DIFF_NEXT_NOT_FOUND));
+		AlertNotFound( m_pCommanderView->GetHwnd(), false, LS(STR_DIFF_NEXT_NOT_FOUND) );
 	}
 
 	return;
@@ -495,7 +495,7 @@ re_do:;
 	}
 	else{
 		m_pCommanderView->SendStatusMessage( LS(STR_ERR_SRPREV2) );
-		AlertNotFound(LS(STR_DIFF_PREV_NOT_FOUND));
+		AlertNotFound( m_pCommanderView->GetHwnd(), false, LS(STR_DIFF_PREV_NOT_FOUND) );
 	}
 
 	return;
