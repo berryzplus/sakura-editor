@@ -167,8 +167,6 @@ protected:
 	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 
-	void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
-
 	//実装補助インターフェース
 	BOOL ReorderTab( int nSrcTab, int nDstTab );	/*!< タブ順序変更処理 */
 	void BroadcastRefreshToGroup( void );

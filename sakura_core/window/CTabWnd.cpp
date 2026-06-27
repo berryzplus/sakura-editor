@@ -859,7 +859,7 @@ LRESULT CTabWnd::DispatchEvent(
 )
 {
 	if (WM_CAPTURECHANGED == uMsg) {
-		OnCaptureChanged(hWnd, HWND(lParam));
+		m_TabCtrl.OnCaptureChanged(hWnd, HWND(lParam));
 		return 0L;
 	}
 
@@ -1209,18 +1209,6 @@ void CTabWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 
 	// 新規作成コマンドを実行する
 	::SendMessageCmd( GetParentHwnd(), WM_COMMAND, MAKEWPARAM( F_FILENEW, 0 ), (LPARAM)nullptr );
-}
-
-/*!	WM_CAPTURECHANGED処理
-	@date 2006.11.30 ryoji 新規作成
-*/
-void CTabWnd::OnCaptureChanged(HWND hWnd, HWND hWndCapture)
-{
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(hWndCapture);
-
-	if( m_TabCtrl.m_eCaptureSrc != CAPT_NONE )
-		m_TabCtrl.m_eCaptureSrc = CAPT_NONE;
 }
 
 /*!	WM_LBUTTONDOWN処理
