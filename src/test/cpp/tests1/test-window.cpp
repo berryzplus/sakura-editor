@@ -126,6 +126,12 @@ TEST_F(WndTest, OnCommand101)
 	EXPECT_THAT(pcWnd->DispatchEvent(hWnd, WM_COMMAND, 0L, 0L), IsFalse());
 }
 
+TEST_F(WndTest, OnTimer101)
+{
+	HWND hWnd = nullptr;
+	EXPECT_THAT(pcWnd->DispatchEvent(hWnd, WM_TIMER, 0L, 0L), IsFalse());
+}
+
 TEST_F(WndTest, OnMouse101)
 {
 	HWND hWnd = nullptr;
@@ -142,6 +148,11 @@ TEST_F(WndTest, OnMouse101)
 	FORWARD_WM_MBUTTONDOWN(hWnd, false, 0, 0, 0, pcWnd->DispatchEvent);
 	FORWARD_WM_MBUTTONUP(hWnd, 0, 0, 0, pcWnd->DispatchEvent);
 	FORWARD_WM_MBUTTONDOWN(hWnd, true, 0, 0, 0, pcWnd->DispatchEvent);
+}
+
+TEST(CCustomizedWnd, SubclassProc101)
+{
+	CCustomizedWnd::SubclassProc(nullptr, WM_NULL, 0L, 0L, 0L, 0L);
 }
 
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, public window::UiaTestSuite {
