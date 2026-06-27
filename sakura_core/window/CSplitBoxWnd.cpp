@@ -250,6 +250,7 @@ void CSplitBoxWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
 	UNREFERENCED_PARAMETER(x);
 	UNREFERENCED_PARAMETER(y);
+	UNREFERENCED_PARAMETER(keyFlags);
 
 	HDC			hdc;
 	int			xPos;

@@ -44,19 +44,16 @@ public:
 	static void Draw3dRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight);
 	static void FillSolidRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clr);
 
-//	LRESULT DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* メッセージディスパッチャ */
-
-protected:
 	/* 仮想関数 */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+private:
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
 
-private:
 	int			m_bVertical;	/* 垂直分割ボックスか */
 	LPCWSTR		m_CursorName;
 	int			m_nDragPosY = 0;

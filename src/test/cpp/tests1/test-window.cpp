@@ -1247,6 +1247,40 @@ TEST_F(EditWndTest, FuncKeyWnd)
 	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
 }
 
+//! 分割ボックスウィンドウのテスト
+TEST_F(EditWndTest, SplitBoxWnd)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	CVSplitBoxWnd vsplitBox;
+
+	EXPECT_THAT(vsplitBox.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	EXPECT_THAT(vsplitBox.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	FORWARD_WM_MOUSEMOVE(nullptr, 0, 0, 0, vsplitBox.DispatchEvent);
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, vsplitBox.DispatchEvent);
+	FORWARD_WM_LBUTTONUP(nullptr, 0, 0, 0, vsplitBox.DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(nullptr, true, 0, 0, 0, vsplitBox.DispatchEvent);
+
+	EXPECT_THAT(vsplitBox.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	CHSplitBoxWnd hsplitBox;
+
+	EXPECT_THAT(hsplitBox.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	EXPECT_THAT(hsplitBox.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	FORWARD_WM_MOUSEMOVE(nullptr, 0, 0, 0, hsplitBox.DispatchEvent);
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, hsplitBox.DispatchEvent);
+	FORWARD_WM_LBUTTONUP(nullptr, 0, 0, 0, hsplitBox.DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(nullptr, true, 0, 0, 0, hsplitBox.DispatchEvent);
+
+	EXPECT_THAT(hsplitBox.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 //! タブウィンドウのテスト
 TEST_F(EditWndTest, TabWnd)
 {
