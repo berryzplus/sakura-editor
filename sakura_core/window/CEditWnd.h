@@ -158,7 +158,7 @@ public:
 	void OnSysMenuTimer( void );
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);
-	void	OnLButtonDblClk(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags);
+	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           通知                              //

@@ -3293,7 +3293,7 @@ void CEditWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT ke
 	const auto lParam = MAKELPARAM(x, y);
 
 	if (fDoubleClick) {
-		OnLButtonDblClk(hWnd, fDoubleClick, x, y, keyFlags);
+		OnLButtonDblClk(hWnd, x, y, keyFlags);
 		return;
 	}
 
@@ -3566,7 +3566,7 @@ LRESULT CEditWnd::OnNcLButtonUp(WPARAM wp, LPARAM lp)
 	return Result;
 }
 
-void CEditWnd::OnLButtonDblClk(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) //by 鬼(2)
+void CEditWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) //by 鬼(2)
 {
 	if(m_IconClicked != icNone)
 	{
@@ -3577,7 +3577,7 @@ void CEditWnd::OnLButtonDblClk(HWND hWnd, bool fDoubleClick, int x, int y, UINT 
 	}
 	else {
 		//	2004.05.23 Moca メッセージミス修正
-		FORWARD_WM_LBUTTONDOWN(hWnd, fDoubleClick, x, y, keyFlags, ::DefWindowProcW);
+		FORWARD_WM_LBUTTONDOWN(hWnd, TRUE, x, y, keyFlags, ::DefWindowProcW);
 	}
 }
 
