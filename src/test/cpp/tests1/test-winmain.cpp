@@ -630,10 +630,14 @@ TEST_P(WinMainTest, runEditorProcess)
 		L"SplitWinV();"sv,
 		L"SplitWinH();"sv,
 		L"SplitWinH();"sv,
+		L"SplitWinVH();"sv,
+		L"SplitWinH();"sv,
 		L"SplitWinV();"sv,
 
 		L"SplitWinH();"sv,
 		L"SplitWinV();"sv,
+		L"SplitWinV();"sv,
+		L"SplitWinVH();"sv,
 		L"SplitWinV();"sv,
 		L"SplitWinH();"sv,
 

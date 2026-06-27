@@ -80,15 +80,17 @@ public: // 2002/2/3 aroka
 //	LRESULT DispatchEvent( HWND, UINT, WPARAM, LPARAM );	/* ダイアログのメッセージ処理 */
 	int GetAllSplitRows(){ return m_nAllSplitRows;} // 2002/2/3 aroka
 	int GetAllSplitCols(){ return m_nAllSplitCols;} // 2002/2/3 aroka
-protected:
+
 	/* 仮想関数 */
+	LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 	LRESULT DispatchEvent_WM_APP(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;/* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+private:
 	bool	OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct) override;
-	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
+	LRESULT OnSize(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
-	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
+	LRESULT OnMouseMove(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDblClk(HWND hwnd, int x, int y, UINT keyFlags) override;

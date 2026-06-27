@@ -204,8 +204,6 @@ int CSplitterWnd::HitTestSplitter( int xPos, int yPos )
 */
 void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 {
-	const auto hWnd = GetHwnd();
-
 	int					nActivePane;
 	const int			nLimit = DpiScaleX(32);
 	RECT				rc;
@@ -307,7 +305,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 //		if( NULL != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize(hWnd, 0, rc.right, rc.bottom);
+		OnSize( nullptr, 0, 0, 0 );
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 		}else
@@ -379,7 +377,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		if( nullptr != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, TRUE, bSizeBox );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize(hWnd, 0, rc.right, rc.bottom);
+		OnSize( nullptr, 0, 0, 0 );
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* 上下に分割したとき */
@@ -456,7 +454,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 //		if( NULL != pcViewArr[2] ) pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 //		if( NULL != pcViewArr[3] ) pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE );	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize(hWnd, 0, rc.right, rc.bottom);
+		OnSize( nullptr, 0, 0, 0 );
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -508,7 +506,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		if( nullptr != pcViewArr[2] ){ pcViewArr[2]->SplitBoxOnOff( FALSE, FALSE, FALSE );}	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 		if( nullptr != pcViewArr[3] ){ pcViewArr[3]->SplitBoxOnOff( FALSE, FALSE, bSizeBox );}	/* 縦・横の分割ボックスのＯＮ／ＯＦＦ */
 
-		OnSize(hWnd, 0, rc.right, rc.bottom);
+		OnSize( nullptr, 0, 0, 0 );
 
 		if( nAllSplitRowsOld == 1 && nAllSplitColsOld == 1 ){
 			/* ペインの表示状態を他のビューにコピー */
@@ -547,7 +545,7 @@ void CSplitterWnd::DoSplit( int nHorizontal, int nVertical )
 		}
 		nActivePane = m_nActivePane;
 	}
-	OnSize(hWnd, 0, rc.right, rc.bottom);
+	OnSize( nullptr, 0, 0, 0 );
 
 	/* アクティブになったことをペインに通知 */
 	if( m_ChildWndArr[nActivePane] != nullptr ){
@@ -762,6 +760,78 @@ int CSplitterWnd::GetLastPane( void )
 }
 
 /*!
+ * @brief ウィンドウのメッセージ配送
+ *
+ * @param hWnd [in] 宛先ウインドウのハンドル
+ * @param uMsg [in] メッセージコード
+ * @param wParam [in, opt] 第1パラメーター
+ * @param lParam [in, opt] 第2パラメーター
+ * @returns 処理結果 メッセージコードにより異なる
+ */
+LRESULT CSplitterWnd::DispatchEvent(
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
+)
+{
+	switch (uMsg) {
+	case WM_SIZE:
+		return OnSize(hWnd, uMsg, wParam, lParam);
+
+	case WM_MOUSEMOVE:
+		return OnMouseMove(hWnd, uMsg, wParam, lParam);
+
+	default:
+		break;
+	}
+
+	//あとはデフォルトに任せる
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
+}
+
+/*!
+ * @brief WM_PAINTハンドラ
+ *
+ * WM_PAINTはウィンドウの描画中にポストされます。
+ *
+ * @returns このメッセージに戻り値はありません。
+ * @note windowsx.h の定義が微妙なので独自に定義
+ */
+void CSplitterWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
+{
+	HDC hdc = ps.hdc;
+
+	RECT rc{};
+	::GetClientRect(hWnd, &rc);
+
+	const auto nFrameWidth = DpiScaleX(SPLITTER_FRAME_WIDTH);
+
+	RECT rcFrame{};
+
+	if( m_nAllSplitRows > 1 ){
+		::SetRect( &rcFrame, rc.left, m_nVSplitPos, rc.right, m_nVSplitPos + nFrameWidth );
+		if( IsDarkModeActive() ){
+			HBRUSH hBrush = ::CreateSolidBrush( DarkMode::getViewBackgroundColor() );
+			::FillRect( hdc, &rcFrame, hBrush );
+			::DeleteObject( hBrush );
+		}else{
+			::MyFillRect( hdc, rcFrame, COLOR_3DFACE );
+		}
+	}
+	if( m_nAllSplitCols > 1 ){
+		::SetRect( &rcFrame, m_nHSplitPos, rc.top, m_nHSplitPos + nFrameWidth, rc.bottom );
+		if( IsDarkModeActive() ){
+			HBRUSH hBrush = ::CreateSolidBrush( DarkMode::getViewBackgroundColor() );
+			::FillRect( hdc, &rcFrame, hBrush );
+			::DeleteObject( hBrush );
+		}else{
+			::MyFillRect( hdc, rcFrame, COLOR_3DFACE );
+		}
+	}
+}
+
+/*!
  * WM_CREATEハンドラ
  *
  * WM_CREATEはCreateWindowEx関数によるウインドウ作成中にポストされます。
@@ -787,6 +857,13 @@ bool CSplitterWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	/* ビュー作成 */
 	if (!GetEditWnd().GetView(0).Create(hWnd, rc)) return false;
 
+	/* 子ウィンドウの設定 */
+	std::array<HWND, 2> hWndArr = {
+		GetEditWnd().GetView(0).GetHwnd(),
+		nullptr
+	};
+	SetChildWndArr(std::data(hWndArr));
+
 	GetEditWnd().GetView(0).OnSetFocus();
 
 	DarkMode::setDarkWndSafe(hWnd);
@@ -794,24 +871,12 @@ bool CSplitterWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	return true;
 }
 
-/*!
- * @brief WM_SIZEハンドラ(ウィンドウサイズの変更処理)
- *
- * WM_SIZEはWM_WINDOWPOSCHANGEDの処理中にポストされます。
- *
- * @returns このメッセージに戻り値はありません。
- */
-void CSplitterWnd::OnSize(
-	HWND hWnd,
-	UINT state,
-	int cx,
-	int cy
-)
+/* ウィンドウサイズの変更処理 */
+LRESULT CSplitterWnd::OnSize( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, [[maybe_unused]] LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(state);
-	UNREFERENCED_PARAMETER(cx);
-	UNREFERENCED_PARAMETER(cy);
+	if (const auto hWnd = GetHwnd(); !hWnd) {
+		return 0L;
+	}
 
 	CEditWnd*	pCEditWnd = &GetEditWnd();
 	CEditView*	pcViewArr[MAXCOUNTOFVIEW];
@@ -909,62 +974,25 @@ void CSplitterWnd::OnSize(
 	}
 	//デスクトップがちらつくのでだめ!
 	//::InvalidateRect( GetHwnd(), NULL, TRUE );	//再描画してね。	//@@@ 2003.06.11 MIK
-}
-
-/*!
- * @brief WM_PAINTハンドラ
- *
- * WM_PAINTはウィンドウの描画中にポストされます。
- *
- * @returns このメッセージに戻り値はありません。
- * @note windowsx.h の定義が微妙なので独自に定義
- */
-void CSplitterWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
-{
-	HDC hdc = ps.hdc;
-
-	RECT rc{};
-	::GetClientRect(hWnd, &rc);
-
-	const auto nFrameWidth = DpiScaleX(SPLITTER_FRAME_WIDTH);
-
-	RECT rcFrame{};
-
-	if (m_nAllSplitRows > 1) {
-		::SetRect( &rcFrame, rc.left, m_nVSplitPos, rc.right, m_nVSplitPos + nFrameWidth );
-		if (IsDarkModeActive()) {
-			const auto color = DarkMode::getViewBackgroundColor();
-			MyFillRect(hdc, rcFrame, color);
-		} else {
-			MyFillRect(hdc, rcFrame, COLOR_3DFACE);
-		}
-	}
-
-	if (m_nAllSplitCols > 1) {
-		::SetRect( &rcFrame, m_nHSplitPos, rc.top, m_nHSplitPos + nFrameWidth, rc.bottom );
-		if (IsDarkModeActive()) {
-			const auto color = DarkMode::getViewBackgroundColor();
-			MyFillRect(hdc, rcFrame, color);
-		} else {
-			MyFillRect(hdc, rcFrame, COLOR_3DFACE);
-		}
-	}
+	return 0L;
 }
 
 /* マウス移動時の処理 */
-void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
+LRESULT CSplitterWnd::OnMouseMove( [[maybe_unused]] HWND hwnd, [[maybe_unused]] UINT uMsg, [[maybe_unused]] WPARAM wParam, LPARAM lParam )
 {
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	auto xPos = x;
-	auto yPos = y;
-
-	if (!hWnd) {
-		return;
-	}
+	const auto hWnd = GetHwnd();
 
 	int		nHit;
 	RECT	rc;
+	int		xPos;
+	int		yPos;
+
+	xPos = (int)(short)LOWORD(lParam);
+	yPos = (int)(short)HIWORD(lParam);
+
+	if (!hWnd) {
+		return 0L;
+	}
 
 	nHit = HitTestSplitter( xPos, yPos );
 	switch( nHit ){
@@ -998,7 +1026,9 @@ void CSplitterWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 		}
 		/* 分割トラッカーの表示 */
 		DrawSplitter( xPos, yPos, TRUE );
+//		MYTRACE( L"xPos=%d yPos=%d \n", xPos, yPos );
 	}
+	return 0L;
 }
 
 /* マウス左ボタン押下時の処理 */
@@ -1009,6 +1039,7 @@ void CSplitterWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UIN
 		return;
 	}
 
+	int		nHit;
 
 	const auto xPos = x;
 	const auto yPos = y;
@@ -1016,8 +1047,6 @@ void CSplitterWnd::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UIN
 	if (!hWnd) {
 		return;
 	}
-
-	int		nHit;
 
 	::SetFocus( GetParentHwnd() );
 	/* 分割バーへのヒットテスト */
@@ -1082,34 +1111,39 @@ void CSplitterWnd::OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags)
 {
 	UNREFERENCED_PARAMETER(keyFlags);
 
-	int nX = 0;
-	int nY = 0;
+	auto nX = 0;
+	auto nY = 0;
+
+	int	nHit;
+
+	const auto xPos = x;
+	const auto yPos = y;
 
 	if (!hWnd) {
 		return;
 	}
 
-	switch (const auto nHit = HitTestSplitter(x, y)) {
-	case 1:
-		if (1 < m_nAllSplitCols) {
+	nHit = HitTestSplitter( xPos, yPos );
+	if( nHit == 1 ){
+		if( m_nAllSplitCols == 1 ){
+			nX = 0;
+		}else{
 			nX = m_nHSplitPos;
 		}
-		DoSplit(nX , 0);
-		break;
-
-	case 2:
-		if (1 < m_nAllSplitRows){
+		DoSplit( nX , 0 );
+	}else
+	if( nHit == 2 ){
+		if( m_nAllSplitRows == 1 ){
+			nY = 0;
+		}else{
 			nY = m_nVSplitPos;
 		}
-		DoSplit(0, nY);
-		break;
-
-	default:
-		DoSplit(0, 0);
-		break;
+		DoSplit( 0 , nY );
+	}else
+	if( nHit == 3 ){
+		DoSplit( 0 , 0 );
 	}
-
-	OnMouseMove(hWnd, x, y, 0);
+	OnMouseMove( GetHwnd(), 0, 0, MAKELONG( xPos, yPos ) );
 }
 
 /* アプリケーション定義のメッセージ(WM_APP <= msg <= 0xBFFF) */

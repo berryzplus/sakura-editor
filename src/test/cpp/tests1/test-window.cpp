@@ -1281,6 +1281,28 @@ TEST_F(EditWndTest, SplitBoxWnd)
 	EXPECT_THAT(hsplitBox.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
 }
 
+//! 分割線ウィンドウのテスト
+TEST_F(EditWndTest, SpliterWnd)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	auto& splitterWnd = pcEditWnd->m_cSplitterWnd;
+
+	EXPECT_THAT(splitterWnd.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+	EXPECT_THAT(splitterWnd.DispatchEvent(nullptr, WM_SIZE, 0L, 0L), IsFalse());
+	EXPECT_THAT(splitterWnd.DispatchEvent(nullptr, WM_MOUSEMOVE, 0L, 0L), IsFalse());
+
+	EXPECT_THAT(splitterWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	FORWARD_WM_MOUSEMOVE(nullptr, 0, 0, 0, splitterWnd.DispatchEvent);
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, splitterWnd.DispatchEvent);
+	FORWARD_WM_LBUTTONUP(nullptr, 0, 0, 0, splitterWnd.DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(nullptr, true, 0, 0, 0, splitterWnd.DispatchEvent);
+
+	EXPECT_THAT(splitterWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 //! タブウィンドウのテスト
 TEST_F(EditWndTest, TabWnd)
 {

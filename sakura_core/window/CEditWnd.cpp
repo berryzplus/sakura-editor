@@ -1881,15 +1881,6 @@ bool CEditWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	/* 分割フレーム作成 */
 	if (!m_cSplitterWnd.Create(hWnd, rc)) return false;
 
-	/* 子ウィンドウの設定 */
-	std::array<HWND, 2> hWndArr = {
-		GetView(0).GetHwnd(),
-		nullptr
-	};
-	m_cSplitterWnd.SetChildWndArr(std::data(hWndArr));
-
-	MY_TRACETIME( cRunningTimer, L"View created" );
-
 	// -- -- -- -- 各種バー作成 -- -- -- -- //
 
 	// メインメニュー
