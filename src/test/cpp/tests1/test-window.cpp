@@ -1363,6 +1363,36 @@ TEST_F(EditWndTest, TabWnd)
 	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
 }
 
+//! 辞書Tipウィンドウのテスト
+TEST_F(EditWndTest, TipWnd)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	auto& tipWnd = pcEditWnd->GetView(0).m_cTipWnd;
+
+	EXPECT_THAT(tipWnd.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	tipWnd.Create(nullptr);
+
+	tipWnd.m_cKey = L"辞書キーワード(見出し)";
+	tipWnd.m_cInfo = L"辞書キーワードの説明\\nこの文字列には改行が含まれる可能性がある。";
+
+	tipWnd.GetWindowSize(nullptr);
+
+	CMyRect rc{};
+	tipWnd.GetWindowSize(&rc);
+
+	tipWnd.Show(100, 100);
+
+	const auto hWnd = tipWnd.GetHwnd();
+	::ShowWindow(hWnd, SW_SHOW);
+	::UpdateWindow(hWnd);
+
+	tipWnd.Hide();
+
+	tipWnd.Close();
+}
+
 /*!
  * CEditDoc::GetDataObjectのテスト
  */
