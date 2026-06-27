@@ -46,7 +46,13 @@ public:
 	struct TabCtrl final : public TCustomizedCtrl<CTabWnd> {
 		explicit TabCtrl(CTabWnd& tabWnd) : TCustomizedCtrl(tabWnd) {}
 
-		void	BreakDrag( void ) { if (::GetCapture() == m_hwndTab) ::ReleaseCapture(); m_eDragState = DRAG_NONE; m_nTabCloseCapture = -1; }	/*!< ドラッグ状態解除処理 */
+		HWND	GetParentHwnd() const noexcept { return m_ParentWnd.GetHwnd(); }
+
+		LRESULT DefTabWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) const {
+			return DefWndProcW(hWnd, uMsg, wParam, lParam);
+		}
+
+		void	BreakDrag(HWND hWnd = nullptr, bool fDoubleClick = false, int x = 0, int y = 0, UINT keyFlags = 0);
 		LRESULT	ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
 		void	GetTabCloseBtnRect( const LPRECT lprcClient, LPRECT lprc, bool selected );	/*!< タブを閉じるボタンの矩形取得処理 */	// 2012.04.14 syat
 
@@ -65,15 +71,18 @@ public:
 		void	DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool selected, bool bHover );	/*!< タブを閉じるボタン描画処理 */		// 2012.04.14 syat
 		void	DrawTopBand( const CGraphics& gr, const RECT& rcClient, int nTabIndex ) const;
 
+		void	BroadcastRefreshToGroup() { m_ParentWnd.BroadcastRefreshToGroup(); }
+		void	Refresh( BOOL bEnsureVisible = TRUE, BOOL bRebuild = FALSE ) { m_ParentWnd.Refresh(bEnsureVisible, bRebuild); }
+		BOOL	ReorderTab( int nSrcTab, int nDstTab ) { return m_ParentWnd.ReorderTab(nSrcTab, nDstTab); }
+		BOOL	SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptDrop ) { return m_ParentWnd.SeparateGroup(hwndSrc, hwndDst, ptDrag, ptDrop); }
+
 		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 		void	OnTimer(HWND hWnd, UINT id) override;
-		void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
-		void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
-		void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
-		void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
+		LRESULT	OnMouseMove(WPARAM wParam, LPARAM lParam);
+		LRESULT	OnLButtonDown(WPARAM wParam, LPARAM lParam);
+		LRESULT	OnLButtonUp(WPARAM wParam, LPARAM lParam);
 		void	OnRButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
-		void	OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 		void	OnMButtonUp(HWND hWnd, int x, int y, UINT keyFlags);
 		void	OnCaptureChanged(HWND hWnd, HWND hWndCapture);
 
@@ -99,7 +108,6 @@ public:
 		int				m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
 		bool			m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
 		int				m_nTabCloseCapture = -1;		//!< 閉じるボタンがマウス押下されているタブ（無いときは-1）
-
 	};
 
 	TabCtrl			m_TabCtrl{ *this };
@@ -139,7 +147,7 @@ public:
 	}
 	void UpdateStyle();
 	void UpdateTheme();		/*!< ダークモード切替時のテーマ更新 */
-protected:
+
 	/*
 	|| 実装ヘルパ系
 	*/
@@ -189,10 +197,11 @@ protected:
 		return ::CreateFontIndirect( &ncm.lfMenuFont );
 	}
 
+	int		SetCarmWindowPlacement( HWND hwnd, const WINDOWPLACEMENT* pWndpl ) { return m_TabCtrl.SetCarmWindowPlacement(hwnd, pWndpl); }
+
 	/*
 	|| メンバ変数
 	*/
-public:
 	DLLSHAREDATA*	m_pShareData = &GetDllShareData();	/*!< 共有データ */
 	FontHolder		m_hFont = nullptr;			//!< 表示用フォント
 	HWND			m_hwndTab = nullptr;		/*!< タブコントロール */
@@ -200,7 +209,6 @@ public:
 	WCHAR			m_szTextTip[1024];	/*!< ツールチップのテキスト（タブ用） */
 	ETabPosition	m_eTabPosition = TabPosition_None;	//!< タブ表示位置
 
-private:
 	ImageListHolder	m_hIml = nullptr;					//!< イメージリスト
 	HICON		m_hIconApp;				//!< アプリケーションアイコン
 	HICON		m_hIconGrep;			//!< Grepアイコン

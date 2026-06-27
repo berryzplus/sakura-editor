@@ -1232,6 +1232,66 @@ TEST_F(EditWndTest, AutoScrollEnter)
 	pcEditWnd->GetView(0)._SetHwnd(nullptr);
 }
 
+//! タブウィンドウのテスト
+TEST_F(EditWndTest, TabWnd)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	auto& tabWnd = pcEditWnd->m_cTabWnd;
+
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_TIMER, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_TIMER, 1, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_MOUSEMOVE, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, tabWnd.DispatchEvent);
+	FORWARD_WM_LBUTTONUP(nullptr, 0, 0, 0, tabWnd.DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(nullptr, true, 0, 0, 0, tabWnd.DispatchEvent);
+
+	FORWARD_WM_RBUTTONDOWN(nullptr, false, 0, 0, 0, tabWnd.DispatchEvent);
+
+	EXPECT_THAT(tabWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	WINDOWPLACEMENT wp{};
+	tabWnd.SetCarmWindowPlacement(nullptr, &wp);
+
+	auto& tabCtrl = tabWnd.m_TabCtrl;
+
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_TIMER, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_TIMER, 1, 0L), IsFalse());
+
+	FORWARD_WM_MOUSEMOVE(nullptr, 0, 0, 0, tabCtrl.DispatchEvent);
+
+	FORWARD_WM_LBUTTONDOWN(nullptr, false, 0, 0, 0, tabCtrl.DispatchEvent);
+	FORWARD_WM_LBUTTONUP(nullptr, 0, 0, 0, tabCtrl.DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(nullptr, true, 0, 0, 0, tabCtrl.DispatchEvent);
+
+	FORWARD_WM_RBUTTONDOWN(nullptr, false, 0, 0, 0, tabCtrl.DispatchEvent);
+	FORWARD_WM_RBUTTONUP(nullptr, 0, 0, 0, tabCtrl.DispatchEvent);
+
+	FORWARD_WM_MBUTTONDOWN(nullptr, false, 0, 0, 0, tabCtrl.DispatchEvent);
+	FORWARD_WM_MBUTTONUP(nullptr, 0, 0, 0, tabCtrl.DispatchEvent);
+
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_HSCROLL, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_CAPTURECHANGED, 0L, 0L), IsFalse());
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_THEMECHANGED, 0L, 0L), IsFalse());
+
+	tabCtrl.DefTabWndProc(nullptr, WM_NULL, 0L, 0L);
+
+	tabCtrl.BroadcastRefreshToGroup();
+	tabCtrl.Refresh(FALSE, FALSE);
+	tabCtrl.ReorderTab(-1, 0);
+	tabCtrl.SeparateGroup(nullptr, nullptr, POINT{}, POINT{});
+
+	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 /*!
  * CEditDoc::GetDataObjectのテスト
  */

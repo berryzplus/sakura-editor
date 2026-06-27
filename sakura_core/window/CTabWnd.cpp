@@ -100,23 +100,28 @@ LRESULT CTabWnd::TabCtrl::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 	{
 // clang-format off
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
-	HANDLE_MSG(hWnd, WM_MOUSEMOVE,						OnMouseMove);
-	HANDLE_MSG(hWnd, WM_LBUTTONDOWN,					OnLButtonDown);
-	HANDLE_MSG(hWnd, WM_LBUTTONUP,						OnLButtonUp);
-	HANDLE_MSG(hWnd, WM_LBUTTONDBLCLK,					OnLButtonDown);
-	HANDLE_MSG(hWnd, WM_RBUTTONDOWN,					OnRButtonDown);
+	HANDLE_MSG(hWnd, WM_RBUTTONDOWN,					BreakDrag);
 	HANDLE_MSG(hWnd, WM_RBUTTONUP,						OnRButtonUp);
-	HANDLE_MSG(hWnd, WM_MBUTTONDOWN,					OnMButtonDown);
+	HANDLE_MSG(hWnd, WM_MBUTTONDOWN,					BreakDrag);
 	HANDLE_MSG(hWnd, WM_MBUTTONUP,						OnMButtonUp);
 // clang-format on
-
-	case WM_CAPTURECHANGED:
-		OnCaptureChanged(hWnd, HWND(lParam));
-		return 0L;
 
 	case WM_HSCROLL:
 		::InvalidateRect( GetHwnd(), nullptr, TRUE );	// アクティブタブの位置が変わるのでトップバンドを更新する	// 2006.03.27 ryoji
 		break;
+
+	case WM_MOUSEMOVE:
+		return OnMouseMove(wParam, lParam);
+
+	case WM_LBUTTONDOWN:
+		return OnLButtonDown(wParam, lParam);
+
+	case WM_LBUTTONUP:
+		return OnLButtonUp(wParam, lParam);
+
+	case WM_CAPTURECHANGED:
+		OnCaptureChanged(hWnd, HWND(lParam));
+		return 0L;
 
 	case WM_THEMECHANGED:
 		m_bVisualStyle = ::IsVisualStyle();
@@ -131,21 +136,15 @@ LRESULT CTabWnd::TabCtrl::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 }
 
 /*! タブ部 WM_LBUTTONDOWN 処理 */
-void CTabWnd::TabCtrl::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
+LRESULT CTabWnd::TabCtrl::OnLButtonDown([[maybe_unused]] WPARAM wParam, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	const auto lParam = MAKELPARAM(x, y);
-
 	// ボタンが押された位置を確認する
 	TCHITTESTINFO hitinfo;
 	hitinfo.pt.x = LOWORD( (DWORD)lParam );
 	hitinfo.pt.y = HIWORD( (DWORD)lParam );
 	int nSrcTab = TabCtrl_HitTest( m_hwndTab, (LPARAM)&hitinfo );
 	if( 0 > nSrcTab )
-		return;
+		return 1L;
 
 	// タブの閉じるボタン押下処理
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabClose ){
@@ -158,7 +157,7 @@ void CTabWnd::TabCtrl::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y,
 			// 閉じるボタン上ならキャプチャ開始
 			m_nTabCloseCapture = nSrcTab;
 			::SetCapture( m_hwndTab );
-			return;
+			return 0L;
 		}
 	}
 
@@ -171,22 +170,17 @@ void CTabWnd::TabCtrl::OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y,
 
 	::SetCapture( m_hwndTab );
 
-	return;
+	return 0L;
 }
 
 /*! タブ部 WM_LBUTTONUP 処理 */
-void CTabWnd::TabCtrl::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
+LRESULT CTabWnd::TabCtrl::OnLButtonUp(WPARAM wParam, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	const auto lParam = MAKELPARAM(x, y);
-
 	TCHITTESTINFO	hitinfo;
 	hitinfo.pt.x = LOWORD( (DWORD)lParam );
 	hitinfo.pt.y = HIWORD( (DWORD)lParam );
 	int nDstTab = TabCtrl_HitTest( m_hwndTab, (LPARAM)&hitinfo );
-	int nSelfTab = FindTabIndexByHWND( m_ParentWnd.GetParentHwnd() );
+	int nSelfTab = FindTabIndexByHWND( GetParentHwnd() );
 
 	// タブの閉じるボタン押下処理
 	if( m_nTabCloseCapture >= 0 ){	// タブ内の閉じるボタンが押し下げられていた?
@@ -200,7 +194,7 @@ void CTabWnd::TabCtrl::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 		}
 		// キャプチャ解除
 		BreakDrag();
-		return;
+		return 0L;
 	}
 
 	// マウスドロップ処理
@@ -229,7 +223,7 @@ void CTabWnd::TabCtrl::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 
 				::GetCursorPos( &ptCursor );
 				hwndAncestor = MyGetAncestor( ::WindowFromPoint( ptCursor ), GA_ROOT );
-				if( hwndAncestor != m_ParentWnd.GetParentHwnd() )	// 自画面の外でドロップ
+				if( hwndAncestor != GetParentHwnd() )	// 自画面の外でドロップ
 				{
 					// タブ移動
 					TCITEM	tcitem;
@@ -239,13 +233,13 @@ void CTabWnd::TabCtrl::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 					HWND hwndSrc = (HWND)tcitem.lParam;
 					HWND hwndDst = IsSakuraMainWindow( hwndAncestor )? hwndAncestor: nullptr;
 
-					m_ParentWnd.SeparateGroup( hwndSrc, hwndDst, m_ptSrcCursor, ptCursor );
+					SeparateGroup( hwndSrc, hwndDst, m_ptSrcCursor, ptCursor );
 				}
 			}
 		}
 		if ( m_bTabSwapped ) {
 			// タブは移動済み。ほかのウィンドウのみ更新
-			m_ParentWnd.BroadcastRefreshToGroup();
+			BroadcastRefreshToGroup();
 		}
 		if( m_nTabBorderArray ){
 			delete[] m_nTabBorderArray;
@@ -259,14 +253,13 @@ void CTabWnd::TabCtrl::OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 	}
 
 	BreakDrag();	// 2006.01.28 ryoji ドラッグ状態を解除する(関数化)
+
+	return 0L;
 }
 
 /*! タブ部 WM_MOUSEMOVE 処理 */
-void CTabWnd::TabCtrl::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
+LRESULT CTabWnd::TabCtrl::OnMouseMove(WPARAM wParam, LPARAM lParam)
 {
-	const auto wParam = WPARAM(keyFlags);
-	const auto lParam = MAKELPARAM(x, y);
-
 	TCHITTESTINFO	hitinfo;
 	int i;
 	int nTabCount = TabCtrl_GetItemCount(m_hwndTab);
@@ -400,8 +393,8 @@ void CTabWnd::TabCtrl::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 				{
 					// TABまとめる => 自分だけ更新して後でRefresh通知
 					// TABまとめない場合は、Refresh通知をした方がいいがマウスキャプチャが終了するので、まとめると同じ動きにする
-					m_ParentWnd.ReorderTab( m_nSrcTab, nDstTab );
-					m_ParentWnd.Refresh( FALSE );
+					ReorderTab( m_nSrcTab, nDstTab );
+					Refresh( FALSE );
 					if( m_nTabHover == m_nSrcTab ){
 						m_nTabHover = nDstTab;	// 自動表示の閉じるボタンも一緒に移動する
 					}
@@ -411,7 +404,7 @@ void CTabWnd::TabCtrl::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 
 					// 今回の WM_MOUSEMOVE が移動後のタブ上で発生したかのように偽装してマウスオーバーハイライトも移動する
 					TabCtrl_GetItemRect(m_hwndTab, nDstTab, &rc);
-					DefWndProcW( m_hwndTab, WM_MOUSEMOVE, wParam, MAKELPARAM((rc.left + rc.right) / 2, HIWORD(lParam)) );
+					DefTabWndProc( m_hwndTab, WM_MOUSEMOVE, wParam, MAKELPARAM((rc.left + rc.right) / 2, HIWORD(lParam)) );
 				}
 			}
 		}
@@ -424,7 +417,7 @@ void CTabWnd::TabCtrl::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 
 				::GetCursorPos( &ptCursor );
 				hwndAncestor = MyGetAncestor( ::WindowFromPoint( ptCursor ), GA_ROOT );
-				if( hwndAncestor != m_ParentWnd.GetParentHwnd() )	// 自画面の外にカーソルがある
+				if( hwndAncestor != GetParentHwnd() )	// 自画面の外にカーソルがある
 				{
 					if( IsSakuraMainWindow( hwndAncestor ) )
 						lpCursorName = MAKEINTRESOURCE(IDC_CURSOR_TAB_JOIN);	// 結合カーソル
@@ -445,9 +438,10 @@ void CTabWnd::TabCtrl::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 		break;
 
 	default:
-		CCustomizedWnd::OnMouseMove(hWnd, x, y, keyFlags);
-		break;
+		return 1L;
 	}
+
+	return 0L;
 }
 
 /*! タブ部 WM_TIMER 処理 */
@@ -477,8 +471,12 @@ void CTabWnd::TabCtrl::OnCaptureChanged(HWND hWnd, HWND hWndCapture)
 		m_eDragState = DRAG_NONE;
 }
 
-/*! タブ部 WM_RBUTTONDOWN 処理 */
-void CTabWnd::TabCtrl::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
+/*!
+ * @brief ドラッグ状態解除処理
+ *
+ * @date 2006.01.28 ryoji ドラッグ状態を解除する(関数化)
+ */
+void CTabWnd::TabCtrl::BreakDrag(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
 {
 	UNREFERENCED_PARAMETER(hWnd);
 	UNREFERENCED_PARAMETER(fDoubleClick);
@@ -486,9 +484,12 @@ void CTabWnd::TabCtrl::OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y,
 	UNREFERENCED_PARAMETER(y);
 	UNREFERENCED_PARAMETER(keyFlags);
 
-	BreakDrag();	// 2006.01.28 ryoji ドラッグ状態を解除する(関数化)
+	if (::GetCapture() == m_hwndTab)
+		::ReleaseCapture();
 
-	return;	// 2006.01.28 ryoji OnTabMButtonDown にあわせて 0 を返すように変更
+	m_eDragState = DRAG_NONE;
+
+	m_nTabCloseCapture = -1;
 }
 
 /*! タブ部 WM_RBUTTONUP 処理 */
@@ -499,24 +500,10 @@ void CTabWnd::TabCtrl::OnRButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 
 	const auto lParam = MAKELPARAM(x, y);
 
+	if (!hWnd) return;
+
 	// 2006.01.28 ryoji タブのカスタムメニュー表示コマンドを実行する(関数化)
 	ExecTabCommand( F_CUSTMENU_BASE + CUSTMENU_INDEX_FOR_TABWND, MAKEPOINTS(lParam) );
-}
-
-/*! タブ部 WM_MBUTTONDOWN 処理
-	@date 2006.01.28 ryoji 新規作成
-*/
-void CTabWnd::TabCtrl::OnMButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags)
-{
-	UNREFERENCED_PARAMETER(hWnd);
-	UNREFERENCED_PARAMETER(fDoubleClick);
-	UNREFERENCED_PARAMETER(x);
-	UNREFERENCED_PARAMETER(y);
-	UNREFERENCED_PARAMETER(keyFlags);
-
-	BreakDrag();	// 2006.01.28 ryoji ドラッグ状態を解除する(関数化)
-
-	return;	// フォーカスがタブに移らないよう、ここでは 0 を返す
 }
 
 /*! タブ部 WM_MBUTTONUP 処理
@@ -528,6 +515,8 @@ void CTabWnd::TabCtrl::OnMButtonUp(HWND hWnd, int x, int y, UINT keyFlags)
 	UNREFERENCED_PARAMETER(keyFlags);
 
 	const auto lParam = MAKELPARAM(x, y);
+
+	if (!hWnd) return;
 
 	// ウィンドウを閉じるコマンドを実行する
 	ExecTabCommand( F_WINCLOSE, MAKEPOINTS(lParam) );
@@ -689,7 +678,7 @@ BOOL CTabWnd::SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptD
 			}
 		}
 
-		m_TabCtrl.SetCarmWindowPlacement( hwndSrc, &wp );
+		SetCarmWindowPlacement( hwndSrc, &wp );
 	}
 	else
 	{	// 既存グループのウィンドウ処理
@@ -704,7 +693,7 @@ BOOL CTabWnd::SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptD
 			::GetWindowPlacement( hwndDst, &wp );
 			if( wp.showCmd == SW_SHOWMINIMIZED )
 				wp.showCmd = showCmdRestore;
-			m_TabCtrl.SetCarmWindowPlacement( hwndSrc, &wp );
+			SetCarmWindowPlacement( hwndSrc, &wp );
 			::ShowWindow( hwndDst, SW_HIDE );	// 移動先の以前の先頭ウィンドウを消す
 		}
 	}
@@ -932,10 +921,7 @@ bool CTabWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		LPVOID(this)
 	);
 
-	if (!m_hwndTab)
-	{
-		return false;
-	}
+	if (!m_hwndTab) return false;
 
 	m_TabCtrl.Attach(m_hwndTab);
 
@@ -962,10 +948,7 @@ bool CTabWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		nullptr
 	);
 
-	if (!m_hwndToolTip)
-	{
-		return false;
-	}
+	if (!m_hwndToolTip) return false;
 
 	// ツールチップをマルチライン可能にする（SHRT_MAX: Win95でINT_MAXだと表示されない）	// 2007.03.03 ryoji
 	ApiWrap::Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
@@ -1016,7 +999,7 @@ void CTabWnd::OnDestroy(HWND hWnd)
 	m_TabCtrl.Detach(m_hwndTab);
 
 	//タブコントロールを削除
-	if (m_hwndTab)
+	if( m_hwndTab )
 	{
 		::DestroyWindow( m_hwndTab );
 		m_hwndTab = nullptr;
@@ -1584,9 +1567,15 @@ void CTabWnd::OnDrawItem(HWND hWnd, const DRAWITEMSTRUCT* lpDrawItem)
 	@date 2006.02.01 ryoji 新規作成
 	@date 2007.03.05 ryoji ボタンの出入りでツールチップを更新する
 */
-void CTabWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags [[maybe_unused]])
+void CTabWnd::OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags)
 {
+	UNREFERENCED_PARAMETER(keyFlags);
+
 	const auto hwnd = hWnd;
+
+	if (!hwnd) {
+		return;
+	}
 
 	// カーソルがウィンドウ内に入ったらタイマー起動
 	// ウィンドウ外に出たらタイマー削除
