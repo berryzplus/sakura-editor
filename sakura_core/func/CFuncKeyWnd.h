@@ -62,7 +62,7 @@ private:
 	int				m_nTimerCount = 0;
 	int				m_nButtonGroupNum; // Openで初期化
 	EFunctionCode	m_nFuncCodeArr[12]; // Open->CreateButtonsで初期化
-protected:
+
 	/*
 	|| 実装ヘルパ系
 	*/

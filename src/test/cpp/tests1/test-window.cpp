@@ -1232,6 +1232,21 @@ TEST_F(EditWndTest, AutoScrollEnter)
 	pcEditWnd->GetView(0)._SetHwnd(nullptr);
 }
 
+//! ファンクションキーウィンドウのテスト
+TEST_F(EditWndTest, FuncKeyWnd)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	auto& funcKeyWnd = pcEditWnd->m_cFuncKeyWnd;
+
+	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_CREATE, 0L, 0L), IsTrue());	// 戻り値は反転される
+
+	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_COMMAND, 0L, 0L), IsFalse());
+	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_TIMER, 0L, 0L), IsFalse());
+
+	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 //! タブウィンドウのテスト
 TEST_F(EditWndTest, TabWnd)
 {
