@@ -72,6 +72,78 @@ void SelectAndOpenFiles(
 
 bool SelectAndOpenFilesFromMruFolder(int mruFolderIndex);
 
+struct WndTest : public ::testing::Test {
+	using CWndHolder = std::unique_ptr<CWnd>;
+
+	static inline CWndHolder pcWnd = nullptr;
+
+	/*!
+	 * テストスイートの開始前に1回だけ呼ばれる関数
+	 */
+	static void SetUpTestSuite()
+	{
+		pcWnd = std::make_unique<CWnd>();
+	}
+
+	/*!
+	 * テストスイートの終了後に1回だけ呼ばれる関数
+	 */
+	static void TearDownTestSuite()
+	{
+		pcWnd = nullptr;
+	}
+};
+
+TEST_F(WndTest, DefWndProcW101)
+{
+	HWND hWnd = nullptr;
+	pcWnd->DefWndProcW(hWnd, WM_NULL, 0L, 0L);
+}
+
+TEST_F(WndTest, OnDestroy101)
+{
+	HWND hWnd = nullptr;
+	EXPECT_THAT(pcWnd->DispatchEvent(hWnd, WM_DESTROY, 0L, 0L), IsFalse());
+}
+
+TEST_F(WndTest, OnDrawItem101)
+{
+	HWND hWnd = nullptr;
+	DRAWITEMSTRUCT dis{};
+	FORWARD_WM_DRAWITEM(hWnd, &dis, pcWnd->DispatchEvent);
+}
+
+TEST_F(WndTest, OnMeasureItem101)
+{
+	HWND hWnd = nullptr;
+	MEASUREITEMSTRUCT mis{};
+	FORWARD_WM_MEASUREITEM(hWnd, &mis, pcWnd->DispatchEvent);
+}
+
+TEST_F(WndTest, OnCommand101)
+{
+	HWND hWnd = nullptr;
+	EXPECT_THAT(pcWnd->DispatchEvent(hWnd, WM_COMMAND, 0L, 0L), IsFalse());
+}
+
+TEST_F(WndTest, OnMouse101)
+{
+	HWND hWnd = nullptr;
+	FORWARD_WM_MOUSEMOVE(hWnd, 0, 0, 0, pcWnd->DispatchEvent);
+
+	FORWARD_WM_LBUTTONDOWN(hWnd, false, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_LBUTTONUP(hWnd, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_LBUTTONDOWN(hWnd, true, 0, 0, 0, pcWnd->DispatchEvent);
+
+	FORWARD_WM_RBUTTONDOWN(hWnd, false, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_RBUTTONUP(hWnd, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_RBUTTONDOWN(hWnd, true, 0, 0, 0, pcWnd->DispatchEvent);
+
+	FORWARD_WM_MBUTTONDOWN(hWnd, false, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_MBUTTONUP(hWnd, 0, 0, 0, pcWnd->DispatchEvent);
+	FORWARD_WM_MBUTTONDOWN(hWnd, true, 0, 0, 0, pcWnd->DispatchEvent);
+}
+
 struct TrayWndTest : public ::testing::Test, public env::ShareDataTestSuite, public window::UiaTestSuite {
 	using CControlTrayHolder = std::unique_ptr<CControlTray>;
 
@@ -164,6 +236,11 @@ TEST_F(TrayWndTest, OpenNewEditor2101)
 TEST_F(TrayWndTest, WndProc101)
 {
 	EXPECT_THAT(CControlTray::WndProc(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
+TEST_F(TrayWndTest, GetAppInstance101)
+{
+	EXPECT_THAT(pcTrayWnd->GetAppInstance(), IsNull());
 }
 
 TEST_F(TrayWndTest, OnCreate101)
