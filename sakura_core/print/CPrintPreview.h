@@ -39,6 +39,9 @@ private:
 	using Base = CCustomizedWnd;
 	using Me = CPrintPreview;
 
+	using Base::OnSize;
+	using Base::OnMouseMove;
+
 	static constexpr auto COMPAT_BMP_BASE =      1;   /* COMPAT_BMP_SCALEピクセル幅を複写する画面ピクセル幅 */
 	static constexpr auto COMPAT_BMP_SCALE =     2;   /* 互換BMPのCOMPAT_BMP_BASEに対する倍率(1以上の整数倍) */
 
@@ -47,8 +50,8 @@ public:
 	/*
 	||  コンストラクタ
 	*/
-	CPrintPreview( class CEditWnd* pParentWnd );
-	~CPrintPreview();
+	explicit CPrintPreview(class CEditWnd* pParentWnd);
+	~CPrintPreview() override;
 
 	LRESULT DispatchEvent(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) override;
 
@@ -56,11 +59,11 @@ public:
 	||	イベント
 	*/
 	//	Window Messages
-	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;
+	LRESULT OnSize(WPARAM wParam, LPARAM lParam);				/* WM_SIZE 処理 */
 	void	OnPaint(HWND hWnd, PAINTSTRUCT& ps) override;
 	LRESULT OnVScroll( WPARAM wParam, LPARAM lParam );
 	LRESULT OnHScroll( WPARAM wParam, LPARAM lParam );
-	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
+	LRESULT OnMouseMove( WPARAM wParam, LPARAM lParam );
 	LRESULT OnMouseWheel( WPARAM wParam, LPARAM lParam );
 
 	//	User Messages
@@ -108,7 +111,7 @@ public:
 		LPARAM	lParam 		// second message parameter
 	);
 
-protected:
+private:
 	/*
 	||	描画。
 	||	DrawXXXXX()は、現在のフォントを半角フォントに設定してから呼び出すこと。
@@ -182,21 +185,12 @@ public:
 	int  GetCurPageNum(){ return m_nCurPageNum; }	/* 現在のページ */
 	int  GetAllPageNum(){ return m_nAllPageNum; }	/* 現在のページ */
 
-	/*
-	||	ヘッダー・フッター
-	*/
-	void SetHeader(char* pszWork[]);	//	&fなどを登録
-	void SetFooter(char* pszWork[]);	//	&p/&Pなどを登録
-
-protected:
+private:
 	void SetPreviewFontHan( const LOGFONT* lf );
 	void SetPreviewFontZen( const LOGFONT* lf );
 
 /* メンバ変数宣言 */
 public:
-	/* none */
-
-protected:
 	CEditWnd*		m_pParentWnd;	//	親のCEditDoc*。
 
 	// 2006.08.17 Moca YAZAKIさんのメモの通りDC/BMPをCEditDocからCPrintPreviewへ移動
@@ -258,9 +252,8 @@ protected:
 
 	CColorStrategyPool*	m_pool;					// 色定義管理情報
 
-public:
 	class CLayoutMgr*	m_pLayoutMgr_Print;		/* 印刷用のレイアウト管理情報 */
-protected:
+
 	STypeConfig m_typePrint;
 
 	// プレビューから出ても現在のプリンター情報を記憶しておけるようにstaticにする 2003.05.02 かろと

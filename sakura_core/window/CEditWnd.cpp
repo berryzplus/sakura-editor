@@ -2880,6 +2880,10 @@ void CEditWnd::PrintPreviewModeONOFF( void )
 	// 2006.06.17 ryoji Rebar があればそれをツールバー扱いする
 	hwndToolBar = (nullptr != m_cToolbar.GetRebarHwnd())? m_cToolbar.GetRebarHwnd(): m_cToolbar.GetToolbarHwnd();
 
+	if (!hWnd) {
+		return;
+	}
+
 	/* 印刷プレビューモードか */
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更
 	if( m_pPrintPreview ){

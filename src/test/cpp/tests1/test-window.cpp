@@ -1261,6 +1261,29 @@ TEST_F(EditWndTest, FuncKeyWnd)
 	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
 }
 
+//! 印刷プレビューのテスト
+TEST_F(EditWndTest, PrintPreview)
+{
+	// 本来はちゃんとテストすべきだが、大変なので簡易版テストを用意する
+
+	auto pPrintPreview = std::make_unique<CPrintPreview>(GetEditWndPtr());
+	auto& printPreview = *pPrintPreview;
+
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_SIZE, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_SETFOCUS, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_SYSCOMMAND, SC_CLOSE, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_SYSCOMMAND, SC_MINIMIZE, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_VSCROLL, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_HSCROLL, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_MOUSEMOVE, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_MOUSEWHEEL, 0L, 0L), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, MYWM_CHANGESETTING, 0L, int(PM_PRINTSETTING)), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, MYWM_CHANGESETTING, 0L, int(PM_CHANGESETTING_ALL)), IsFalse());
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, MYWM_SAVEEDITSTATE, 0L, 0L), IsFalse());
+
+	EXPECT_THAT(printPreview.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+}
+
 //! 分割ボックスウィンドウのテスト
 TEST_F(EditWndTest, SplitBoxWnd)
 {
