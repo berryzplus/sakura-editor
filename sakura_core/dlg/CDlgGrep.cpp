@@ -386,7 +386,7 @@ LRESULT CDlgGrep::FolderCombo::DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam
 		if( IsFileExists( sPath, true )){	//	第2引数がtrueだとディレクトリは対象外
 			SFilePath szWork;
 			SplitPath_FolderAndFile( sPath, szWork, nullptr );
-			sPath = szWork;
+			wcscpy( sPath, szWork );
 		}
 
 		SetGrepFolder(hwnd, sPath);

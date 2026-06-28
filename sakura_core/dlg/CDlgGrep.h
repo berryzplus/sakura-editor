@@ -32,6 +32,12 @@
 //! GREPダイアログボックス
 class CDlgGrep : public CDialog
 {
+private:
+	using Base = CDialog;
+	using Me = CDlgGrep;
+
+	using Base::DoModal;
+
 public:
 	struct FolderCombo final : public CCustomizedWnd {
 		LRESULT DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
@@ -48,7 +54,6 @@ public:
 	CNativeW GetPackedGFileString() const;	//!< 除外ファイル、除外フォルダーの設定を "-GFILE=" の設定に pack する
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
 	int DoModal( HINSTANCE, HWND, const WCHAR* );	/* モーダルダイアログの表示 */
-//	HWND DoModeless( HINSTANCE, HWND, const char* );	/* モードレスダイアログの表示 */
 
 	bool		m_bEnableThisText;
 	bool		m_bSelectOnceThisText;
@@ -91,7 +96,6 @@ public:
 	int GetData( void ) override;	/* ダイアログデータの取得 */
 	void SetDataFromThisText(bool bChecked);	/* 現在編集中ファイルから検索チェックでの設定 */
 
-public:
 	RecentCombo m_Text{ IDC_COMBO_TEXT, m_cRecentSearch, true };
 	RecentCombo m_File{ IDC_COMBO_FILE, m_cRecentGrepFile, true };
 	RecentCombo m_Folder2{ IDC_COMBO_FOLDER, m_cRecentGrepFolder, true };
