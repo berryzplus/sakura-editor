@@ -773,7 +773,7 @@ LRESULT CTabWnd::TabCtrl::ExecTabCommand( int nId, POINTS pts )
 }
 
 CTabWnd::CTabWnd()
-	: COriginalWnd(L"CTabWnd")
+	: Base(L"CTabWnd")
 {
 	return;
 }
@@ -871,32 +871,14 @@ bool CTabWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 		return false;
 	}
 
-	const auto hInstance = lpCreateStruct->hInstance;
-
 	auto cx = lpCreateStruct->cx;
 	const auto cy = lpCreateStruct->cy;
 
-	if (m_bSizeBox) {
-		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+	const auto bSizeBox = m_bSizeBox;
+	m_bSizeBox = false;
+	cx = SizeBox_ONOFF(bSizeBox, CMySize{ cx, cy });
 
-		m_hwndSizeBox = ::CreateWindowExW(
-			0L, 						/* no extended styles			*/
-			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,					/* text for window title bar	*/
-			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			cx - cxVScroll,				/* horizontal position			*/
-			cy - cyHScroll,				/* vertical position			*/
-			cxVScroll,					/* width of the scroll bar		*/
-			cyHScroll,					/* default height				*/
-			hWnd,		 				/* handle of main window		*/
-			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
-			lpCreateStruct->hInstance,	/* instance owning this window	*/
-			(LPVOID) nullptr			/* pointer not needed			*/
-		);
-
-		cx -= cxVScroll;
-	}
+	const auto hInstance = lpCreateStruct->hInstance;
 
 	const auto cxBorder = GetSystemMetrics(SM_CXBORDER);
 
@@ -996,8 +978,6 @@ void CTabWnd::OnDestroy(HWND hWnd)
 {
 	::KillTimer(hWnd, 1);
 
-	m_TabCtrl.Detach(m_hwndTab);
-
 	//タブコントロールを削除
 	if( m_hwndTab )
 	{
@@ -1034,26 +1014,9 @@ void CTabWnd::OnSize(
 	int cy
 )
 {
-	UNREFERENCED_PARAMETER(state);
-
 	if (!hWnd || !m_hwndTab) return;
 
-	if (m_hwndSizeBox) {
-		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-
-		::SetWindowPos(
-			m_hwndSizeBox,
-			nullptr,
-			cx - cxVScroll,
-			cy - cyHScroll,
-			cxVScroll,
-			cyHScroll,
-			SWP_NOSIZE | SWP_NOZORDER | SWP_NOSENDCHANGING
-		);
-
-		cx -= cxVScroll;
-	}
+	cx = MoveSizeBox(hWnd, state, cx, cy);
 
 	::SetWindowPos(
 		m_hwndTab,
@@ -1140,13 +1103,6 @@ void CTabWnd::OnPaint(HWND hWnd, PAINTSTRUCT& ps)
 	// トップバンドを描画する
 	if( auto nCurSel = TabCtrl_GetCurSel( m_hwndTab ); 0 <= nCurSel ){
 		m_TabCtrl.DrawTopBand( gr, rc, nCurSel );
-	}
-
-	// サイズボックスを描画する
-	if (!m_pShareData->m_Common.m_sWindow.m_bDispSTATUSBAR 
-		&& !m_pShareData->m_Common.m_sWindow.m_bDispFUNCKEYWND
-		&& m_pShareData->m_Common.m_sTabBar.m_eTabPosition == TabPosition_Bottom) {
-		SizeBox_ONOFF(true);
 	}
 }
 
@@ -3259,39 +3215,4 @@ void CTabWnd::JoinPrev( void )
 		ptSrc.x = ptSrc.y = ptDst.x = ptDst.y = 0;
 		SeparateGroup( GetParentHwnd(), hWnd, ptSrc, ptDst );
 	}
-}
-
-/*! サイズボックスの表示／非表示切り替え */
-void CTabWnd::SizeBox_ONOFF( bool bSizeBox )
-{
-	RECT		rc;
-	::GetWindowRect( GetHwnd(), &rc );
-	if( m_bSizeBox == bSizeBox ){
-		return;
-	}
-	if( m_bSizeBox ){
-		::DestroyWindow( m_hwndSizeBox );
-		m_hwndSizeBox = nullptr;
-		m_bSizeBox = false;
-		OnSize();
-	}else{
-		m_hwndSizeBox = ::CreateWindowEx(
-			0L, 						/* no extended styles			*/
-			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,						/* text for window title bar	*/
-			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			0,							/* horizontal position			*/
-			0,							/* vertical position			*/
-			200,						/* width of the scroll bar		*/
-			CW_USEDEFAULT,				/* default height				*/
-			GetHwnd(), 				/* handle of main window		*/
-			(HMENU) nullptr,				/* no menu for a scroll bar 	*/
-			GetAppInstance(),				/* instance owning this window	*/
-			(LPVOID) nullptr			/* pointer not needed				*/
-		);
-		::ShowWindow( m_hwndSizeBox, SW_SHOW );
-		m_bSizeBox = true;
-		OnSize();
-	}
-	return;
 }

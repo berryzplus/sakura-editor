@@ -21,6 +21,8 @@
 
 #include <Windows.h>
 
+#include "basis/CMySize.h"
+
 /*-----------------------------------------------------------------------
 クラスの宣言
 -----------------------------------------------------------------------*/
@@ -225,6 +227,121 @@ public:
 	std::wstring	m_ClassName;
 	HINSTANCE		m_hInstance = nullptr;			//!< アプリケーションインスタンスのハンドル。（ウィンドウ作成後のみ有効）
 	HWND			m_hwndParent = nullptr;			//!< 親ウィンドウのハンドル
+};
+
+template<typename T>
+class TSizeBoxParent : public T
+{
+private:
+	using Base = T;
+	using Me = TSizeBoxParent<T>;
+
+public:
+	/*
+	||  Constructors
+	*/
+	using Base::Base;
+
+	/*
+	|| メンバ関数
+	*/
+
+	/*! サイズボックスの表示／非表示切り替え */
+	LONG SizeBox_ONOFF(
+		bool bSizeBox,
+		const std::optional<CMySize>& optSize = std::nullopt
+	)
+	{
+		const auto hWnd = this->GetHwnd();
+
+		CMySize size{};
+		if (optSize.has_value()) {
+			size = *optSize;
+		} else {
+			RECT rc{};
+			::GetClientRect(hWnd, &rc);
+			size.cx = rc.right;
+			size.cy = rc.bottom;
+		}
+
+		if (m_bSizeBox != bSizeBox) {
+			if (bSizeBox) {
+				const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+				const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+				size.cx -=  - cxVScroll;
+
+				m_hwndSizeBox = ::CreateWindowExW(
+					0L, 						/* no extended styles			*/
+					WC_SCROLLBAR,				/* scroll bar control class		*/
+					nullptr,					/* text for window title bar	*/
+					WS_CHILD | WS_VISIBLE | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
+					size.cx,					/* horizontal position			*/
+					size.cy - cyHScroll,		/* vertical position			*/
+					cxVScroll,					/* width of the scroll bar		*/
+					cyHScroll,					/* default height				*/
+					hWnd,		 				/* handle of main window		*/
+					(HMENU) nullptr,			/* no menu for a scroll bar 	*/
+					this->GetAppInstance(),		/* instance owning this window	*/
+					(LPVOID) nullptr			/* pointer not needed				*/
+				);
+
+			} else {
+				::DestroyWindow(m_hwndSizeBox);
+				m_hwndSizeBox = nullptr;
+			}
+
+			m_bSizeBox = bSizeBox;
+		}
+
+		return size.cx;
+	}
+
+	LONG MoveSizeBox(HWND hWnd, UINT state, int cx, int cy)
+	{
+		if (m_hwndSizeBox) {
+			const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
+			const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
+
+			::SetWindowPos(
+				m_hwndSizeBox,
+				nullptr,
+				cx - cxVScroll,
+				cy - cyHScroll,
+				cxVScroll,
+				cyHScroll,
+				SWP_NOSIZE | SWP_NOZORDER | SWP_NOSENDCHANGING
+			);
+
+			cx -= cxVScroll;
+		}
+
+		return cx;
+	}
+
+	/*
+	|| メンバ変数
+	*/
+	bool			m_bSizeBox = false;
+	HWND			m_hwndSizeBox = nullptr;
+
+	/*
+	|| 実装ヘルパ系
+	*/
+
+	/* 仮想関数 */
+
+	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
+	void OnDestroy(HWND hWnd) override
+	{
+		/* サイズボックスを削除 */
+		if (m_hwndSizeBox) {
+			::DestroyWindow(m_hwndSizeBox);
+			m_hwndSizeBox = nullptr;
+		}
+
+		Base::OnDestroy(hWnd);
+	}
 };
 
 #endif /* SAKURA_CWND_86C8E4DA_7921_4D79_A481_E3AB0557D767_H_ */

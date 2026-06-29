@@ -30,13 +30,13 @@ struct EditNode;
 struct DLLSHAREDATA;
 
 //! タブバーウィンドウ
-class CTabWnd final : public COriginalWnd
+class CTabWnd final : public TSizeBoxParent<COriginalWnd>
 {
 private:
 	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 	using ImageListHolder = cxx::ResourceHolder<&::ImageList_Destroy>;
 
-	using Base = COriginalWnd;
+	using Base = TSizeBoxParent<COriginalWnd>;
 	using Me = CTabWnd;
 
 public:
@@ -135,7 +135,6 @@ public:
 
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
 
-	void SizeBox_ONOFF( bool bSizeBox );
 	void OnSize(){
 		const auto hWnd = GetHwnd();
 		RECT rc{};
@@ -214,9 +213,6 @@ public:
 
 	BOOL		m_bHovering = FALSE;
 	bool		m_bMultiLine;			//!< 複数行
-
-	HWND		m_hwndSizeBox = nullptr;
-	bool		m_bSizeBox = false;
 
 	DISALLOW_COPY_AND_ASSIGN(CTabWnd);
 };

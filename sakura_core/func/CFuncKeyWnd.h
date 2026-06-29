@@ -24,12 +24,12 @@
 
 //! ファンクションキーウィンドウ
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
-class CFuncKeyWnd final : public COriginalWnd
+class CFuncKeyWnd final : public TSizeBoxParent<COriginalWnd>
 {
 private:
 	using FontHolder = cxx::ResourceHolder<&::DeleteObject, HFONT>;
 
-	using Base = COriginalWnd;
+	using Base = TSizeBoxParent<COriginalWnd>;
 	using Me = CFuncKeyWnd;
 
 public:
@@ -44,8 +44,8 @@ public:
 	*/
 	HWND	Open(HWND hWndParent, const CMyRect& rc, bool bSizeBox);
 
-	void SizeBox_ONOFF(bool bSizeBox);	/* サイズボックスの表示／非表示切り替え */
 	void Timer_ONOFF(bool bStart); /* 更新の開始／停止 20060126 aroka */
+
 	/*
 	|| メンバ変数
 	*/
@@ -57,8 +57,6 @@ private:
 	WCHAR			m_szFuncNameArr[12][256];
 	HWND			m_hwndButtonArr[12];
 	FontHolder		m_hFont = nullptr;	/*!< 表示用フォント */
-	bool			m_bSizeBox = false;
-	HWND			m_hwndSizeBox = nullptr;
 	int				m_nTimerCount = 0;
 	int				m_nButtonGroupNum; // Openで初期化
 	EFunctionCode	m_nFuncCodeArr[12]; // Open->CreateButtonsで初期化

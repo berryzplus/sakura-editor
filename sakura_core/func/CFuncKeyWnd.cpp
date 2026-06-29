@@ -34,7 +34,7 @@
 
 //	@date 2002.2.17 YAZAKI CShareDataのインスタンスは、CProcessにひとつあるのみ。
 CFuncKeyWnd::CFuncKeyWnd()
-	: COriginalWnd(L"CFuncKeyWnd")
+	: Base(L"CFuncKeyWnd")
 {
 	int		i;
 	LOGFONT	lf;
@@ -81,7 +81,6 @@ HWND CFuncKeyWnd::Open(HWND hWndParent, const CMyRect& rc, bool bSizeBox)
 	size_t windowId = 0;	// 外部から指定できる必要はない
 
 	m_bSizeBox = bSizeBox;
-	m_hwndSizeBox = nullptr;
 
 	// 2002.11.04 Moca 変更できるように
 	m_nButtonGroupNum = m_pShareData->m_Common.m_sWindow.m_nFUNCKEYWND_GroupNum;
@@ -184,47 +183,6 @@ void CFuncKeyWnd::CreateButtons(HWND hWnd, HINSTANCE hInstance, int cx, int cy)
 	return;
 }
 
-/*! サイズボックスの表示／非表示切り替え */
-void CFuncKeyWnd::SizeBox_ONOFF( bool bSizeBox )
-{
-	if( m_bSizeBox == bSizeBox ){
-		return;
-	}
-
-	const auto hWnd = GetHwnd();
-
-	RECT rc{};
-	::GetClientRect(hWnd, &rc);
-
-	if( m_bSizeBox ){
-		::DestroyWindow( m_hwndSizeBox );
-		m_hwndSizeBox = nullptr;
-		m_bSizeBox = false;
-	}else{
-		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-
-		m_hwndSizeBox = ::CreateWindowExW(
-			0L, 						/* no extended styles			*/
-			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,					/* text for window title bar	*/
-			WS_CHILD | WS_VISIBLE | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			rc.right - cxVScroll,		/* horizontal position			*/
-			rc.bottom - cyHScroll,		/* vertical position			*/
-			cxVScroll,					/* width of the scroll bar		*/
-			cyHScroll,					/* default height				*/
-			hWnd,		 				/* handle of main window		*/
-			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
-			GetAppInstance(),			/* instance owning this window	*/
-			(LPVOID) nullptr			/* pointer not needed				*/
-		);
-
-		m_bSizeBox = true;
-	}
-	OnSize(hWnd, 0, rc.right, rc.bottom);
-	return;
-}
-
 // タイマーの更新を開始／停止する。 20060126 aroka
 // ファンクションキー表示はタイマーにより更新しているが、
 // アプリのフォーカスが外れたときに親ウィンドウからON/OFFを
@@ -268,27 +226,9 @@ bool CFuncKeyWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
 	auto cx = lpCreateStruct->cx;
 	const auto cy = lpCreateStruct->cy;
 
-	if (m_bSizeBox) {
-		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-
-		m_hwndSizeBox = ::CreateWindowExW(
-			0L, 						/* no extended styles			*/
-			WC_SCROLLBAR,				/* scroll bar control class		*/
-			nullptr,					/* text for window title bar	*/
-			WS_VISIBLE | WS_CHILD | SBS_SIZEBOX | SBS_SIZEGRIP, /* scroll bar styles */
-			cx - cxVScroll,				/* horizontal position			*/
-			cy - cyHScroll,				/* vertical position			*/
-			cxVScroll,					/* width of the scroll bar		*/
-			cyHScroll,					/* default height				*/
-			hWnd,		 				/* handle of main window		*/
-			(HMENU) nullptr,			/* no menu for a scroll bar 	*/
-			lpCreateStruct->hInstance,	/* instance owning this window	*/
-			(LPVOID) nullptr			/* pointer not needed			*/
-		);
-
-		cx -= cxVScroll;
-	}
+	const auto bSizeBox = m_bSizeBox;
+	m_bSizeBox = false;
+	cx = SizeBox_ONOFF(bSizeBox, CMySize{ cx, cy });
 
 	/* ボタンの生成 */
 	CreateButtons(hWnd, hInstance, cx, cy);
@@ -309,12 +249,6 @@ bool CFuncKeyWnd::OnCreate(HWND hWnd, LPCREATESTRUCT lpCreateStruct)
  */
 void CFuncKeyWnd::OnDestroy(HWND hWnd)
 {
-	/* サイズボックスを削除 */
-	if (m_hwndSizeBox) {
-		::DestroyWindow(m_hwndSizeBox);
-		m_hwndSizeBox = nullptr;
-	}
-
 	/* タイマーを削除 */
 	Timer_ONOFF(false);
 
@@ -345,22 +279,7 @@ void CFuncKeyWnd::OnSize(HWND hWnd, UINT state, int cx, int cy)
 		return;
 	}
 
-	if (m_hwndSizeBox) {
-		const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-		const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-
-		::SetWindowPos(
-			m_hwndSizeBox,
-			nullptr,
-			cx - cxVScroll,
-			cy - cyHScroll,
-			cxVScroll,
-			cyHScroll,
-			SWP_NOSIZE | SWP_NOZORDER | SWP_NOSENDCHANGING
-		);
-
-		cx -= cxVScroll;
-	}
+	cx = MoveSizeBox(hWnd, state, cx, cy);
 
 	const auto nButtonNum = int(std::size(m_hwndButtonArr));
 

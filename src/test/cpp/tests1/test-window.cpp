@@ -1259,6 +1259,15 @@ TEST_F(EditWndTest, FuncKeyWnd)
 	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_TIMER, 0L, 0L), IsFalse());
 
 	EXPECT_THAT(funcKeyWnd.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	// 無理矢理動かす
+	const auto hWnd = ::GetDesktopWindow();
+	const auto hWndFuncKey = funcKeyWnd.Open(hWnd, CMyRect{ 0, 0, 100, 100 }, true);
+	::ShowWindow(hWndFuncKey, SW_SHOW);
+	::UpdateWindow(hWndFuncKey);
+	funcKeyWnd.SizeBox_ONOFF(false);
+	funcKeyWnd.SizeBox_ONOFF(true);
+	funcKeyWnd.Close();
 }
 
 //! 印刷プレビューのテスト
