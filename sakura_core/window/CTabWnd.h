@@ -136,9 +136,6 @@ public:
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
 
 	void SizeBox_ONOFF( bool bSizeBox );
-	HWND GetHwndSizeBox(){
-		return m_hwndSizeBox;
-	}
 	void OnSize(){
 		const auto hWnd = GetHwnd();
 		RECT rc{};
