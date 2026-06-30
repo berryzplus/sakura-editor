@@ -977,7 +977,6 @@ LRESULT CEditWnd::DispatchEvent(
 	HANDLE_MSG(hWnd, WM_CREATE,							OnCreate);
 	HANDLE_MSG(hWnd, WM_DESTROY,						OnDestroy);
 	HANDLE_MSG(hWnd, WM_CLOSE,							OnClose);
-	HANDLE_MSG(hWnd, WM_COMMAND,						OnCommand);
 	HANDLE_MSG(hWnd, WM_TIMER,							OnTimer);
 // clang-format on
 
@@ -1327,7 +1326,9 @@ LRESULT CEditWnd::DispatchEvent(
 			break;
 		}
 		return 0L;
-
+	case WM_COMMAND:
+		OnCommand( HIWORD(wParam), LOWORD(wParam), (HWND) lParam );
+		return 0L;
 	case WM_INITMENUPOPUP:
 		InitMenu( (HMENU)wParam, (UINT)LOWORD( lParam ), (BOOL)HIWORD( lParam ) );
 		return 0L;
@@ -2113,22 +2114,13 @@ bool CEditWnd::OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const
 	return true;
 }
 
-/*!
- * @brief WM_COMMANDハンドラ
- *
- * メニュー項目がクリックされたときなどに呼ばれる。
- * このメッセージに戻り値はありません。
- *
- * @date 2000.11.15 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行(F_HELP_CONTENTS,F_HELP_SEARCH)を修正・復活
- * @date 2013.05.09 novice 重複するメッセージ処理削除
- */
-void CEditWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
+/*! WM_COMMAND処理
+	@date 2000.11.15 JEPRO //ショートカットキーがうまく働かないので殺してあった下の2行(F_HELP_CONTENTS,F_HELP_SEARCH)を修正・復活
+	@date 2013.05.09 novice 重複するメッセージ処理削除
+*/
+void CEditWnd::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
 {
-	UNREFERENCED_PARAMETER(hWnd);
-
-	const auto wID = WORD(id);
-	const auto hwndCtl = hWndCtl;
-	const auto wNotifyCode = notifyCode;
+	const int id = static_cast<int>(wID);
 
 	// 検索ボックスからの WM_COMMAND はすべてコンボボックス通知
 	// ##### 検索ボックス処理はツールバー側の WindowProc に集約するほうがスマートかも
@@ -2161,7 +2153,7 @@ void CEditWnd::OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode)
 		return;	// CBN_SELCHANGE(1) がアクセラレータと誤認されないようにここで抜ける（rev1886 の問題の抜本対策）
 	}
 
-	switch (notifyCode) {
+	switch( wNotifyCode ){
 	/* メニューからのメッセージ */
 	case 0:
 	case CMD_FROM_MOUSE: // 2006.05.19 genta マウスから呼びだされた場合

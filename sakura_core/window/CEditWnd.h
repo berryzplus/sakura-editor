@@ -144,7 +144,6 @@ public:
 	bool	OnQueryEndSession(HWND hWnd, UINT endSessionFlags) const override;
 	void	OnSize(HWND hWnd, UINT state, int cx, int cy) override;	/* WM_SIZE 処理 */
 	LRESULT OnSize2(WPARAM wParam, LPARAM lParam, bool bUpdateStatus);
-	void	OnCommand(HWND hWnd, int id, HWND hWndCtl, UINT notifyCode) override;
 	void	OnLButtonUp(HWND hWnd, int x, int y, UINT keyFlags) override;
 	void	OnLButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 	void	OnMouseMove(HWND hWnd, int x, int y, UINT keyFlags) override;
@@ -156,6 +155,7 @@ public:
 	void OnEditTimer( void );	/* タイマーの処理 */
 	void OnCaptionTimer( void );
 	void OnSysMenuTimer( void );
+	void OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);
 	LRESULT OnNcLButtonDown(WPARAM wp, LPARAM lp);
 	LRESULT OnNcLButtonUp(WPARAM wp, LPARAM lp);
 	void	OnLButtonDblClk(HWND hWnd, int x, int y, UINT keyFlags) override;
