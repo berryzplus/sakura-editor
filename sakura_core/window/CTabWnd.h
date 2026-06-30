@@ -52,24 +52,11 @@ public:
 			return DefWndProcW(hWnd, uMsg, wParam, lParam);
 		}
 
-		void	BreakDrag(HWND hWnd = nullptr, bool fDoubleClick = false, int x = 0, int y = 0, UINT keyFlags = 0);
+		void	BreakDrag() { m_ParentWnd.BreakDrag(); }
 		LRESULT	ExecTabCommand( int nId, POINTS pts );	/*!< タブ部 コマンド実行処理 */
-		void	GetTabCloseBtnRect( const LPRECT lprcClient, LPRECT lprc, bool selected );	/*!< タブを閉じるボタンの矩形取得処理 */	// 2012.04.14 syat
 
-		int		FindTabIndexByHWND( HWND hWnd );
-		void	AdjustWindowPlacement( void );							/*!< 編集ウィンドウの位置合わせ */	// 2007.04.03 ryoji
 		int		SetCarmWindowPlacement( HWND hwnd, const WINDOWPLACEMENT* pWndpl );	/* アクティブ化の少ない SetWindowPlacement() を実行する */	// 2007.11.30 ryoji
-		void	ShowHideWindow( HWND hwnd, BOOL bDisp );
-		void	HideOtherWindows( HWND hwndExclude );					/*!< 他の編集ウィンドウを隠す */	// 2007.05.17 ryoji
 		void	ForceActiveWindow( HWND hwnd );
-		void	TabWnd_ActivateFrameWindow( HWND hwnd, bool bForce = true );	//2004.08.27 Kazika 引数追加
-
-		void	DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted );	/*!< ボタン背景描画処理 */	// 2006.10.21 ryoji
-		void	DrawListBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 一覧ボタン描画処理 */
-		void	DrawCloseFigure( CGraphics& gr, const RECT& btnRect );			/*!< 閉じるマーク描画処理 */
-		void	DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient );			/*!< 閉じるボタン描画処理 */		// 2006.10.21 ryoji
-		void	DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool selected, bool bHover );	/*!< タブを閉じるボタン描画処理 */		// 2012.04.14 syat
-		void	DrawTopBand( const CGraphics& gr, const RECT& rcClient, int nTabIndex ) const;
 
 		void	BroadcastRefreshToGroup() { m_ParentWnd.BroadcastRefreshToGroup(); }
 		void	Refresh( BOOL bEnsureVisible = TRUE, BOOL bRebuild = FALSE ) { m_ParentWnd.Refresh(bEnsureVisible, bRebuild); }
@@ -97,20 +84,18 @@ public:
 		POINT			m_ptSrcCursor{};			//!< ドラッグ開始カーソル位置
 		HCURSOR			m_hDefaultCursor = nullptr;		//!< ドラッグ開始時のカーソル
 
-		BOOL			m_bListBtnHilighted = FALSE;
-		BOOL			m_bCloseBtnHilighted = FALSE;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
-		CaptureSrc		m_eCaptureSrc = CAPT_NONE;			//!< キャプチャ元
+		BOOL&			m_bListBtnHilighted = m_ParentWnd.m_bListBtnHilighted;
+		BOOL&			m_bCloseBtnHilighted = m_ParentWnd.m_bCloseBtnHilighted;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
+		CaptureSrc&		m_eCaptureSrc = m_ParentWnd.m_eCaptureSrc;			//!< キャプチャ元
 		BOOL			m_bTabSwapped = FALSE;			//!< ドラッグ中にタブの入れ替えがあったかどうか
 		LONG*			m_nTabBorderArray = nullptr;		//!< ドラッグ前のタブ境界位置配列
 		LOGFONT			m_lf{};					//!< 表示フォントの特性情報
 
 		// タブ内の閉じるボタン用変数
-		int				m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
+		int&			m_nTabHover = m_ParentWnd.m_nTabHover;			//!< マウスカーソル下のタブ（無いときは-1）
 		bool			m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
 		int				m_nTabCloseCapture = -1;		//!< 閉じるボタンがマウス押下されているタブ（無いときは-1）
 	};
-
-	TabCtrl			m_TabCtrl{ *this };
 
 	/*
 	||  Constructors
@@ -136,10 +121,7 @@ public:
 	LRESULT TabListMenu( POINT pt, BOOL bSel = TRUE, BOOL bFull = FALSE, BOOL bOtherGroup = TRUE );	/*!< タブ一覧メニュー作成処理 */	// 2006.03.23 fon
 
 	void OnSize(){
-		const auto hWnd = GetHwnd();
-		RECT rc{};
-		GetClientRect(hWnd, &rc);
-		OnSize(hWnd, 0, rc.right, rc.bottom);
+		OnSize( GetHwnd(), WM_SIZE, 0, 0 );
 	}
 	void UpdateStyle();
 	void UpdateTheme();		/*!< ダークモード切替時のテーマ更新 */
@@ -147,6 +129,10 @@ public:
 	/*
 	|| 実装ヘルパ系
 	*/
+	int FindTabIndexByHWND( HWND hWnd );
+	void AdjustWindowPlacement( void );							/*!< 編集ウィンドウの位置合わせ */	// 2007.04.03 ryoji
+	void HideOtherWindows( HWND hwndExclude );					/*!< 他の編集ウィンドウを隠す */	// 2007.05.17 ryoji
+	void ForceActiveWindow( HWND hwnd );
 	HWND GetNextGroupWnd( void );	/* 次のグループの先頭ウィンドウを探す */	// 2007.06.20 ryoji
 	HWND GetPrevGroupWnd( void );	/* 前のグループの先頭ウィンドウを探す */	// 2007.06.20 ryoji
 	void GetTabName( EditNode* pEditNode, BOOL bFull, BOOL bDupamp, LPWSTR pszName, int nLen );	/* タブ名取得処理 */	// 2007.06.28 ryoji 新規作成
@@ -172,6 +158,7 @@ public:
 	void	OnRButtonDown(HWND hWnd, bool fDoubleClick, int x, int y, UINT keyFlags) override;
 
 	//実装補助インターフェース
+	void BreakDrag(HWND hWnd = nullptr, bool fDoubleClick = false, int x = 0, int y = 0, UINT keyFlags = 0);
 	BOOL ReorderTab( int nSrcTab, int nDstTab );	/*!< タブ順序変更処理 */
 	void BroadcastRefreshToGroup( void );
 	BOOL SeparateGroup( HWND hwndSrc, HWND hwndDst, POINT ptDrag, POINT ptDrop );	/*!< タブ分離処理 */	// 2007.06.20 ryoji
@@ -179,19 +166,6 @@ public:
 
 	HIMAGELIST InitImageList( void );				/*!< イメージリストの初期化処理 */
 	int GetImageIndex( EditNode* pNode );			/*!< イメージリストのインデックス取得処理 */
-
-	void GetListBtnRect( const LPRECT lprcClient, LPRECT lprc );	/*!< 一覧ボタンの矩形取得処理 */
-	void GetCloseBtnRect( const LPRECT lprcClient, LPRECT lprc );	/*!< 閉じるボタンの矩形取得処理 */	// 2006.10.21 ryoji
-
-	HFONT CreateMenuFont( void )
-	{
-		// メニュー用フォント作成
-		NONCLIENTMETRICS	ncm;
-		// 以前のプラットフォームに WINVER >= 0x0600 で定義される構造体のフルサイズを渡すと失敗する	// 2007.12.21 ryoji
-		ncm.cbSize = CCSIZEOF_STRUCT( NONCLIENTMETRICS, lfMessageFont );
-		::SystemParametersInfo( SPI_GETNONCLIENTMETRICS, ncm.cbSize, (PVOID)&ncm, 0 );
-		return ::CreateFontIndirect( &ncm.lfMenuFont );
-	}
 
 	int		SetCarmWindowPlacement( HWND hwnd, const WINDOWPLACEMENT* pWndpl ) { return m_TabCtrl.SetCarmWindowPlacement(hwnd, pWndpl); }
 
@@ -212,7 +186,16 @@ public:
 	int			m_iIconGrep;			//!< Grepアイコンのインデックス
 
 	BOOL		m_bHovering = FALSE;
+	BOOL		m_bListBtnHilighted = FALSE;
+	BOOL		m_bCloseBtnHilighted = FALSE;	//!< 閉じるボタンハイライト状態	// 2006.10.21 ryoji
+	CaptureSrc	m_eCaptureSrc = CAPT_NONE;			//!< キャプチャ元
 	bool		m_bMultiLine;			//!< 複数行
+
+	// タブ内の閉じるボタン用変数
+	int			m_nTabHover = -1;			//!< マウスカーソル下のタブ（無いときは-1）
+	bool		m_bTabCloseHover = false;		//!< マウスカーソル下にタブ内の閉じるボタンがあるか
+
+	TabCtrl		m_TabCtrl{ *this };
 
 	DISALLOW_COPY_AND_ASSIGN(CTabWnd);
 };
