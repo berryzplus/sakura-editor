@@ -297,8 +297,10 @@ public:
 		return size.cx;
 	}
 
-	LONG MoveSizeBox(HWND hWnd, UINT state, int cx, int cy)
+	LONG MoveSizeBox(HWND, UINT state, int cx, int cy)
 	{
+		UNREFERENCED_PARAMETER(state);
+
 		if (m_hwndSizeBox) {
 			const auto cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
 			const auto cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
