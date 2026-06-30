@@ -1937,6 +1937,63 @@ TEST_F(EditWndTest, ShowDlgKeywordSelect101)
 /*!
  * ファイルを開くダイアログの表示テスト
  */
+TEST_F(EditWndTest, ShowDlgOpenFile101)
+{
+	// Vistaスタイルのファイルダイアログを有効にする
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
+
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"FileOpen('', 99, 0, '無題1')"), IsTrue());
+	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
+}
+
+/*!
+ * ファイルを開くダイアログの表示テスト
+ */
+TEST_F(EditWndTest, ShowDlgOpenFile_GetOpenFileName001)
+{
+	// Vistaスタイルのファイルダイアログを有効にする
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
+
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	// 無理矢理動かす
+	const auto hWnd = pcEditWnd->GetHwnd();
+	FORWARD_WM_COMMAND(hWnd, F_LOADKEYMACRO, nullptr, 0, pcEditWnd->DispatchEvent);
+}
+
+/*!
+ * 名前を付けて保存ダイアログの表示テスト
+ */
+TEST_F(EditWndTest, ShowDlgOpenFile_GetSaveFileName001)
+{
+	// Vistaスタイルのファイルダイアログを有効にする
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
+
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	LPARAM lParams = 0L;
+	pcSMacroMgr->Append(STAND_KEYMACRO, F_0, &lParams, &pcEditWnd->GetView(0));
+
+	const auto path = GetExeFileName().replace_filename(L"test-save-file.txt");
+
+	std::error_code ec;
+	std::filesystem::remove(path, ec);
+
+	// 無理矢理動かす
+	const auto hWnd = pcEditWnd->GetHwnd();
+	FORWARD_WM_COMMAND(hWnd, F_SAVEKEYMACRO, nullptr, 0, pcEditWnd->DispatchEvent);
+
+	std::filesystem::remove(path, ec);
+}
+
+/*!
+ * ファイルを開くダイアログの表示テスト
+ */
 TEST_F(EditWndTest, ShowDlgOpenFileLegacy101)
 {
 	// Vistaスタイルのファイルダイアログを無効にする
@@ -1955,16 +2012,49 @@ TEST_F(EditWndTest, ShowDlgOpenFileLegacy101)
 /*!
  * ファイルを開くダイアログの表示テスト
  */
-TEST_F(EditWndTest, ShowDlgOpenFile101)
+TEST_F(EditWndTest, ShowDlgOpenFileLegacy_GetOpenFileName001)
 {
-	// Vistaスタイルのファイルダイアログを有効にする
-	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
+	// Vistaスタイルのファイルダイアログを無効にする
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = false;
 
 	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
 	dialog::ModalDialogCloser closer;
 
-	EXPECT_THAT(mgr->LoadKeyMacroStr(unusedArg1, L"FileOpen('', 99, 0, '無題1')"), IsTrue());
-	EXPECT_THAT(mgr->ExecKeyMacro(&pcEditWnd->GetActiveView(), 0), IsTrue());
+	// 無理矢理動かす
+	const auto hWnd = pcEditWnd->GetHwnd();
+	FORWARD_WM_COMMAND(hWnd, F_LOADKEYMACRO, nullptr, 0, pcEditWnd->DispatchEvent);
+
+	// 設定を元に戻す
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
+}
+
+/*!
+ * 名前を付けて保存ダイアログの表示テスト
+ */
+TEST_F(EditWndTest, ShowDlgOpenFileLegacy_GetSaveFileName001)
+{
+	// Vistaスタイルのファイルダイアログを無効にする
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = false;
+
+	// 表示されたモーダルダイアログをキャンセルボタンで閉じるようにする
+	dialog::ModalDialogCloser closer;
+
+	LPARAM lParams = 0L;
+	pcSMacroMgr->Append(STAND_KEYMACRO, F_0, &lParams, &pcEditWnd->GetView(0));
+
+	const auto path = GetExeFileName().replace_filename(L"test-save-file.txt");
+
+	std::error_code ec;
+	std::filesystem::remove(path, ec);
+
+	// 無理矢理動かす
+	const auto hWnd = pcEditWnd->GetHwnd();
+	FORWARD_WM_COMMAND(hWnd, F_SAVEKEYMACRO, nullptr, 0, pcEditWnd->DispatchEvent);
+
+	std::filesystem::remove(path, ec);
+
+	// 設定を元に戻す
+	GetDllShareData().m_Common.m_sEdit.m_bVistaStyleFileDialog = true;
 }
 
 /*!
