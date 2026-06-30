@@ -55,6 +55,8 @@ using namespace std::literals::string_view_literals;
 WORD convertHotKeyMods(WORD wHotKeyMods) noexcept;
 void extract_zip_resource(WORD id, const std::optional<std::filesystem::path>& optOutDir);
 
+HFONT CreateMenuFont();
+
 namespace window {
 
 CMyRect _AdjustInMonitor(CMyPoint pt, const CMyRect& rcOrg);
@@ -1407,6 +1409,12 @@ TEST_F(EditWndTest, TabWnd)
 	tabCtrl.SeparateGroup(nullptr, nullptr, POINT{}, POINT{});
 
 	EXPECT_THAT(tabCtrl.DispatchEvent(nullptr, WM_NULL, 0L, 0L), IsFalse());
+
+	const auto hMenuFont = CreateMenuFont();
+	EXPECT_THAT(hMenuFont, NotNull());
+
+	using FontHolder = cxx::ResourceHolder<&::DeleteObject>;
+	FontHolder fontHolder{ hMenuFont };
 }
 
 //! 辞書Tipウィンドウのテスト
