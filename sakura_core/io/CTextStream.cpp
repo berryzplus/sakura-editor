@@ -24,15 +24,22 @@ std::wstring_view MultiByteToWideChar(UINT codePage, std::string_view source, st
 //                     CTextInputStream                        //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-CTextInputStream::CTextInputStream(const WCHAR* pszPath)
-: CStream(pszPath,L"rb")
+CTextInputStream::CTextInputStream(const std::filesystem::path& path)
+	: CStream(path.c_str(), L"rb")
 {
+	constexpr std::array UTF8_BOM = {
+		static_cast<char8_t>(0xEF),
+		static_cast<char8_t>(0xBB),
+		static_cast<char8_t>(0xBF),
+	};
+
+	assert(std::size(UTF8_BOM) <= std::size(m_Buffer));
+
 	if(Good()){
 		//BOM確認 -> m_bIsUtf8
-		static const BYTE UTF8_BOM[]={0xEF,0xBB,0xBF};
-		BYTE buf[3];
-		if( sizeof(UTF8_BOM) == fread(&buf,1,sizeof(UTF8_BOM),GetFp()) ){
-			m_bIsUtf8 = (memcmp(buf,UTF8_BOM,sizeof(UTF8_BOM))==0);
+		if (const auto cbUtf8Bom = std::size(UTF8_BOM);
+			cbUtf8Bom == ::fread(std::data(m_Buffer), 1, cbUtf8Bom, GetFp())) {
+			m_bIsUtf8 = 0 == memcmp(std::data(m_Buffer), std::data(UTF8_BOM), cbUtf8Bom);
 		}
 
 		//UTF-8じゃなければ、ファイルポインタを元に戻す
@@ -52,6 +59,7 @@ CTextInputStream::CTextInputStream()
 
 CTextInputStream::~CTextInputStream()
 {
+	return;
 }
 
 /*!

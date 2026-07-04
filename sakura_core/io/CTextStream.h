@@ -27,9 +27,11 @@ class CCodeBase;
 class CTextInputStream : public CStream{
 public:
 	//コンストラクタ・デストラクタ
-	CTextInputStream(const WCHAR* pszPath);
-	CTextInputStream();
-	virtual ~CTextInputStream();
+	explicit CTextInputStream(const std::filesystem::path& path);
+	~CTextInputStream() override;
+
+	//状態
+	bool Good() const noexcept final { return CStream::Good(); }
 
 	//操作
 	void			ReadLineW(std::wstring& line);

@@ -92,8 +92,8 @@ bool CProfile::ReadProfile(
 		m_ProfilePath = optProfilePath.value();
 	}
 
-	CTextInputStream in(m_ProfilePath.c_str());
-	if(!in){
+	CTextInputStream in{ m_ProfilePath };
+	if (!in) {
 		return false;
 	}
 
