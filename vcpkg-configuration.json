@@ -9,7 +9,8 @@
       "baseline": "2026-06-20",
       "kind": "filesystem",
       "packages": [
-        "darkmodelib"
+        "darkmodelib",
+        "onigmo"
       ],
       "path": "tools/vcpkg-local-registry"
     },
