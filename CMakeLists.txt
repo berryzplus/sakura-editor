@@ -39,8 +39,8 @@ create_language_dll(zh-CN 2052)
 # Resolve bregonig from vcpkg local registry
 find_package(bregonig CONFIG REQUIRED)
 
-# Include cmigemo.cmake for migemo.dll
-include(${CMAKE_SOURCE_DIR}/src/main/cmake/cmigemo.cmake)
+# Resolve cmigemo from vcpkg local registry
+find_package(cmigemo CONFIG REQUIRED)
 
 # Include ctags.cmake for ctags command
 include(${CMAKE_SOURCE_DIR}/src/main/cmake/ctags.cmake)
