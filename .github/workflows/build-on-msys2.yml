@@ -22,6 +22,10 @@ jobs:
     env:
       BuildPlatform: MinGW
       Configuration: ${{ matrix.configuration }}
+      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+      VCPKG_ROOT: ${{ github.workspace }}\tools\vcpkg
+      VCPKG_TARGET_TRIPLET: x64-mingw-static
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -64,6 +68,16 @@ jobs:
       - name: Show environment variables for debug
         run: env
         shell: msys2 {0}
+
+      - name: Enable GitHub Actions Cache backend
+        uses: actions/github-script@v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Bootstrap vcpkg
+        run: ${{ env.VCPKG_ROOT }}\bootstrap-vcpkg.bat -disableMetrics
 
       - name: Build with MinGW-w64-gcc
         shell: msys2 {0}
