@@ -87,7 +87,7 @@ jobs:
       matrix:
         config:
           - Debug
-          # - Release
+          - Release
         platform:
           - Win32
           - x64
