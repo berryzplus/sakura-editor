@@ -36,8 +36,8 @@ endif(MINGW)
 create_language_dll(en-US 1033)
 create_language_dll(zh-CN 2052)
 
-# Include bregonig.cmake for bregonig.dll
-include(${CMAKE_SOURCE_DIR}/src/main/cmake/bregonig.cmake)
+# Resolve bregonig from vcpkg local registry
+find_package(bregonig CONFIG REQUIRED)
 
 # Include cmigemo.cmake for migemo.dll
 include(${CMAKE_SOURCE_DIR}/src/main/cmake/cmigemo.cmake)
