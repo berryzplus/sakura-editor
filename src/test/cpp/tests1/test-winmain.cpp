@@ -1150,6 +1150,19 @@ TEST_F(WinMainFuncTest, DoGrep001)
 	// テスト用プロファイル名
 	const auto profileName{ GetProfileName() };
 
+	// ケース独自の設定ファイルを使うので、一旦削除する
+	std::filesystem::remove(iniPath);
+
+	// テスト用INIファイル作成
+	// 常駐設定にしないとコントロールプロセスが落ちてしまうので設定を入れる
+	constexpr std::array iniLines = {
+		// 全般設定を出力
+		u8"[Common]"sv,
+		u8"bTaskTrayStay=1"sv,	// コントロールプロセスを常駐させる
+		u8"szLanguageDll="sv,	// 言語DLLの指定(空にすると日本語になる)
+	};
+	cxx::writeTextFile(iniPath, iniLines);
+
 	// コントロールプロセスを起動する
 	auto cp = testing::CreateControlProcess(profileName);
 	ASSERT_THAT(cp, NotNull());
