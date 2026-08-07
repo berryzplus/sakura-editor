@@ -6,7 +6,7 @@
 */
 /*
 	Copyright (C) 2013, Moca
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -31,20 +31,28 @@ struct SProfileSettings
 
 class CDlgProfileMgr final : public CDialog
 {
+private:
+	using SProfileName = StaticString<_MAX_DIR>;
+
+	using Base = CDialog;
+	using Me = CDlgProfileMgr;
+
 public:
 	//! コマンドラインだけでプロファイルが確定するか調べる
 	static bool TrySelectProfile( CCommandLine* pcCommandLine ) noexcept;
+
+	static bool ReadProfSettings(SProfileSettings& settings);
+	static bool WriteProfSettings(SProfileSettings& settings);
 
 	/*
 	||  Constructors
 	*/
 	CDlgProfileMgr();
+
 	/*
 	||  Attributes & Operations
 	*/
 	int		DoModal(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);	/* モーダルダイアログの表示 */
-
-protected:
 
 	BOOL	OnBnClicked(int wID) override;
 	INT_PTR	DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
@@ -61,11 +69,8 @@ protected:
 	void	RenameProf();
 	void	SetDefaultProf(int index);
 	void	ClearDefaultProf();
-public:
-	std::wstring m_strProfileName;
 
-	static bool ReadProfSettings(SProfileSettings& settings);
-	static bool WriteProfSettings(SProfileSettings& settings);
+	SProfileName m_ProfileName{};
 };
 
 std::filesystem::path GetProfileMgrFileName();

@@ -95,7 +95,7 @@ bool CProcessFactory::ProfileSelect(HINSTANCE hInstance, LPCWSTR lpCmdLine) cons
 	if( !profileSelected ){
 		CDlgProfileMgr dlgProf;
 		if( dlgProf.DoModal( hInstance, nullptr, 0 ) ){
-			CCommandLine::getInstance()->SetProfileName( dlgProf.m_strProfileName.c_str() );
+			CCommandLine::getInstance()->SetProfileName(dlgProf.m_ProfileName);
 		}else{
 			return false; // プロファイルマネージャで「閉じる」を選んだ。プロセス終了
 		}

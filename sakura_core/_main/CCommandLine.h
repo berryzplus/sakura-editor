@@ -73,10 +73,7 @@ public:
 	LPCWSTR GetMacroType() const noexcept { return m_cmMacroType.GetStringPtr(); }
 	LPCWSTR GetProfileName() const noexcept { return m_cmProfile.GetStringPtr(); }
 	bool IsSetProfile() const noexcept { return m_bSetProfile; }
-	void SetProfileName(LPCWSTR s){
-		m_bSetProfile = true;
-		m_cmProfile.SetString(s);
-	}
+	void	SetProfileName(std::wstring_view newProfileName);
 	bool IsProfileMgr() const noexcept { return m_bProfileMgr; }
 	const CLogicPoint& GetCaretLocation() const noexcept { return m_fi.m_ptCursor; }
 	CLayoutPoint GetViewLocation() const noexcept { return { m_fi.m_nViewLeftCol,  m_fi.m_nViewTopLine }; }
@@ -109,4 +106,5 @@ private:
 	CNativeW	m_cmProfile;		//! プロファイル名
 	std::vector<std::wstring> m_vFiles;	//!< ファイル名(複数)
 };
+
 #endif /* SAKURA_CCOMMANDLINE_DF7E2E03_76E1_458C_82AC_7C485EECF677_H_ */

@@ -503,8 +503,8 @@ void CViewCommander::Command_PROFILEMGR( void )
 {
 	CDlgProfileMgr profMgr;
 	if( profMgr.DoModal( G_AppInstance(), m_pCommanderView->GetHwnd(), 0 ) ){
-		WCHAR szOpt[MAX_PATH+10];
-		auto_sprintf( szOpt, L"-PROF=\"%s\"", profMgr.m_strProfileName.c_str() );
+		SFilePath szOpt{};
+		szOpt = std::format(LR"(-PROF="{:s}")", profMgr.m_ProfileName.c_str());
 		SLoadInfo sLoadInfo;
 		sLoadInfo.cFilePath = L"";
 		sLoadInfo.eCharCode = CODE_DEFAULT;

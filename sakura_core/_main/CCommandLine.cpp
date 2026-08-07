@@ -25,6 +25,7 @@
 #include <tchar.h>
 #include <string.h>
 #include "debug/CRunningTimer.h"
+#include "dlg/CDlgProfileMgr.h"
 #include "charset/charcode.h"  // 2006.06.28 rastiv
 #include "io/CTextStream.h"
 #include "util/shell.h"
@@ -519,8 +520,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				m_cmMacroType.SetString( arg, nArgLen );
 				break;
 			case CMDLINEOPT_PROF:		// 2013.12.20 Moca 追加
-				m_cmProfile.SetString( arg, nArgLen );
-				m_bSetProfile = true;
+				SetProfileName(std::wstring_view(arg, nArgLen));
 				break;
 			case CMDLINEOPT_PROFMGR:
 				m_bProfileMgr = true;
@@ -552,5 +552,13 @@ void CCommandLine::SetDocType(std::wstring_view newDocType)
 {
 	if (std::size(newDocType) < std::size(m_fi.m_szDocType)) {
 		m_fi.m_szDocType = std::data(newDocType);
+	}
+}
+
+void CCommandLine::SetProfileName(std::wstring_view newProfileName)
+{
+	if (std::size(newProfileName) < std::size(CDlgProfileMgr().m_ProfileName)) {
+		m_bSetProfile = true;
+		m_cmProfile = std::data(newProfileName);
 	}
 }
