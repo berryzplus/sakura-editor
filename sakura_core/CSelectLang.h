@@ -95,7 +95,7 @@ public:
 	/*
 	||  Attributes & Operations
 	*/
-	static void		ChangeLang(const std::filesystem::path& dllName);
+	static void		ChangeLang(std::wstring_view dllName);
 
 private:
 	/*
