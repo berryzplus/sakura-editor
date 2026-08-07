@@ -41,19 +41,23 @@ bool fexist(const std::filesystem::path& path) noexcept
 
 /*!
  * パスがファイル名に使えない文字を含んでいるかチェックする
- * @param[in] path チェック対象のパス
+ *
+ * @param[in] szPath チェック対象のパス文字列
  * @retval true  パスはファイル名に使えない文字を含んでいる
  * retuval false パスはファイル名に使えない文字を含んでいない
  */
-bool IsInvalidFilenameChars(const std::filesystem::path& path) noexcept
+bool IsInvalidFilenameChars(std::wstring_view szPath)
 {
+	// 引数からパスオブジェクトを作成する
+	std::filesystem::path path{ szPath };
+
 	// 文字列中のファイル名を抽出する
 	if (!path.has_filename()) {
 		return false;
 	}
 
 	// ファイル名に使えない文字が含まれる場合、trueを返す
-	return path.filename().wstring().find_first_of(g_InvalidChars) != std::wstring::npos;
+	return std::wstring::npos != path.filename().native().find_first_of(g_InvalidChars);
 }
 
 /*!	ファイル名の切り出し

@@ -21,7 +21,7 @@ bool IsFilePath( const wchar_t* pLine, size_t* pnBgn, size_t* pnPathLen, bool bF
 bool IsFileExists(const WCHAR* path, bool bFileOnly = false);
 bool IsDirectory(LPCWSTR pszPath);	// 2009.08.20 ryoji
 
-bool IsInvalidFilenameChars(const std::filesystem::path& path) noexcept;
+bool	IsInvalidFilenameChars(std::wstring_view szPath);
 [[nodiscard]] bool IsValidPathAvailableChar(const std::filesystem::path& path) noexcept;
 
 //	Apr. 30, 2003 genta
