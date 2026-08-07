@@ -359,11 +359,15 @@ TEST(CCommandLine, ParseDocType)
 #define TESTLOCAL_DOC_TYPE L"C/C++"
 	cCommandLine.ParseCommandLine(L"-TYPE=" TESTLOCAL_DOC_TYPE, false);
 	ASSERT_STREQ(TESTLOCAL_DOC_TYPE, cCommandLine.GetDocType());
+
+	// MAX_DOCTYPE_LEN(=7)より長いタイプ名は無視される
+	cCommandLine.ParseCommandLine(L"-TYPE=TooLong.", false);
+	ASSERT_THAT(cCommandLine.GetDocType(), StrEq(TESTLOCAL_DOC_TYPE));
 #undef TESTLOCAL_DOC_TYPE
 
-	// MAX_DOCTYPE_LENより長いタイプ名は切り捨てられる
-	cCommandLine.ParseCommandLine(L"-TYPE=TooLongTypeName", false);
-	ASSERT_STREQ(L"TooLong", cCommandLine.GetDocType());
+	// MAX_DOCTYPE_LEN(=7)以下のタイプ名は妥当なタイプ名でなくとも反映される
+	cCommandLine.ParseCommandLine(L"-TYPE=TooLong", false);
+	ASSERT_THAT(cCommandLine.GetDocType(), StrEq(L"TooLong"));
 }
 
 /*!

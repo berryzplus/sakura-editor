@@ -480,7 +480,7 @@ void CControlTray::ExecCommand(HWND hWnd, EFunctionCode id)
 				CControlTray::OpenNewEditor2(unusedArg1, hWnd, &openEditInfo, bViewMode);
 			} else {
 				SLoadInfo sLoadInfo;
-				sLoadInfo.cFilePath = openEditInfo.m_szPath;
+				sLoadInfo.cFilePath = openEditInfo.m_szPath.c_str();
 				sLoadInfo.eCharCode = openEditInfo.m_nCharCode;
 				sLoadInfo.bViewMode = false;
 

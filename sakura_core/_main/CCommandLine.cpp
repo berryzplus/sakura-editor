@@ -12,14 +12,15 @@
 	Copyright (C) 2005, D.S.Koba, genta, susu
 	Copyright (C) 2006, ryoji
 	Copyright (C) 2007, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
 */
 
 #include "StdAfx.h"
-#include "CCommandLine.h"
+#include "_main/CCommandLine.h"
+
 #include "mem/CMemory.h"
 #include <tchar.h>
 #include <string.h>
@@ -266,7 +267,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 	}
 	if( bFind ){
 		CSakuraEnvironment::ResolvePath(szPath);
-		wcscpy( m_fi.m_szPath, szPath );	/* ファイル名 */
+		m_fi.m_szPath = szPath;
 		nPos = i + 1;
 	}else{
 		m_fi.m_szPath[0] = L'\0';
@@ -341,13 +342,18 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				szPath[0] = L'\0';
 			}
 
+			// szPathに値が入っている場合
 			if (szPath[0] != L'\0') {
+				// パス解決してロングファイル名にする
 				CSakuraEnvironment::ResolvePath(szPath);
+
+				// m_fi.m_szPathに値が入っていない場合
 				if (m_fi.m_szPath[0] == L'\0') {
-					wcscpy(m_fi.m_szPath, szPath );
+					m_fi.m_szPath = szPath;
 				}
+				// m_fi.m_szPathに値が入っている場合
 				else {
-					m_vFiles.push_back( szPath );
+					m_vFiles.emplace_back(szPath);
 				}
 			}
 		}
@@ -394,7 +400,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				m_fi.m_nWindowOriginY = AtoiOptionInt( arg );
 				break;
 			case CMDLINEOPT_TYPE:	//	TYPE
-				::wcsncpy_s( m_fi.m_szDocType, arg, _TRUNCATE );
+				SetDocType(std::wstring_view(arg, nArgLen));
 				break;
 			case CMDLINEOPT_CODE:	//	CODE
 				m_fi.m_nCharCode = (ECodeType)AtoiOptionInt( arg );
@@ -408,7 +414,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 			case CMDLINEOPT_GREPMODE:	//	GREPMODE
 				m_bGrepMode = true;
 				if( L'\0' == m_fi.m_szDocType[0] ){
-					wcscpy( m_fi.m_szDocType , L"grepout" );
+					m_fi.m_szDocType = L"grepout";
 				}
 				break;
 			case CMDLINEOPT_GREPDLG:	//	GREPDLG
@@ -499,7 +505,7 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				m_bDebugMode = true;
 				// 2010.06.16 Moca -TYPE=output 扱いとする
 				if( L'\0' == m_fi.m_szDocType[0] ){
-					wcscpy( m_fi.m_szDocType , L"output" );
+					m_fi.m_szDocType = L"output";
 				}
 				break;
 			case CMDLINEOPT_NOMOREOPT:	// 2007.09.09 genta これ以降引数無効
@@ -540,4 +546,11 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 	}
 
 	return;
+}
+
+void CCommandLine::SetDocType(std::wstring_view newDocType)
+{
+	if (std::size(newDocType) < std::size(m_fi.m_szDocType)) {
+		m_fi.m_szDocType = std::data(newDocType);
+	}
 }
