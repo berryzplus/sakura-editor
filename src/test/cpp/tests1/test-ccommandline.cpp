@@ -295,11 +295,12 @@ TEST(CCommandLine, ParseViewTopLine)
  */
 TEST(CCommandLine, ParseWindowSizeX)
 {
+	const auto expected = 123;
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(-1, cCommandLine.GetWindowSize().cx);
-	cCommandLine.ParseCommandLine(L"-SX=123", false);
-	ASSERT_EQ(122, cCommandLine.GetWindowSize().cx);
+	ASSERT_THAT(cCommandLine.GetWindowSize().cx, -1);
+	cCommandLine.ParseCommandLine(std::data(std::format(L"-SX={:d}", expected)), false);
+	ASSERT_THAT(cCommandLine.GetWindowSize().cx, expected);
 }
 
 /*!
@@ -309,11 +310,12 @@ TEST(CCommandLine, ParseWindowSizeX)
  */
 TEST(CCommandLine, ParseWindowSizeY)
 {
+	const auto expected = 123;
 	CCommandLine cCommandLine;
 	cCommandLine.ParseCommandLine(L"", false);
-	ASSERT_EQ(-1, cCommandLine.GetWindowSize().cy);
-	cCommandLine.ParseCommandLine(L"-SY=123", false);
-	ASSERT_EQ(122, cCommandLine.GetWindowSize().cy);
+	ASSERT_THAT(cCommandLine.GetWindowSize().cy, -1);
+	cCommandLine.ParseCommandLine(std::data(std::format(L"-SY={:d}", expected)), false);
+	ASSERT_THAT(cCommandLine.GetWindowSize().cy, expected);
 }
 
 /*!

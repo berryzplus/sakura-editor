@@ -382,17 +382,17 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 				break;
 			case CMDLINEOPT_VX:	// VX
 				/* 行桁指定を1開始にした */
-				m_fi.m_nViewLeftCol = CLayoutInt( AtoiOptionInt( arg ) - 1 );
+				m_fi.m_nViewLeftCol = CLayoutInt( AtoiOptionInt( arg ) - 1 );	// 桁指定は1開始なので-1してインデックスにする
 				break;
 			case CMDLINEOPT_VY:	//	VY
 				/* 行桁指定を1開始にした */
-				m_fi.m_nViewTopLine = CLayoutInt( AtoiOptionInt( arg ) - 1 );
+				m_fi.m_nViewTopLine = CLayoutInt( AtoiOptionInt( arg ) - 1 );	// 行指定は1開始なので-1してインデックスにする
 				break;
 			case CMDLINEOPT_SX: //	SX
-				m_fi.m_nWindowSizeX = AtoiOptionInt( arg ) - 1;
+				m_fi.m_nWindowSizeX = AtoiOptionInt( arg );	// 編集ウィンドウの幅
 				break;
 			case CMDLINEOPT_SY:	//	SY
-				m_fi.m_nWindowSizeY = AtoiOptionInt( arg ) - 1;
+				m_fi.m_nWindowSizeY = AtoiOptionInt( arg );	// 編集ウィンドウの高さ
 				break;
 			case CMDLINEOPT_WX: //	WX
 				m_fi.m_nWindowOriginX = AtoiOptionInt( arg );
