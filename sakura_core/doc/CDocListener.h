@@ -11,7 +11,7 @@
 /*
 	Copyright (C) 2008, kobake
 	Copyright (C) 2013, Uchi
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -69,8 +69,8 @@ struct SLoadInfo
 	bool		bOpened = false;
 
 	SLoadInfo() = default;
-	SLoadInfo(const CFilePath& _cFilePath, ECodeType _eCodeType, bool _bReadOnly, CTypeConfig _nType = CTypeConfig(-1))
-	: cFilePath(_cFilePath)
+	SLoadInfo(std::wstring_view filePath, ECodeType _eCodeType, bool _bReadOnly, CTypeConfig _nType = CTypeConfig(-1))
+	: cFilePath(std::data(filePath))
 	, eCharCode(_eCodeType)
 	, bViewMode(_bReadOnly)
 	, nType(_nType)
@@ -92,8 +92,8 @@ struct SSaveInfo{
 	bool		bOverwriteMode = false;			//!< 上書き要求
 
 	SSaveInfo() = default;
-	SSaveInfo(const CFilePath& _cFilePath, ECodeType _eCodeType, const CEol& _cEol, bool _bBomExist)
-		: cFilePath(_cFilePath)
+	SSaveInfo(std::wstring_view filePath, ECodeType _eCodeType, const CEol& _cEol, bool _bBomExist)
+		: cFilePath(std::data(filePath))
 		, eCharCode(_eCodeType)
 		, bBomExist(_bBomExist)
 		, cEol(_cEol)
