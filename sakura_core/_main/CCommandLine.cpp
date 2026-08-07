@@ -194,7 +194,6 @@ CCommandLine::CCommandLine() noexcept
 	, m_cmMacro()
 	, m_cmMacroType()
 	, m_cmProfile(L"")
-	, m_vFiles()
 {
 }
 
@@ -244,7 +243,8 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 {
 	MY_RUNNINGTIMER( cRunningTimer, L"CCommandLine::Parse" );
 
-	WCHAR	szPath[_MAX_PATH];
+	SFilePath szPath;
+
 	bool	bFind = false;				// ファイル名発見フラグ
 	bool	bParseOptDisabled = false;	// 2007.09.09 genta オプション解析を行わなず，ファイル名として扱う
 	int		nPos;
@@ -330,13 +330,13 @@ void CCommandLine::ParseCommandLine( LPCWSTR pszCmdLineSrc, bool bResponse )
 			// 不正なファイル名のままだとファイル保存時ダイアログが出なくなるので
 			// 簡単なファイルチェックを行うように修正
 			if (wcsncmp_literal(szPath, L"file:///")==0) {
-				wcscpy(szPath, &(szPath[8]));
+				szPath = &szPath[8];
 			}
 
 			if ( IsInvalidFilenameChars( szPath ) ){
 				std::wstring msg;
 				// "%ls\r\n上記のファイル名は不正です。ファイル名に \\ / : * ? "" < > | の文字は使えません。 "
-				strprintf( msg, LS(STR_CMDLINE_PARSECMD1), szPath );
+				strprintf( msg, LS(STR_CMDLINE_PARSECMD1), szPath.c_str() );
 				const WCHAR* msg_str = msg.c_str();
 				MessageBox( nullptr, msg_str, L"FileNameError", MB_OK);
 				szPath[0] = L'\0';
