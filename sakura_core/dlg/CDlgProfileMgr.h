@@ -23,10 +23,10 @@
 
 struct SProfileSettings
 {
-	WCHAR m_szDllLanguage[_MAX_PATH];
-	int	m_nDefaultIndex;
-	std::vector<std::wstring> m_vProfList;
-	bool m_bDefaultSelect;
+	SFilePath m_szDllLanguage{};
+	int	m_nDefaultIndex = -1;
+	std::vector<std::wstring> m_vProfList{};
+	bool m_bDefaultSelect = false;
 };
 
 class CDlgProfileMgr final : public CDialog
