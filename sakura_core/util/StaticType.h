@@ -12,10 +12,25 @@
 #include "util/string_ex.h"
 #include "debug/Debug2.h"
 
-//! ヒープを用いないvector
-//2007.09.23 kobake 作成。
+#include <array>
+#include <initializer_list>
+#include <ranges>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+
+/*!
+ * @brief ヒープを用いないvector
+ *
+ * std::arrayが存在しなかった時代に作られたもの。
+ * 生配列の代わりとして使えるよう改造しており、原形を留めていない。
+ *
+ * @author kobake
+ * @date 2007.09.23 kobake 作成
+ */
 template <class ELEMENT_TYPE, int MAX_SIZE, class SET_TYPE = const ELEMENT_TYPE&>
-class StaticVector {
+class StaticVector final {
 public:
 	//型
 	using ElementType = ELEMENT_TYPE;
@@ -23,34 +38,33 @@ public:
 private:
 	using ArrayType = std::array<ElementType, MAX_SIZE>;
 
+	using Me = StaticVector<ElementType, MAX_SIZE, SET_TYPE>;
+
 public:
 	static int max_size() noexcept { return MAX_SIZE; }
 
 	StaticVector() = default;
 
-	constexpr explicit StaticVector(std::initializer_list<ElementType> source)
-		: StaticVector(std::span<const ElementType>{ source.begin(), source.size() })
-	{
-	}
-
 	template<std::ranges::sized_range T>
 	constexpr explicit StaticVector(const T& source)
 	{
-		const auto sourceSize = static_cast<size_t>(std::size(source));
-		if (static_cast<size_t>(MAX_SIZE) < sourceSize) {
-			throw std::out_of_range("source is out of range.");
+		const auto sourceSize = static_cast<int>(std::size(source));
+		if (MAX_SIZE < sourceSize) {
+			throw std::out_of_range(std::format("source has too many elements. (elements: {}, allowed: {})", sourceSize, MAX_SIZE));
 		}
 
-		m_nCount = static_cast<int>(sourceSize);
+		m_nCount = sourceSize;
 
-		auto itSource = std::ranges::begin(source);
-		for (int i = 0; i < m_nCount; ++i, ++itSource) {
-			m_aElements[i] = static_cast<ElementType>(*itSource);
-		}
+		std::ranges::copy(source, m_aElements.begin());
+	}
+
+	constexpr explicit StaticVector(std::initializer_list<ElementType> source)
+		: StaticVector(std::span(source.begin(), source.size()))
+	{
 	}
 
 	//属性
-	int size() const noexcept { return m_nCount; }
+	constexpr int size() const noexcept { return m_nCount; }
 
 	constexpr auto begin() noexcept { return m_aElements.begin(); }
 	constexpr auto end() noexcept { return m_aElements.begin() + MAX_SIZE; }
@@ -58,45 +72,66 @@ public:
 	auto begin() const noexcept { return m_aElements.begin(); }
 	auto end() const noexcept { return m_aElements.begin() + m_nCount; }
 
+	constexpr       auto* data()        noexcept { return std::data(m_aElements); }
+	constexpr const auto* data()  const noexcept { return std::data(m_aElements); }
+
+	/* implicit */ constexpr operator std::span<ElementType, MAX_SIZE>() & noexcept { return std::span<ElementType, MAX_SIZE>{ data(), MAX_SIZE }; }
+	/* implicit */ constexpr operator std::span<ElementType>() & noexcept { return operator std::span<ElementType, MAX_SIZE>(); }
+	/* implicit */ constexpr operator const ElementType*() const & noexcept { return data(); }
+
 	//要素アクセス
 	ElementType& operator[](size_t nIndex) noexcept
 	{
-		assert(nIndex<MAX_SIZE);
-		assert_warning(0 <= m_nCount);
-		assert_warning(0 == m_nCount || nIndex < size_t(m_nCount));
-		return m_aElements[nIndex];
+		assert(nIndex <= size_t(MAX_SIZE));
+
+		const auto index = static_cast<int>(nIndex);
+		if (m_nCount <= index && index < MAX_SIZE) {
+			try {
+				resize(index + 1);
+			}
+			catch (const std::out_of_range&) {
+				// 例外を握りつぶす(絶対に発生しない想定)
+			}
+		}
+
+		return m_aElements[index];
 	}
+
 	constexpr const ElementType& operator[](size_t nIndex) const
 	{
-		if (MAX_SIZE <= nIndex) {
+		if (size_t(MAX_SIZE) <= nIndex) {
 			throw std::out_of_range("nIndex is out of range.");
 		}
-		return m_aElements[nIndex];
+
+		const auto index = static_cast<int>(nIndex);
+		return m_aElements[index];
 	}
 
 	//操作
 	void clear() noexcept { m_nCount=0; }
+
 	template<typename ... Args>
-	void emplace_back(Args ...args)
+	void emplace_back(Args&& ...args)
 	{
-		if (MAX_SIZE <= m_nCount) {
-			throw std::out_of_range("m_nCount is out of range.");
-		}
-		m_aElements[m_nCount++] = ElementType(args...);
+		const auto index = m_nCount;
+		resize(index + 1);
+		m_aElements[index] = ElementType(std::forward<Args>(args)...);
 	}
+
 	void push_back(SET_TYPE e)
 	{
-		if (MAX_SIZE <= m_nCount) {
-			throw std::out_of_range("m_nCount is out of range.");
-		}
-		m_aElements[m_nCount++] = e;
+		const auto index = m_nCount;
+		resize(index + 1);
+		m_aElements[index] = e;
 	}
-	void resize(size_t nNewSize)
+
+	constexpr void resize(size_t nNewSize)
 	{
-		if (size_t(MAX_SIZE) <= nNewSize) {
+		const auto newSize = static_cast<int>(nNewSize);
+		if (MAX_SIZE < newSize) {
 			throw std::out_of_range("nNewSize is out of range.");
 		}
-		m_nCount = static_cast<int>(nNewSize);
+		m_nCount = newSize;
 	}
 	
 	//! 要素数が0でも要素へのポインタを取得
