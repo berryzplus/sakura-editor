@@ -206,4 +206,13 @@ TEST(StaticString, test001)
 	EXPECT_THAT(static_cast<size_t>(std::distance(constPath.begin(), constPath.end())), Eq(constPath.length()));
 }
 
+/*!
+ * @brief StaticStringのテスト
+ */
+TEST(StaticString, test101)
+{
+	// バッファより長い文字列を指定したら落ちること
+	ASSERT_THROW({ StaticString<4> path{ L"test" }; }, std::out_of_range);
+}
+
 } // namespace basis

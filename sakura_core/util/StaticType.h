@@ -117,8 +117,15 @@ private:
 	ArrayType	m_aElements{};
 };
 
-//! ヒープを用いない文字列クラス
-//2007.09.23 kobake 作成。
+/*!
+ * @brief ヒープを用いない文字列クラス
+ *
+ * 格納文字数を制限することによりクラス内だけデータ領域が完結する疑似文字列クラス。
+ * C++標準の文字列クラスはヒープ領域にデータを格納するので、共有メモリに配置できない。
+ *
+ * @author kobake
+ * @date 2007.09.23 kobake 作成
+ */
 template <int N_BUFFER_COUNT>
 class StaticString{
 private:
@@ -137,7 +144,15 @@ public:
 
 	//コンストラクタ・デストラクタ
 	StaticString() = default;
-	constexpr explicit StaticString(std::wstring_view src) { assign(src); }
+
+	constexpr explicit StaticString(
+		std::wstring_view source
+	)
+	{
+		if (STRUNCATE == assign(source)) {
+			throw std::out_of_range(std::format("source string is too long. (length:{}, capacity: {})", std::size(source), size()));
+		}
+	}
 
 	/*!
 	 * 文字列を末尾に追加する
@@ -189,18 +204,16 @@ public:
 	constexpr const WCHAR* data()  const noexcept { return std::data(m_szData); }
 	constexpr const WCHAR* c_str() const noexcept { return data(); }
 
-	constexpr operator std::span<WCHAR, N>()       & noexcept { return std::span<WCHAR, N>{ data(), N }; }
-	constexpr operator std::wstring_view()   const & noexcept { return std::wstring_view{ data(), length() }; }
-	constexpr operator std::span<WCHAR>()          & noexcept { return operator std::span<WCHAR, N>(); }
+	constexpr /* implicit */ operator std::span<WCHAR, N>()       & noexcept { return std::span<WCHAR, N>{ data(), N }; }
+	constexpr /* implicit */ operator std::span<WCHAR>()          & noexcept { return operator std::span<WCHAR, N>(); }
+	constexpr /* implicit */ operator std::wstring_view()   const & noexcept { return std::wstring_view{ data(), length() }; }
 
 	explicit operator std::filesystem::path() const & noexcept { return static_cast<std::wstring_view>(*this); }
 
 	constexpr Me& operator = (std::wstring_view rhs) noexcept { assign(rhs); return *this; }
-	constexpr Me& operator = (const std::wstring& rhs) noexcept { assign(rhs); return *this; }
 	constexpr Me& operator = (const std::filesystem::path& path) noexcept { assign(path.wstring()); return *this; }
 
 	constexpr Me& operator += (std::wstring_view rhs) noexcept { append(rhs); return *this; }
-	constexpr Me& operator += (const std::wstring& rhs) noexcept { append(rhs); return *this; }
 
 	//クラス属性
 	size_t GetBufferCount() const{ return N_BUFFER_COUNT; }
@@ -210,13 +223,14 @@ public:
 	const WCHAR* GetBufferPointer() const{ return data(); }
 
 	//簡易データアクセス
-	constexpr operator       WCHAR*()       & noexcept { return data(); }
-	constexpr operator const WCHAR*() const & noexcept { return data(); }
+	constexpr /* implicit */ operator       WCHAR*()       & noexcept { return data(); }
+	constexpr /* implicit */ operator const WCHAR*() const & noexcept { return data(); }
 
 	WCHAR At(int nIndex) const{ return m_szData[nIndex]; }
 
 	//簡易コピー
 	void Assign(const WCHAR* src) noexcept { assign(std::wstring_view{ src ? src : L"" }); }
+
 	Me& operator = (const WCHAR* src){ Assign(src); return *this; }
 
 	//各種メソッド
