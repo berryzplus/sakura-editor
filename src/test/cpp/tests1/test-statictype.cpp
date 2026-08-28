@@ -11,13 +11,15 @@ namespace basis {
 
 static_assert([] {
 	const StaticVector<size_t, 3> vec{ 10u, 20u, 30u };
-	return vec.size() == 3 && vec[0] == 10u && vec[1] == 20u && vec[2] == 30u;
+	return vec.size() == 3 && vec.count() == 3 && !vec.empty() && vec[0] == 10u && vec[1] == 20u && vec[2] == 30u;
 }());
+
+static_assert(StaticVector<size_t, 3>{}.empty());
 
 static_assert([] {
 	const std::vector<size_t> source{ 10u, 20u, 30u };
 	const StaticVector<size_t, 3> vec(source);
-	return vec.size() == 3 && vec[0] == 10u && vec[1] == 20u && vec[2] == 30u;
+	return vec.size() == 3 && vec.count() == 3 && vec[0] == 10u && vec[1] == 20u && vec[2] == 30u;
 }());
 
 /*!
@@ -27,7 +29,9 @@ TEST(StaticVector, test001)
 {
 	StaticVector<size_t, 3> vec{ 10u, 20u, 30u };
 
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.size(), Eq(3u));
+	EXPECT_THAT(vec.count(), Eq(3u));
+	EXPECT_THAT(vec.empty(), IsFalse());
 	EXPECT_THAT(vec[0], Eq(10u));
 	EXPECT_THAT(vec[1], Eq(20u));
 	EXPECT_THAT(vec[2], Eq(30u));
@@ -37,13 +41,13 @@ TEST(StaticVector, test001)
 	EXPECT_THROW({ vec.emplace_back(40u); }, std::out_of_range);
 
 	// 追加できないので、サイズをカウントアップしてはいけない
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 
 	// 追加しようとしてもできないことを確認する
 	EXPECT_THROW({ vec.push_back(0xffffff); }, std::out_of_range);
 
 	// 追加できないので、サイズをカウントアップしてはいけない
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 
 	// 範囲外アクセス
 	try {
@@ -64,25 +68,26 @@ TEST(StaticVector, test001)
 	EXPECT_THAT(vec[1], Eq(20u));
 
 	EXPECT_THROW({ vec.resize(4); }, std::out_of_range);
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 
 	vec.resize(2);
-	EXPECT_THAT(vec.size(), Eq(2));
+	EXPECT_THAT(vec.count(), Eq(2u));
 
 	vec.resize(1);
-	EXPECT_THAT(vec.size(), Eq(1));
+	EXPECT_THAT(vec.count(), Eq(1u));
 	EXPECT_THAT(vec[0], Eq(10u));
 
 	vec.push_back(20u);
 	vec.emplace_back(30u);
 
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 	EXPECT_THAT(vec[1], Eq(20u));
 	EXPECT_THAT(vec[2], Eq(30u));
 	EXPECT_THAT(std::distance(vec.begin(), vec.end()), Eq(3));
 
 	vec.clear();
-	EXPECT_THAT(vec.size(), Eq(0));
+	EXPECT_THAT(vec.count(), Eq(0u));
+	EXPECT_THAT(vec.empty(), IsTrue());
 	EXPECT_THAT(std::distance(vec.begin(), vec.end()), Eq(3));
 
 	// 自動リサイズ機能の確認
@@ -95,20 +100,20 @@ TEST(StaticVector, test001)
 
 	sizeRef = 2;
 	vec.SetSizeLimit();
-	EXPECT_THAT(vec.size(), Eq(2));
+	EXPECT_THAT(vec.count(), Eq(2u));
 
 	sizeRef = 99;
 	vec.SetSizeLimit();
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 
 	sizeRef = -1;
 	vec.SetSizeLimit();
-	EXPECT_THAT(vec.size(), Eq(0));
+	EXPECT_THAT(vec.count(), Eq(0u));
 
 	// 引数足りない
 	vec = StaticVector<size_t, 3>{ 10u, 20u };
 
-	EXPECT_THAT(vec.size(), Eq(2));
+	EXPECT_THAT(vec.count(), Eq(2u));
 	EXPECT_THAT(vec[0], Eq(10u));
 	EXPECT_THAT(vec[1], Eq(20u));
 	EXPECT_THAT(std::distance(vec.begin(), vec.end()), Eq(3));
@@ -131,7 +136,7 @@ TEST(StaticVector, test001)
 
 	vec = StaticVector<size_t, 3>(source);
 
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 	EXPECT_THAT(vec[0], Eq(10u));
 	EXPECT_THAT(vec[1], Eq(20u));
 	EXPECT_THAT(vec[2], Eq(30u));
@@ -140,7 +145,7 @@ TEST(StaticVector, test001)
 	const std::vector<size_t> vectorSource{ 10u, 20u, 30u };
 	vec = StaticVector<size_t, 3>(vectorSource);
 
-	EXPECT_THAT(vec.size(), Eq(3));
+	EXPECT_THAT(vec.count(), Eq(3u));
 	EXPECT_THAT(vec[0], Eq(10u));
 	EXPECT_THAT(vec[1], Eq(20u));
 	EXPECT_THAT(vec[2], Eq(30u));

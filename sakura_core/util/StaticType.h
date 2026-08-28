@@ -41,7 +41,7 @@ private:
 	using Me = StaticVector<ElementType, MAX_SIZE, SET_TYPE>;
 
 public:
-	static int max_size() noexcept { return MAX_SIZE; }
+	static constexpr size_t size() noexcept { return MAX_SIZE; }
 
 	StaticVector() = default;
 
@@ -64,7 +64,8 @@ public:
 	}
 
 	//属性
-	constexpr int size() const noexcept { return m_nCount; }
+	constexpr size_t count() const noexcept { return m_nCount; }
+	constexpr bool empty() const noexcept { return 0 == m_nCount; }
 
 	constexpr auto begin() noexcept { return m_aElements.begin(); }
 	constexpr auto end() noexcept { return m_aElements.begin() + MAX_SIZE; }
