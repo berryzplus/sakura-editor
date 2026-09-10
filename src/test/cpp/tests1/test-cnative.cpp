@@ -28,6 +28,9 @@ TEST(CStringRef, CStringRef)
 	EXPECT_THAT(v1.empty(), IsTrue());
 	EXPECT_THAT(v1.str(), StrEq(L""));
 
+	SFilePath p1{ v1 };
+	EXPECT_THAT(p1, StrEq(L""));
+
 	CStringRef v2(sz, cch);
 	EXPECT_STREQ(sz, v2.GetPtr());
 	EXPECT_EQ(cch, v2.GetLength());
@@ -42,6 +45,12 @@ TEST(CStringRef, CStringRef)
 	EXPECT_THAT(v2.empty(), IsFalse());
 	EXPECT_THAT(v2.str(), StrEq(L"test"));
 
+	p1 = v2;
+	EXPECT_THAT(p1, StrEq(L"test"));
+
+	p1 = nullptr;
+	EXPECT_THAT(p1, StrEq(L""));
+
 	CNativeW cmem(sz, cch);
 	CStringRef v3(cmem);
 	EXPECT_STREQ(sz, v3.GetPtr());
@@ -52,6 +61,12 @@ TEST(CStringRef, CStringRef)
 	EXPECT_EQ(L's', v3.At(2));
 	EXPECT_EQ(L't', v3.At(3));
 	EXPECT_EQ(L'\0', v3.At(4));
+
+	SFilePath p2{ cmem };
+	EXPECT_THAT(p2, StrEq(L"test"));
+
+	CStringRef v4{ p2 };
+	EXPECT_THAT(v4.str(), StrEq(L"test"));
 }
 
 /*!
@@ -336,10 +351,6 @@ TEST(CNativeW, AppendStringWithFormatting)
 	value.AppendStringF(L"いちご%d%%", 100);
 	ASSERT_STREQ(L"いちご100%", value.GetStringPtr());
 
-	// フォーマットに NULL を渡したケースをテストする
-	ASSERT_THROW(value.AppendStringF(std::wstring_view(NULL, 0)), std::invalid_argument);
-	ASSERT_THROW(value.AppendStringF(std::wstring_view(L"ダミー", 0)), std::invalid_argument);
-
 	// 文字列長を0にして、追加確保が行われないケースをテストする
 	value = L"いちご100%"; //テスト前の初期値(念のため再代入しておく
 	value._SetStringLength(0);
@@ -370,6 +381,28 @@ TEST(CNativeW, AppendStringWithFormatting)
 		value.AppendStringF( L"%s", longText.c_str() );
 		ASSERT_EQ( longText.c_str(), value );
 	}
+}
+
+TEST(CNativeW, AppendStringF101)
+{
+	EXPECT_THAT(([] {
+		// formatは必須。省略したら例外を投げること
+		std::wstring_view format{ nullptr, 0 };
+		CNativeW value;
+		value.AppendStringF(format); }),
+		ThrowsMessage<std::invalid_argument>(Eq("format can't be NULL"))
+	);
+}
+
+TEST(CNativeW, AppendStringF102)
+{
+	EXPECT_THAT(([] {
+		// formatが空なら呼び出す意味はない。空なら例外を投げること
+		std::wstring_view format = L"";
+		CNativeW value;
+		value.AppendStringF(format); }),
+		ThrowsMessage<std::invalid_argument>(Eq("format should not be empty"))
+	);
 }
 
 /*!
@@ -960,4 +993,41 @@ TEST(CNativeW, length101)
 	EXPECT_THAT(mem.length(), Eq(0));
 	EXPECT_THAT(mem.empty(), IsTrue());
 	EXPECT_THAT(mem.str(), StrEq(L""));
+}
+
+TEST(CNativeA, AppendStringWithFormatting)
+{
+	CNativeA value;
+
+	// 文字列長を0にして、追加確保が行われないケースをテストする
+	value = "いちご100%"; //テスト前の初期値(念のため再代入しておく
+	EXPECT_THAT(value.GetStringPtr(), StrEq("いちご100%"));
+
+	value = "";
+	EXPECT_THAT(value.GetStringPtr(), StrEq(""));
+
+	value.AppendStringF("%s%d%%", "いちご", 25);
+	EXPECT_THAT(value.GetStringPtr(), StrEq("いちご25%"));
+}
+
+TEST(CNativeA, AppendStringF101)
+{
+	EXPECT_THAT(([&] {
+		// formatは必須。省略したら例外を投げること
+		LPCSTR format = nullptr;
+		CNativeA value;
+		value.AppendStringF(format); }),
+		ThrowsMessage<std::invalid_argument>(Eq("format can't be NULL"))
+	);
+}
+
+TEST(CNativeA, AppendStringF102)
+{
+	EXPECT_THAT(([] {
+		// formatが空なら呼び出す意味はない。空なら例外を投げること
+		LPCSTR format = "";
+		CNativeA value;
+		value.AppendStringF(format); }),
+		ThrowsMessage<std::invalid_argument>(Eq("format should not be empty"))
+	);
 }
