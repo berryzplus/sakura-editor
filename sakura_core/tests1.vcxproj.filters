@@ -273,6 +273,12 @@
     <ClInclude Include="..\src\test\resources\TExtModule.hpp">
       <Filter>Other Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\test\resources\testing\MsvcInvalidParameterHandlerDisabler.hpp">
+      <Filter>Other Files\testing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\test\resources\testing\MsvcReportMode.hpp">
+      <Filter>Other Files\testing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\test\resources\tests1_rc.h">
