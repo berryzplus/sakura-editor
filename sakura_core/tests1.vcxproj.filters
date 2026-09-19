@@ -142,6 +142,9 @@
     <ClCompile Include="..\src\test\cpp\tests1\test-charcode.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\test\cpp\tests1\test-charset.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\test\cpp\tests1\test-zoom.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -260,6 +263,12 @@
     </ClInclude>
     <ClInclude Include="..\src\test\cpp\tests1\env\ShareDataTestSuite.hpp">
       <Filter>Other Files\env</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\test\resources\testing\MsvcInvalidParameterHandlerDisabler.hpp">
+      <Filter>Other Files\testing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\test\resources\testing\MsvcReportMode.hpp">
+      <Filter>Other Files\testing</Filter>
     </ClInclude>
     <ClInclude Include="..\src\test\cpp\tests1\window\EditorTestSuite.hpp">
       <Filter>Other Files\window</Filter>
