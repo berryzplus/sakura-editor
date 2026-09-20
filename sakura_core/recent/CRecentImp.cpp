@@ -38,7 +38,7 @@
 	pnViewCount = NULL にすると、擬似的に nViewCount == nArrayCount になる。
 */
 template <class T, class S>
-bool CRecentImp<T, S>::Create( 
+bool CRecentImp<T, S>::Create(
 	DataType*		pszItemArray,	//!< アイテム配列へのポインタ
 	size_t			nTextMaxLength,	//!< 最大テキスト長(終端含む)
 	int*			pnItemCount,	//!< アイテム個数へのポインタ
@@ -47,8 +47,6 @@ bool CRecentImp<T, S>::Create(
 	int*			pnViewCount		//!< 表示個数(NULL許可)
 )
 {
-	Terminate();
-
 	//パラメータチェック
 	if( nullptr == pszItemArray ) return false;
 	if( nullptr == pnItemCount ) return false;
@@ -541,16 +539,16 @@ bool CRecentImp<T, S>::UpdateView()
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      インスタンス化                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-template class CRecentImp<CCmdString, LPCWSTR>;
+template class CRecentImp<SCmdString, LPCWSTR>;
 template class CRecentImp<EditNode>;
 template class CRecentImp<EditInfo>;
-template class CRecentImp<CPathString, LPCWSTR>;
-template class CRecentImp<CGrepFileString, LPCWSTR>;
+template class CRecentImp<SPathString, LPCWSTR>;
+template class CRecentImp<SGrepFile, LPCWSTR>;
 #ifndef __MINGW32__
-template class CRecentImp<CMetaPath, LPCWSTR>;
-template class CRecentImp<CGrepFolderString, LPCWSTR>;
-template class CRecentImp<CSearchString, LPCWSTR>;
-template class CRecentImp<CTagjumpKeywordString, LPCWSTR>;
-template class CRecentImp<CCurDirString, LPCWSTR>;
-template class CRecentImp<CReplaceString, LPCWSTR>;
+template class CRecentImp<SMetaPath, LPCWSTR>;
+template class CRecentImp<SGrepFolder, LPCWSTR>;
+template class CRecentImp<SSearchString, LPCWSTR>;
+template class CRecentImp<STagjumpKeyword, LPCWSTR>;
+template class CRecentImp<SDirPath, LPCWSTR>;
+template class CRecentImp<SReplaceString, LPCWSTR>;
 #endif

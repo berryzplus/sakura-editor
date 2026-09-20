@@ -12,10 +12,10 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CPathString = StaticString<_MAX_PATH, false>;
+#include "recent/SShare_History.h"
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
-class CRecentFolder final : public CRecentStringImp<CPathString, false>{
+class CRecentFolder final : public CRecentStringImp<SPathString, false>{
 public:
 	//生成
 	CRecentFolder();

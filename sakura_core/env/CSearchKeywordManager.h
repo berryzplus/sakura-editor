@@ -12,17 +12,27 @@
 #define SAKURA_CSEARCHKEYWORDMANAGER_AFD28203_4738_46B7_9A7F_E758A94DB290_H_
 #pragma once
 
+#include "config/maxdata.h"
 #include "env/CSakuraEnvironment.h"	//env::ShareDataClient
+#include "recent/SShare_History.h"
+#include "util/StaticType.h"
+
+using SExcludeFile = StaticString<MAX_EXCLUDE_PATH, false>;
+using SExcludeFolder = StaticString<MAX_EXCLUDE_PATH, false>;
+using SGrepFile = StaticString<MAX_GREP_PATH, false>;
+using SGrepFolder = StaticString<MAX_GREP_PATH, false>;
+using SReplaceString = StaticString<_MAX_PATH, true>;
+using SSearchString = StaticString<_MAX_PATH, true>;
 
 //共有メモリ内構造体
 struct SShare_SearchKeywords{
 	// -- -- 検索キー -- -- //
-	StaticVector< StaticString<_MAX_PATH, true>, MAX_SEARCHKEY,  const WCHAR*>	m_aSearchKeys;
-	StaticVector< StaticString<_MAX_PATH, true>, MAX_REPLACEKEY, const WCHAR*>	m_aReplaceKeys;
-	StaticVector< StaticString<MAX_GREP_PATH, false>, MAX_GREPFILE,   const WCHAR*>	m_aGrepFiles;
-	StaticVector< StaticString<MAX_GREP_PATH, false>, MAX_GREPFOLDER, const WCHAR*>	m_aGrepFolders;
-	StaticVector< StaticString<MAX_EXCLUDE_PATH, false>, MAX_EXCLUDEFILE,   const WCHAR*>	m_aExcludeFiles;
-	StaticVector< StaticString<MAX_EXCLUDE_PATH, false>, MAX_EXCLUDEFOLDER, const WCHAR*>	m_aExcludeFolders;
+	StaticVector<SSearchString, MAX_SEARCHKEY, const WCHAR*> m_aSearchKeys;
+	StaticVector<SReplaceString, MAX_REPLACEKEY, const WCHAR*> m_aReplaceKeys;
+	StaticVector<SGrepFile, MAX_GREPFILE, const WCHAR*> m_aGrepFiles;
+	StaticVector<SGrepFolder, MAX_GREPFOLDER, const WCHAR*> m_aGrepFolders;
+	StaticVector<SExcludeFile, MAX_EXCLUDEFILE, const WCHAR*> m_aExcludeFiles;
+	StaticVector<SExcludeFolder, MAX_EXCLUDEFOLDER, const WCHAR*> m_aExcludeFolders;
 };
 
 //! 検索キーワード管理

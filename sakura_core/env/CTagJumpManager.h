@@ -4,7 +4,7 @@
 */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -13,7 +13,12 @@
 #pragma once
 
 #include "basis/SakuraBasis.h"
+#include "config/maxdata.h"
 #include "env/CSakuraEnvironment.h"	//env::ShareDataClient
+#include "recent/SShare_History.h"
+#include "util/StaticType.h"
+
+using STagjumpKeyword = StaticString<_MAX_PATH, true>;
 
 // 2004/06/21 novice タグジャンプ機能追加
 //! タグジャンプ情報
@@ -28,7 +33,7 @@ struct TagJump {
 struct SShare_TagJump{
 	//型
 	typedef StaticVector<
-		StaticString<_MAX_PATH>,
+		STagjumpKeyword,
 		MAX_TAGJUMP_KEYWORD
 	>					ATagJumpKeywords;
 

@@ -13,10 +13,10 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CCurDirString = StaticString<_MAX_PATH, true>;
+#include "recent/SShare_History.h"
 
 //! コマンドの履歴を管理 (RECENT_FOR_CUR_DIR)
-class CRecentCurDir final : public CRecentStringImp<CCurDirString, true>{
+class CRecentCurDir final : public CRecentStringImp<SDirPath, true>{
 public:
 	//生成
 	CRecentCurDir();

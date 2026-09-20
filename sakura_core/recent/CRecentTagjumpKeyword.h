@@ -12,10 +12,10 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CTagjumpKeywordString = StaticString<_MAX_PATH, true>;
+#include "recent/SShare_History.h"
 
 //! タグジャンプキーワードの履歴を管理 (RECENT_FOR_TAGJUMP_KEYWORD)
-class CRecentTagjumpKeyword final : public CRecentStringImp<CTagjumpKeywordString, true>{
+class CRecentTagjumpKeyword final : public CRecentStringImp<STagjumpKeyword, true>{
 public:
 	//生成
 	CRecentTagjumpKeyword();

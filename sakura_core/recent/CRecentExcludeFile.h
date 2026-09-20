@@ -12,10 +12,10 @@
 #include "util/StaticType.h"
 #include "config/maxdata.h"
 
-using CExcludeFileString = StaticString<MAX_EXCLUDE_PATH, false>;
+#include "recent/SShare_History.h"
 
 //! Excludeファイルの履歴を管理 (RECENT_FOR_Exclude_FILE)
-class CRecentExcludeFile final : public CRecentStringImp<CExcludeFileString, false>{
+class CRecentExcludeFile final : public CRecentStringImp<SExcludeFile, false>{
 public:
 	//生成
 	CRecentExcludeFile();

@@ -13,10 +13,10 @@
 #include "util/StaticType.h"
 #include "config/maxdata.h"
 
-using CGrepFolderString = StaticString<MAX_GREP_PATH, false>;
+#include "recent/SShare_History.h"
 
 //! GREPフォルダーの履歴を管理 (RECENT_FOR_GREP_FOLDER)
-class CRecentGrepFolder final : public CRecentStringImp<CGrepFolderString, false>{
+class CRecentGrepFolder final : public CRecentStringImp<SGrepFolder, false>{
 public:
 	//生成
 	CRecentGrepFolder();

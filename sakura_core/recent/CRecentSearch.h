@@ -12,10 +12,10 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CSearchString = StaticString<_MAX_PATH, true>;
+#include "recent/SShare_History.h"
 
 //! 検索の履歴を管理 (RECENT_FOR_SEARCH)
-class CRecentSearch final : public CRecentStringImp<CSearchString, true>{
+class CRecentSearch final : public CRecentStringImp<SSearchString, true>{
 public:
 	//生成
 	CRecentSearch();

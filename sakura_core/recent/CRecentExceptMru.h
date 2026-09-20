@@ -12,10 +12,10 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CMetaPath = StaticString<_MAX_PATH, false>;
+#include "recent/SShare_History.h"
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
-class CRecentExceptMRU final : public CRecentStringImp<CMetaPath, false>{
+class CRecentExceptMRU final : public CRecentStringImp<SMetaPath, false>{
 public:
 	//生成
 	CRecentExceptMRU();

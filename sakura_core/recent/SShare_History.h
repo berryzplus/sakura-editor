@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -10,6 +10,12 @@
 
 #include "basis/EditInfo.h"
 #include "config/maxdata.h"
+#include "util/StaticType.h"
+
+using SCmdString = StaticString<MAX_CMDLEN, true>;
+using SDirPath = StaticString<_MAX_PATH, true>;
+using SMetaPath = StaticString<_MAX_PATH, false>;
+using SPathString = StaticString<_MAX_PATH, false>;
 
 //共有メモリ内構造体
 struct SShare_History{
@@ -20,17 +26,16 @@ struct SShare_History{
 
 	//@@@ 2001.12.26 YAZAKI	以下の2つは、直接アクセスしないでください。CMRUFolderを経由してください。
 	int								m_nOPENFOLDERArrNum;
-	StaticString<_MAX_PATH, false>	m_szOPENFOLDERArr[MAX_OPENFOLDER];
+	SPathString						m_szOPENFOLDERArr[MAX_OPENFOLDER];
 	bool							m_bOPENFOLDERArrFavorite[MAX_OPENFOLDER];	//お気に入り	//@@@ 2003.04.08 MIK
 
 	//MRU除外リスト一覧
-	StaticVector< StaticString<_MAX_PATH, false>, MAX_MRU,  const WCHAR* >	m_aExceptMRU;
+	StaticVector<SMetaPath, MAX_MRU, const WCHAR*> m_aExceptMRU;
 
 	//MRU以外の情報
 	SFilePath													m_szIMPORTFOLDER;	// インポートディレクトリの履歴
-	StaticVector< StaticString<MAX_CMDLEN, true>, MAX_CMDARR > m_aCommands;		// 外部コマンド実行履歴
-	StaticVector< StaticString<_MAX_PATH, true>, MAX_CMDARR > m_aCurDirs;		// カレントディレクトリ履歴
+	StaticVector<SCmdString, MAX_CMDARR> m_aCommands;	// 外部コマンド実行履歴
+	StaticVector<SDirPath, MAX_CMDARR> m_aCurDirs;	// カレントディレクトリ履歴
 };
 
 #endif /* SAKURA_SSHARE_HISTORY_9F7E6200_FEE2_4CAC_A5D3_32EEC4130CFC_H_ */
-/*[EOF]*/
