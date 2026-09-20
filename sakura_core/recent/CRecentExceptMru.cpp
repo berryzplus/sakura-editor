@@ -64,11 +64,3 @@ void CRecentExceptMRU::CopyItem( CMetaPath* dst, LPCWSTR src ) const
 	wcscpy(*dst,src);
 }
 
-bool CRecentExceptMRU::ValidateReceiveType( LPCWSTR p ) const
-{
-	if( GetTextMaxLength() <= wcslen(p) ){
-		return false;
-	}
-	return true;
-}
-

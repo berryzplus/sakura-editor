@@ -64,11 +64,3 @@ void CRecentFolder::CopyItem( CPathString* dst, LPCWSTR src ) const
 	wcscpy(*dst,src);
 }
 
-bool CRecentFolder::ValidateReceiveType( LPCWSTR p ) const
-{
-	if( GetTextMaxLength() <= wcslen(p) ){
-		return false;
-	}
-	return true;
-}
-
