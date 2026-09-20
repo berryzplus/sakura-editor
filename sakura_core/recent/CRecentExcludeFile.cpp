@@ -43,8 +43,4 @@ bool CRecentExcludeFile::DataToReceiveType( LPCWSTR* dst, const CExcludeFileStri
 	*dst = *src;
 	return true;
 }
-int CRecentExcludeFile::CompareItem( const CExcludeFileString* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 

@@ -16,13 +16,12 @@
 using CCurDirString = StaticString<_MAX_PATH>;
 
 //! コマンドの履歴を管理 (RECENT_FOR_CUR_DIR)
-class CRecentCurDir final : public CRecentImp<CCurDirString, LPCWSTR>{
+class CRecentCurDir final : public CRecentStringImp<CCurDirString, true>{
 public:
 	//生成
 	CRecentCurDir();
 
 	//オーバーライド
-	int				CompareItem( const CCurDirString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CCurDirString* src ) const override;
 };

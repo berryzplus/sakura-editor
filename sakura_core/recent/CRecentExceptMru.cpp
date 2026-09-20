@@ -45,8 +45,4 @@ bool CRecentExceptMRU::DataToReceiveType( LPCWSTR* dst, const CMetaPath* src ) c
 	*dst = *src;
 	return true;
 }
-int CRecentExceptMRU::CompareItem( const CMetaPath* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 

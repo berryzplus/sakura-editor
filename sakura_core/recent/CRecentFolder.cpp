@@ -45,8 +45,4 @@ bool CRecentFolder::DataToReceiveType( LPCWSTR* dst, const CPathString* src ) co
 	*dst = *src;
 	return true;
 }
-int CRecentFolder::CompareItem( const CPathString* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 

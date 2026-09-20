@@ -44,8 +44,4 @@ bool CRecentGrepFolder::DataToReceiveType( LPCWSTR* dst, const CGrepFolderString
 	*dst = *src;
 	return true;
 }
-int CRecentGrepFolder::CompareItem( const CGrepFolderString* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 

@@ -15,13 +15,12 @@
 using CReplaceString = StaticString<_MAX_PATH>;
 
 //! 置換の履歴を管理 (RECENT_FOR_REPLACE)
-class CRecentReplace final : public CRecentImp<CReplaceString, LPCWSTR>{
+class CRecentReplace final : public CRecentStringImp<CReplaceString, true>{
 public:
 	//生成
 	CRecentReplace();
 
 	//オーバーライド
-	int				CompareItem( const CReplaceString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CReplaceString* src ) const override;
 };

@@ -15,13 +15,12 @@
 using CMetaPath = StaticString<_MAX_PATH>;
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
-class CRecentExceptMRU final : public CRecentImp<CMetaPath, LPCWSTR>{
+class CRecentExceptMRU final : public CRecentStringImp<CMetaPath, false>{
 public:
 	//生成
 	CRecentExceptMRU();
 
 	//オーバーライド
-	int				CompareItem( const CMetaPath* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CMetaPath* src ) const override;
 };

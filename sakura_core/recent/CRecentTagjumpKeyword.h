@@ -15,13 +15,12 @@
 using CTagjumpKeywordString = StaticString<_MAX_PATH>;
 
 //! タグジャンプキーワードの履歴を管理 (RECENT_FOR_TAGJUMP_KEYWORD)
-class CRecentTagjumpKeyword final : public CRecentImp<CTagjumpKeywordString, LPCWSTR>{
+class CRecentTagjumpKeyword final : public CRecentStringImp<CTagjumpKeywordString, true>{
 public:
 	//生成
 	CRecentTagjumpKeyword();
 
 	//オーバーライド
-	int				CompareItem( const CTagjumpKeywordString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CTagjumpKeywordString* src ) const override;
 };

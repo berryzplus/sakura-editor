@@ -44,8 +44,4 @@ bool CRecentGrepFile::DataToReceiveType( LPCWSTR* dst, const CGrepFileString* sr
 	*dst = *src;
 	return true;
 }
-int CRecentGrepFile::CompareItem( const CGrepFileString* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 

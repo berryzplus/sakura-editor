@@ -16,13 +16,12 @@
 using CGrepFileString = StaticString<MAX_GREP_PATH>;
 
 //! GREPファイルの履歴を管理 (RECENT_FOR_GREP_FILE)
-class CRecentGrepFile final : public CRecentImp<CGrepFileString, LPCWSTR>{
+class CRecentGrepFile final : public CRecentStringImp<CGrepFileString, false>{
 public:
 	//生成
 	CRecentGrepFile();
 
 	//オーバーライド
-	int				CompareItem( const CGrepFileString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CGrepFileString* src ) const override;
 };

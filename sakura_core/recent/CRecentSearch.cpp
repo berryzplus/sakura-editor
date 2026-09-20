@@ -45,8 +45,4 @@ bool CRecentSearch::DataToReceiveType( LPCWSTR* dst, const CSearchString* src ) 
 	*dst = *src;
 	return true;
 }
-int CRecentSearch::CompareItem( const CSearchString* p1, LPCWSTR p2 ) const
-{
-	return wcscmp(*p1,p2);
-}
 

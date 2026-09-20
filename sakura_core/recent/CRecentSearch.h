@@ -15,13 +15,12 @@
 using CSearchString = StaticString<_MAX_PATH>;
 
 //! 検索の履歴を管理 (RECENT_FOR_SEARCH)
-class CRecentSearch final : public CRecentImp<CSearchString, LPCWSTR>{
+class CRecentSearch final : public CRecentStringImp<CSearchString, true>{
 public:
 	//生成
 	CRecentSearch();
 
 	//オーバーライド
-	int				CompareItem( const CSearchString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CSearchString* src ) const override;
 };

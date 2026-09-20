@@ -15,13 +15,12 @@
 using CPathString = StaticString<_MAX_PATH>;
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
-class CRecentFolder final : public CRecentImp<CPathString, LPCWSTR>{
+class CRecentFolder final : public CRecentStringImp<CPathString, false>{
 public:
 	//生成
 	CRecentFolder();
 
 	//オーバーライド
-	int				CompareItem( const CPathString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CPathString* src ) const override;
 };

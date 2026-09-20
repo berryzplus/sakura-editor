@@ -45,8 +45,4 @@ bool CRecentReplace::DataToReceiveType( LPCWSTR* dst, const CReplaceString* src 
 	*dst = *src;
 	return true;
 }
-int CRecentReplace::CompareItem( const CReplaceString* p1, LPCWSTR p2 ) const
-{
-	return wcscmp(*p1,p2);
-}
 

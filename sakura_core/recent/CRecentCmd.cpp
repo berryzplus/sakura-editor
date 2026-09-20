@@ -44,8 +44,4 @@ bool CRecentCmd::DataToReceiveType( LPCWSTR* dst, const CCmdString* src ) const
 	*dst = *src;
 	return true;
 }
-int CRecentCmd::CompareItem( const CCmdString* p1, LPCWSTR p2 ) const
-{
-	return wcscmp(*p1,p2);
-}
 

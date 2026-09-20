@@ -16,13 +16,12 @@
 using CGrepFolderString = StaticString<MAX_GREP_PATH>;
 
 //! GREPフォルダーの履歴を管理 (RECENT_FOR_GREP_FOLDER)
-class CRecentGrepFolder final : public CRecentImp<CGrepFolderString, LPCWSTR>{
+class CRecentGrepFolder final : public CRecentStringImp<CGrepFolderString, false>{
 public:
 	//生成
 	CRecentGrepFolder();
 
 	//オーバーライド
-	int				CompareItem( const CGrepFolderString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CGrepFolderString* src ) const override;
 };

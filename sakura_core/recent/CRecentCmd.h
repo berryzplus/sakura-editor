@@ -16,13 +16,12 @@
 using CCmdString = StaticString<MAX_CMDLEN>;
 
 //! コマンドの履歴を管理 (RECENT_FOR_CMD)
-class CRecentCmd final : public CRecentImp<CCmdString, LPCWSTR>{
+class CRecentCmd final : public CRecentStringImp<CCmdString, true>{
 public:
 	//生成
 	CRecentCmd();
 
 	//オーバーライド
-	int				CompareItem( const CCmdString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CCmdString* src ) const override;
 };

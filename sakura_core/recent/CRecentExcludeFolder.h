@@ -15,13 +15,12 @@
 using CExcludeFolderString= StaticString<MAX_EXCLUDE_PATH>;
 
 //! Excludeフォルダーの履歴を管理 (RECENT_FOR_Exclude_FOLDER)
-class CRecentExcludeFolder final : public CRecentImp<CExcludeFolderString, LPCWSTR>{
+class CRecentExcludeFolder final : public CRecentStringImp<CExcludeFolderString, false>{
 public:
 	//生成
 	CRecentExcludeFolder();
 
 	//オーバーライド
-	int				CompareItem( const CExcludeFolderString* p1, LPCWSTR p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	bool			DataToReceiveType( LPCWSTR* dst, const CExcludeFolderString* src ) const override;
 };

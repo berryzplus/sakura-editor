@@ -145,4 +145,18 @@ protected:
 	size_t		m_nTextMaxLength;		//!< 最大テキスト長(終端含む)
 };
 
+template <class DATA_TYPE, bool CASE_SENSITIVE>
+class CRecentStringImp : public CRecentImp<DATA_TYPE, LPCWSTR>{
+public:
+	int CompareItem( const DATA_TYPE* p1, LPCWSTR p2 ) const override
+	{
+		if constexpr (CASE_SENSITIVE) {
+			return wcscmp(*p1, p2);
+		}
+		else {
+			return _wcsicmp(*p1, p2);
+		}
+	}
+};
+
 #endif /* SAKURA_CRECENTIMP_B18E6196_5684_44E4_91E0_ADB1542BF7E1_H_ */

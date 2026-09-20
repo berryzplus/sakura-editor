@@ -43,8 +43,4 @@ bool CRecentExcludeFolder::DataToReceiveType( LPCWSTR* dst, const CExcludeFolder
 	*dst = *src;
 	return true;
 }
-int CRecentExcludeFolder::CompareItem( const CExcludeFolderString* p1, LPCWSTR p2 ) const
-{
-	return _wcsicmp(*p1,p2);
-}
 
