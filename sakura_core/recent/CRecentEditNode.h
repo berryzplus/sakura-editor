@@ -21,7 +21,6 @@ public:
 	//オーバーライド
 	int				CompareItem( const EditNode* p1, const EditNode* p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
-	bool			DataToReceiveType( const EditNode** dst, const EditNode* src ) const override;
 	//固有インターフェース
 	int FindItemByHwnd(HWND hwnd) const;
 	void DeleteItemByHwnd(HWND hwnd);

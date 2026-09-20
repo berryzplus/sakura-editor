@@ -23,7 +23,6 @@ public:
 
 	//オーバーライド
 	const WCHAR*	GetItemText( int nIndex ) const override;
-	bool			DataToReceiveType( LPCWSTR* dst, const CCurDirString* src ) const override;
 };
 
 #endif /* SAKURA_CRECENTCURDIR_A5846FA5_5608_4E6A_9A57_65DE2133E40A_H_ */

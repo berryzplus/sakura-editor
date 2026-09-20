@@ -38,9 +38,3 @@ const WCHAR* CRecentExcludeFile::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentExcludeFile::DataToReceiveType( LPCWSTR* dst, const CExcludeFileString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

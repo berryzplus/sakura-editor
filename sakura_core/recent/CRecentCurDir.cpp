@@ -40,9 +40,3 @@ const WCHAR* CRecentCurDir::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentCurDir::DataToReceiveType( LPCWSTR* dst, const CCurDirString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

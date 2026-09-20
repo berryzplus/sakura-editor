@@ -38,9 +38,3 @@ const WCHAR* CRecentExcludeFolder::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentExcludeFolder::DataToReceiveType( LPCWSTR* dst, const CExcludeFolderString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

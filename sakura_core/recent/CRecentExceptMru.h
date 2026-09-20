@@ -22,7 +22,6 @@ public:
 
 	//オーバーライド
 	const WCHAR*	GetItemText( int nIndex ) const override;
-	bool			DataToReceiveType( LPCWSTR* dst, const CMetaPath* src ) const override;
 };
 
 #endif /* SAKURA_CRECENTEXCEPTMRU_4DF7E5C5_2EC1_4A19_B31C_74EF43DC08AE_H_ */

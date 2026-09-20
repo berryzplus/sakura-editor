@@ -40,9 +40,3 @@ const WCHAR* CRecentFolder::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentFolder::DataToReceiveType( LPCWSTR* dst, const CPathString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

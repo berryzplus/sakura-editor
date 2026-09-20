@@ -94,7 +94,19 @@ public:
 		}
 	}
 
-	virtual bool DataToReceiveType( ReceiveType* dst, const DataType* src ) const = 0;
+	bool DataToReceiveType(
+		ReceiveType* dst,
+		const DataType* src
+	) const
+	{
+		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
+			*dst = *src;
+		}
+		else {
+			*dst = src;
+		}
+		return true;
+	}
 
 	virtual bool TextToDataType(
 		 DataType* dst [[maybe_unused]],

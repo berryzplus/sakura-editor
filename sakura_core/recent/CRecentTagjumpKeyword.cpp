@@ -40,9 +40,3 @@ const WCHAR* CRecentTagjumpKeyword::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentTagjumpKeyword::DataToReceiveType( LPCWSTR* dst, const CTagjumpKeywordString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

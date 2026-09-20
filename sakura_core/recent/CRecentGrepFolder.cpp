@@ -39,9 +39,3 @@ const WCHAR* CRecentGrepFolder::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentGrepFolder::DataToReceiveType( LPCWSTR* dst, const CGrepFolderString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

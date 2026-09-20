@@ -40,9 +40,3 @@ const WCHAR* CRecentExceptMRU::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentExceptMRU::DataToReceiveType( LPCWSTR* dst, const CMetaPath* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

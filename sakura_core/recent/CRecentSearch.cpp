@@ -40,9 +40,3 @@ const WCHAR* CRecentSearch::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentSearch::DataToReceiveType( LPCWSTR* dst, const CSearchString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

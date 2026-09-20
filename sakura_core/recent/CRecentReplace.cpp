@@ -40,9 +40,3 @@ const WCHAR* CRecentReplace::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentReplace::DataToReceiveType( LPCWSTR* dst, const CReplaceString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-

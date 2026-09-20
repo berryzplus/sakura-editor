@@ -39,9 +39,3 @@ const WCHAR* CRecentCmd::GetItemText( int nIndex ) const
 	return *GetItem(nIndex);
 }
 
-bool CRecentCmd::DataToReceiveType( LPCWSTR* dst, const CCmdString* src ) const
-{
-	*dst = *src;
-	return true;
-}
-
