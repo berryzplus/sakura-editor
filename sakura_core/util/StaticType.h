@@ -12,6 +12,7 @@
 #include "debug/Debug2.h"
 #include "util/string_ex.h"
 
+#include <algorithm>
 #include <array>
 #include <initializer_list>
 #include <ranges>
@@ -266,11 +267,12 @@ private:
  * @endcode
  *
  * @tparam N バッファサイズ。最大文字列長 + 1（NUL終端）を指定すること。
+ * @tparam CASE_SENSITIVE 比較時に大文字小文字を区別するかどうか。デフォルトはtrue。
  *
  * @author kobake
  * @date 2007.09.23 kobake 作成
  */
-template <int N>
+template <int N, bool CASE_SENSITIVE = true>
 // TODO: final指定したいが継承クラスがあるのでコメントアウトしている
 class StaticString /* final */ {
 private:
@@ -280,7 +282,7 @@ private:
 	using ArrayType = std::array<WCHAR, N>;
 	using Traits = std::char_traits<WCHAR>;
 
-	using Me = StaticString<N>;
+	using Me = StaticString<N, CASE_SENSITIVE>;
 
 #pragma push_macro("DISABLE_IMPLICIT_OPERATORS")
 
@@ -337,6 +339,73 @@ public:
 	auto end() const noexcept { return m_szData.begin() + length(); }
 
 	constexpr auto c_str() const noexcept { return data(); }
+
+	/*!
+	 * @brief 文字列と比較する
+	 *
+	 * @tparam[in] A 比較する文字列の型（NUL終端文字列に変換できる型）
+	 * @param[in, opt] text 比較対象
+	 * @returns 比較結果
+	 * @retval < 0 比較対象より大きい（辞書順で後）
+	 * @retval < 0 先頭部分が一致、かつ、比較対象より長い
+	 * @retval == 0 比較対象が自分自身の参照
+	 * @retval == 0 比較対象と等しい
+	 * @retval > 0 先頭部分が一致、かつ、比較対象より短い
+	 * @retval > 0 比較対象より小さい（辞書順で前）
+	 * @retval > 0 比較対象がNULL
+	 */
+	template <basis::NullTerminatedStringConstructible<WCHAR> A>
+	constexpr int compare(const A& text) const
+	{
+		// 比較対象が同型の場合、同一オブジェクトかどうかも確認する
+		if constexpr (std::is_same_v<A, Me>) {
+			if (this == &text) {
+				return 0;
+			}
+		}
+
+		// 入力元をNUL終端文字列とみなす
+		const auto szRhs = cxx::NullTerminatedString{ text };
+
+		// 比較対象がNULLの場合、比較対象のほうが大きいとみなす
+		if (!szRhs.c_str()) {
+			return 1;
+		}
+
+		const auto lhs = str();
+		const auto rhs = szRhs.str();
+
+		auto itL = lhs.begin();
+		auto itR = rhs.begin();
+
+		for (; itL != lhs.end(); ++itL, ++itR) {
+			if (itR == rhs.end()) {
+				return 1;
+			}
+
+			wchar_t chL = *itL;
+			wchar_t chR = *itR;
+
+			if constexpr (!CASE_SENSITIVE) {
+				chL = std::towupper(chL);
+				chR = std::towupper(chR);
+			}
+
+			if (chL < chR) {
+				return -1;
+			}
+
+			if (chR < chL) {
+				return 1;
+			}
+		}
+
+		if (itR != rhs.end()) {
+			return -1;
+		}
+
+		return 0;
+	}
 
 	constexpr auto data()        noexcept { return std::data(m_szData); }
 	constexpr auto data()  const noexcept { return std::data(m_szData); }
