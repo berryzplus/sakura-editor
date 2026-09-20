@@ -12,7 +12,7 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CPathString = StaticString<_MAX_PATH>;
+using CPathString = StaticString<_MAX_PATH, false>;
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
 class CRecentFolder final : public CRecentStringImp<CPathString, false>{

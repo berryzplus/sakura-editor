@@ -12,7 +12,7 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CReplaceString = StaticString<_MAX_PATH>;
+using CReplaceString = StaticString<_MAX_PATH, true>;
 
 //! 置換の履歴を管理 (RECENT_FOR_REPLACE)
 class CRecentReplace final : public CRecentStringImp<CReplaceString, true>{

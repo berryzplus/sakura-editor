@@ -13,7 +13,7 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CCurDirString = StaticString<_MAX_PATH>;
+using CCurDirString = StaticString<_MAX_PATH, true>;
 
 //! コマンドの履歴を管理 (RECENT_FOR_CUR_DIR)
 class CRecentCurDir final : public CRecentStringImp<CCurDirString, true>{

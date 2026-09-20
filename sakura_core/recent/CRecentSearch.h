@@ -12,7 +12,7 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CSearchString = StaticString<_MAX_PATH>;
+using CSearchString = StaticString<_MAX_PATH, true>;
 
 //! 検索の履歴を管理 (RECENT_FOR_SEARCH)
 class CRecentSearch final : public CRecentStringImp<CSearchString, true>{

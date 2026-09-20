@@ -12,7 +12,7 @@
 #include "CRecentImp.h"
 #include "util/StaticType.h"
 
-using CTagjumpKeywordString = StaticString<_MAX_PATH>;
+using CTagjumpKeywordString = StaticString<_MAX_PATH, true>;
 
 //! タグジャンプキーワードの履歴を管理 (RECENT_FOR_TAGJUMP_KEYWORD)
 class CRecentTagjumpKeyword final : public CRecentStringImp<CTagjumpKeywordString, true>{

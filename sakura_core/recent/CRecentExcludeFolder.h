@@ -12,7 +12,7 @@
 #include "util/StaticType.h"
 #include "config/maxdata.h"
 
-using CExcludeFolderString= StaticString<MAX_EXCLUDE_PATH>;
+using CExcludeFolderString= StaticString<MAX_EXCLUDE_PATH, false>;
 
 //! Excludeフォルダーの履歴を管理 (RECENT_FOR_Exclude_FOLDER)
 class CRecentExcludeFolder final : public CRecentStringImp<CExcludeFolderString, false>{
