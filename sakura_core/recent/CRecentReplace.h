@@ -19,9 +19,6 @@ class CRecentReplace final : public CRecentStringImp<CReplaceString, true>{
 public:
 	//生成
 	CRecentReplace();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTREPLACE_F287196B_19A2_4CEA_9225_9E9C681774F7_H_ */

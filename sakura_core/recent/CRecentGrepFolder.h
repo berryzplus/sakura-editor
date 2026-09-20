@@ -20,9 +20,6 @@ class CRecentGrepFolder final : public CRecentStringImp<CGrepFolderString, false
 public:
 	//生成
 	CRecentGrepFolder();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTGREPFOLDER_A0D1E75B_4587_4587_9A33_A5EA13349BAB_H_ */

@@ -19,9 +19,6 @@ class CRecentTagjumpKeyword final : public CRecentStringImp<CTagjumpKeywordStrin
 public:
 	//生成
 	CRecentTagjumpKeyword();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTTAGJUMPKEYWORD_1416AC30_3714_4760_A313_76588D26A0A1_H_ */

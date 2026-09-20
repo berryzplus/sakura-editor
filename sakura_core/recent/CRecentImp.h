@@ -160,6 +160,11 @@ protected:
 template <class DATA_TYPE, bool CASE_SENSITIVE>
 class CRecentStringImp : public CRecentImp<DATA_TYPE, LPCWSTR>{
 public:
+	const WCHAR* GetItemText( int nIndex ) const override
+	{
+		return *this->GetItem(nIndex);
+	}
+
 	int CompareItem( const DATA_TYPE* p1, LPCWSTR p2 ) const override
 	{
 		if constexpr (CASE_SENSITIVE) {

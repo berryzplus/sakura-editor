@@ -19,9 +19,6 @@ class CRecentExcludeFolder final : public CRecentStringImp<CExcludeFolderString,
 public:
 	//生成
 	CRecentExcludeFolder();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTEXCLUDEFOLDER_D933B071_8956_4B13_A01D_A5075CCE2A05_H_ */

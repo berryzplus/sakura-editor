@@ -20,9 +20,6 @@ class CRecentGrepFile final : public CRecentStringImp<CGrepFileString, false>{
 public:
 	//生成
 	CRecentGrepFile();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTGREPFILE_E23BE08A_1B53_492D_85EE_4370AA956BB5_H_ */

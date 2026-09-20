@@ -19,9 +19,6 @@ class CRecentFolder final : public CRecentStringImp<CPathString, false>{
 public:
 	//生成
 	CRecentFolder();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTFOLDER_E26A46E2_C8DF_4228_A0D6_24A2712392E9_H_ */

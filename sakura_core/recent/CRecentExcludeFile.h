@@ -19,9 +19,6 @@ class CRecentExcludeFile final : public CRecentStringImp<CExcludeFileString, fal
 public:
 	//生成
 	CRecentExcludeFile();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTEXCLUDEFILE_74BD9C61_4E41_4D1D_A8CE_8C78B4DDDEBA_H_ */

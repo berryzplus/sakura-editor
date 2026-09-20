@@ -25,18 +25,3 @@ CRecentFolder::CRecentFolder()
 		&(GetShareData()->m_Common.m_sGeneral.m_nOPENFOLDERArrNum_MAX)
 	);
 }
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                      オーバーライド                         //
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-/*
-	アイテムの比較要素を取得する。
-
-	@note	取得後のポインタはユーザー管理の構造体にキャストして参照してください。
-*/
-const WCHAR* CRecentFolder::GetItemText( int nIndex ) const
-{
-	return *GetItem(nIndex);
-}
-

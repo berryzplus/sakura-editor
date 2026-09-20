@@ -20,9 +20,6 @@ class CRecentCmd final : public CRecentStringImp<CCmdString, true>{
 public:
 	//生成
 	CRecentCmd();
-
-	//オーバーライド
-	const WCHAR*	GetItemText( int nIndex ) const override;
 };
 
 #endif /* SAKURA_CRECENTCMD_4EB34D07_2F92_4BE4_9AB1_767141022C54_H_ */

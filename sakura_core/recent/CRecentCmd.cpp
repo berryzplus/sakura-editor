@@ -24,18 +24,3 @@ CRecentCmd::CRecentCmd()
 		nullptr
 	);
 }
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-//                      オーバーライド                         //
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-/*
-	アイテムの比較要素を取得する。
-
-	@note	取得後のポインタはユーザー管理の構造体にキャストして参照してください。
-*/
-const WCHAR* CRecentCmd::GetItemText( int nIndex ) const
-{
-	return *GetItem(nIndex);
-}
-
