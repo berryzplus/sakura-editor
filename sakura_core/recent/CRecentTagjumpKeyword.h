@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! タグジャンプキーワードの履歴を管理 (RECENT_FOR_TAGJUMP_KEYWORD)
-class CRecentTagjumpKeyword final : public CRecentStringImp<STagjumpKeyword, true>{
+class CRecentTagjumpKeyword final : public CRecentImp<STagjumpKeyword, LPCWSTR>{
 public:
 	//生成
 	CRecentTagjumpKeyword();

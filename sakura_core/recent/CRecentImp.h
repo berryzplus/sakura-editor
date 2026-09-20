@@ -84,7 +84,15 @@ public:
 	bool MoveItem( int nSrcIndex, int nDstIndex );	//アイテムを移動
 
 	//オーバーライド用インターフェース
-	virtual int  CompareItem( const DataType* p1, ReceiveType p2 ) const = 0;
+	virtual int CompareItem( const DataType* p1, ReceiveType p2 ) const
+	{
+		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
+			return p1->compare(p2);
+		}
+		else {
+			return 0;
+		}
+	}
 
 	void CopyItem(
 		DataType* dst,
@@ -96,6 +104,16 @@ public:
 		}
 		else {
 			*dst = *src;
+		}
+	}
+
+	const WCHAR* GetItemText(int nIndex) const override
+	{
+		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
+			return GetItem(nIndex);
+		}
+		else {
+			return nullptr;
 		}
 	}
 
@@ -182,20 +200,6 @@ protected:
 	int			m_nArrayCount;			//!< 最大管理可能なアイテム数
 	int*		m_pnUserViewCount;		//!< 表示個数 (NULL許可)
 	size_t		m_nTextMaxLength;		//!< 最大テキスト長(終端含む)
-};
-
-template <class DATA_TYPE, bool CASE_SENSITIVE>
-class CRecentStringImp : public CRecentImp<DATA_TYPE, LPCWSTR>{
-public:
-	const WCHAR* GetItemText(int nIndex) const override
-	{
-		return this->GetItem(nIndex);
-	}
-
-	int CompareItem( const DATA_TYPE* p1, LPCWSTR p2 ) const override
-	{
-		return p1->compare(p2);
-	}
 };
 
 #endif /* SAKURA_CRECENTIMP_B18E6196_5684_44E4_91E0_ADB1542BF7E1_H_ */

@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! Excludeファイルの履歴を管理 (RECENT_FOR_Exclude_FILE)
-class CRecentExcludeFile final : public CRecentStringImp<SExcludeFile, false>{
+class CRecentExcludeFile final : public CRecentImp<SExcludeFile, LPCWSTR>{
 public:
 	//生成
 	CRecentExcludeFile();

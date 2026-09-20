@@ -16,7 +16,7 @@
 #include "recent/SShare_History.h"
 
 //! コマンドの履歴を管理 (RECENT_FOR_CUR_DIR)
-class CRecentCurDir final : public CRecentStringImp<SDirPath, true>{
+class CRecentCurDir final : public CRecentImp<SDirPath, LPCWSTR>{
 public:
 	//生成
 	CRecentCurDir();

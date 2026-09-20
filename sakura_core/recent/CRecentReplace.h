@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! 置換の履歴を管理 (RECENT_FOR_REPLACE)
-class CRecentReplace final : public CRecentStringImp<SReplaceString, true>{
+class CRecentReplace final : public CRecentImp<SReplaceString, LPCWSTR>{
 public:
 	//生成
 	CRecentReplace();
