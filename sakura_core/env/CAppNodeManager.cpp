@@ -150,7 +150,7 @@ BOOL CAppNodeGroupHandle::AddEditWndList( HWND hWnd )
 			nSubCommand = TWNT_ORDER;
 
 			//以前の情報をコピーする。
-			p = cRecentEditNode.GetItem( nIndex );
+			p = &cRecentEditNode.GetItem(nIndex);
 			if( p )
 			{
 				sMyEditNode = *p;
@@ -179,7 +179,7 @@ BOOL CAppNodeGroupHandle::AddEditWndList( HWND hWnd )
 			}
 			else
 			{
-				p = cRecentEditNode.GetItem( 0 );
+				p = &cRecentEditNode.GetItem(0);
 				if( nullptr == p )
 					sMyEditNode.m_nGroup = ++pShare->m_sNodes.m_nGroupSequences;	// 新規グループ
 				else

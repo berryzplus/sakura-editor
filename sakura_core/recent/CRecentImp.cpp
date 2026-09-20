@@ -419,20 +419,6 @@ bool CRecentImp<T, S>::CopyItem( int nSrcIndex, int nDstIndex )
 //                       アイテム取得                          //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-template <class T, class S>
-const T* CRecentImp<T, S>::GetItem( int nIndex ) const
-{
-	if(!IsAvailable() || nIndex<0 || nIndex>=*m_pnUserItemCount)return nullptr;
-	return &m_puUserItemData[nIndex];
-}
-
-template <class T, class S>
-const T* CRecentImp<T, S>::GetItemPointer(int nIndex) const
-{
-	if(!IsAvailable() || nIndex<0 || nIndex>=m_nArrayCount)return nullptr;
-	return &m_puUserItemData[nIndex];
-}
-
 /*
 	アイテムを検索する。
 */

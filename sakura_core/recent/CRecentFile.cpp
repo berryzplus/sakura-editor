@@ -17,7 +17,7 @@
 */
 const WCHAR* CRecentFile::GetItemText( int nIndex ) const
 {
-	return GetItem(nIndex)->m_szPath;
+	return GetItem(nIndex).m_szPath;
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -38,7 +38,7 @@ CRecentFile::CRecentFile()
 
 int CRecentFile::CompareItem( const EditInfo* p1, const EditInfo* p2 ) const
 {
-	return _wcsicmp(p1->m_szPath, p2->m_szPath);
+	return p1->m_szPath.compare(p2->m_szPath);
 }
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -49,7 +49,7 @@ int CRecentFile::FindItemByPath(const WCHAR* pszPath) const
 {
 	int n = GetItemCount();
 	for(int i=0;i<n;i++){
-		if(_wcsicmp(GetItem(i)->m_szPath,pszPath)==0)return i;
+		if (0 == GetItem(i).m_szPath.compare(pszPath)) return i;
 	}
 	return -1;
 }

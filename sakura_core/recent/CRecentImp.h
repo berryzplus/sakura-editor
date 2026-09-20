@@ -23,11 +23,14 @@ class CRecentImp : public CRecent{
 
 public:
 	CRecentImp(){ Terminate(); }
+
 	CRecentImp(const Me&) = delete;
 	Me& operator = (const Me&) = delete;
+
 	CRecentImp(Me&&) noexcept = delete;
 	Me& operator = (Me&&) noexcept = delete;
-	virtual ~CRecentImp(){ Terminate(); }
+
+	~CRecentImp() override { Terminate(); }
 
 protected:
 	//生成
@@ -39,6 +42,7 @@ protected:
 		int				nArrayCount,	//!< 最大管理可能なアイテム数
 		int*			pnViewCount		//!< 表示個数(NULL許可)
 	);
+
 public:
 	void Terminate() override;
 	bool IsAvailable() const;
@@ -73,8 +77,9 @@ public:
 	void DeleteAllItem() override;					//アイテムをすべてクリア
 
 	//アイテム取得
-	const DataType* GetItem( int nIndex ) const;
-	DataType* GetItem( int nIndex ){ return const_cast<DataType*>(static_cast<const Me*>(this)->GetItem(nIndex)); }
+	auto& GetItem(int nIndex) const { return *GetItemPointer(nIndex); }
+	auto& GetItem(int nIndex)		{ return *GetItemPointer(nIndex); }
+
 	int FindItem( ReceiveType pItemData ) const;
 	bool MoveItem( int nSrcIndex, int nDstIndex );	//アイテムを移動
 
@@ -136,10 +141,32 @@ public:
 		}
 	}
 
+	int FindItemByText(LPCWSTR pszText) const override
+	{
+		int n = GetItemCount();
+		for(int i=0;i<n;i++){
+			if(wcscmp(GetItemText(i),pszText)==0)return i;
+		}
+		return -1;
+	}
+
+	// 共有メモリアクセス
+	DLLSHAREDATA*	GetShareData()
+	{
+		return &GetDllShareData();
+	}
+
 	//実装補助
 private:
-	const DataType* GetItemPointer(int nIndex) const;
-	DataType* GetItemPointer(int nIndex){ return const_cast<DataType*>(static_cast<const Me*>(this)->GetItemPointer(nIndex)); }
+	const DataType* GetItemPointer(int nIndex) const {
+		if (!IsAvailable() || nIndex < 0 || m_nArrayCount <= nIndex) return nullptr;
+		return &m_puUserItemData[nIndex];
+	}
+	DataType* GetItemPointer(int nIndex) {
+		if (!IsAvailable() || nIndex < 0 || m_nArrayCount <= nIndex) return nullptr;
+		return &m_puUserItemData[nIndex];
+	}
+
 	void   ZeroItem( int nIndex );	//アイテムをゼロクリアする
 	int    GetOldestItem( int nIndex, bool bFavorite );	//最古のアイテムを探す
 	bool   CopyItem( int nSrcIndex, int nDstIndex );
@@ -160,19 +187,14 @@ protected:
 template <class DATA_TYPE, bool CASE_SENSITIVE>
 class CRecentStringImp : public CRecentImp<DATA_TYPE, LPCWSTR>{
 public:
-	const WCHAR* GetItemText( int nIndex ) const override
+	const WCHAR* GetItemText(int nIndex) const override
 	{
-		return *this->GetItem(nIndex);
+		return this->GetItem(nIndex);
 	}
 
 	int CompareItem( const DATA_TYPE* p1, LPCWSTR p2 ) const override
 	{
-		if constexpr (CASE_SENSITIVE) {
-			return wcscmp(*p1, p2);
-		}
-		else {
-			return _wcsicmp(*p1, p2);
-		}
+		return p1->compare(p2);
 	}
 };
 

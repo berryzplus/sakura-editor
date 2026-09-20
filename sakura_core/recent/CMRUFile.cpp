@@ -91,7 +91,7 @@ HMENU CMRUFile::CreateMenu( HMENU	hMenuPopUp, CMenuDrawer* pCMenuDrawer ) const
 		
 		/* MRUリストの中にある開かれていないファイル */
 
-		const EditInfo	*p = m_cRecentFile.GetItem( i );
+		const auto p = &m_cRecentFile.GetItem(i);
 		bFavorite = m_cRecentFile.IsFavorite( i );
 		bool bFavoriteLabel = bFavorite && !bMenuIcon;
 		CFileNameManager::getInstance()->GetMenuFullLabel_MRU( szMenu, int(std::size(szMenu)), p, -1, bFavoriteLabel, i, dcFont.GetHDC() );
@@ -143,15 +143,15 @@ void CMRUFile::ClearAll(void)
 /*!
 	ファイル情報の取得
 	
-	@param num [in] 履歴番号(0~)
-	@param pfi [out] 構造体へのポインタ格納先
+	@param[in] nIndex 履歴番号(0~)
+	@param[out] pfi 構造体へのポインタ格納先
 	
 	@retval TRUE データが格納された
 	@retval FALSE 正しくない番号が指定された．データは格納されなかった．
 */
-bool CMRUFile::GetEditInfo( int num, EditInfo* pfi ) const
+bool CMRUFile::GetEditInfo(int nIndex, EditInfo* pfi) const
 {
-	const EditInfo*	p = m_cRecentFile.GetItem( num );
+	const auto p = &m_cRecentFile.GetItem(nIndex);
 	if( nullptr == p ) return false;
 
 	*pfi = *p;
@@ -172,7 +172,10 @@ bool CMRUFile::GetEditInfo( int num, EditInfo* pfi ) const
 */
 bool CMRUFile::GetEditInfo( const WCHAR* pszPath, EditInfo* pfi ) const
 {
-	const EditInfo*	p = m_cRecentFile.GetItem( m_cRecentFile.FindItemByPath( pszPath ) );
+	const auto index = m_cRecentFile.FindItemByPath(pszPath);
+	if (index < 0) return false;	// 見付からなかった
+
+	const auto p = &m_cRecentFile.GetItem(index);
 	if( nullptr == p ) return false;
 
 	*pfi = *p;

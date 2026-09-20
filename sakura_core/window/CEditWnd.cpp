@@ -3970,8 +3970,7 @@ void CEditWnd::ChangeFileNameNotify(
 	bool changed = false;
 	if( -1 != nIndex )
 	{
-		EditNode *p = cRecentEditNode.GetItem( nIndex );
-		if( p )
+		if (const auto p = &cRecentEditNode.GetItem(nIndex))
 		{
 			decltype(p->m_szTabCaption) caption;
 			wcsncpy_s(caption, std::size(caption), pszTabCaption, _TRUNCATE);

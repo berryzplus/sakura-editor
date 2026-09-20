@@ -52,7 +52,7 @@ int CRecentEditNode::FindItemByHwnd(HWND hwnd) const
 {
 	int n = GetItemCount();
 	for(int i=0;i<n;i++){
-		if(GetItem(i)->m_hWnd == hwnd)return i;
+		if (GetItem(i).m_hWnd == hwnd) return i;
 	}
 	return -1;
 }
