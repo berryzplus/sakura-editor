@@ -106,15 +106,25 @@ int CESI::GetIndexById( const ECodeType eCodeType ) const
 */
 void CESI::SetEvaluation( const ECodeType eCodeId, const int v1, const int v2 )
 {
-	int nidx;
 	struct tagEncodingInfo *pcEI;
 
-	nidx = GetIndexById( eCodeId );
-	if( eCodeId == CODE_UNICODE || eCodeId == CODE_UNICODEBE ){
+	if (const auto nidx = GetIndexById(eCodeId);
+		nidx < 0)
+	{
+		return;
+	}
+	else if (CODE_UNICODE == eCodeId ||
+		CODE_UNICODEBE ==  eCodeId)
+	{
 		pcEI = &m_aWcInfo[nidx];
-	}else{
+	}
+	else
+	{
+		assert(nidx < std::ssize(m_aMbcInfo));
+
 		pcEI = &m_aMbcInfo[nidx];
 	}
+
 	pcEI->eCodeID = eCodeId;
 	pcEI->nSpecific = v1;
 	pcEI->nPoints = v2;
@@ -131,15 +141,25 @@ void CESI::SetEvaluation( const ECodeType eCodeId, const int v1, const int v2 )
 */
 void CESI::GetEvaluation( const ECodeType eCodeId, int *pv1, int *pv2 ) const
 {
-	int nidx;
 	const struct tagEncodingInfo *pcEI;
 
-	nidx = GetIndexById( eCodeId );
-	if( eCodeId == CODE_UNICODE || eCodeId == CODE_UNICODEBE ){
+	if (const auto nidx = GetIndexById(eCodeId);
+		nidx < 0)
+	{
+		return;
+	}
+	else if (CODE_UNICODE == eCodeId ||
+		CODE_UNICODEBE ==  eCodeId)
+	{
 		pcEI = &m_aWcInfo[nidx];
-	}else{
+	}
+	else
+	{
+		assert(nidx < std::ssize(m_aMbcInfo));
+
 		pcEI = &m_aMbcInfo[nidx];
 	}
+
 	*pv1 = pcEI->nSpecific;
 	*pv2 = pcEI->nPoints;
 
