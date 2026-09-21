@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! Excludeフォルダーの履歴を管理 (RECENT_FOR_Exclude_FOLDER)
-class CRecentExcludeFolder final : public CRecentImp<SExcludeFolder, LPCWSTR>{
+class CRecentExcludeFolder final : public CRecentImp<SExcludeFolder>{
 public:
 	//生成
 	CRecentExcludeFolder();

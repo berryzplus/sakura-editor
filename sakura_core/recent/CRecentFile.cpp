@@ -36,7 +36,7 @@ CRecentFile::CRecentFile()
 	);
 }
 
-int CRecentFile::CompareItem( const EditInfo* p1, const EditInfo* p2 ) const
+int CRecentFile::CompareItemData( const EditInfo* p1, const EditInfo* p2 ) const
 {
 	return p1->m_szPath.compare(p2->m_szPath);
 }

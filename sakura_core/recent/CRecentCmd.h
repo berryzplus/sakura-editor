@@ -16,7 +16,7 @@
 #include "recent/SShare_History.h"
 
 //! コマンドの履歴を管理 (RECENT_FOR_CMD)
-class CRecentCmd final : public CRecentImp<SCmdString, LPCWSTR>{
+class CRecentCmd final : public CRecentImp<SCmdString>{
 public:
 	//生成
 	CRecentCmd();

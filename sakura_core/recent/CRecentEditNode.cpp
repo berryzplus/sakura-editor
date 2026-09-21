@@ -39,7 +39,7 @@ const WCHAR* CRecentEditNode::GetItemText( [[maybe_unused]] int nIndex ) const
 	return L"WIN"; //※テキスト情報は無い (GetWindowTextしてあげても良いけど、この関数は実行されないので、意味は無い)
 }
 
-int CRecentEditNode::CompareItem( const EditNode* p1, const EditNode* p2 ) const
+int CRecentEditNode::CompareItemData( const EditNode* p1, const EditNode* p2 ) const
 {
 	return int(p1->m_hWnd - p2->m_hWnd);
 }

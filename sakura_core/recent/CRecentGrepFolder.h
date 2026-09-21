@@ -16,7 +16,7 @@
 #include "recent/SShare_History.h"
 
 //! GREPフォルダーの履歴を管理 (RECENT_FOR_GREP_FOLDER)
-class CRecentGrepFolder final : public CRecentImp<SGrepFolder, LPCWSTR>{
+class CRecentGrepFolder final : public CRecentImp<SGrepFolder>{
 public:
 	//生成
 	CRecentGrepFolder();

@@ -14,12 +14,11 @@
 
 #include "recent/CRecent.h"
 
-template < class DATA_TYPE, class RECEIVE_TYPE = const DATA_TYPE* >
+template <class DATA_TYPE>
 class CRecentImp : public CRecent{
-	using Me = CRecentImp<DATA_TYPE, RECEIVE_TYPE>;
+	using Me = CRecentImp<DATA_TYPE>;
 
-	typedef DATA_TYPE							DataType;
-	typedef RECEIVE_TYPE						ReceiveType;
+	typedef DATA_TYPE DataType;
 
 public:
 	CRecentImp(){ Terminate(); }
@@ -65,13 +64,45 @@ public:
 	bool IsFavorite( int nIndex ) const override;			//お気に入りか調べる
 
 	//アイテム制御
-	bool AppendItem( ReceiveType pItemData );	//アイテムを先頭に追加
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	bool AppendItem(const A& itemData)
+	{
+		if (!IsAvailable() || !ValidateItem(itemData)) return false;
+
+		int nIndex = FindItem(itemData);
+		if (nIndex >= 0) {
+			CopyItem(GetItemPointer(nIndex), itemData);
+			MoveItem(nIndex, 0);
+		}
+		else {
+			if (m_nArrayCount <= *m_pnUserItemCount) {
+				nIndex = GetOldestItem(*m_pnUserItemCount - 1, false);
+				if (-1 == nIndex) return false;
+				DeleteItem(nIndex);
+			}
+
+			for (int i = *m_pnUserItemCount; i > 0; --i) {
+				CopyItem(i - 1, i);
+			}
+			CopyItem(GetItemPointer(0), itemData);
+			if (m_pbUserItemFavorite) m_pbUserItemFavorite[0] = false;
+			*m_pnUserItemCount += 1;
+		}
+
+		if (m_pnUserViewCount) {
+			ChangeViewCount(*m_pnUserViewCount);
+		}
+		return true;
+	}
 	bool AppendItemText( LPCWSTR pszText ) override;
 	bool EditItemText( int nIndex, LPCWSTR pszText ) override;
 	bool DeleteItem( int nIndex ) override;				//アイテムをクリア
-	bool DeleteItem( ReceiveType pItemData )
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	bool DeleteItem(const A& itemData)
 	{
-		return DeleteItem( FindItem( pItemData ) );
+		return DeleteItem(FindItem(itemData));
 	}
 	bool DeleteItemsNoFavorite() override;			//お気に入り以外のアイテムをクリア
 	void DeleteAllItem() override;					//アイテムをすべてクリア
@@ -80,26 +111,47 @@ public:
 	auto& GetItem(int nIndex) const { return *GetItemPointer(nIndex); }
 	auto& GetItem(int nIndex)		{ return *GetItemPointer(nIndex); }
 
-	int FindItem( ReceiveType pItemData ) const;
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	int FindItem(const A& itemData) const
+	{
+		if (!IsAvailable() || !ValidateItem(itemData)) return -1;
+
+		for (int i = 0; i < *m_pnUserItemCount; ++i) {
+			if (0 == CompareItem(GetItemPointer(i), itemData)) return i;
+		}
+		return -1;
+	}
 	bool MoveItem( int nSrcIndex, int nDstIndex );	//アイテムを移動
 
 	//オーバーライド用インターフェース
-	virtual int CompareItem( const DataType* p1, ReceiveType p2 ) const
+	virtual int CompareItemData(const DataType* lhs, const DataType* rhs) const
 	{
-		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
-			return p1->compare(p2);
+		if constexpr (requires { lhs->compare(*rhs); }) {
+			return lhs->compare(*rhs);
 		}
 		else {
 			return 0;
 		}
 	}
 
-	void CopyItem(
-		DataType* dst,
-		ReceiveType src
-	) const
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	int CompareItem(const DataType* lhs, const A& rhs) const
 	{
-		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
+		if constexpr (basis::NullTerminatedStringConstructible<A, WCHAR>) {
+			return lhs->compare(rhs);
+		}
+		else {
+			return CompareItemData(lhs, rhs);
+		}
+	}
+
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	void CopyItem(DataType* dst, const A& src) const
+	{
+		if constexpr (basis::NullTerminatedStringConstructible<A, WCHAR>) {
 			wcscpy_s(*dst, src);
 		}
 		else {
@@ -109,7 +161,7 @@ public:
 
 	const WCHAR* GetItemText(int nIndex) const override
 	{
-		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
+		if constexpr (basis::NullTerminatedStringConstructible<DataType, WCHAR>) {
 			return GetItem(nIndex);
 		}
 		else {
@@ -117,27 +169,13 @@ public:
 		}
 	}
 
-	bool DataToReceiveType(
-		ReceiveType* dst,
-		const DataType* src
-	) const
-	{
-		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
-			*dst = *src;
-		}
-		else {
-			*dst = src;
-		}
-		return true;
-	}
-
 	virtual bool TextToDataType(
 		 DataType* dst [[maybe_unused]],
 		 LPCWSTR pszText [[maybe_unused]]
 	) const
 	{
-		if constexpr (std::is_same_v<ReceiveType, LPCWSTR>) {
-			if (!ValidateReceiveType(pszText)) {
+		if constexpr (basis::NullTerminatedStringConstructible<DataType, WCHAR>) {
+			if (!ValidateItem(pszText)) {
 				return false;
 			}
 			CopyItem(dst, pszText);
@@ -148,14 +186,16 @@ public:
 		}
 	}
 
-	bool ValidateReceiveType( ReceiveType p ) const
+	template <class A>
+		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
+	bool ValidateItem(const A& value) const
 	{
-		if constexpr( std::is_same_v<ReceiveType, LPCWSTR> ){
-			return wcslen(p) < GetTextMaxLength();
+		if constexpr (basis::NullTerminatedStringConstructible<A, WCHAR>) {
+			const auto text = cxx::NullTerminatedString{ value };
+			return text.c_str() && text.str().length() < GetTextMaxLength();
 		}
 		else {
-			// CRecentEditNodeの実装（おそらくバグ。）
-			return true;
+			return nullptr != value;
 		}
 	}
 

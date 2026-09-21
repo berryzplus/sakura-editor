@@ -19,7 +19,7 @@ public:
 	CRecentEditNode();
 
 	//オーバーライド
-	int				CompareItem( const EditNode* p1, const EditNode* p2 ) const override;
+	int				CompareItemData( const EditNode* p1, const EditNode* p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 	//固有インターフェース
 	int FindItemByHwnd(HWND hwnd) const;

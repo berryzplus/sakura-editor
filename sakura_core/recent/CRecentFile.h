@@ -19,7 +19,7 @@ public:
 	CRecentFile();
 
 	//オーバーライド
-	int				CompareItem( const EditInfo* p1, const EditInfo* p2 ) const override;
+	int				CompareItemData( const EditInfo* p1, const EditInfo* p2 ) const override;
 	const WCHAR*	GetItemText( int nIndex ) const override;
 
 	//固有インターフェース

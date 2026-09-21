@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! フォルダーの履歴を管理 (RECENT_FOR_FOLDER)
-class CRecentExceptMRU final : public CRecentImp<SMetaPath, LPCWSTR>{
+class CRecentExceptMRU final : public CRecentImp<SMetaPath>{
 public:
 	//生成
 	CRecentExceptMRU();

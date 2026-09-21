@@ -15,7 +15,7 @@
 #include "recent/SShare_History.h"
 
 //! 検索の履歴を管理 (RECENT_FOR_SEARCH)
-class CRecentSearch final : public CRecentImp<SSearchString, LPCWSTR>{
+class CRecentSearch final : public CRecentImp<SSearchString>{
 public:
 	//生成
 	CRecentSearch();
