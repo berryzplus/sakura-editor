@@ -7,7 +7,7 @@
 */
 
 #include "StdAfx.h"
-#include "CRecentEditNode.h"
+#include "recent/CRecentEditNode.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                           生成                              //
@@ -28,16 +28,6 @@ CRecentEditNode::CRecentEditNode()
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      オーバーライド                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-
-/*
-	アイテムの比較要素を取得する。
-
-	@note	取得後のポインタはユーザー管理の構造体にキャストして参照してください。
-*/
-const WCHAR* CRecentEditNode::GetItemText( [[maybe_unused]] int nIndex ) const
-{
-	return L"WIN"; //※テキスト情報は無い (GetWindowTextしてあげても良いけど、この関数は実行されないので、意味は無い)
-}
 
 int CRecentEditNode::CompareItemData( const EditNode* p1, const EditNode* p2 ) const
 {

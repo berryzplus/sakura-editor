@@ -37,8 +37,8 @@
 	
 	pnViewCount = NULL にすると、擬似的に nViewCount == nArrayCount になる。
 */
-template <class T>
-bool CRecentImp<T>::Create(
+template <class T, class U>
+bool CRecentImp<T, U>::Create(
 	DataType*		pszItemArray,	//!< アイテム配列へのポインタ
 	size_t			nTextMaxLength,	//!< 最大テキスト長(終端含む)
 	int*			pnItemCount,	//!< アイテム個数へのポインタ
@@ -71,8 +71,8 @@ bool CRecentImp<T>::Create(
 /*
 	終了処理
 */
-template <class T>
-void CRecentImp<T>::Terminate()
+template <class T, class U>
+void CRecentImp<T, U>::Terminate()
 {
 	m_bCreate = false;
 
@@ -87,8 +87,8 @@ void CRecentImp<T>::Terminate()
 /*
 	初期化済みか調べる。
 */
-template <class T>
-bool CRecentImp<T>::IsAvailable() const
+template <class T, class U>
+bool CRecentImp<T, U>::IsAvailable() const
 {
 	if(!m_bCreate)return false;
 
@@ -99,8 +99,8 @@ bool CRecentImp<T>::IsAvailable() const
 }
 
 //! リカバリ
-template <class T>
-void CRecentImp<T>::_Recovery()
+template <class T, class U>
+void CRecentImp<T, U>::_Recovery()
 {
 	if( *m_pnUserItemCount < 0             ) *m_pnUserItemCount = 0;
 	if( *m_pnUserItemCount > m_nArrayCount ) *m_pnUserItemCount = m_nArrayCount;
@@ -122,8 +122,8 @@ void CRecentImp<T>::_Recovery()
 	true	設定
 	false	解除
 */
-template <class T>
-bool CRecentImp<T>::SetFavorite( int nIndex, bool bFavorite )
+template <class T, class U>
+bool CRecentImp<T, U>::SetFavorite( int nIndex, bool bFavorite )
 {
 	if( ! IsAvailable() ) return false;
 	if( nIndex < 0 || nIndex >= *m_pnUserItemCount ) return false;
@@ -137,8 +137,8 @@ bool CRecentImp<T>::SetFavorite( int nIndex, bool bFavorite )
 /*
 	すべてのお気に入り状態を解除する。
 */
-template <class T>
-void CRecentImp<T>::ResetAllFavorite()
+template <class T, class U>
+void CRecentImp<T, U>::ResetAllFavorite()
 {
 	if( ! IsAvailable() ) return;
 
@@ -154,8 +154,8 @@ void CRecentImp<T>::ResetAllFavorite()
 	true	お気に入り
 	false	通常
 */
-template <class T>
-bool CRecentImp<T>::IsFavorite( int nIndex ) const
+template <class T, class U>
+bool CRecentImp<T, U>::IsFavorite( int nIndex ) const
 {
 	if( ! IsAvailable() ) return false;
 	if( nIndex < 0 || nIndex >= *m_pnUserItemCount ) return false;
@@ -175,8 +175,8 @@ bool CRecentImp<T>::IsFavorite( int nIndex ) const
 	@note	いっぱいのときは最古のアイテムを削除する。
 	@note	お気に入りは削除されない。
 */
-template <class T>
-bool CRecentImp<T>::AppendItemText( LPCWSTR pText )
+template <class T, class U>
+bool CRecentImp<T, U>::AppendItemText( LPCWSTR pText )
 {
 	DataType data;
 	if( !TextToDataType( &data, pText ) ){
@@ -189,8 +189,8 @@ bool CRecentImp<T>::AppendItemText( LPCWSTR pText )
 	return AppendItem(&data);
 }
 
-template <class T>
-bool CRecentImp<T>::EditItemText( int nIndex, LPCWSTR pText )
+template <class T, class U>
+bool CRecentImp<T, U>::EditItemText( int nIndex, LPCWSTR pText )
 {
 	DataType data;
 	memcpy_raw( &data, GetItemPointer( nIndex ), sizeof(data) );
@@ -209,8 +209,8 @@ bool CRecentImp<T>::EditItemText( int nIndex, LPCWSTR pText )
 /*
 	アイテムをゼロクリアする。
 */
-template <class T>
-void CRecentImp<T>::ZeroItem( int nIndex )
+template <class T, class U>
+void CRecentImp<T, U>::ZeroItem( int nIndex )
 {
 	if( ! IsAvailable() ) return;
 	if( nIndex < 0 || nIndex >= m_nArrayCount ) return;
@@ -225,8 +225,8 @@ void CRecentImp<T>::ZeroItem( int nIndex )
 /*
 	アイテムを削除する。
 */
-template <class T>
-bool CRecentImp<T>::DeleteItem( int nIndex )
+template <class T, class U>
+bool CRecentImp<T, U>::DeleteItem( int nIndex )
 {
 	if( ! IsAvailable() ) return false;
 	if( nIndex < 0 || nIndex >= *m_pnUserItemCount ) return false;
@@ -249,8 +249,8 @@ bool CRecentImp<T>::DeleteItem( int nIndex )
 /*
 	お気に入り以外のアイテムを削除する。
 */
-template <class T>
-bool CRecentImp<T>::DeleteItemsNoFavorite()
+template <class T, class U>
+bool CRecentImp<T, U>::DeleteItemsNoFavorite()
 {
 	if( ! IsAvailable() ) return false;
 
@@ -275,8 +275,8 @@ bool CRecentImp<T>::DeleteItemsNoFavorite()
 
 	@note	ゼロクリアを可能とするため、すべてが対象になる。
 */
-template <class T>
-void CRecentImp<T>::DeleteAllItem()
+template <class T, class U>
+void CRecentImp<T, U>::DeleteAllItem()
 {
 	int	i;
 
@@ -295,8 +295,8 @@ void CRecentImp<T>::DeleteAllItem()
 /*
 	アイテムを移動する。
 */
-template <class T>
-bool CRecentImp<T>::MoveItem( int nSrcIndex, int nDstIndex )
+template <class T, class U>
+bool CRecentImp<T, U>::MoveItem( int nSrcIndex, int nDstIndex )
 {
 	int	i;
 	bool	bFavorite;
@@ -335,8 +335,8 @@ bool CRecentImp<T>::MoveItem( int nSrcIndex, int nDstIndex )
 	return true;
 }
 
-template <class T>
-bool CRecentImp<T>::CopyItem( int nSrcIndex, int nDstIndex )
+template <class T, class U>
+bool CRecentImp<T, U>::CopyItem( int nSrcIndex, int nDstIndex )
 {
 	if( ! IsAvailable() ) return false;
 	if( nSrcIndex < 0 || nSrcIndex >= m_nArrayCount ) return false;
@@ -363,8 +363,8 @@ bool CRecentImp<T>::CopyItem( int nSrcIndex, int nDstIndex )
 	bFavorite=true	お気に入りの中から探す
 	bFavorite=false	通常の中から探す
 */
-template <class T>
-int CRecentImp<T>::GetOldestItem( int nIndex, bool bFavorite )
+template <class T, class U>
+int CRecentImp<T, U>::GetOldestItem( int nIndex, bool bFavorite )
 {
 	if( ! IsAvailable() ) return -1;
 	if( nIndex >= *m_pnUserItemCount ) nIndex = *m_pnUserItemCount - 1;
@@ -386,8 +386,8 @@ int CRecentImp<T>::GetOldestItem( int nIndex, bool bFavorite )
 
 	@note	お気に入りは可能な限り表示内に移動させる。
 */
-template <class T>
-bool CRecentImp<T>::ChangeViewCount( int nViewCount )
+template <class T, class U>
+bool CRecentImp<T, U>::ChangeViewCount( int nViewCount )
 {
 	int	i;
 	int	nIndex;
@@ -429,8 +429,8 @@ bool CRecentImp<T>::ChangeViewCount( int nViewCount )
 /*
 	リストを更新する。
 */
-template <class T>
-bool CRecentImp<T>::UpdateView()
+template <class T, class U>
+bool CRecentImp<T, U>::UpdateView()
 {
 	int	nViewCount;
 
@@ -447,8 +447,8 @@ bool CRecentImp<T>::UpdateView()
 //                      インスタンス化                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 template class CRecentImp<SCmdString>;
-template class CRecentImp<EditNode>;
-template class CRecentImp<EditInfo>;
+template class CRecentImp<EditNode, SFilePath>;
+template class CRecentImp<EditInfo, SFilePath>;
 template class CRecentImp<SPathString>;
 template class CRecentImp<SGrepFile>;
 #ifndef __MINGW32__

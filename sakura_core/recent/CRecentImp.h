@@ -10,15 +10,16 @@
 #define SAKURA_CRECENTIMP_B18E6196_5684_44E4_91E0_ADB1542BF7E1_H_
 #pragma once
 
-#include <type_traits>
-
 #include "recent/CRecent.h"
 
-template <class DATA_TYPE>
-class CRecentImp : public CRecent{
-	using Me = CRecentImp<DATA_TYPE>;
+#include <type_traits>
 
-	typedef DATA_TYPE DataType;
+template <typename DATA_TYPE, typename TEXT_TYPE = DATA_TYPE>
+class CRecentImp : public CRecent{
+	using Me = CRecentImp<DATA_TYPE, TEXT_TYPE>;
+
+	using DataType = DATA_TYPE;
+	using TextType = TEXT_TYPE;
 
 public:
 	CRecentImp(){ Terminate(); }
@@ -108,8 +109,47 @@ public:
 	void DeleteAllItem() override;					//アイテムをすべてクリア
 
 	//アイテム取得
+protected:
+	const DataType* GetItemPointer(int nIndex) const {
+		if (!IsAvailable()) throw std::logic_error("CRecentImp: not available");
+		if (nIndex < 0 || m_nArrayCount <= nIndex) throw std::out_of_range("out of range");
+		return &m_puUserItemData[nIndex];
+	}
+	DataType* GetItemPointer(int nIndex) {
+		if (!IsAvailable()) throw std::logic_error("CRecentImp: not available");
+		if (nIndex < 0 || m_nArrayCount <= nIndex) throw std::out_of_range("out of range");
+		return &m_puUserItemData[nIndex];
+	}
+
+public:
 	auto& GetItem(int nIndex) const { return *GetItemPointer(nIndex); }
 	auto& GetItem(int nIndex)		{ return *GetItemPointer(nIndex); }
+
+protected:
+	virtual TextType& GetItemString(int nIndex)
+	{
+		if constexpr (std::is_same_v<DataType, TextType>) {
+			return GetItem(nIndex);
+		}
+		else {
+			throw std::logic_error("CRecentImp: GetItemString must be overridden");
+		}
+	}
+	virtual const TextType& GetItemString(int nIndex) const
+	{
+		if constexpr (std::is_same_v<DataType, TextType>) {
+			return GetItem(nIndex);
+		}
+		else {
+			throw std::logic_error("CRecentImp: GetItemString must be overridden");
+		}
+	}
+
+public:
+	const WCHAR* GetItemText(int nIndex) const override
+	{
+		return GetItemString(nIndex);
+	}
 
 	template <class A>
 		requires std::convertible_to<A, const DataType*> || basis::NullTerminatedStringConstructible<A, WCHAR>
@@ -156,16 +196,6 @@ public:
 		}
 		else {
 			*dst = *src;
-		}
-	}
-
-	const WCHAR* GetItemText(int nIndex) const override
-	{
-		if constexpr (basis::NullTerminatedStringConstructible<DataType, WCHAR>) {
-			return GetItem(nIndex);
-		}
-		else {
-			return nullptr;
 		}
 	}
 
@@ -216,20 +246,11 @@ public:
 
 	//実装補助
 private:
-	const DataType* GetItemPointer(int nIndex) const {
-		if (!IsAvailable() || nIndex < 0 || m_nArrayCount <= nIndex) return nullptr;
-		return &m_puUserItemData[nIndex];
-	}
-	DataType* GetItemPointer(int nIndex) {
-		if (!IsAvailable() || nIndex < 0 || m_nArrayCount <= nIndex) return nullptr;
-		return &m_puUserItemData[nIndex];
-	}
-
 	void   ZeroItem( int nIndex );	//アイテムをゼロクリアする
 	int    GetOldestItem( int nIndex, bool bFavorite );	//最古のアイテムを探す
 	bool   CopyItem( int nSrcIndex, int nDstIndex );
 
-protected:
+private:
 	//内部フラグ
 	bool		m_bCreate;				//!< Create済みか
 
