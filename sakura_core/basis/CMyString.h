@@ -88,6 +88,27 @@ public:
 		// 文字列末尾のアドレスを返す
 		return tail;
 	}
+
+	/*!
+	 * @brief バッファの内容を置き換える
+	 *
+	 * @param rhs [in] 代入する文字列
+	 * @return 自分自身への参照
+	 * @throws std::out_of_range 文字列が長過ぎて入り切らない場合。
+	 */
+	constexpr Me& operator = (const Base& rhs)
+	{
+		// 入力元をNUL終端文字列とみなす
+		const auto szText = cxx::NullTerminatedString{ rhs };
+
+		// 入力元を文字列として扱う
+		auto text = static_cast<std::wstring_view>(szText);
+
+		// SFilePath::operator=を呼び出す
+		Base::operator = (text);
+
+		return *this;
+	}
 };
 
 /*!
