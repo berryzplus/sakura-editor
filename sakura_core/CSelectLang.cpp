@@ -190,11 +190,13 @@ void CSelectLang::SSelLangInfo::Unload() noexcept
 }
 
 //! 言語を変更する
-/* static */ void CSelectLang::ChangeLang(const std::filesystem::path& dllName)
+/* static */ void CSelectLang::ChangeLang(_In_z_ LPCWSTR pszDllName)
 {
 	size_t index;
 
-	if (dllName.empty()) {
+	if (std::wstring_view dllName{ pszDllName };
+		dllName.empty())
+	{
 		// デフォルト言語に戻す
 		index = 0;
 	}

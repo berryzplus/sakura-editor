@@ -95,7 +95,7 @@ public:
 	/*
 	||  Attributes & Operations
 	*/
-	static void		ChangeLang(const std::filesystem::path& dllName);
+	static void		ChangeLang(_In_z_ LPCWSTR pszDllName);
 
 private:
 	/*
