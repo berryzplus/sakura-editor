@@ -257,24 +257,43 @@ BOOL IsWow64()
 //                        便利クラス                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
-//コンストラクタでカレントディレクトリを保存し、デストラクタでカレントディレクトリを復元するモノ。
-
+/*!
+ * @brief コンストラクタ
+ */
 CCurrentDirectoryBackupPoint::CCurrentDirectoryBackupPoint()
 {
-	int n = ::GetCurrentDirectory(int(std::size(m_szCurDir)),m_szCurDir);
-	if(n>0 && n<int(std::size(m_szCurDir))){
-		//ok
+	// カレントディレクトリの取得を試みる
+	try {
+		m_szCurDir = cxx::GetCurrentDirectoryW();
 	}
-	else{
-		//ng
-		m_szCurDir[0] = L'\0';
+	// 失敗を検出したとき
+	catch (const std::exception& e) {
+		// ログを出力する
+		TRACE("fail: %s", e.what());
+		throw;
 	}
 }
 
-CCurrentDirectoryBackupPoint::~CCurrentDirectoryBackupPoint()
+/*!
+ * @brief クリーンアップ関数
+ */
+/* static */ void CCurrentDirectoryBackupPoint::_CleanUp(
+	const CCurrentDirectoryBackupPoint* pThis
+)
 {
-	if(m_szCurDir[0]){
-		::SetCurrentDirectory(m_szCurDir);
+	// カレントディレクトリが保存されていないとき
+	if (pThis->m_szCurDir.empty()) {
+		return;	// 何もせず抜ける
+	}
+
+	// カレントディレクトリの復元を試みる
+	try {
+		cxx::SetCurrentDirectoryW(pThis->m_szCurDir.str());
+	}
+	// 失敗を検出したとき
+	catch (const std::system_error& e) {
+		// ログを出力する
+		TRACE("fail: %s", e.what());
 	}
 }
 
