@@ -48,8 +48,3 @@ int CRecentExcludeFolder::CompareItem( const CExcludeFolderString* p1, LPCWSTR p
 	return _wcsicmp(*p1,p2);
 }
 
-void CRecentExcludeFolder::CopyItem( CExcludeFolderString* dst, LPCWSTR src ) const
-{
-	wcscpy(*dst,src);
-}
-

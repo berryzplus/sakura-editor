@@ -50,8 +50,3 @@ int CRecentTagjumpKeyword::CompareItem( const CTagjumpKeywordString* p1, LPCWSTR
 	return wcscmp(*p1,p2);
 }
 
-void CRecentTagjumpKeyword::CopyItem( CTagjumpKeywordString* dst, LPCWSTR src ) const
-{
-	wcscpy(*dst,src);
-}
-
