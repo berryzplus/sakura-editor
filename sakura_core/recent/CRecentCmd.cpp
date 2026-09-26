@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -44,7 +44,6 @@ bool CRecentCmd::DataToReceiveType( LPCWSTR* dst, const CCmdString* src ) const
 	*dst = *src;
 	return true;
 }
-
 bool CRecentCmd::TextToDataType( CCmdString* dst, LPCWSTR pszText ) const
 {
 	if( false == ValidateReceiveType(pszText) ){
@@ -72,7 +71,3 @@ bool CRecentCmd::ValidateReceiveType( LPCWSTR p ) const
 	return true;
 }
 
-size_t CRecentCmd::GetTextMaxLength() const
-{
-	return m_nTextMaxLength;
-}
