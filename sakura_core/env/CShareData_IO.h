@@ -55,7 +55,6 @@ protected:
 	static void ShareData_IO_Other( CDataProfile& cProfile );
 
 public:
-	static void ShareData_IO_FileTree( CDataProfile& cProfile, SFileTree& fileTree, const WCHAR* pszSecName );
 	static void ShareData_IO_Type_One( CDataProfile& cProfile, STypeConfig& types, const WCHAR* pszSecName);	// 2010/04/12 Uchi 分離
 
 public:
@@ -75,6 +74,12 @@ void ShareData_IO_OutlineDockRect(
 	std::wstring_view		sectionName,	//!< [in] セクション名
 	std::wstring_view		entryKey,		//!< [in] エントリ名
 	T&						tEntryValue		//!< [in,out] エントリ値
+);
+
+void ShareData_IO_FileTree(
+	CDataProfile&			cProfile,
+	std::wstring_view		sectionName,	//!< [in] セクション名
+	SFileTree&				fileTree
 );
 
 #endif /* SAKURA_CSHAREDATA_IO_B154E0E0_C606_468E_A3B7_767DDA1DE6EE_H_ */
