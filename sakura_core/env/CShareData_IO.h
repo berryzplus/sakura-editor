@@ -9,6 +9,8 @@
 #define SAKURA_CSHAREDATA_IO_B154E0E0_C606_468E_A3B7_767DDA1DE6EE_H_
 #pragma once
 
+#include <optional>
+#include <string>
 #include <string_view>
 
 class CDataProfile;
@@ -67,6 +69,16 @@ public:
 		CommonSetting_MainMenu& mainmenu, bool bOutCmdName);
 	static void IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba
 };
+
+bool ShareData_IO_LogFont(
+	CDataProfile&						cProfile,
+	std::wstring_view					pszSecName,
+	std::wstring_view					pszKeyLf,
+	LOGFONT&							lf,
+	INT&								nPointSize,
+	const std::optional<std::wstring>&	optPointSizeKey = std::nullopt,
+	const std::optional<std::wstring>&	optFaceNameKey = std::nullopt
+);
 
 template <typename T>
 void ShareData_IO_OutlineDockRect(
