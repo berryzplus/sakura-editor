@@ -81,6 +81,12 @@ void ShareData_IO_BlockComments(
 	BlockComments			tEntryValues	//!< [in,out] エントリ値
 );
 
+void ShareData_IO_KeyHelp(
+	CDataProfile&		cProfile,
+	std::wstring_view	sectionName,	//!< [in] セクション名
+	STypeConfig&		type
+);
+
 template <typename T>
 void ShareData_IO_KeyHelpArr(
 	CDataProfile&			cProfile,
