@@ -22,6 +22,7 @@ class CMenuDrawer;
 struct CommonSetting_CustomMenu; // defined CommonSetting.h
 struct CommonSetting_MainMenu; // defined CommonSetting.h
 struct CommonSetting_KeyBind;	// defined CommonSetting.h
+struct CommonSetting_Plugin;
 struct ColorInfo; // defined doc/CDocTypeSetting.h
 struct SFileTree;
 struct SFileTreeItem;
@@ -58,7 +59,6 @@ protected:
 	static void ShareData_IO_KeyWords( CDataProfile& cProfile );
 	static void ShareData_IO_Macro( CDataProfile& cProfile );
 	static void ShareData_IO_Statusbar( CDataProfile& cProfile );	// 2008/6/21 Uchi
-	static void ShareData_IO_Plugin( CDataProfile& cProfile, CMenuDrawer* pcMenuDrawer );	// 2009/11/30 syat
 	static void ShareData_IO_MainMenu( CDataProfile& cProfile );		// 2010/5/15 Uchi
 	static void ShareData_IO_Other( CDataProfile& cProfile );
 
@@ -129,6 +129,12 @@ void ShareData_IO_FileTree(
 	CDataProfile&			cProfile,
 	std::wstring_view		sectionName,	//!< [in] セクション名
 	SFileTree&				fileTree
+);
+
+void ShareData_IO_Plugin(
+	CDataProfile&			cProfile,
+	CMenuDrawer*			pcMenuDrawer,
+	CommonSetting_Plugin&	sPlugin
 );
 
 void ShareData_IO_TypeInts(
