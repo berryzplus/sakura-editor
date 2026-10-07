@@ -736,6 +736,46 @@ TEST(CCommandLine, ParseGrepReplaceCreateBackupFiles)
 }
 
 /*!
+* @brief パラメータ解析(-GOPT)の仕様
+* @remark -GOPTが指定されていなければFALSE
+* @remark -GOPTが指定されていたらTRUE
+*/
+TEST(CCommandLine, ParseGrepExceptFileRegexp)
+{
+	CCommandLine cCommandLine;
+	cCommandLine.ParseCommandLine(L"", false);
+	EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepExceptFileRegexp, IsFalse());
+	cCommandLine.ParseCommandLine(L"-GOPT=E", false);
+	EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepExceptFileRegexp, IsTrue());
+}
+
+/*!
+* @brief パラメータ解析(-GOPT)の仕様
+* @remark 他の文字と組み合わせても、順序によらず指定できる
+* @remark 小文字の e は受け付けない(他の文字と同じく大文字だけ)
+*/
+TEST(CCommandLine, ParseGrepExceptFileRegexp_Combination)
+{
+	{
+		CCommandLine cCommandLine;
+		cCommandLine.ParseCommandLine(L"-GOPT=SE", false);
+		EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepSubFolder, IsTrue());
+		EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepExceptFileRegexp, IsTrue());
+	}
+	{
+		CCommandLine cCommandLine;
+		cCommandLine.ParseCommandLine(L"-GOPT=ES", false);
+		EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepSubFolder, IsTrue());
+		EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepExceptFileRegexp, IsTrue());
+	}
+	{
+		CCommandLine cCommandLine;
+		cCommandLine.ParseCommandLine(L"-GOPT=e", false);
+		EXPECT_THAT(cCommandLine.GetGrepInfoRef().bGrepExceptFileRegexp, IsFalse());
+	}
+}
+
+/*!
  * @brief パラメータ解析(-GCODE)の仕様
  * @remark -GCODEが指定されていなければSJIS
  * @remark -GCODEが指定されていたら指定された数値
@@ -960,6 +1000,20 @@ TEST(CCommandLine, ParseFileNameIncludesInvalidFilenameChars)
 	}
 
 	User32::resetInstance();
+}
+
+/*!
+ * @brief ファイルパスが「file:///」で始まっている場合の仕様
+ * @remark 先頭の「file:///」が除去され、パス解決される
+ */
+TEST(CCommandLine, ParseFileNameStartsWithFileProtocol)
+{
+	constexpr auto& fileName = L"test.txt";
+	const auto path = GetIniFileName().replace_filename(fileName);
+
+	CCommandLine cCommandLine;
+	cCommandLine.ParseCommandLine(std::data(std::format(L"file:///{:s}", fileName)), false);
+	EXPECT_THAT(cCommandLine.GetOpenFile(), StrEq(path.c_str()));
 }
 
 #if defined(_MSC_VER) &&  defined(_DEBUG)
