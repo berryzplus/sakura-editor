@@ -28,6 +28,7 @@
 #include "CProcess.h"
 #include "util/ole/OleInit.hpp"
 #include "util/os.h"
+#include "util/MessageBoxF.h"
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
 #include "version.h"
@@ -48,10 +49,10 @@
 		+----------+---------------------------+---------------------------+
 */
 int WINAPI wWinMain(
-	HINSTANCE	hInstance,		//!< handle to current instance
-	[[maybe_unused]] HINSTANCE	hPrevInstance,	//!< handle to previous instance
-	LPWSTR		lpCmdLine,		//!< pointer to command line
-	[[maybe_unused]] int			nCmdShow		//!< show state of window
+	_In_ HINSTANCE		hInstance,		//!< handle to current instance
+	_In_opt_ HINSTANCE	hPrevInstance [[maybe_unused]],	//!< handle to previous instance
+	_In_ LPWSTR			lpCmdLine,		//!< pointer to command line
+	_In_ int			nCmdShow		//!< show state of window
 )
 {
 #ifdef USE_LEAK_CHECK_WITH_CRTDBG
@@ -81,24 +82,46 @@ int WINAPI wWinMain(
 	DarkMode::setDarkModeConfig();
 	DarkMode::setDefaultColors(true);
 
+	// 終了コード
+	int exitCode;
+
 	//コマンドラインクラスのインスタンスを確保する
 	CCommandLine cCommandLine;
 
-	//プロセスの生成とメッセージループ
-	CProcessFactory aFactory;
-	CProcess *process = nullptr;
 	try{
-		process = aFactory.Create( hInstance, lpCmdLine );
+		//プロセスの生成とメッセージループ
+		CProcessFactory aFactory;
+		auto process = aFactory.Create( hInstance, lpCmdLine );
+
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
-	}
-	catch(...){
-	}
-	if( nullptr != process ){
+
+		if (process) {
+			(void)nCmdShow;	//TODO: Runに渡す
+
 		process->Run();
 		delete process;
+
+			exitCode = 0;	//TODO: Runの戻り値を返すように変える
+
+		} else {
+			exitCode = 1;	// 仮の終了コード
+		}
+
+	}
+	// メモリ不足エラーが発生した場合
+	catch (const std::bad_alloc&) {
+		ErrorBeep();
+		TopErrorMessage(nullptr, L"メモリ不足です。\n終了します。");	//TODO: リソースに入れる
+		exitCode = 2;	// 仮の終了コード
+	}
+	// その他エラーが発生した場合
+	catch (const std::exception&) {
+		ErrorBeep();
+		TopErrorMessage(nullptr, L"不明なエラーが発生しました。\n終了します。");	//TODO: リソースに入れる
+		exitCode = 4;	// 仮の終了コード
 	}
 
 	// COMライブラリのクリーンアップはスコープアウト時に行われる
 
-	return 0;
+	return exitCode;
 }
