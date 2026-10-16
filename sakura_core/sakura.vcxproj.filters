@@ -140,6 +140,9 @@
     <Filter Include="Cpp Source Files\util\file">
       <UniqueIdentifier>{a76cabac-8045-444f-95ee-99914e06eea9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\util\ole">
+      <UniqueIdentifier>{b13f504c-d3c4-40f6-a8b7-a04f418747ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\build\$(Platform)\CMakeTools\version.h">
@@ -1197,6 +1200,9 @@
     </ClInclude>
     <ClInclude Include="..\src\main\cpp\util\os\make_system_error.hpp">
       <Filter>Cpp Source Files\util\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\main\cpp\util\ole\OleInit.hpp">
+      <Filter>Cpp Source Files\util\ole</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2433,6 +2439,9 @@
     </ClCompile>
     <ClCompile Include="..\src\main\cpp\cxx\lock_resource.cpp">
       <Filter>Cpp Source Files\cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main\cpp\util\ole\OleInit.cpp">
+      <Filter>Cpp Source Files\util\ole</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
