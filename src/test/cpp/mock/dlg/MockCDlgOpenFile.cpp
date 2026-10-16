@@ -7,7 +7,9 @@
 #include "pch.h"
 #include "dlg/MockCDlgOpenFile.hpp"
 
-/* static */ void MockCDlgOpenFile::_Cleanup([[maybe_unused]] const MockCDlgOpenFile*)
+/* static */ void MockCDlgOpenFile::_CleanUp(
+	[[maybe_unused]] const MockCDlgOpenFile* /* pThis */
+) noexcept
 {
 	gm_Files.clear();
 }

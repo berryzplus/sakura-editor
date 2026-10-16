@@ -19,7 +19,7 @@ struct MockCDlgOpenFile final : public CDlgOpenFile {
 
 	static inline std::vector<std::wstring> gm_Files;
 
-	static void _Cleanup([[maybe_unused]] const MockCDlgOpenFile*);
+	static void _CleanUp([[maybe_unused]] const MockCDlgOpenFile*) noexcept;
 
 	static bool _GetOpenFileName(
 		std::span<WCHAR> szPath,
@@ -43,6 +43,6 @@ struct MockCDlgOpenFile final : public CDlgOpenFile {
 
 	explicit MockCDlgOpenFile();
 
-	using Holder = cxx::ResourceHolder<&_Cleanup>;
+	using Holder = cxx::ResourceHolder<&_CleanUp>;
 	Holder m_Holder{ this };
 };
