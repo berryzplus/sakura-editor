@@ -27,6 +27,7 @@
 #include "util/module.h"
 #include "util/os/libloaderapi.hpp"
 #include "util/os.h"
+#include "util/sync/MutexHandle.hpp"
 #include "util/tchar_convert.h"
 #include "recent/CMRUFolder.h"
 #include "version.h"
@@ -928,6 +929,15 @@ TEST_F(Kernel32, LoadStringResource104)
 		}),
 		ThrowsMessage<std::system_error>(StartsWith("LockResource() failed"))
 	);
+}
+
+TEST_F(Kernel32, MutexHandleCreateMutexW101)
+{
+	Target::resetInstance();
+
+	auto m1 = MutexHandle::CreateMutexW(nullptr, TRUE, L"test_mutex");
+
+	EXPECT_ANY_THROW(MutexHandle::CreateMutexW(nullptr, TRUE, L"test_mutex"));
 }
 
 TEST_F(Kernel32, GetCurrentDirectoryW101)
