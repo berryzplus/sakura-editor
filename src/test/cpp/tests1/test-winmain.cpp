@@ -981,7 +981,7 @@ TEST_P(WinMainTest, runEditorProcess)
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
 	// テストプログラム内のグローバル変数を汚さないために、別プロセスで起動させる
-	ASSERT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(0), ".*" );
+	ASSERT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(1), ".*" );	// CNormalProcess::InitializeProcess()実行中に終了させるため、1が返る。
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -1034,7 +1034,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess101)
 	ASSERT_THAT(hMutex, NotNull());
 
 	// コントロールプロセスを起動する
-	ASSERT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(0), ".*");	// たぶんバグです。エラー終了なのに0を返してる。
+	ASSERT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(1), ".*");
 }
 
 /*!
@@ -1086,7 +1086,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess102)
 	pShareData->m_nSize = sizeof(DLLSHAREDATA) + 1;
 
 	// コントロールプロセスを起動する
-	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(0), ".*");	// たぶんバグです。エラー終了なのに0を返してる。
+	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(1), ".*");
 
 	// DLLSHAREDATAのサイズを元に戻す
 	// 共有メモリはスーパーグローバル変数なので、テスト終了後は元に戻す必要がある
@@ -1605,7 +1605,7 @@ TEST_P(OutlineTest, test)
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
 	// テストプログラム内のグローバル変数を汚さないために、別プロセスで起動させる
-	ASSERT_EXIT({ exit(testing::StartEditorProcess(command)); }, ::testing::ExitedWithCode(0), ".*" );
+	ASSERT_EXIT({ exit(testing::StartEditorProcess(command)); }, ::testing::ExitedWithCode(1), ".*" );	// CNormalProcess::InitializeProcess()実行中に終了させるため、1が返る。
 }
 
 /*!

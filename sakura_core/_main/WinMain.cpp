@@ -90,11 +90,7 @@ int WINAPI wWinMain(
 
 		if (!process) return 1;
 
-		(void)nCmdShow;	//TODO: Runに渡す
-
-		process->Run();
-
-		return 0;	//TODO: Runの戻り値を返すように変える
+		return process->Run(nCmdShow);
 	}
 	// メモリ不足エラーが発生した場合
 	catch (const std::bad_alloc&) {

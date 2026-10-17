@@ -9,7 +9,7 @@
 	Copyright (C) 2002, aroka 新規作成
 	Copyright (C) 2004, Moca
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -18,11 +18,53 @@
 #include "StdAfx.h"
 #include "_main/CProcess.h"
 
+#include "util/debug/MiniDumpWriter.hpp"
 #include "util/module.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "config/app_constants.h"
 #include "CSelectLang.h"
+
+namespace cxx {
+
+#if defined(_MSC_VER)	//SEH（構造化例外処理）はMSVC固有機能
+
+/*!
+ * @brief SEH例外をフィルタリングする
+ *
+ * @param[in] code 例外コード
+ * @retval EXCEPTION_EXECUTE_HANDLER ハンドラブロックに入る
+ * @retval EXCEPTION_CONTINUE_SEARCH ハンドラの検索を続行する
+ */
+int WriteDump(
+	DWORD code,
+	PEXCEPTION_POINTERS pExceptionParams
+)
+{
+	// 出力先はiniと同じ（InitializeProcess()後に確定）
+	// Vista以降では C:\Users\(ユーザー名)\AppData\Local\CrashDumps に出力
+	SFilePath szFile;
+	GetInidirOrExedir(szFile, GetIniFileName().stem().native() + L".dmp");
+
+	// クラッシュダンプを出力する
+	MiniDumpWriter().WriteMiniDump(szFile, pExceptionParams);
+
+	// C++例外は対象外にしてハンドラ検索を続行させる
+	if (constexpr DWORD MsvcCppExceptionCode = 0xE06D7363u;
+		code == MsvcCppExceptionCode)
+	{
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	// ハンドラブロックで例外処理させる
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+#endif	// if defined(_MSC_VER)
+
+}	// namespace cxx
+
+using namespace cxx;
 
 /*!
 	@brief プロセス基底クラス
@@ -73,20 +115,45 @@ bool CProcess::InitializeProcess()
 }
 
 /*!
-	@brief プロセス実行
-	
-	@author aroka
-	@date 2002/01/16
-*/
-bool CProcess::Run()
+ * @brief プロセス実行
+ *
+ * @param[in] nCmdShow
+ * @returns プロセス終了コード
+ *
+ * @author aroka
+ * @date 2002/01/16
+ */
+int CProcess::Run(
+	int nCmdShow [[maybe_unused]]
+)
 {
-	if( InitializeProcess() )
+#if defined(_MSC_VER)	//SEH（構造化例外処理）はMSVC固有機能
+	__try
 	{
+#endif
+
+		int exitCode = 1;
+
+		(void)nCmdShow;	//TODO: InitializeProcessに渡す
+
+		if (InitializeProcess())
+		{
+
 			MainLoop() ;
 			OnExitProcess();
-		return true;
+
+			exitCode = 0;	//TODO: MainLoopの戻り値を返すように変える
+		}
+
+		return exitCode;
+
+#if defined(_MSC_VER)	//SEH（構造化例外処理）はMSVC固有機能
 	}
-	return false;
+	__except (cxx::WriteDump(GetExceptionCode(), GetExceptionInformation()))
+	{
+		return 2;	// 仮の終了コード
+	}
+#endif
 }
 
 /*!

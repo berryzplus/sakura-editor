@@ -7,7 +7,7 @@
 /*
 	Copyright (C) 2002, aroka 新規作成
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -34,14 +34,17 @@
 class CProcess : public TSingleInstance<CProcess> {
 public:
 	CProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
-	bool Run();
-	virtual ~CProcess(){}
+	~CProcess() override = default;
+
+	int Run(
+		int nCmdShow [[maybe_unused]]
+	);
+
 	virtual void RefreshString();
 
 	virtual std::filesystem::path GetIniFileName() const;
 
 protected:
-	CProcess();
 	virtual bool InitializeProcess();
 	virtual bool MainLoop() = 0;
 	virtual void OnExitProcess() = 0;
