@@ -1151,6 +1151,12 @@ static void SetUpSelectLang()
 	EXPECT_CALL(*pKernel32, GetModuleFileNameW(_, _, _))
 		.WillRepeatedly(testing::DoDefault());
 
+	EXPECT_CALL(*pKernel32, FindFirstFileW(_, _))
+		.WillRepeatedly(testing::DoDefault());
+
+	EXPECT_CALL(*pKernel32, FindNextFileW(_, _))
+		.WillRepeatedly(testing::DoDefault());
+
 	EXPECT_CALL(*pKernel32, LoadLibraryExW(_, _, _))
 		.WillRepeatedly(testing::DoDefault());
 }
@@ -1165,7 +1171,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess104)
 			SetUpSelectLang();
 
 			// std::bad_allocで失敗させる
-			EXPECT_CALL(*pKernel32, FindFirstFileW(_, _))
+			EXPECT_CALL(*pKernel32, CreateMutexW(_,_, _))
 				.WillOnce(testing::Throw(std::bad_alloc()));
 
 			// コントロールプロセスを起動する
@@ -1192,7 +1198,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess105)
 			SetUpSelectLang();
 
 			// std::exceptionで失敗させる
-			EXPECT_CALL(*pKernel32, FindFirstFileW(_, _))
+			EXPECT_CALL(*pKernel32, CreateMutexW(_,_, _))
 				.WillOnce(testing::Throw(std::invalid_argument("dummy")));
 
 			// コントロールプロセスを起動する
@@ -1221,10 +1227,11 @@ TEST_F(WinMainFuncTest, CreateControlProcess106)
 			SetUpSelectLang();
 
 			// SEH例外を発生させる
-			EXPECT_CALL(*pKernel32, FindFirstFileW(_, _))
+			EXPECT_CALL(*pKernel32, CreateMutexW(_,_, _))
 				.WillOnce(Invoke([](
-					LPCWSTR lpFileName,
-					LPWIN32_FIND_DATAW lpFindFileData
+					_In_opt_ LPSECURITY_ATTRIBUTES lpMutexAttributes,
+					_In_ BOOL bInitialOwner,
+					_In_opt_ LPCWSTR lpName
 				)
 			{
 				// AV例外を発生させる
@@ -1253,6 +1260,33 @@ TEST_F(WinMainFuncTest, CreateControlProcess106)
 }
 
 #endif // if defined(_MSC_VER) &&  defined(_DEBUG)
+
+TEST_F(WinMainFuncTest, CreateControlProcess107)
+{
+	EXPECT_EXIT({
+			Kernel32::setInstance<MockKernel32>();
+
+			auto pKernel32 = (MockKernel32*)Kernel32::getInstance();
+
+			SetUpSelectLang();
+
+			// 戻り値 NULL を返して失敗させる
+			EXPECT_CALL(*pKernel32, CreateMutexW(_,_, _))
+				.WillOnce(Return(nullptr));
+
+			// コントロールプロセスを起動する
+			const auto hInstance = G_AppInstance();
+			auto cmdLine =std::wstring{ LR"(-NOWIN -PROF="")" };
+			const auto ret = wWinMain(hInstance, nullptr, std::data(cmdLine), SW_SHOWDEFAULT);
+
+			Kernel32::resetInstance();
+
+			exit(ret);
+		},
+		::testing::ExitedWithCode(1),
+		".*"
+	);
+}
 
 /*!
  * @brief WinMainを起動してみるテスト

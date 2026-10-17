@@ -28,6 +28,7 @@
 #include "apiwrap/DarkMode.h"
 
 #include "util/os.h"
+#include "util/sync/MutexHandle.hpp"
 
 //-------------------------------------------------
 
@@ -123,8 +124,17 @@ bool CControlProcess::InitializeProcess()
 	MY_RUNNINGTIMER( cRunningTimer, L"CControlProcess::InitializeProcess" );
 
 	// アプリケーション実行検出用(インストーラで使用)
-	m_hMutex = ::CreateMutex( nullptr, FALSE, GSTR_MUTEX_SAKURA );
-	if( nullptr == m_hMutex ){
+	try
+	{
+		// ミューテックスを作成する
+		auto hMutex = cxx::MutexHandle::CreateMutexW(nullptr, FALSE, GSTR_MUTEX_SAKURA);
+
+		// 生ハンドルを取り出す
+		m_hMutex = hMutex.release();
+	}
+	// エラーが発生した場合
+	catch (const std::system_error&)
+	{
 		ErrorBeep();
 		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
 		return false;
