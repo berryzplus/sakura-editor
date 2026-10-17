@@ -6,99 +6,17 @@
  */
 
 #include "pch.h"
-
 #include "testing/StartEditorProcess.hpp"
 
-#include "util/StaticType.h"
+#include "util/debug/StackTraceWriter.hpp"
 #include "util/tchar_convert.h"
-#include "env/CDataProfile.h" // StringBufferW
-
-// デバッグ出力の独自関数を使う
-#include "debug/Debug1.h"	// DebugOutW, TRACEマクロ等
 
 // Windows SDKのデバッグヘルパーを参照する
 #include <DbgHelp.h>
 
-// Windows SDKのデバッグヘルパーとリンクする
-#pragma comment(lib, "dbghelp.lib")
-
-#if defined(_M_AMD64)
-	constexpr auto machineType = IMAGE_FILE_MACHINE_AMD64;
-#elif defined(_M_ARM64)
-	constexpr auto machineType = IMAGE_FILE_MACHINE_ARM64;
-#elif defined(_M_IX86)
-	constexpr auto machineType = IMAGE_FILE_MACHINE_I386;
-#endif
-
 namespace testing {
 
-// Dbghelp.dll
-// プロセスのシンボル ハンドラーを初期化します。
-void InitDbgSymbols(HANDLE process)
-{
-	static std::once_flag symInitOnce;
-
-	std::call_once(symInitOnce, [process] {
-		SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
-		PCSTR UserSearchPath = nullptr;
-		BOOL  fInvadeProcess = TRUE;
-		::SymInitialize(process, UserSearchPath, fInvadeProcess);
-	});
-}
-
-void PrintStackTraceFromContext(CONTEXT& context)
-{
-	const auto process = ::GetCurrentProcess();
-	const auto thread  = ::GetCurrentThread();
-
-	// プロセスのシンボル ハンドラーを初期化します。
-	InitDbgSymbols(process);
-
-	STACKFRAME64 stack     = {};
-	stack.AddrPC.Mode      = AddrModeFlat;
-	stack.AddrFrame.Mode   = AddrModeFlat;
-	stack.AddrStack.Mode   = AddrModeFlat;
-
-#ifdef _M_AMD64
-	stack.AddrPC.Offset    = context.Rip;
-	stack.AddrFrame.Offset = context.Rbp;
-	stack.AddrStack.Offset = context.Rsp;
-#else // _M_IX86
-	stack.AddrPC.Offset    = context.Eip;
-	stack.AddrFrame.Offset = context.Ebp;
-	stack.AddrStack.Offset = context.Esp;
-#endif
-
-	std::array<BYTE, sizeof(SYMBOL_INFO) + (MAX_SYM_NAME + 1) * sizeof(TCHAR) - 1> buffer = {};
-
-	auto symbol          = PSYMBOL_INFO(buffer.data());
-	symbol->SizeOfStruct = sizeof(*symbol);
-	symbol->MaxNameLen   = MAX_SYM_NAME;
-
-	std::wcout << L"PrintStackTrace()";
-
-	// Dbghelp.dll
-	// スタック トレースを取得します。
-	while (::StackWalk64(
-		machineType,
-		process,
-		thread,
-		&stack,
-		&context,
-		nullptr,
-		::SymFunctionTableAccess64,
-		::SymGetModuleBase64,
-		nullptr))
-	{
-		if (const auto address = stack.AddrPC.Offset;
-			::SymFromAddr(process, address, nullptr, symbol))
-		{
-			std::wcout << std::format(L"\tat {} in {}", cxx::to_wstring(symbol->Name), symbol->Address) << std::endl;
-		}
-	}
-
-	std::wcout << std::endl;
-}
+using namespace cxx;
 
 // SEH例外コードを人間が読める文字列に変換する
 std::string_view SehExceptionCodeName(NTSTATUS code) noexcept
@@ -147,7 +65,7 @@ LONG OnUnhandledException(EXCEPTION_POINTERS* ep)
 {
 	DumpSehException(ep);
 	if (ep && ep->ContextRecord) {
-		PrintStackTraceFromContext(*ep->ContextRecord);
+		StackTraceWriter().WriteStackTrace(*ep->ContextRecord, &std::cerr);
 	}
 	return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -182,45 +100,14 @@ void DumpCppException(std::exception_ptr eptr)
 	}
 }
 
-// C++例外ハンドラー: set_terminate で登録する
-[[noreturn]] void OnTerminate()
-{
-	if (auto cppEp = std::current_exception()) {
-		DumpCppException(cppEp);
-	}
-
-	CONTEXT ctx{};
-	::RtlCaptureContext(&ctx);
-	PrintStackTraceFromContext(ctx);
-
-	std::abort();
-}
-
 int CallWinMain(
 	std::wstring& cmdLine
 )
 {
-#ifdef USE_STACK_TRACE
+	// 実行中モジュールのインスタンスハンドルを取得する
+	const auto hInstance = ::GetModuleHandleW(nullptr);
 
-	// terminate対策でスレッドトレースを出すようにする
-	std::set_terminate(testing::OnTerminate);
-
-	__try
-	{
-#endif
-
-		// 実行中モジュールのインスタンスハンドルを取得する
-		const auto hInstance = ::GetModuleHandleW(nullptr);
-
-		return wWinMain(hInstance, nullptr, std::data(cmdLine), SW_SHOWDEFAULT);
-
-#ifdef USE_STACK_TRACE
-	}
-	__except (OnUnhandledException(GetExceptionInformation()))
-	{
-		return 1;
-	}
-#endif
+	return wWinMain(hInstance, nullptr, std::data(cmdLine), SW_SHOWDEFAULT);
 }
 
 /*!

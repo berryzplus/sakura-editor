@@ -148,6 +148,9 @@
     <ClInclude Include="..\build\$(Platform)\CMakeTools\python3_config.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\main\cpp\util\debug\DbgHelp.hpp" />
+    <ClInclude Include="..\src\main\cpp\util\debug\MiniDumpWriter.hpp" />
+    <ClInclude Include="..\src\main\cpp\util\debug\StackTraceWriter.hpp" />
     <ClInclude Include="..\src\main\cpp\util\file\FileFind.hpp" />
     <ClInclude Include="..\src\main\cpp\util\file\FileHandle.hpp" />
     <ClInclude Include="..\src\main\cpp\util\file\FileMapping.hpp" />
@@ -527,6 +530,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main\cpp\cxx\lock_resource.cpp" />
+    <ClCompile Include="..\src\main\cpp\util\debug\DbgHelp.cpp" />
+    <ClCompile Include="..\src\main\cpp\util\debug\MiniDumpWriter.cpp" />
+    <ClCompile Include="..\src\main\cpp\util\debug\StackTraceWriter.cpp" />
     <ClCompile Include="..\src\main\cpp\util\file\FileFind.cpp" />
     <ClCompile Include="..\src\main\cpp\util\file\FileHandle.cpp" />
     <ClCompile Include="..\src\main\cpp\util\file\FileMapping.cpp" />

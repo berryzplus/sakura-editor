@@ -101,6 +101,30 @@ void GetExedir( LPWSTR pDir, LPCWSTR szFile = nullptr );
 void GetInidir( LPWSTR pDir, LPCWSTR szFile = nullptr ); // 2007.05.19 ryoji
 void GetInidirOrExedir( LPWSTR pDir, LPCWSTR szFile = nullptr, BOOL bRetExedirIfFileEmpty = FALSE ); // 2007.05.22 ryoji
 
+template <
+	basis::WritableBuffer<WCHAR> A1,
+	basis::NullTerminatedStringConstructible<WCHAR> A2
+>
+	requires (!std::is_array_v<A1> && !std::is_same_v<A2, LPCWSTR>)
+void GetInidirOrExedir(
+	A1& dir,
+	const A2& file,
+	bool bRetExedirIfFileEmpty = false
+)
+{
+	// 出力先を固定長バッファとみなす
+	auto _Dir = std::span<WCHAR>{ dir };
+
+	// 入力元をNUL終端文字列とみなす
+	const auto _File = cxx::NullTerminatedString<WCHAR>{ file };
+
+	return GetInidirOrExedir(
+		_Dir.data(),
+		_File.c_str(),
+		bRetExedirIfFileEmpty
+	);
+}
+
 LPCWSTR GetRelPath( LPCWSTR pszPath );
 
 std::filesystem::path GetTempFilePath(std::wstring_view prefix, const std::optional<std::filesystem::path>& optTempDir = std::nullopt);

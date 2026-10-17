@@ -47,6 +47,8 @@ namespace cxx {
 
 HWND	FindWindowW(std::wstring_view className, const std::optional<std::wstring>& optWindowName = std::nullopt);
 
+[[noreturn]] void OnTerminated();
+
 template<class T>
 concept DataAndSizeAccessible = requires(const T& value) {
 	std::data(value);
@@ -568,6 +570,19 @@ void TerminateControlProcess(
 
 namespace winmain {
 
+TEST(OnTerminated, test101)
+{
+	EXPECT_EXIT({
+			// terminateされたときにスタックトレースを出す
+			std::set_terminate(cxx::OnTerminated);
+
+			std::terminate();
+		},
+		::testing::ExitedWithCode(3),
+		".*"
+	);
+}
+
 /*!
  * WinMain起動テストのためのフィクスチャクラス
  *
@@ -981,7 +996,7 @@ TEST_P(WinMainTest, runEditorProcess)
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
 	// テストプログラム内のグローバル変数を汚さないために、別プロセスで起動させる
-	ASSERT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(0), ".*" );
+	ASSERT_EXIT({ StartEditorProcess(command); }, ::testing::ExitedWithCode(1), ".*" );	// CNormalProcess::InitializeProcess()実行中に終了させるため、1が返る。
 
 	// コントロールプロセスに終了指示を出して終了を待つ
 	testing::TerminateControlProcess(profileName);
@@ -1034,7 +1049,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess101)
 	ASSERT_THAT(hMutex, NotNull());
 
 	// コントロールプロセスを起動する
-	ASSERT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(0), ".*");	// たぶんバグです。エラー終了なのに0を返してる。
+	ASSERT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(1), ".*");
 }
 
 /*!
@@ -1086,7 +1101,7 @@ TEST_F(WinMainFuncTest, CreateControlProcess102)
 	pShareData->m_nSize = sizeof(DLLSHAREDATA) + 1;
 
 	// コントロールプロセスを起動する
-	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(0), ".*");	// たぶんバグです。エラー終了なのに0を返してる。
+	EXPECT_EXIT({ StartEditorProcess(std::format(LR"(-NOWIN -PROF="{:s}")", profileName)); }, ::testing::ExitedWithCode(1), ".*");
 
 	// DLLSHAREDATAのサイズを元に戻す
 	// 共有メモリはスーパーグローバル変数なので、テスト終了後は元に戻す必要がある
@@ -1193,6 +1208,51 @@ TEST_F(WinMainFuncTest, CreateControlProcess105)
 		".*"
 	);
 }
+
+#if defined(_MSC_VER) &&  defined(_DEBUG)
+
+TEST_F(WinMainFuncTest, CreateControlProcess106)
+{
+	EXPECT_EXIT( {
+			Kernel32::setInstance<MockKernel32>();
+
+			auto pKernel32 = (MockKernel32*)Kernel32::getInstance();
+
+			SetUpSelectLang();
+
+			// SEH例外を発生させる
+			EXPECT_CALL(*pKernel32, FindFirstFileW(_, _))
+				.WillOnce(Invoke([](
+					LPCWSTR lpFileName,
+					LPWIN32_FIND_DATAW lpFindFileData
+				)
+			{
+				// AV例外を発生させる
+				::RaiseException(
+					EXCEPTION_ACCESS_VIOLATION,
+					EXCEPTION_NONCONTINUABLE,
+					0,
+					nullptr
+				);
+
+				return nullptr; // 戻り値型を満たすため
+			}));
+
+			// コントロールプロセスを起動する
+			const auto hInstance = G_AppInstance();
+			auto cmdLine =std::wstring{ LR"(-NOWIN -PROF="")" };
+			const auto ret = wWinMain(hInstance, nullptr, std::data(cmdLine), SW_SHOWDEFAULT);
+
+			Kernel32::resetInstance();
+
+			exit(ret);
+		},
+		::testing::ExitedWithCode(5),
+		".*"
+	);
+}
+
+#endif // if defined(_MSC_VER) &&  defined(_DEBUG)
 
 /*!
  * @brief WinMainを起動してみるテスト
@@ -1607,7 +1667,7 @@ TEST_P(OutlineTest, test)
 	command += std::format(LR"( -MTYPE=js -M="{}")", std::regex_replace(strStartupMacro, std::wregex(LR"(")"), LR"("")"));
 
 	// テストプログラム内のグローバル変数を汚さないために、別プロセスで起動させる
-	ASSERT_EXIT({ exit(testing::StartEditorProcess(command)); }, ::testing::ExitedWithCode(0), ".*" );
+	ASSERT_EXIT({ exit(testing::StartEditorProcess(command)); }, ::testing::ExitedWithCode(1), ".*" );	// CNormalProcess::InitializeProcess()実行中に終了させるため、1が返る。
 }
 
 /*!

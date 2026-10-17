@@ -95,11 +95,7 @@ int WINAPI wWinMain(
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
 
 		if (process) {
-			(void)nCmdShow;	//TODO: Runに渡す
-
-		process->Run();
-
-			exitCode = 0;	//TODO: Runの戻り値を返すように変える
+			exitCode = process->Run(nCmdShow);
 
 		} else {
 			exitCode = 1;	// 仮の終了コード
