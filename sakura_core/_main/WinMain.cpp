@@ -14,7 +14,7 @@
 	Copyright (C) 2002, aroka
 	Copyright (C) 2007, kobake
 	Copyright (C) 2009, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -26,6 +26,7 @@
 #include "_main/CCommandLine.h"
 #include "CProcessFactory.h"
 #include "CProcess.h"
+#include "util/ole/OleInit.hpp"
 #include "util/os.h"
 #include "util/module.h"
 #include "debug/CRunningTimer.h"
@@ -65,9 +66,13 @@ int WINAPI wWinMain(
 		::SetSearchPathMode( BASE_SEARCH_PATH_ENABLE_SAFE_SEARCHMODE | BASE_SEARCH_PATH_PERMANENT );
 
 		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
-		::OleInitialize( nullptr );	// 2009.01.07 ryoji 追加
 	}
+
+	// COMライブラリを初期化する
+	auto oleInit = cxx::OleInit();
 	
+	if (!oleInit) return 1;	// 仮の終了コード
+
 	//開発情報
 	DEBUG_TRACE(L"-- -- WinMain -- --\n");
 	DEBUG_TRACE(L"sizeof(DLLSHAREDATA) = %d\n",sizeof(DLLSHAREDATA));
@@ -93,6 +98,7 @@ int WINAPI wWinMain(
 		delete process;
 	}
 
-	::OleUninitialize();	// 2009.01.07 ryoji 追加
+	// COMライブラリのクリーンアップはスコープアウト時に行われる
+
 	return 0;
 }
