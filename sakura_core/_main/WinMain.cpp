@@ -90,8 +90,7 @@ int WINAPI wWinMain(
 
 	try{
 		//プロセスの生成とメッセージループ
-		CProcessFactory aFactory;
-		auto process = aFactory.Create( hInstance, lpCmdLine );
+		auto process = CProcessFactory(hInstance).CreateInstance(lpCmdLine);
 
 		MY_TRACETIME( cRunningTimer, L"ProcessObject Created" );
 
@@ -99,7 +98,6 @@ int WINAPI wWinMain(
 			(void)nCmdShow;	//TODO: Runに渡す
 
 		process->Run();
-		delete process;
 
 			exitCode = 0;	//TODO: Runの戻り値を返すように変える
 
