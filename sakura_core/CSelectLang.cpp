@@ -20,14 +20,9 @@
 #include "debug/Debug1.h"
 #include "util/file.h"
 #include "util/file/FileFind.hpp"
+#include "util/os/libloaderapi.hpp"
 
 namespace cxx {
-
-HMODULE LoadLibraryExW(
-	std::wstring_view fileName,
-	_Reserved_ HANDLE hFile,
-	_In_ DWORD dwFlags
-);
 
 /*!
  * @brief 言語IDをチェックする

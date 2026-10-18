@@ -16,6 +16,7 @@
 #include "util/file/FileMapping.hpp"
 #include "util/file/NamedFilePointer.hpp"
 #include "util/os/Kernel32.hpp"
+#include "util/os/libloaderapi.hpp"
 #include "util/os/make_system_error.hpp"
 
 #include <cstdint>
@@ -642,9 +643,7 @@ std::wstring GetTempPath2W()
 	if (!kernel32) throw cxx::make_system_error("Kernel32.DLL was not found.");	// このthrowは呼ばれない
 
 	// GetTempPath2の関数ポインタを取得する
-	decltype(&::GetTempPath2W) pfnGetTempPath = nullptr;
-
-	pfnGetTempPath = std::bit_cast<decltype(pfnGetTempPath)>(Kernel32::getInstance()->GetProcAddress(kernel32, "GetTempPath2W"));
+	auto pfnGetTempPath = std::bit_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(kernel32, "GetTempPath2W"));
 
 	// Windows 10 1607より古いと見付からない可能性がある
 	if (!pfnGetTempPath) pfnGetTempPath = &::GetTempPathW;
@@ -657,40 +656,6 @@ std::wstring GetTempPath2W()
 	if (!ret) throw cxx::make_system_error("GetTempPath2() failed");	// このthrowは呼ばれない
 
 	return std::wstring(buf.c_str(), ret);
-}
-
-/*!
- * @brief DLLを読み込む
- */
-HMODULE LoadLibraryExW(
-	std::wstring_view fileName,
-	_Reserved_ HANDLE hFile,
-	_In_ DWORD dwFlags
-)
-{
-	// 引数はNUL終端文字列として扱う
-	cxx::NullTerminatedString<WCHAR> _FileName{ fileName };
-
-	// NUL終端文字列を取り出す
-	const auto lpFileName = _FileName.c_str();
-
-	// パラメーターチェック
-	if (!lpFileName || !lpFileName[0]) {
-		// この例外が出る場合、使い方が誤っているので、呼出元を修正すること。
-		throw std::invalid_argument("fileName is required.");
-	}
-
-	const auto hModule = Kernel32::getInstance()->LoadLibraryExW(
-		lpFileName,
-		hFile,
-		dwFlags
-	);
-
-	if (!hModule) {
-		throw cxx::make_system_error("LoadLibraryExW() failed");
-	}
-
-	return hModule;
 }
 
 /*!

@@ -25,6 +25,7 @@
 #include "util/file/NamedFilePointer.hpp"
 #include "util/file.h"
 #include "util/module.h"
+#include "util/os/libloaderapi.hpp"
 #include "util/os.h"
 #include "util/tchar_convert.h"
 #include "recent/CMRUFolder.h"
@@ -43,12 +44,6 @@ std::filesystem::path GetTempFilePathWithExt(std::wstring_view prefix, std::wstr
 namespace cxx {
 
 uint16_t GenerateRandom16();
-
-HMODULE LoadLibraryExW(
-	std::wstring_view fileName,
-	_Reserved_ HANDLE hFile,
-	_In_ DWORD dwFlags
-);
 
 }	// namespace cxx
 
@@ -1039,6 +1034,23 @@ TEST_F(Kernel32, GetExeFileName101)
 		}),
 		ThrowsMessage<std::system_error>(StartsWith("exe path is too long."))
 	);
+}
+
+TEST_F(Kernel32, GetProcAddress101)
+{
+	// APIがNULLを返したら例外。
+	EXPECT_CALL(*pKernel32, GetProcAddress(_, _))
+		.WillOnce(Return(nullptr))
+		.WillOnce(Return(FARPROC(1)));
+
+	// システム例外のメッセージは先頭一致で評価する
+	EXPECT_THAT(([] {
+			cxx::GetProcAddress(nullptr, "");
+		}),
+		ThrowsMessage<std::system_error>(StartsWith("GetProcAddress() failed"))
+	);
+
+	EXPECT_THAT(cxx::GetProcAddress(nullptr, ""), Eq(FARPROC(1)));
 }
 
 TEST_F(Kernel32, GetSystemDirectoryW101)
