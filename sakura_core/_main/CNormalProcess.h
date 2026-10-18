@@ -6,7 +6,7 @@
 */
 /*
 	Copyright (C) 2002, aroka 新規作成
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -31,12 +31,17 @@
 	エディタプロセスはCEditWndクラスのインスタンスを作る。
 */
 class CNormalProcess final : public CProcess {
-public:
-	//コンストラクタ・デストラクタ
-	CNormalProcess( HINSTANCE hInstance, LPCWSTR lpCmdLine );
-	~CNormalProcess();
+private:
+	using Base = CProcess;
+	using Me = CNormalProcess;
 
-protected:
+public:
+	// コンストラクタは流用する
+	using Base::Base;
+
+	~CNormalProcess() override;
+
+private:
 	//プロセスハンドラ
 	bool InitializeProcess() override;
 	bool MainLoop() override;
@@ -46,7 +51,6 @@ protected:
 	HANDLE _GetInitializeMutex() const; // 2002/2/8 aroka
 	void	OpenFiles(HWND hEditWnd) const;
 
-private:
 	CEditApp*	m_pcEditApp = nullptr;	//2007.10.23 kobake
 	CMigemo		m_cMigemo;
 };
