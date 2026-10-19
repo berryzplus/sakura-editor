@@ -26,6 +26,7 @@
 #include "_main/CCommandLine.h"
 #include "CProcessFactory.h"
 #include "CProcess.h"
+#include "basis/initialization_error.hpp"
 #include "util/ole/OleInit.hpp"
 #include "util/os.h"
 #include "util/MessageBoxF.h"
@@ -101,6 +102,12 @@ int WINAPI wWinMain(
 			exitCode = 1;	// 仮の終了コード
 		}
 
+	}
+	// アプリの初期化に失敗した場合
+	catch (const basis::initialization_error& e) {
+		ErrorBeep();
+		TopErrorMessage(nullptr, e.message().c_str());
+		exitCode = e.exitCode().value_or(1);
 	}
 	// メモリ不足エラーが発生した場合
 	catch (const std::bad_alloc&) {

@@ -27,6 +27,7 @@
 #include "config/system_constants.h"
 #include "apiwrap/DarkMode.h"
 
+#include "basis/make_initialization_error.hpp"
 #include "util/os.h"
 #include "util/sync/MutexHandle.hpp"
 
@@ -135,9 +136,8 @@ bool CControlProcess::InitializeProcess()
 	// エラーが発生した場合
 	catch (const std::system_error&)
 	{
-		ErrorBeep();
-		TopErrorMessage( nullptr, L"CreateMutex()失敗。\n終了します。" );
-		return false;
+		// L"CreateMutex()失敗。\n終了します。"
+		throw basis::make_initialization_error(LS(STR_ERR_CTRLMTX1));
 	}
 
 	const auto pszProfileName = GetProfileName();
