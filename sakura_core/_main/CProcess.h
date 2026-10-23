@@ -47,6 +47,7 @@ enum class EAppExitCode : int {
 	Terminated,			//!< 強制終了された
 	UnHandledException, //!< 未処理例外で終了した
 	Crashed,			//!< クラッシュした
+	AppInitFailed,		//!< アプリ初期化が失敗した
 };
 
 /*!
