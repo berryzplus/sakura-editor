@@ -14,7 +14,7 @@
 	Copyright (C) 2003, genta
 	Copyright (C) 2005, Moca, genta, D.S.Koba
 	Copyright (C) 2009, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -41,6 +41,8 @@
 #include "util/design_template.h"
 #include "charset/charcode.h"
 #include "env/DLLSHAREDATA.h"
+
+#include <mutex>
 
 class CBregexp;// 2002/2/10 aroka
 class CLayout;// 2002/2/10 aroka
@@ -94,7 +96,7 @@ public:
 	@date 2005.11.21 Moca 色分け情報をメンバーへ移動．不要となった引数をメンバ関数から削除．
 */
 //2007.10.15 XYLogicalToLayoutを廃止。LogicToLayoutに統合。
-class CLayoutMgr : public CProgressSubject
+class CLayoutMgr final : public CProgressSubject
 {
 private:
 	typedef CLayoutInt (CLayoutMgr::*CalcIndentProc)( CLayout* );
@@ -102,7 +104,8 @@ private:
 public:
 	//生成と破棄
 	CLayoutMgr();
-	~CLayoutMgr();
+	~CLayoutMgr() override;
+
 	void Create( CEditDoc*, CDocLineMgr* );
 	void Init();
 	void _Empty();
@@ -409,8 +412,9 @@ protected:
 	CLayoutExInfo			m_cLayoutExInfoBot;
 	CLayoutInt				m_nLines;					// 全レイアウト行数
 
-	mutable CLayoutInt		m_nPrevReferLine;
-	mutable CLayout*		m_pLayoutPrevRefer;
+	mutable std::mutex		m_Mutex{};
+	mutable CLayoutInt		m_nPrevReferLine{ 0 };
+	mutable CLayout*		m_pLayoutPrevRefer = nullptr;
 	
 	// EOFカーソル位置を記憶する(_DoLayout/DoLayout_Rangeで無効にする)	//2006.10.01 Moca
 	CLayoutInt				m_nEOFLine; //!< EOF行数
@@ -422,4 +426,5 @@ protected:
 
 	DISALLOW_COPY_AND_ASSIGN(CLayoutMgr);
 };
+
 #endif /* SAKURA_CLAYOUTMGR_5398B1C5_280C_4D86_B7BB_C7B5C8B0403F_H_ */

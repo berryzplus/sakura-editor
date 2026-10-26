@@ -216,6 +216,8 @@ const CLayout* CLayoutMgr::SearchLineByLayoutY(
 	CLayoutInt nLineLayout
 ) const
 {
+	std::unique_lock lock{ m_Mutex };
+
 	CLayoutInt nLineNum = nLineLayout;
 
 	CLayout*	pLayout;
