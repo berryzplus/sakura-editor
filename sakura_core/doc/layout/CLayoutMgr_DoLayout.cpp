@@ -401,10 +401,18 @@ void CLayoutMgr::_DoLayout(bool bBlockingHook)
 }
 
 /*!
-	@brief 指定された行範囲をレイアウトします
-*/
-void CLayoutMgr::_DoLayoutSub(CDocLine* pDocLineBegin, const CDocLine* pDocLineEnd, int nLineIndex, int nLineCount, std::atomic<bool>* pbCanceled)
+ * @brief 指定された行範囲をレイアウトします
+ */
+void CLayoutMgr::_DoLayoutSub(
+	CDocLine* pDocLineBegin,
+	const CDocLine* pDocLineEnd,
+	int nLineIndex,
+	int nLineCount,
+	std::atomic<bool>* pbCanceled
+)
 {
+	std::unique_lock lock{ m_Mutex };
+
 	const int nListenerCount = GetListenerCount();
 
 	if( nListenerCount != 0 ){

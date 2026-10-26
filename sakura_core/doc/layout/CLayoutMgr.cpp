@@ -85,6 +85,8 @@ void CLayoutMgr::Create( CEditDoc* pcEditDoc, CDocLineMgr* pcDocLineMgr )
 
 void CLayoutMgr::Init()
 {
+	std::unique_lock lock{ m_Mutex };
+
 	m_pLayoutTop = nullptr;
 	m_pLayoutBot = nullptr;
 	m_nPrevReferLine = CLayoutInt(0);
@@ -216,6 +218,8 @@ const CLayout* CLayoutMgr::SearchLineByLayoutY(
 	CLayoutInt nLineLayout
 ) const
 {
+	std::unique_lock lock{ m_Mutex };
+
 	CLayoutInt nLineNum = nLineLayout;
 
 	CLayout*	pLayout;
@@ -231,39 +235,12 @@ const CLayout* CLayoutMgr::SearchLineByLayoutY(
 		}
 		return nullptr;
 	}
-//	/*+++++++ 低速版 +++++++++*/
-//	if( nLineNum < (m_nLines / 2) ){
-//		nCount = 0;
-//		pLayout = m_pLayoutTop;
-//		while( NULL != pLayout ){
-//			if( nLineNum == nCount ){
-//				m_pLayoutPrevRefer = pLayout;
-//				m_nPrevReferLine = nLineNum;
-//				return pLayout;
-//			}
-//			pLayout = pLayout->GetNextLayout();
-//			nCount++;
-//		}
-//	}else{
-//		nCount = m_nLines - 1;
-//		pLayout = m_pLayoutBot;
-//		while( NULL != pLayout ){
-//			if( nLineNum == nCount ){
-//				m_pLayoutPrevRefer = pLayout;
-//				m_nPrevReferLine = nLineNum;
-//				return pLayout;
-//			}
-//			pLayout = pLayout->GetPrevLayout();
-//			nCount--;
-//		}
-//	}
 
-	/*+++++++わずかに高速版+++++++*/
 	// 2004.03.28 Moca m_pLayoutPrevReferより、Top,Botのほうが近い場合は、そちらを利用する
-	CLayoutInt nPrevToLineNumDiff = t_abs( m_nPrevReferLine - nLineNum );
-	if( m_pLayoutPrevRefer == nullptr
-	  || nLineNum < nPrevToLineNumDiff
-	  || m_nLines - nLineNum < nPrevToLineNumDiff
+	if (const auto nPrevToLineNumDiff = t_abs( m_nPrevReferLine - nLineNum );
+		!m_pLayoutPrevRefer ||
+		nLineNum < nPrevToLineNumDiff ||
+		m_nLines - nLineNum < nPrevToLineNumDiff
 	){
 		if( nLineNum < (m_nLines / 2) ){
 			nCount = CLayoutInt(0);
@@ -537,6 +514,8 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 	CLayoutInt*	pnDeleteLines
 )
 {
+	std::unique_lock lock{ m_Mutex };
+
 	CLayout* pLayout;
 	CLayout* pLayoutWork;
 	CLayout* pLayoutNext;
