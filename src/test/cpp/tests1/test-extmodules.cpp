@@ -332,7 +332,7 @@ TEST_F(CMigemoTest, test001)
 
 	// 共有メモリを初期化する
 	pcShareData = std::make_unique<CShareData>();
-	EXPECT_THAT(pcShareData->InitShareData(), IsTrue());
+	pcShareData->InitShareData();
 
 	// C/Migemo設定に値を入れる
 	::wcsncpy_s(GetDllShareData().m_Common.m_sHelper.m_szMigemoDll, L"", _TRUNCATE);

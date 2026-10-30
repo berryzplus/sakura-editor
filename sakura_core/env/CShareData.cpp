@@ -725,7 +725,11 @@ bool CShareData::InitShareData()
 		if( m_pShareData->m_vStructureVersion != uShareDataVersion ||
 			m_pShareData->m_nSize != sizeof(*m_pShareData) ){
 			//	この共有データ領域は使えない．
-			return false;
+			throw basis::make_initialization_error(
+				// L"異なるバージョンのエディタを同時に起動することはできません。"
+				LS(STR_ERR_DLGPROCESS1)
+				, static_cast<int>(EAppExitCode::Exited)	//エラーなのに正常っぽいコードを返すのは妥当か？
+			);
 		}
 		//	To Here Oct. 27, 2000 genta
 
