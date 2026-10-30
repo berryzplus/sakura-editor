@@ -79,11 +79,6 @@ CShareData::~CShareData()
 	CFileNameManager::resetInstance();
 	CAppNodeManager::resetInstance();
 
-	if( m_pShareData ){
-		/* プロセスのアドレス空間から､ すでにマップされているファイル ビューをアンマップします */
-		::UnmapViewOfFile( m_pShareData );
-		m_pShareData = nullptr;
-	}
 	if( m_pvTypeSettings ){
 		for( int i = 0; i < (int)m_pvTypeSettings->size(); i++ ){
 			delete (*m_pvTypeSettings)[i];
@@ -145,14 +140,16 @@ bool CShareData::InitShareData()
 
 	if( GetLastError() != ERROR_ALREADY_EXISTS ){
 		/* オブジェクトが存在していなかった場合 */
-		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
-		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
-			m_FileMapping.get(),
-			FILE_MAP_ALL_ACCESS,
-			0,
-			0,
-			0
+
+		// ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします
+		m_MappedData = m_FileMapping.MapViewOfFile<DLLSHAREDATA*>(
+			FILE_MAP_ALL_ACCESS
 		);
+	
+		// マップされたビューにDLLSHAREDATA構造体を配置します
+		m_pShareData = new (m_MappedData.get()) DLLSHAREDATA;
+
+		// タイプ別設定リストを生成します
 		CreateTypeSettings();
 
 		m_pShareData->m_vStructureVersion = uShareDataVersion;
@@ -731,23 +728,19 @@ bool CShareData::InitShareData()
 		}
 	}else{
 		/* オブジェクトがすでに存在する場合 */
-		/* ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします */
-		m_pShareData = (DLLSHAREDATA*)::MapViewOfFile(
-			m_FileMapping.get(),
-			FILE_MAP_ALL_ACCESS,
-			0,
-			0,
-			0
+		// ファイルのビューを､ 呼び出し側プロセスのアドレス空間にマップします
+		m_MappedData = m_FileMapping.MapViewOfFile<DLLSHAREDATA*>(
+			FILE_MAP_ALL_ACCESS
 		);
+	
+		// マップされたビュー配置されたにDLLSHAREDATA構造体を参照します
+		m_pShareData = m_MappedData.get();
 
 		//	From Here Oct. 27, 2000 genta
 		//	2014.01.08 Moca サイズチェック追加
 		if( m_pShareData->m_vStructureVersion != uShareDataVersion ||
 			m_pShareData->m_nSize != sizeof(*m_pShareData) ){
 			//	この共有データ領域は使えない．
-			//	ハンドルを解放する
-			::UnmapViewOfFile( m_pShareData );
-			m_pShareData = nullptr;
 			return false;
 		}
 		//	To Here Oct. 27, 2000 genta
