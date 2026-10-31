@@ -226,6 +226,21 @@
 	);
 }
 
+/* static */ DWORD MockKernel32::_WaitForMultipleObjects(
+	_In_ DWORD nCount,
+	_In_reads_( nCount ) CONST HANDLE* lpHandles,
+	_In_ BOOL bWaitAll,
+	_In_ DWORD dwMilliseconds
+)
+{
+	return ::WaitForMultipleObjects(
+		nCount,
+		lpHandles,
+		bWaitAll,
+		dwMilliseconds
+	);
+}
+
 /* static */ DWORD MockKernel32::_WaitForSingleObject(
 	_In_ HANDLE hHandle,
 	_In_ DWORD dwMilliseconds

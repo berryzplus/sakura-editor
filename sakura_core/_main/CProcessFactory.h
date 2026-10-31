@@ -41,7 +41,7 @@ private:
 
 public:
 	static bool	IsExistControlProcess();
-	static bool	StartControlProcess();
+	static void	StartControlProcess();
 
 	explicit CProcessFactory(
 		_In_opt_ HINSTANCE hInstance = nullptr
