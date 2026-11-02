@@ -51,6 +51,8 @@ HWND	FindWindowW(std::wstring_view className, const std::optional<std::wstring>&
 
 [[noreturn]] void OnTerminated();
 
+std::wstring QuoteArg(const std::wstring_view arg);
+
 template<class T>
 concept DataAndSizeAccessible = requires(const T& value) {
 	std::data(value);
@@ -240,31 +242,6 @@ public:
 namespace testing {
 
 /*!
- * @brief コマンドライン引数を引用符で囲む
- *
- * @param arg [in] コマンドライン引数
- * @return 引用符で囲まれたコマンドライン引数
- */
-std::wstring QuoteArg(const std::wstring_view arg)
-{
-	const auto endsWithQuote = arg.ends_with(LR"(")");
-	const auto containsQuotes = std::wstring_view::npos != arg.find_first_of(LR"(")");
-	if (const auto needsEscape = std::wstring_view::npos != arg.find_first_of(L"\t ");
-		!endsWithQuote && containsQuotes)
-	{
-		return std::format(LR"("{:s}")", std::regex_replace(arg.data(), std::wregex(LR"(")"), LR"("")"));
-	}
-	else if (!endsWithQuote && needsEscape)
-	{
-		return std::format(LR"("{:s}")", arg);
-	}
-	else
-	{
-		return std::wstring(arg);
-	}
-}
-
-/*!
  * @brief サクラエディタのプロセスを起動する
  *
  * @param si スタートアップ情報
@@ -290,7 +267,7 @@ cxx::ProcessHolder CreateSakuraProcess(
 
 	args.emplace(args.begin(), std::format(LR"("{:s}")", exePath.native()));
 
-	auto strCommandLine = std::accumulate(args.begin(), args.end(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return std::format(LR"({} {})", a, QuoteArg(b)); });
+	auto strCommandLine = std::accumulate(args.begin(), args.end(), std::wstring(), [](const std::wstring& a, std::wstring_view b) { return std::format(LR"({} {})", a, cxx::QuoteArg(b)); });
 	strCommandLine.erase(strCommandLine.cbegin());	// 先頭のスペースを削除
 
 	auto lpszCommandLine = std::data(strCommandLine);

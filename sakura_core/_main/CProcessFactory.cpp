@@ -22,14 +22,103 @@
 #include "_main/CControlProcess.h"
 #include "_main/CControlTray.h"
 #include "_main/CNormalProcess.h"
+#include "basis/make_initialization_error.hpp"
 #include "basis/primitive.h"
 
 #include "dlg/CDlgProfileMgr.h"
 #include "debug/CRunningTimer.h"
 #include "util/os.h"
+#include "util/os/Kernel32.hpp"
+#include "util/os/make_system_error.hpp"
+#include "util/os/ntstatus_category.hpp"
+
+#include <chrono>
+#include <format>
+#include <numeric>
+#include <regex>
+#include <string_view>
+#include <system_error>
+
 #include <tchar.h>
 #include "CSelectLang.h"
 #include "config/system_constants.h"
+
+namespace cxx {
+
+/*!
+ * @brief コマンドライン引数を引用符で囲む
+ *
+ * @param arg [in] コマンドライン引数
+ * @return 引用符で囲まれたコマンドライン引数
+ */
+std::wstring QuoteArg(
+	const std::wstring_view arg
+)
+{
+	// 引数が二重引用符で終わっているかどうか。
+	const auto endsWithQuote = arg.ends_with(LR"(")");
+
+	// 引数が二重引用符を含むかどうか。
+	const auto containsQuotes = std::wstring_view::npos != arg.find_first_of(LR"(")");
+
+	// 引数を二重引用符で囲む必要があるかどうか
+	if (const auto needsEscape = std::wstring_view::npos != arg.find_first_of(L"\t ");
+		!endsWithQuote && containsQuotes)
+	{
+		return std::format(LR"("{:s}")", std::regex_replace(arg.data(), std::wregex(LR"(")"), LR"("")"));
+	}
+	else if (!endsWithQuote && needsEscape)
+	{
+		return std::format(LR"("{:s}")", arg);
+	}
+	else
+	{
+		return std::wstring(arg);
+	}
+}
+
+template <class T, class Rep, class Period>
+	requires std::ranges::range<T> && std::convertible_to<std::ranges::range_reference_t<T>, HANDLE>
+bool WaitForMultipleObjects(
+	const T& handles,
+	bool waitAll,
+	const std::chrono::duration<Rep, Period>& timeout
+)
+{
+	const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(timeout);
+	const auto dwRet = ::WaitForMultipleObjects(
+		DWORD(std::size(handles)),
+		std::data(handles),
+		waitAll,
+		DWORD(milliseconds.count())
+	);
+
+	bool bRet = false;
+
+	for (int i = 0; i < std::ssize(handles); ++i)
+	{
+		if (WAIT_OBJECT_0 + i == dwRet ||
+			WAIT_ABANDONED + i == dwRet)
+		{
+			bRet = true;
+			break;
+		}
+	}
+
+	if (!bRet)
+	{
+		// システムエラー例外を発生させる
+		throw std::system_error(
+			int(dwRet),
+			ntstatus_category(),
+			"WaitForMultipleObjects() failed"
+		);
+	}
+
+	return dwRet;
+}
+
+}	// namespace cxx
 
 CProcessFactory::CProcessFactory(
 	_In_opt_ HINSTANCE hInstance
@@ -182,9 +271,12 @@ bool CProcessFactory::IsStartingControlProcess() const
 	@date Aug. 28, 2001
 	@date 2008.05.05 novice GetModuleHandle(NULL)→NULLに変更
 */
-/* static */ bool CProcessFactory::StartControlProcess()
+/* static */ void CProcessFactory::StartControlProcess()
 {
 	MY_RUNNINGTIMER(cRunningTimer,L"StartControlProcess" );
+
+	// 既に起動していたら何もせず抜ける
+	if (IsExistControlProcess()) return;
 
 	using HandleHolder = cxx::ResourceHolder<&::CloseHandle>;
 
@@ -197,10 +289,21 @@ bool CProcessFactory::IsStartingControlProcess() const
 	// 初期化完了イベントを作成する
 	HandleHolder hEvent{ ::CreateEventW(nullptr, TRUE, FALSE, initEventName) };
 	if (!hEvent || ERROR_ALREADY_EXISTS == ::GetLastError()) {
-		// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。
-		TopErrorMessage(nullptr, LS(STR_ERR_DLGPROCFACT5));
-		return false;
+		throw cxx::make_system_error("CreateEventW() failed");
 	}
+
+	// 実行ファイルのパスを取得する
+	SFilePath szEXE{ GetExeFileName() };
+
+	// コマンドライン引数に -NOWIN を付けて自分自身を起動する
+	auto cmdArgs = std::vector<std::wstring>{ szEXE.c_str(), L"-NOWIN" };
+
+	// プロファイル指定があれば追加する。（空文字でも追加する。）
+	if (CCommandLine::getInstance()->IsSetProfile()) {
+		cmdArgs.emplace_back(std::format(LR"(-PROF="{}")", GetProfileName()));
+	}
+
+	std::wstring title{ L"sakura control process" }; //2007.09.21 kobake デバッグしやすいように、名前を付ける
 
 	//	プロセスの起動
 	PROCESS_INFORMATION p;
@@ -209,29 +312,35 @@ bool CProcessFactory::IsStartingControlProcess() const
 	s.cb          = sizeof( s );
 	s.lpReserved  = nullptr;
 	s.lpDesktop   = nullptr;
-	s.lpTitle     = const_cast<WCHAR*>(L"sakura control process"); //2007.09.21 kobake デバッグしやすいように、名前を付ける
+	s.lpTitle     = title.data();
 	s.dwFlags     = STARTF_USESHOWWINDOW;
 	s.wShowWindow = SW_SHOWDEFAULT;
 	s.cbReserved2 = 0;
 	s.lpReserved2 = nullptr;
 
-	WCHAR szCmdLineBuf[1024];	//	コマンドライン
-	WCHAR szEXE[MAX_PATH + 1];	//	アプリケーションパス名
+	// コマンドライン文字列を組み立てる
+	auto strCommandLine = std::accumulate(
+		cmdArgs.begin(),
+		cmdArgs.end(),
+		std::wstring(), [](const std::wstring& a, std::wstring_view b)
+	{
+		return std::format(LR"({} {})", a, cxx::QuoteArg(b));
+	});
+	strCommandLine.erase(strCommandLine.cbegin());	// 先頭のスペースを削除
 
-	::GetModuleFileName( nullptr, szEXE, int(std::size(szEXE)));
-	if( CCommandLine::getInstance()->IsSetProfile() ){
-		::auto_sprintf_s( szCmdLineBuf, std::size(szCmdLineBuf), L"\"%s\" -NOWIN -PROF=\"%ls\"",
-			szEXE, GetProfileName() );
-	}else{
-		::auto_sprintf_s( szCmdLineBuf, std::size(szCmdLineBuf), L"\"%s\" -NOWIN", szEXE ); // ""付加
-	}
+	using SCommandLine = StaticString<1024, false>;
+	SCommandLine szCmdLineBuf{ strCommandLine };
 
 	//常駐プロセス起動
 	DWORD dwCreationFlag = CREATE_DEFAULT_ERROR_MODE;
+
+#if 0 // デバッグ有効にするとうまく動かない
 #ifdef _DEBUG
 //	dwCreationFlag |= DEBUG_PROCESS; //2007.09.22 kobake デバッグ用フラグ
 #endif
-	BOOL bCreateResult = ::CreateProcess(
+#endif
+
+	if (const auto bCreateResult = ::CreateProcessW(
 		szEXE,				// 実行可能モジュールの名前
 		szCmdLineBuf,		// コマンドラインの文字列
 		nullptr,				// セキュリティ記述子
@@ -243,7 +352,7 @@ bool CProcessFactory::IsStartingControlProcess() const
 		&s,					// スタートアップ情報
 		&p					// プロセス情報
 	);
-	if( !bCreateResult ){
+		!bCreateResult ){
 		//	失敗
 		WCHAR* pMsg;
 		::FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -258,19 +367,20 @@ bool CProcessFactory::IsStartingControlProcess() const
 		);
 		ErrorMessage( nullptr, L"\'%s\'\nプロセスの起動に失敗しました。\n%s", szEXE, pMsg );
 		::LocalFree( (HLOCAL)pMsg );	//	エラーメッセージバッファを解放
-		return false;
+
+		throw basis::make_initialization_error(
+			L""
+			, static_cast<int>(EAppExitCode::Exited)	//エラーなのに正常っぽいコードを返すのは妥当か？
+		);
 	}
 
 	HandleHolder hProcess{ p.hProcess };
 	HandleHolder hThread{ p.hThread };
 
 	// 初期化完了を待つ
-	std::array handles{ hEvent.get(), hProcess.get()};
-	if (const auto dwRet = ::WaitForMultipleObjects(DWORD(std::size(handles)), std::data(handles), FALSE, 15000); WAIT_OBJECT_0 != dwRet) {
-		// L"エディタまたはシステムがビジー状態です。\nしばらく待って開きなおしてください。
-		TopErrorMessage(nullptr, LS(STR_ERR_DLGPROCFACT5));
-		return false;
+	if (const auto dwRet = cxx::WaitForMultipleObjects(std::array{ hEvent.get(), hProcess.get() }, false, std::chrono::seconds(15));
+		WAIT_OBJECT_0 != dwRet)
+	{
+		throw cxx::make_system_error("WaitForMultipleObjects() failed");
 	}
-
-	return true;
 }
