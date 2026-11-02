@@ -8,6 +8,16 @@
 #include "window/EditorTestSuite.hpp"
 
 #include "_main/CAppMode.h"
+#include "_main/CProcessFactory.h"
+
+namespace testing {
+
+void TerminateControlProcess(
+	std::wstring_view profileName,
+	DWORD dwControlProcessId = 0
+);
+
+}	// namespace testing	
 
 namespace window {
 
@@ -20,7 +30,21 @@ namespace window {
 	pCommandLine = std::make_unique<CCommandLine>();
 	pCommandLine->ParseCommandLine(L"-PROF=", false);
 
-	SetUpShareData();
+	// 言語環境を初期化する
+	CSelectLang::InitializeLanguageEnvironment();
+
+	// コントロールプロセスが起動している状態にする
+	CProcessFactory::StartControlProcess();
+
+	// 共有メモリのインスタンスを生成する
+	pcShareData = std::make_unique<CShareData>();
+
+	// 共有メモリを初期化する
+	pcShareData->OpenShareData();
+
+	// 言語を日本語に固定する
+	GetDllShareData().m_Common.m_sWindow.m_szLanguageDll = L"";
+	CSelectLang::ChangeLang(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
 
 	// CanBeMoveリージョンをテストケースに分割する。（すぐ対応できないのでコメント残し）
 
@@ -148,6 +172,9 @@ namespace window {
 	TearDownShareData();
 
 	pCommandLine = nullptr;
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(L"");
 }
 
 } // namespace window
