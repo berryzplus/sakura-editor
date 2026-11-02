@@ -46,6 +46,16 @@ namespace window {
 	GetDllShareData().m_Common.m_sWindow.m_szLanguageDll = L"";
 	CSelectLang::ChangeLang(GetDllShareData().m_Common.m_sWindow.m_szLanguageDll);
 
+	dmpPath = GetExeFileName().replace_extension(".dmp");
+	iniPath = GetExeFileName().replace_extension(".ini");
+	iniBkPath = iniPath.concat(".bak");
+	profIniPath = GetExeFileName().replace_extension().concat("_prof.ini");
+
+	std::error_code ec;
+	std::filesystem::remove(dmpPath, ec);
+	std::filesystem::remove(iniBkPath, ec);
+	std::filesystem::remove(profIniPath, ec);
+
 	// CanBeMoveリージョンをテストケースに分割する。（すぐ対応できないのでコメント残し）
 
 	// ドキュメントの初期化前に文字幅キャッシュの生成が必要
@@ -168,6 +178,11 @@ namespace window {
 	pcEditWnd = nullptr;
 
 	pcEditDoc = nullptr;
+
+	std::error_code ec;
+	std::filesystem::remove(dmpPath, ec);
+	std::filesystem::remove(iniBkPath, ec);
+	std::filesystem::remove(profIniPath, ec);
 
 	TearDownShareData();
 
