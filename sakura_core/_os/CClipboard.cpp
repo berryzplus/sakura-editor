@@ -8,13 +8,15 @@
 
 #include "StdAfx.h"
 #include <shellapi.h>// HDROP
-#include "CClipboard.h"
-#include "doc/CEditDoc.h"
+#include "_os/CClipboard.h"
+
+#include "basis/CEol.h"
+#include "basis/primitive.h"
 #include "charset/CCodeMediator.h"
 #include "charset/CCodeFactory.h"
 #include "charset/CShiftJis.h"
 #include "charset/CUtf8.h"
-#include "basis/CEol.h"
+#include "doc/CEditDoc.h"
 #include "mem/CNativeA.h"
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -434,9 +436,15 @@ static const SSystemClipFormatNames sClipFormatNames[] =
 	{CF_DIBV5       ,L"CF_DIBV5"},
 };
 
-static CLIPFORMAT GetClipFormat(const wchar_t* pFormatName)
+CLIPFORMAT GetClipFormat(std::wstring_view formatName)
 {
-	CLIPFORMAT uFormat = (CLIPFORMAT)-1;
+	// 引数はNUL終端文字列として扱う
+	cxx::NullTerminatedString<WCHAR> _FormatName{ formatName };
+
+	// NUL終端文字列を取り出す
+	const auto pFormatName = _FormatName.c_str();
+
+	auto uFormat = CLIPFORMAT(-1);
 	if( pFormatName[0] == L'\0' ){
 		return uFormat;
 	}

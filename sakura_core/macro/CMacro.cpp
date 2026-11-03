@@ -44,6 +44,85 @@
 #include "config/app_constants.h"
 #include "_os/CClipboard.h"
 
+CLIPFORMAT GetClipFormat(std::wstring_view formatName);
+
+namespace macro {
+
+constexpr CLIPFORMAT CF_NONE = (CLIPFORMAT)-1;
+
+//! クリップボードから文字列を取得する
+BSTR F_GETCLIPBOARD(CEditView& view)
+{
+	CNativeW cmemBuf;
+	return view.MyGetClipboardData(cmemBuf, nullptr, nullptr)
+		? ::SysAllocStringLen(cmemBuf.GetStringPtr(), cmemBuf.GetStringLength())
+		: nullptr;
+}
+
+//! クリップボードに文字列を設定する
+bool F_SETCLIPBOARD(CEditView& view, const _bstr_t& text, bool bColumnSelect = false, bool bLineSelect = false)
+{
+	return view.MySetClipboardData(text, text.length(), bColumnSelect, bLineSelect);
+}
+
+//! クリップボードからデータを取得する
+BSTR F_GETCLIPBOARDBYFORMAT(CEditView& view, std::wstring_view formatName, int nMode, int nEndMode)
+{
+	if (nMode == -2) {
+		return F_GETCLIPBOARD(view);
+	}
+
+	if (CF_NONE == GetClipFormat(formatName)) {
+		return nullptr;
+	}
+
+	CClipboard cClipboard(view.GetHwnd());
+
+	const auto cEol = view.m_pcEditDoc->m_cDocEditor.GetNewLineCode();
+
+	CNativeW cmemBuf;
+	cClipboard.GetClipboardByFormat(cmemBuf, std::data(formatName), nMode, nEndMode, cEol);
+
+	return ::SysAllocStringLen(cmemBuf.GetStringPtr(), cmemBuf.GetStringLength());
+}
+
+//! クリップボードにデータを設定する
+bool F_SETCLIPBOARDBYFORMAT(CEditView& view, const _bstr_t& text, std::wstring_view formatName, int nMode, int nEndMode)
+{
+	if (nMode == -2) {
+		return F_SETCLIPBOARD(view, text);
+	}
+
+	if (CF_NONE == GetClipFormat(formatName)) {
+		return false;
+	}
+
+	CClipboard cClipboard(view.GetHwnd());
+	return cClipboard.SetClipboardByFormat(CStringRef{ text, text.length()}, std::data(formatName), nMode, nEndMode);
+}
+
+bool F_ISINCLUDECLIPBOARDFORMAT(const CEditView& view, std::wstring_view formatName)
+{
+	if (CF_NONE == GetClipFormat(formatName)) {
+		return false;
+	}
+
+	CClipboard cClipboard(view.GetHwnd());
+
+	return cClipboard.IsIncludeClipboardFormat(formatName.data());
+}
+
+void F_CLIPBOARDEMPTY(const CEditView& view)
+{
+	CClipboard cClipboard(view.GetHwnd());
+
+	if (!cClipboard) return;
+
+	cClipboard.Empty();
+}
+
+} // namespace macro
+
 CMacro::CMacro( EFunctionCode nFuncID )
 {
 	m_nFuncID = nFuncID;
@@ -1373,12 +1452,13 @@ bool CMacro::HandleCommand(
 			pcEditView->SetUndoBuffer();
 		}
 		break;
+
 	case F_CLIPBOARDEMPTY:
 		{
-			CClipboard cClipboard(pcEditView->GetHwnd());
-			cClipboard.Empty();
+			macro::F_CLIPBOARDEMPTY(*pcEditView);
 		}
 		break;
+
 	case F_SETVIEWTOP:
 		{
 			if( ArgSize <= 0 ){
@@ -1918,33 +1998,19 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 			}
 		}
 		return true;
+
 	case F_GETCLIPBOARD:
 		//	2011.03.18 syat クリップボードの文字列を取得
 		{
-			int nOpt = 0;
-
-			if( ArgSize >= 1 ){
-				if(VariantChangeType(&varCopy.Data, &(Arguments[0]), 0, VT_I4) != S_OK) return false;	// VT_I4として解釈
-				nOpt = varCopy.Data.intVal;	// オプション
-			}
-
-			CNativeW memBuff;
-			bool bColumnSelect = false;
-			bool bLineSelect = false;
-			bool bRet = View->MyGetClipboardData( memBuff, &bColumnSelect, &bLineSelect );
-			if( bRet ){
-				SysString S( memBuff.GetStringPtr(), memBuff.GetStringLength() );
-				Wrap( &Result )->Receive( S );
-			}else{
-				Result.vt = VT_BSTR;
-				Result.bstrVal = SysAllocString(L"");
-			}
+			::VariantInit(&Result);
+			Result.vt = VT_BSTR;
+			Result.bstrVal = macro::F_GETCLIPBOARD(*View);
 		}
 		return true;
+
 	case F_SETCLIPBOARD:
 		//	2011.03.18 syat クリップボードに文字列を設定
 		{
-			std::wstring sValue;
 			int nOpt = 0;
 
 			if( ArgSize >= 1 ){
@@ -1954,14 +2020,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 
 			if( ArgSize >= 2 ){
 				if(VariantChangeType(&varCopy.Data, &(Arguments[1]), 0, VT_BSTR) != S_OK) return false;	// VT_BSTRとして解釈
-				Wrap(&varCopy.Data.bstrVal)->GetW(&sValue);
 			}
 
 			// 2013.06.12 オプション設定
 			bool bColumnSelect = ((nOpt & 0x01) == 0x01);
 			bool bLineSelect = ((nOpt & 0x02) == 0x02);
-			bool bRet = View->MySetClipboardData( sValue.c_str(), sValue.size(), bColumnSelect, bLineSelect );
-			Wrap( &Result )->Receive( bRet );
+			const auto bret = macro::F_SETCLIPBOARD(*View, varCopy.Data.bstrVal, bColumnSelect, bLineSelect);
+			Wrap( &Result )->Receive( bret ? 1 : 0 );
 		}
 		return true;
 
@@ -2194,17 +2259,19 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 			Wrap( &Result )->Receive( (Int)width );
 			return true;
 		}
+
 	case F_ISINCLUDECLIPBOARDFORMAT:
 		{
 			if( 1 <= ArgSize ){
 				if( !VariantToBStr(varCopy, Arguments[0]) ) return false;
-				CClipboard cClipboard(View->GetHwnd());
-				bool bret = cClipboard.IsIncludeClipboardFormat(varCopy.Data.bstrVal);
+
+				const auto bret = macro::F_ISINCLUDECLIPBOARDFORMAT(*View, varCopy.Data.bstrVal);
 				Wrap( &Result )->Receive( bret ? 1 : 0 );
 				return true;
 			}
 			return false;
 		}
+
 	case F_GETCLIPBOARDBYFORMAT:
 		{
 			Variant varCopy2, varCopy3;
@@ -2216,16 +2283,14 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 				}else{
 					varCopy3.Data.lVal = -1;
 				}
-				CClipboard cClipboard(View->GetHwnd());
-				CNativeW mem;
-				CEol cEol = View->m_pcEditDoc->m_cDocEditor.GetNewLineCode();
-				cClipboard.GetClipboardByFormat(mem, varCopy.Data.bstrVal, varCopy2.Data.lVal, varCopy3.Data.lVal, cEol);
-				SysString ret = SysString(mem.GetStringPtr(), mem.GetStringLength());
-				Wrap( &Result )->Receive( ret );
+				::VariantInit(&Result);
+				Result.vt = VT_BSTR;
+				Result.bstrVal = macro::F_GETCLIPBOARDBYFORMAT(*View, varCopy.Data.bstrVal, varCopy2.Data.lVal, varCopy3.Data.lVal);
 				return true;
 			}
 			return false;
 		}
+
 	case F_SETCLIPBOARDBYFORMAT:
 		{
 			Variant varCopy2, varCopy3, varCopy4;
@@ -2238,14 +2303,13 @@ bool CMacro::HandleFunction(CEditView *View, EFunctionCode ID, VARIANT *Argument
 				}else{
 					varCopy4.Data.lVal = -1;
 				}
-				CClipboard cClipboard(View->GetHwnd());
-				CStringRef cstr(varCopy.Data.bstrVal, ::SysStringLen(varCopy.Data.bstrVal));
-				bool bret = cClipboard.SetClipboardByFormat(cstr, varCopy2.Data.bstrVal, varCopy3.Data.lVal, varCopy4.Data.lVal);
+				const auto bret = macro::F_SETCLIPBOARDBYFORMAT(*View, varCopy.Data.bstrVal, varCopy2.Data.bstrVal, varCopy3.Data.lVal, varCopy4.Data.lVal);
 				Wrap( &Result )->Receive( bret ? 1 : 0 );
 				return true;
 			}
 			return false;
 		}
+
 	case F_GETLINEATTRIBUTE:
 		{
 			int nLineNum;
