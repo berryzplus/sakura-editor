@@ -1,13 +1,15 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
 #ifndef SAKURA_CCLIPBOARD_4E783022_214C_4E51_A2E0_54EC343500F6_H_
 #define SAKURA_CCLIPBOARD_4E783022_214C_4E51_A2E0_54EC343500F6_H_
 #pragma once
+
+#include "_os/CDropTarget.h"
 
 #include <cstdint>
 #include <limits>
@@ -49,7 +51,11 @@ struct StdWStringBuffer : public IWBuffer {
 	std::wstring* wstr;
 };
 
-//!サクラエディタ用クリップボードクラス。後々はこの中で全てのクリップボードAPIを呼ばせたい。
+/*!
+ * @brief サクラエディタ用クリップボードクラス。
+ *
+ * @note 「後々はこの中で全てのクリップボードAPIを呼ばせたい。」とコメントが入っていた。
+ */
 class CClipboard{
 private:
 	using Me = CClipboard;
@@ -128,7 +134,6 @@ protected:
 	virtual BOOL EmptyClipboard() const;
 	virtual BOOL IsClipboardFormatAvailable(UINT format) const;
 	virtual UINT EnumClipboardFormats(UINT format) const;
-	virtual HGLOBAL GlobalAlloc(UINT uFlags, SIZE_T dwBytes) const;
-	virtual LPVOID GlobalLock(HGLOBAL hMem) const;
 };
+
 #endif /* SAKURA_CCLIPBOARD_4E783022_214C_4E51_A2E0_54EC343500F6_H_ */

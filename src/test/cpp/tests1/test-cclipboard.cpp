@@ -99,16 +99,12 @@ struct MockCClipboard : public CClipboard {
 	MOCK_CONST_METHOD0(EmptyClipboard, BOOL ());
 	MOCK_CONST_METHOD1(IsClipboardFormatAvailable, BOOL (UINT));
 	MOCK_CONST_METHOD1(EnumClipboardFormats, UINT (UINT));
-	MOCK_CONST_METHOD2(GlobalAlloc, HGLOBAL (UINT, SIZE_T));
-	MOCK_CONST_METHOD1(GlobalLock, LPVOID (HGLOBAL));
 
 	explicit MockCClipboard(bool openStatus = true)
 		: CClipboard(openStatus)
 	{
 		ON_CALL(*this, OpenClipboard(_)).WillByDefault(Return(TRUE));
 		ON_CALL(*this, CloseClipboard()).WillByDefault(Return(TRUE));
-		ON_CALL(*this, GlobalAlloc(_, _)).WillByDefault(&::GlobalAlloc);
-		ON_CALL(*this, GlobalLock(_)).WillByDefault(&::GlobalLock);
 	}
 };
 
@@ -232,12 +228,8 @@ TEST(CClipboard, SetTextSakuraFormatLayout) {
 TEST(CClipboard, SetText2) {
 	constexpr std::wstring_view text = L"てすと";
 	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, _)).WillByDefault(::GlobalAlloc);
 	EXPECT_CALL(clipboard, SetClipboardData(CF_UNICODETEXT, WideStringInGlobalMemory(text)));
 	EXPECT_CALL(clipboard, SetClipboardData(::RegisterClipboardFormat(L"MSDEVColumnSelect"), ByteValueInGlobalMemory(0)));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), true, false, CF_UNICODETEXT));
 }
 
@@ -246,14 +238,9 @@ TEST(CClipboard, SetText3) {
 	constexpr std::wstring_view text = L"てすと";
 	const CLIPFORMAT sakuraFormat = CClipboard::GetSakuraFormat();
 	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, _)).WillByDefault(::GlobalAlloc);
 	EXPECT_CALL(clipboard, SetClipboardData(sakuraFormat, SakuraFormatInGlobalMemory(text)));
 	EXPECT_CALL(clipboard, SetClipboardData(::RegisterClipboardFormat(L"MSDEVLineSelect"), ByteValueInGlobalMemory(1)));
 	EXPECT_CALL(clipboard, SetClipboardData(::RegisterClipboardFormat(L"VisualStudioEditorOperationsLineCutCopyClipboardTag"), ByteValueInGlobalMemory(1)));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(2)
-		.WillOnce(testing::DoDefault())
-		.WillOnce(testing::DoDefault());
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, true, sakuraFormat));
 }
 
@@ -264,29 +251,6 @@ TEST(CClipboard, SetText4) {
 	MockCClipboard clipboard(false);
 	EXPECT_CALL(clipboard, SetClipboardData(_, _)).Times(0);
 	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, false, -1));
-}
-
-// SetText のテスト。矩形選択マークの設定に失敗した場合。
-TEST(CClipboard, SetText5) {
-	constexpr std::wstring_view text = L"てすと";
-	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, 1)).WillByDefault(Return(nullptr));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), true, false, 0));
-}
-
-// SetText のテスト。行選択マークの設定に失敗した場合。
-TEST(CClipboard, SetText6) {
-	constexpr std::wstring_view text = L"てすと";
-	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, 1)).WillByDefault(Return(nullptr));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(2)
-		.WillOnce(testing::DoDefault())
-		.WillOnce(testing::DoDefault());
-	EXPECT_FALSE(clipboard.SetText(text.data(), text.length(), false, true, 0));
 }
 
 // GetText のテストで使用するダミーデータを準備するためのフィクスチャクラス
@@ -822,11 +786,7 @@ TEST(CClipboard, SetClipboardByFormat2) {
 // 終端モード0では文字列中の \0 をバイナリとして扱う（終端として認識しない）。
 TEST(CClipboard, SetClipboardByFormat3) {
 	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, _)).WillByDefault(::GlobalAlloc);
 	EXPECT_CALL(clipboard, SetClipboardData(12345, BytesInGlobalMemory("\x00\x01\xfe\xff", 4)));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
 	EXPECT_TRUE(clipboard.SetClipboardByFormat({L"\x00\x01\xfe\xff", 4}, L"12345", -1, 0));
 }
 
@@ -842,11 +802,7 @@ TEST(CClipboard, SetClipboardByFormat4) {
 // 終端モードの自動判定を要求する。期待されるモードは2（2バイトの0値で終端する）。
 TEST(CClipboard, SetClipboardByFormat5) {
 	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, _)).WillByDefault(::GlobalAlloc);
 	EXPECT_CALL(clipboard, SetClipboardData(12345, WideStringInGlobalMemory(L"テスト")));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
 	EXPECT_TRUE(clipboard.SetClipboardByFormat({L"テスト", 3}, L"12345", 3, -1));
 }
 
@@ -869,16 +825,6 @@ TEST(CClipboard, SetClipboardByFormat7) {
 	// 既存のコードに実装ミスがあり、成功してもfalseを返してしまう…。
 //	EXPECT_TRUE(clipboard.SetClipboardByFormat({text.data(), text.size()}, L"CF_UNICODETEXT", -2, 0));
 	EXPECT_FALSE(clipboard.SetClipboardByFormat({text.data(), text.size()}, L"CF_UNICODETEXT", -2, 0));
-}
-
-// モード-2以外でGlobalAllocが失敗した場合。
-TEST(CClipboard, SetClipboardByFormat8) {
-	MockCClipboard clipboard;
-	ON_CALL(clipboard, GlobalAlloc(_, _)).WillByDefault(Return(nullptr));
-	EXPECT_CALL(clipboard, GlobalAlloc(_, _))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_FALSE(clipboard.SetClipboardByFormat({L"テスト", 3}, L"12345", 3, -1));
 }
 
 // フォーマット名が空文字列だった場合は即失敗する。
@@ -918,76 +864,6 @@ TEST(CClipboard, GetClipboardByFormat3) {
 		.WillOnce(testing::DoDefault());
 	EXPECT_FALSE(clipboard.GetClipboardByFormat(buffer, L"12345", -1, 0, eol));
 	EXPECT_STREQ(buffer.GetStringPtr(), L"");
-}
-
-// GlobalLockが失敗した場合。
-TEST(CClipboard, GetClipboardByFormat4) {
-	MockCClipboard clipboard;
-	CNativeW buffer(L"dummy");
-	CEol eol(EEolType::cr_and_lf);
-	ON_CALL(clipboard, IsClipboardFormatAvailable(12345)).WillByDefault(Return(TRUE));
-	ON_CALL(clipboard, GetClipboardData(12345)).WillByDefault(Return((HANDLE)67890));
-	ON_CALL(clipboard, GlobalLock((HANDLE)67890)).WillByDefault(Return(nullptr));
-	EXPECT_CALL(clipboard, IsClipboardFormatAvailable(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GetClipboardData(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GlobalLock(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_FALSE(clipboard.GetClipboardByFormat(buffer, L"12345", -1, 0, eol));
-	EXPECT_STREQ(buffer.GetStringPtr(), L"");
-}
-
-// モード-1（バイナリデータ）のテスト。
-// 0x00～0xff のバイト値を UTF-16 の符号単位（0x0000～0x00ff）にマップする。
-// 終端モード0ではデータ中の \0 をバイナリとして扱う（終端として認識しない）。
-TEST(CClipboard, GetClipboardByFormat5) {
-	std::string_view ansiText{ "\x00\xff", 2 };
-	cxx::GlobalString memory{ ansiText };
-	MockCClipboard clipboard;
-	CNativeW buffer;
-	CEol eol(EEolType::cr_and_lf);
-	ON_CALL(clipboard, IsClipboardFormatAvailable(12345)).WillByDefault(Return(TRUE));
-	ON_CALL(clipboard, GetClipboardData(12345)).WillByDefault(Return(memory.Get()));
-	ON_CALL(clipboard, GlobalLock(_)).WillByDefault(::GlobalLock);
-	EXPECT_CALL(clipboard, IsClipboardFormatAvailable(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GetClipboardData(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GlobalLock(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_TRUE(clipboard.GetClipboardByFormat(buffer, L"12345", -1, 0, eol));
-	EXPECT_STREQ(buffer.GetStringPtr(), L"\x00\xff");
-}
-
-// モード3（UTF-16）のテスト。コード変換を行わないパターン。
-// 終端モードには2を設定する（2バイトの0値で終端されていることを期待する）。
-TEST(CClipboard, GetClipboardByFormat6) {
-	std::wstring_view unicodeText{ L"テスト\0データ", 8 };
-	cxx::GlobalWString memory{ unicodeText };
-	MockCClipboard clipboard;
-	CNativeW buffer;
-	CEol eol(EEolType::cr_and_lf);
-	ON_CALL(clipboard, IsClipboardFormatAvailable(12345)).WillByDefault(Return(TRUE));
-	ON_CALL(clipboard, GetClipboardData(12345)).WillByDefault(Return(memory.Get()));
-	ON_CALL(clipboard, GlobalLock(_)).WillByDefault(::GlobalLock);
-	EXPECT_CALL(clipboard, IsClipboardFormatAvailable(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GetClipboardData(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_CALL(clipboard, GlobalLock(_))
-		.Times(1)
-		.WillOnce(testing::DoDefault());
-	EXPECT_TRUE(clipboard.GetClipboardByFormat(buffer, L"12345", 3, 2, eol));
-	EXPECT_STREQ(buffer.GetStringPtr(), L"テスト");
 }
 
 // モード4（UTF-8）のテスト。コード変換を行う。

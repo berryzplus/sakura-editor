@@ -743,11 +743,3 @@ BOOL CClipboard::IsClipboardFormatAvailable(UINT format) const {
 UINT CClipboard::EnumClipboardFormats(UINT format) const {
 	return ::EnumClipboardFormats(format);
 }
-
-HGLOBAL CClipboard::GlobalAlloc(UINT uFlags, SIZE_T dwBytes) const {
-	return ::GlobalAlloc(uFlags, dwBytes);
-}
-
-LPVOID CClipboard::GlobalLock(HGLOBAL hMem) const {
-	return ::GlobalLock(hMem);
-}
