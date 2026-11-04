@@ -1713,6 +1713,94 @@ TEST_F(WinMainFuncTest, CreateEditorProcess112)
 }
 
 /*!
+ * @brief エディタの初期化が通るようにモックを設定する
+ */
+static void SetUpCreateEditorStartup()
+{
+	auto pKernel32 = (MockKernel32*)Kernel32::getInstance();
+
+	// エラーメッセージの取得を成功させる
+	SetUpLoadString();
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, CreateMutexW(nullptr, TRUE, StrEq(GSTR_MUTEX_SAKURA_INIT)))
+		.WillRepeatedly(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, WaitForSingleObject(_, _))
+		.WillRepeatedly(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, OpenFileMappingW(_, _, _))
+		.WillOnce(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, MapViewOfFile(_, _, _, _, _))
+		.WillOnce(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, GetCurrentDirectoryW(_, _))
+		.WillRepeatedly(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, SetCurrentDirectoryW(_))
+		.WillRepeatedly(testing::DoDefault());
+
+	// デフォルト処理を呼んで成功させる
+	EXPECT_CALL(*pKernel32, CreateMutexW(nullptr, FALSE, StrEq(GSTR_MUTEX_SAKURA_EDITARR)))
+		.WillRepeatedly(testing::DoDefault());
+}
+
+/*!
+ * @brief エディタ初期化後、オープン済みを検出して終了するパターンのテスト
+ */
+TEST_F(WinMainFuncTest, CreateEditorProcess120)
+{
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(L"");
+
+	// エディタープロセスを起動する
+	auto ep = testing::CreateEditorProcess(
+		std::array{
+			gm_TestDataPath.c_str(),
+			L"-CODE=4"
+		},
+		L""
+	);
+	ASSERT_THAT(ep, NotNull());
+	ASSERT_THAT(ep.hWnd, NotNull());
+
+	// モックをセットアップする
+	Kernel32::setInstance<MockKernel32>();
+
+	// エディタ初期化を成功させる
+	SetUpCreateEditorStartup();
+
+	// エディタプロセスのコマンドラインを用意する
+	const auto process = CProcessFactory().CreateInstance(
+		std::format(LR"("{}" -CODE=4 -Y=3 -PROF="")", gm_TestDataPath.c_str())
+	);
+
+	// エディタ初期化を実行する（オープン済みなので失敗する。）
+	EXPECT_THAT(
+		process->InitializeProcess(SW_SHOWDEFAULT),
+		IsFalse()
+	);
+
+	// モックを解除する
+	Kernel32::resetInstance();
+
+	// 編集ウインドウにクローズを要求する
+	testing::RequestForeignWindowClose(ep.hWnd);
+
+	// 編集ウインドウが閉じられた後、プロセスが完全に終了するまで待つ
+	ep.lock();
+
+	// コントロールプロセスに終了指示を出して終了を待つ
+	testing::TerminateControlProcess(L"");
+}
+
+/*!
  * @brief WinMainを起動してみるテスト
  *  プログラムが起動する正常ルートに潜む障害を検出するためのもの。
  *  Grepを実行する。
