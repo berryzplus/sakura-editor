@@ -20,6 +20,7 @@
 
 #include <Unknwn.h>
 
+#include "charset/CCodeFactory.h"
 #include "cxx/TComImpl.hpp"
 #include "util/design_template.h"
 #include "util/os.h"
@@ -173,25 +174,20 @@ private:
 
 class CDataObject final : public cxx::TComImpl<IDataObject> {
 private:
-	friend class CEnumFORMATETC;	// 2008.03.26 ryoji
-
-	struct DATA;
-	using PDATA = DATA*;
-
-	//Feb. 26, 2001, fixed by yebisuya sugoroku
-	struct DATA {
-		CLIPFORMAT	cfFormat = CF_UNICODETEXT;	//!< クリップボードフォーマット
-		LPBYTE		data = nullptr;				//!< データ
-		SIZE_T		size = 0ULL;				//!< データサイズ。バイト単位。
-	};
-
 	using Base = cxx::TComImpl<IDataObject>;
 	using Me = CDataObject;
 
-	int m_nFormat = 0;
-	PDATA m_pData = nullptr;
+	std::wstring m_Text;
+	ECodeType m_eCodeType;
+
+	std::vector<UINT> m_Formats{ CF_UNICODETEXT };
 
 public:
+	static UINT cfSakuraClipW;
+	static UINT cfColumn;
+	static UINT cfLine1;
+	static UINT cfLine2;
+
 	// 生成関数
 	template<typename... Args>
 	static com_pointer_type make_instance(Args&&... args)
@@ -202,7 +198,9 @@ public:
 
 	explicit CDataObject(
 		std::wstring_view text,
-		bool bColumnSelect = false
+		bool bColumnSelect = false,
+		bool bLineSelect = false,
+		ECodeType eCharset = ECodeType::CODE_NONE
 	);
 
 	STDMETHOD( GetData )( LPFORMATETC, LPSTGMEDIUM );
@@ -215,10 +213,8 @@ public:
 	STDMETHOD( DUnadvise )( DWORD );
 	STDMETHOD( EnumDAdvise )( LPENUMSTATDATA* );
 
-	void SetText(
-		std::wstring_view text,
-		bool bColumnSelect = false
-	);
+private:
+	SIZE_T	_CalcSize(CLIPFORMAT cf) const noexcept;
 };
 
 //! CEnumFORMATETC クラス
@@ -228,8 +224,8 @@ private:
 	using Base = cxx::TComImpl<IEnumFORMATETC>;
 	using Me = CEnumFORMATETC;
 
-	int m_nIndex = 0;
-	CDataObject* m_pcDataObject;
+	std::vector<UINT> m_Data;
+	size_t m_nIndex = 0;
 
 public:
 	// 生成関数
@@ -241,9 +237,9 @@ public:
 	}
 
 	explicit CEnumFORMATETC(
-		CDataObject* pcDataObject
+		std::span<UINT> data
 	)
-		: m_pcDataObject(pcDataObject)
+		: m_Data(data.begin(), data.end())
 	{
 	}
 

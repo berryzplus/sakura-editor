@@ -11,6 +11,11 @@
 
 #include "cxx/type_of_Nth_arg.hpp"
 
+#include <memory>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+
 namespace cxx {
 
 template<auto Deleter>

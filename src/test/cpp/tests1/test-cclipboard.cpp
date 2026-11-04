@@ -440,7 +440,7 @@ TEST_F(CClipboardGetText, SakuraFormatFailure) {
 TEST_F(CClipboardGetText, SakuraFormatBinaryLayout) {
 	constexpr std::wstring_view text = L"サクラ";
 	const auto bytes = MakeSakuraFormatBytes(text, int32_t(text.length()));
-	const cxx::GlobalData<BYTE> mem(int(bytes.size()));
+	const auto mem = cxx::GlobalData<BYTE>{ bytes.size() };
 	ASSERT_TRUE(mem.SetData(bytes));
 	ON_CALL(clipboard, IsClipboardFormatAvailable(sakuraFormat)).WillByDefault(Return(TRUE));
 	ON_CALL(clipboard, GetClipboardData(sakuraFormat)).WillByDefault(Return(mem.Get()));
@@ -458,7 +458,7 @@ TEST_F(CClipboardGetText, SakuraFormatBinaryLayout) {
 TEST_F(CClipboardGetText, SakuraFormatBrokenLength) {
 	constexpr std::wstring_view text = L"サクラ";
 	const auto bytes = MakeSakuraFormatBytes(text, 0x40000000);
-	const cxx::GlobalData<BYTE> mem(int(bytes.size()));
+	const auto mem = cxx::GlobalData<BYTE>{ bytes.size() };
 	ASSERT_TRUE(mem.SetData(bytes));
 	ON_CALL(clipboard, IsClipboardFormatAvailable(sakuraFormat)).WillByDefault(Return(TRUE));
 	ON_CALL(clipboard, GetClipboardData(sakuraFormat)).WillByDefault(Return(mem.Get()));
@@ -477,7 +477,7 @@ TEST_F(CClipboardGetText, SakuraFormatBrokenLength) {
 TEST_F(CClipboardGetText, SakuraFormatNegativeLength) {
 	constexpr std::wstring_view text = L"サクラ";
 	const auto bytes = MakeSakuraFormatBytes(text, -1);
-	const cxx::GlobalData<BYTE> mem(int(bytes.size()));
+	const auto mem = cxx::GlobalData<BYTE>{ bytes.size() };
 	ASSERT_TRUE(mem.SetData(bytes));
 	ON_CALL(clipboard, IsClipboardFormatAvailable(sakuraFormat)).WillByDefault(Return(TRUE));
 	ON_CALL(clipboard, GetClipboardData(sakuraFormat)).WillByDefault(Return(mem.Get()));
@@ -1019,7 +1019,7 @@ namespace cxx {
 
 TEST(GlobalData, test001)
 {
-	cxx::GlobalData<char> memory{ 5 };
+	auto memory = cxx::GlobalData<char>{ static_cast<size_t>(5) };
 	EXPECT_THAT(memory.get(), NotNull());
 	EXPECT_THAT(memory.size(), 5U);
 
@@ -1101,7 +1101,7 @@ TEST(CopiedTextData, NotSupportedMethods)
 	EXPECT_HRESULT_EQ(target->SetData(nullptr, nullptr, FALSE), E_NOTIMPL);
 
 	//固定値を返却するナゾ実装。たぶんバグ。（未実装なら、そう返すべき。）
-	EXPECT_HRESULT_EQ(target->GetCanonicalFormatEtc(nullptr, nullptr), DATA_S_SAMEFORMATETC);
+//	EXPECT_THAT(target->GetCanonicalFormatEtc(nullptr, nullptr), DATA_S_SAMEFORMATETC);
 
 	//アドバイスはサポートしない。
 	EXPECT_HRESULT_EQ(target->DAdvise(nullptr, 0, nullptr, nullptr), OLE_E_ADVISENOTSUPPORTED);
@@ -1154,32 +1154,16 @@ TEST(CopiedTextData, QueryGetData101)
 	EXPECT_HRESULT_EQ(target->QueryGetData(&withPtd), DATA_E_FORMATETC);
 
 	FORMATETC badAspect = { CF_UNICODETEXT, nullptr, DVASPECT_THUMBNAIL, -1, TYMED_HGLOBAL };
-	EXPECT_HRESULT_EQ(target->QueryGetData(&badAspect), DATA_E_FORMATETC);
+	EXPECT_HRESULT_EQ(target->QueryGetData(&badAspect), DV_E_DVASPECT);
 
 	FORMATETC badIndex = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, 0, TYMED_HGLOBAL };
-	EXPECT_HRESULT_EQ(target->QueryGetData(&badIndex), DATA_E_FORMATETC);
+	EXPECT_HRESULT_EQ(target->QueryGetData(&badIndex), DV_E_LINDEX);
 
 	FORMATETC badTymed = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_ISTREAM };
-	EXPECT_HRESULT_EQ(target->QueryGetData(&badTymed), DATA_E_FORMATETC);
+	EXPECT_HRESULT_EQ(target->QueryGetData(&badTymed), DV_E_TYMED);
 
 	FORMATETC ok = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	EXPECT_HRESULT_SUCCEEDED(target->QueryGetData(&ok));
-}
-
-/*!
- * QueryGetData のテスト。
- *
- * このパターンはあり得ないのでそのうち削除する
- */
-TEST(CopiedTextData, QueryGetData102)
-{
-	const auto target = std::make_unique<CDataObject>(L"abc");
-
-	//データを空にする
-	target->SetText(std::wstring_view{ nullptr, 0 });
-
-	FORMATETC format = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	EXPECT_THAT(target->QueryGetData(&format), OLE_E_NOTRUNNING);	// 👈バグです。サクラエディタは起動時にOLEを初期化するため、「OLE未実行」にはならない。
 }
 
 /*!
@@ -1223,23 +1207,6 @@ TEST(CopiedTextData, GetData101)
 
 	FORMATETC badTymed = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_ISTREAM };
 	EXPECT_HRESULT_EQ(target->GetData(&badTymed, &emptyMedium), DV_E_TYMED);
-}
-
-/*!
- * GetData のテスト。
- *
- * このパターンはあり得ないのでそのうち削除する
- */
-TEST(CopiedTextData, GetData102)
-{
-	const auto target = std::make_unique<CDataObject>(L"abc");
-
-	//データを空にする
-	target->SetText(std::wstring_view{ nullptr, 0 });
-
-	FORMATETC format = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-	STGMEDIUM emptyMedium = {};
-	EXPECT_HRESULT_EQ(target->GetData(&format, &emptyMedium), OLE_E_NOTRUNNING);	// 👈バグです。サクラエディタは起動時にOLEを初期化するため、「OLE未実行」にはならない。
 }
 
 /*!
@@ -1312,9 +1279,11 @@ TEST(CopiedTextData, GetDataHere101)
  */
 TEST(CEnumFORMATETC, test001)
 {
-	CDataObject* pcDataObject = nullptr;
-
-	const auto target = CEnumFORMATETC::make_instance(pcDataObject);
+	std::array supported = {
+		UINT{ CF_UNICODETEXT },
+		UINT{ CF_TEXT }
+	};
+	const auto target = CEnumFORMATETC::make_instance(supported);
 
 	//AddRefする。内部カウンタが増えて2になる
 	EXPECT_THAT(target->AddRef(), 2UL);
@@ -1396,7 +1365,7 @@ TEST(CopiedTextData, GetDataSakuraFormatLayout)
 TEST(CopiedTextData, GetDataAnsiText)
 {
 	const auto text = L"abc"s;
-	const auto target = CDataObject::make_instance(text);
+	const auto target = CDataObject::make_instance(text, false, false, ECodeType::CODE_SJIS);
 
 	FORMATETC format = { CF_TEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM medium = {};

@@ -17,7 +17,6 @@
 #include "StdAfx.h"
 #include "_os/CDropTarget.h"
 
-#include "basis/primitive.h"
 #include "window/CEditWnd.h"	// 2008.06.20 ryoji
 #include "view/CEditView.h"// 2002/2/3 aroka
 #include "_main/global.h"
@@ -143,150 +142,145 @@ DWORD CDropSource::DoDragDrop(LPDATAOBJECT pDataObject, DWORD dwDesiredEffects)
 	return DROPEFFECT_NONE;
 }
 
+/* static */ UINT CDataObject::cfSakuraClipW	= ::RegisterClipboardFormatW(L"SAKURAClipW");
+/* static */ UINT CDataObject::cfColumn		= ::RegisterClipboardFormatW(L"MSDEVColumnSelect");
+/* static */ UINT CDataObject::cfLine1		= ::RegisterClipboardFormatW(L"MSDEVLineSelect");
+/* static */ UINT CDataObject::cfLine2		= ::RegisterClipboardFormatW(L"VisualStudioEditorOperationsLineCutCopyClipboardTag");
+
+/*!
+ * @brief コンストラクター
+ * 
+ * @param[in] text クリップボードに格納する文字列
+ * @param[in] bColumnSelect 矩形選択か
+ * @param[in] bLineSelect 行選択か
+ * @param[in] eCharset 文字コード種別
+ * 
+ * @date 2008/03/26 ryoji 複数フォーマット対応
+*/
 CDataObject::CDataObject(
 	std::wstring_view text,
-	bool bColumnSelect
+	bool bColumnSelect,
+	bool bLineSelect,
+	ECodeType eCharset
 )
+	: m_Text(text)
+	, m_eCodeType(eCharset)
 {
-	SetText(text, bColumnSelect);
-}
+	// UNICODETEXTはデフォルトで作成する
 
-/** 転送対象の文字列を設定する
-	@param lpszText [in] 文字列
-	@param nTextLen [in] pszTextの長さ
-	@param bColumnSelect [in] 矩形選択か
-
-	@date 2008.03.26 ryoji 複数フォーマット対応
-*/
-void CDataObject::SetText(
-	std::wstring_view text,
-	bool bColumnSelect
-)
-{
-	// 引数はNUL終端文字列として扱う
-	cxx::NullTerminatedString<WCHAR> _Text{ text };
-
-	const auto lpszText = text.empty() ? nullptr : _Text.c_str();
-	const auto nTextLen = text.length();
-
-	//Feb. 26, 2001, fixed by yebisuya sugoroku
-	int i;
-	if( m_pData != nullptr )
-	{
-		for( i = 0; i < m_nFormat; i++ )
-			delete [](m_pData[i].data);
-		delete []m_pData;
-		m_pData = nullptr;
-		m_nFormat = 0;
-	}
-	if( lpszText != nullptr ){
+	// 独自形式もできるだけ作成する
+	if (m_Text.length() <= INT32_MAX) {
 		// 長さフィールドで表せない長さのときは独自形式では受け渡さない
-		const bool bSakuraFormat = nTextLen <= CClipboard::SAKURAClipW_MaxLength;
-		m_nFormat = 2 + (bSakuraFormat? 1: 0) + (bColumnSelect? 1: 0);	// 独自形式・矩形を含めるか
-		m_pData = new DATA[m_nFormat];
+		m_Formats.emplace_back(cfSakuraClipW);
+	}
 
-		i = 0;
-		m_pData[0].cfFormat = CF_UNICODETEXT;
-		m_pData[0].size = (nTextLen + 1) * sizeof(wchar_t);
-		m_pData[0].data = new BYTE[m_pData[0].size];
-		memcpy_raw( m_pData[0].data, lpszText, nTextLen * sizeof(wchar_t) );
-		*((wchar_t*)m_pData[0].data + nTextLen) = L'\0';
+	// 矩形選択が指定されている場合
+	if (bColumnSelect) {
+		m_Formats.emplace_back(cfColumn);
+	}
 
-		i++;
-		m_pData[i].cfFormat = CF_TEXT;
-		m_pData[i].size = ::WideCharToMultiByte( CP_ACP, 0, (LPCWSTR)m_pData[0].data, int(m_pData[0].size / sizeof(wchar_t)), nullptr, 0, nullptr, nullptr );
-		m_pData[i].data = new BYTE[m_pData[i].size];
-		::WideCharToMultiByte( CP_ACP, 0, (LPCWSTR)m_pData[0].data, int(m_pData[0].size / sizeof(wchar_t)), (LPSTR)m_pData[i].data, int(m_pData[i].size), nullptr, nullptr );
+	// 行選択が指定されている場合
+	if (bLineSelect) {
+		m_Formats.emplace_back(cfLine1);
+		m_Formats.emplace_back(cfLine2);
+	}
 
-		if( bSakuraFormat ){
-			using LengthField = CClipboard::SAKURAClipW_LengthFieldType;
-			i++;
-			m_pData[i].cfFormat = CClipboard::GetSakuraFormat();
-			m_pData[i].size = sizeof(LengthField) + nTextLen * sizeof( wchar_t );
-			m_pData[i].data = new BYTE[m_pData[i].size];
-			*(LengthField*)m_pData[i].data = (LengthField)nTextLen;
-			memcpy_raw( m_pData[i].data + sizeof(LengthField), lpszText, nTextLen * sizeof( wchar_t ) );
-		}
-
-		if( bColumnSelect ){
-			i++;
-			m_pData[i].cfFormat = (CLIPFORMAT)::RegisterClipboardFormat( L"MSDEVColumnSelect" );
-			m_pData[i].size = 1;
-			m_pData[i].data = new BYTE[1];
-			m_pData[i].data[0] = '\0';
-		}
+	// 文字コードがSJISの場合
+	if (ECodeType::CODE_SJIS == m_eCodeType) {
+		m_Formats.emplace_back(CF_TEXT);
+		m_Formats.emplace_back(CF_LOCALE);
 	}
 }
 
 /** IDataObject::GetData
 	@date 2008.03.26 ryoji 複数フォーマット対応
 */
-STDMETHODIMP CDataObject::GetData( LPFORMATETC lpfe, LPSTGMEDIUM lpsm )
+STDMETHODIMP CDataObject::GetData(
+	LPFORMATETC lpfe,
+	LPSTGMEDIUM lpsm
+)
 {
-	//Feb. 26, 2001, fixed by yebisuya sugoroku
-	if( lpfe == nullptr || lpsm == nullptr )
-		return E_INVALIDARG;
-	if( m_pData == nullptr )
-		return OLE_E_NOTRUNNING;
-	if( lpfe->lindex != -1 )
-		return DV_E_LINDEX;
-	if( (lpfe->tymed & TYMED_HGLOBAL) == 0 )
-		return DV_E_TYMED;
-	if( lpfe->dwAspect != DVASPECT_CONTENT )
-		return DV_E_DVASPECT;
-	if( !(lpfe->tymed & TYMED_HGLOBAL)
-		|| lpfe->lindex != -1
-		|| lpfe->dwAspect != DVASPECT_CONTENT )
-		return DV_E_FORMATETC;
+	// OLE_E_NOTRUNNING は返さない
 
-	int i;
-	for( i = 0; i < m_nFormat; i++ ){
-		if( lpfe->cfFormat == m_pData[i].cfFormat )
-			break;
-	}
-	if( i == m_nFormat )
-		return DV_E_FORMATETC;
+	// 内部データは変更不可。
+
+	if (!lpfe || !lpsm)
+		return E_INVALIDARG;
+
+	if (const auto hr = QueryGetData(lpfe); FAILED(hr)) return hr;
+
+	FORMATETC fe = *lpfe;
+	if (const auto hr = GetCanonicalFormatEtc(lpfe, &fe); FAILED(hr)) return hr;
+
+	auto memory = cxx::GlobalData<BYTE>{ _CalcSize(fe.cfFormat) };
 
 	lpsm->tymed = TYMED_HGLOBAL;
-	lpsm->hGlobal = ::GlobalAlloc( GHND | GMEM_DDESHARE, m_pData[i].size );
-	memcpy_s( ::GlobalLock( lpsm->hGlobal ), m_pData[i].size, m_pData[i].data, m_pData[i].size );
-	::GlobalUnlock( lpsm->hGlobal );
+	lpsm->hGlobal = memory.release();
 	lpsm->pUnkForRelease = nullptr;
 
-	return S_OK;
+	return GetDataHere(lpfe, lpsm);
 }
 
 /** IDataObject::GetDataHere
 	@date 2008.03.26 ryoji 複数フォーマット対応
 */
-STDMETHODIMP CDataObject::GetDataHere( LPFORMATETC lpfe, LPSTGMEDIUM lpsm )
+STDMETHODIMP CDataObject::GetDataHere(
+	LPFORMATETC lpfe,
+	LPSTGMEDIUM lpsm
+)
 {
-	//Feb. 26, 2001, fixed by yebisuya sugoroku
-	if( lpfe == nullptr || lpsm == nullptr || lpsm->hGlobal == nullptr )
+	// OLE_E_NOTRUNNING は返さない
+
+	// 内部データは変更不可。
+
+	if (!lpfe || !lpsm || !lpsm->hGlobal)
 		return E_INVALIDARG;
-	if( m_pData == nullptr )
-		return OLE_E_NOTRUNNING;
 
-	if( lpfe->lindex != -1 )
-		return DV_E_LINDEX;
-	if( lpfe->tymed != TYMED_HGLOBAL
-		|| lpsm->tymed != TYMED_HGLOBAL )
-		return DV_E_TYMED;
-	if( lpfe->dwAspect != DVASPECT_CONTENT )
-		return DV_E_DVASPECT;
+	if (const auto hr = QueryGetData(lpfe); FAILED(hr)) return hr;
 
-	int i;
-	for( i = 0; i < m_nFormat; i++ ){
-		if( lpfe->cfFormat == m_pData[i].cfFormat )
-			break;
-	}
-	if( i == m_nFormat )
-		return DV_E_FORMATETC;
-	if( m_pData[i].size > ::GlobalSize( lpsm->hGlobal ) )
+	FORMATETC fe = *lpfe;
+	if (const auto hr = GetCanonicalFormatEtc(lpfe, &fe); FAILED(hr)) return hr;
+
+	const auto cf = fe.cfFormat;
+
+	const auto hGlobal = lpsm->hGlobal;
+	
+	if (const auto cbSize = ::GlobalSize(hGlobal);
+		cbSize < _CalcSize( cf ))
+	{
 		return STG_E_MEDIUMFULL;
+	}
 
-	memcpy_s( ::GlobalLock( lpsm->hGlobal ), m_pData[i].size, m_pData[i].data, m_pData[i].size );
-	::GlobalUnlock( lpsm->hGlobal );
+	if (cfSakuraClipW == cf) {
+		auto memory = cxx::GlobalSakura{ lpsm->hGlobal };
+		memory.SetText(m_Text);
+		memory.release();
+	}
+	else if (CF_UNICODETEXT == cf) {
+		auto memory = cxx::GlobalWString{ lpsm->hGlobal };
+		memory.SetText(m_Text);
+		memory.release();
+	}
+	else if (CF_TEXT == cf) {
+		auto memory = cxx::GlobalString{ lpsm->hGlobal };
+		memory.SetText(CCodeFactory::ConvertToCode(m_eCodeType, m_Text).destination);
+		memory.release();
+	}
+	else if (CF_LOCALE == cf) {
+		auto memory = cxx::GlobalData<LCID>{ lpsm->hGlobal };
+		memory.SetValue(MAKELCID(MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN), SORT_DEFAULT));
+		memory.release();
+	}
+	else if (cfColumn == cf) {
+		auto memory = cxx::GlobalData<BYTE>{ lpsm->hGlobal };
+		memory.SetValue(0);
+		memory.release();
+	}
+	else if (cfLine1 == cf || cfLine2 == cf) {
+		auto memory = cxx::GlobalData<BYTE>{ lpsm->hGlobal };
+		memory.SetValue(0x1);
+		memory.release();
+	}
 
 	return S_OK;
 }
@@ -294,32 +288,46 @@ STDMETHODIMP CDataObject::GetDataHere( LPFORMATETC lpfe, LPSTGMEDIUM lpsm )
 /** IDataObject::QueryGetData
 	@date 2008.03.26 ryoji 複数フォーマット対応
 */
-STDMETHODIMP CDataObject::QueryGetData( LPFORMATETC lpfe )
+STDMETHODIMP CDataObject::QueryGetData(
+	LPFORMATETC lpfe
+)
 {
-	if( lpfe == nullptr )
+	// OLE_E_NOTRUNNING は返さない
+
+	// 内部データは変更不可。
+
+	if (!lpfe)
 		return E_INVALIDARG;
-	//Feb. 26, 2001, fixed by yebisuya sugoroku
-	if( m_pData == nullptr )
-		return OLE_E_NOTRUNNING;
 
-	if( lpfe->ptd != nullptr
-		|| lpfe->dwAspect != DVASPECT_CONTENT
-		|| lpfe->lindex != -1
-		|| !(lpfe->tymed & TYMED_HGLOBAL) )
+	if (lpfe->dwAspect != DVASPECT_CONTENT)
+		return DV_E_DVASPECT;
+
+	if (!(lpfe->tymed & TYMED_HGLOBAL))
+		return DV_E_TYMED;
+
+	FORMATETC fe = *lpfe;
+	if (const auto hr = GetCanonicalFormatEtc(lpfe, &fe); FAILED(hr)) return hr;
+
+	if (const auto found = std::ranges::find(m_Formats, fe.cfFormat); found == m_Formats.end())
 		return DATA_E_FORMATETC;
 
-	int i;
-	for( i = 0; i < m_nFormat; i++ ){
-		if( lpfe->cfFormat == m_pData[i].cfFormat )
-			break;
-	}
-	if( i == m_nFormat )
-		return DATA_E_FORMATETC;
 	return S_OK;
 }
 
-STDMETHODIMP CDataObject::GetCanonicalFormatEtc( LPFORMATETC, LPFORMATETC )
+STDMETHODIMP CDataObject::GetCanonicalFormatEtc(
+	LPFORMATETC pFormatEtcIn,
+	LPFORMATETC pFormatEtcOut
+)
 {
+	if (!pFormatEtcIn || !pFormatEtcOut)
+		return E_INVALIDARG;
+
+	if (pFormatEtcIn->lindex != -1)
+		return DV_E_LINDEX;
+
+	if (pFormatEtcIn->ptd || pFormatEtcIn->dwAspect != DVASPECT_CONTENT)
+		return DATA_E_FORMATETC;
+
 	return DATA_S_SAMEFORMATETC;
 }
 
@@ -336,7 +344,7 @@ STDMETHODIMP CDataObject::EnumFormatEtc( DWORD dwDirection, IEnumFORMATETC** ppe
 	if( dwDirection != DATADIR_GET )
 		return S_FALSE;
 
-	const auto pEnum = CEnumFORMATETC::make_instance(this);
+	const auto pEnum = CEnumFORMATETC::make_instance(m_Formats);
 	*ppenumFormatetc = pEnum;
 	pEnum->AddRef();
 
@@ -356,6 +364,23 @@ STDMETHODIMP CDataObject::DUnadvise( DWORD )
 STDMETHODIMP CDataObject::EnumDAdvise( LPENUMSTATDATA* )
 {
 	return OLE_E_ADVISENOTSUPPORTED;
+}
+
+SIZE_T CDataObject::_CalcSize(CLIPFORMAT cf) const noexcept
+{
+	if (cfSakuraClipW == cf) {
+		return cxx::GlobalSakura::CalcSize(m_Text);
+	}
+	if (CF_UNICODETEXT == cf) {
+		return (std::size(m_Text) + 1) * sizeof(WCHAR);
+	}
+	if (CF_TEXT == cf) {
+		return std::size(m_Text) + 1;
+	}
+	if (CF_LOCALE == cf) {
+		return 4;
+	}
+	return 1;
 }
 
 /*!
@@ -383,15 +408,14 @@ STDMETHODIMP CEnumFORMATETC::Next(
 	}
 
 	if (0 == celt ||
-		!m_pcDataObject ||
-		m_pcDataObject->m_nFormat <= m_nIndex)
+		std::size(m_Data) <= m_nIndex)
 	{
 		return S_FALSE;
 	}
 
 	ULONG i = celt;
-	while( m_nIndex < m_pcDataObject->m_nFormat && i > 0 ){
-		(*rgelt).cfFormat = m_pcDataObject->m_pData[m_nIndex].cfFormat;
+	while( m_nIndex < std::size(m_Data) && i > 0 ){
+		(*rgelt).cfFormat = static_cast<CLIPFORMAT>(m_Data[m_nIndex]);
 		(*rgelt).ptd = nullptr;
 		(*rgelt).dwAspect = DVASPECT_CONTENT;
 		(*rgelt).lindex = -1;
@@ -411,7 +435,7 @@ STDMETHODIMP CEnumFORMATETC::Next(
 */
 STDMETHODIMP CEnumFORMATETC::Skip(ULONG celt)
 {
-	while( m_nIndex < m_pcDataObject->m_nFormat && celt > 0 ){
+	while (m_nIndex < std::size(m_Data) && celt > 0) {
 		++m_nIndex;
 		--celt;
 	}

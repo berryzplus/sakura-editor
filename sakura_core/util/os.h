@@ -15,6 +15,7 @@
 #include "cxx/type_of_Nth_lambda_arg.hpp"
 #include "util/design_template.h"
 
+#include <filesystem>
 #include <string>
 #include <string_view>
 
@@ -244,10 +245,10 @@ public:
 	using Base::Base;
 
 	//データ数だけ指定して構築（確保したメモリはゼロクリアされる）
-	explicit GlobalData(int count) : GlobalMemory(count * sizeof(T)) {}
+	explicit GlobalData(SIZE_T count) : GlobalMemory(count * sizeof(T)) {}
 
 	//1データで構築
-	GlobalData() : GlobalData(1) {}
+	GlobalData() : GlobalData(static_cast<SIZE_T>(1)) {}
 
 	//データを指定して更新する
 	bool SetData(std::span<const T> data) const
