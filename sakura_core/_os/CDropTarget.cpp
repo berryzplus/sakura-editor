@@ -86,7 +86,6 @@ void COleLibrary::UnInitialize()
 #define DECLARE_YB_INTERFACEIMPL( BASEINTERFACE ) \
 template<> REFIID CYbInterfaceImpl<BASEINTERFACE>::m_owniid = IID_##BASEINTERFACE;
 
-DECLARE_YB_INTERFACEIMPL( IDropSource )
 DECLARE_YB_INTERFACEIMPL( IDropTarget )
 
 CDropTarget::CDropTarget( CEditWnd* pCEditWnd )
