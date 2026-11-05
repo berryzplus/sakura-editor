@@ -86,53 +86,37 @@ void COleLibrary::UnInitialize()
 #define DECLARE_YB_INTERFACEIMPL( BASEINTERFACE ) \
 template<> REFIID CYbInterfaceImpl<BASEINTERFACE>::m_owniid = IID_##BASEINTERFACE;
 
-DECLARE_YB_INTERFACEIMPL( IDropTarget )
-
-CDropTarget::CDropTarget( CEditWnd* pCEditWnd )
+IFACEMETHODIMP CDropTarget_CEditView::DragEnter(
+	LPDATAOBJECT pDataObject,
+	DWORD dwKeyState,
+	POINTL pt,
+	LPDWORD pdwEffect
+)
 {
-	m_pcEditWnd = pCEditWnd;	// 2008.06.20 ryoji
-	return;
-}
-
-CDropTarget::CDropTarget( CEditView* pCEditView )
-{
-	m_pcEditView = pCEditView;
-	return;
-}
-
-CDropTarget::~CDropTarget()
-{
-	return;
-}
-
-STDMETHODIMP CDropTarget::DragEnter( LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect )
-{
-	DEBUG_TRACE( L"CDropTarget::DragEnter()\n" );
-	if( m_pcEditWnd ){	// 2008.06.20 ryoji
-		return m_pcEditWnd->DragEnter( pDataObject, dwKeyState, pt, pdwEffect );
-	}
 	return m_pcEditView->DragEnter( pDataObject, dwKeyState, pt, pdwEffect );
 }
-STDMETHODIMP CDropTarget::DragOver( DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect )
+
+IFACEMETHODIMP CDropTarget_CEditView::DragOver(
+	DWORD dwKeyState,
+	POINTL pt,
+	LPDWORD pdwEffect
+)
 {
-	if( m_pcEditWnd ){	// 2008.06.20 ryoji
-		return m_pcEditWnd->DragOver( dwKeyState, pt, pdwEffect );
-	}
 	return m_pcEditView->DragOver( dwKeyState, pt, pdwEffect );
 }
-STDMETHODIMP CDropTarget::DragLeave( void )
+
+IFACEMETHODIMP CDropTarget_CEditView::DragLeave()
 {
-	if( m_pcEditWnd ){	// 2008.06.20 ryoji
-		return m_pcEditWnd->DragLeave();
-	}
 	return m_pcEditView->DragLeave();
 }
 
-STDMETHODIMP CDropTarget::Drop( LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect )
+IFACEMETHODIMP CDropTarget_CEditView::Drop(
+	LPDATAOBJECT pDataObject,
+	DWORD dwKeyState,
+	POINTL pt,
+	LPDWORD pdwEffect
+)
 {
-	if( m_pcEditWnd ){	// 2008.06.20 ryoji
-		return m_pcEditWnd->Drop( pDataObject, dwKeyState, pt, pdwEffect );
-	}
 	return m_pcEditView->Drop( pDataObject, dwKeyState, pt, pdwEffect );
 }
 

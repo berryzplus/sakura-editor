@@ -81,37 +81,77 @@ public:
 	{return 0;}
 };
 
-class CDropTarget : public CYbInterfaceImpl<IDropTarget>
+class CDropTarget : public cxx::TComImpl<IDropTarget>
 {
+private:
+	using Base = cxx::TComImpl<IDropTarget>;
 	using Me = CDropTarget;
 
-public:
 	/*
 	||  Constructors
 	*/
-	CDropTarget( CEditWnd* );	// 2008.06.20 ryoji
-	CDropTarget( CEditView* );
-	CDropTarget(const Me&) = delete;
-	Me& operator = (const Me&) = delete;
-	CDropTarget(Me&&) noexcept = delete;
-	Me& operator = (Me&&) noexcept = delete;
-	~CDropTarget();
+protected:
+	CDropTarget() = default;
+
 	/*
 	||  Attributes & Operations
 	*/
-private: // 2002/2/10 aroka アクセス権変更
-	CEditWnd*		m_pcEditWnd = nullptr;	// 2008.06.20 ryoji
-	CEditView*		m_pcEditView = nullptr;
 
-public:
-	STDMETHODIMP	DragEnter(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
-	STDMETHODIMP	DragOver(DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
-	STDMETHODIMP	DragLeave( void ) override;
-	STDMETHODIMP	Drop(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
-protected:
 	/*
 	||  実装ヘルパ関数
 	*/
+};
+
+class CDropTarget_CEditWnd : public CDropTarget
+{
+private:
+	using Base = CDropTarget;
+	using Me = CDropTarget_CEditWnd;
+
+public:
+	// 生成関数
+	template<typename... Args>
+	static com_pointer_type make_instance(Args&&... args)
+		requires std::constructible_from<Me, Args...>
+	{
+		return Base::template make_instance<Me>(std::forward<Args>(args)...);
+	}
+
+	CDropTarget_CEditWnd() = default;
+
+	IFACEMETHODIMP	DragEnter(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+	IFACEMETHODIMP	DragOver(DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+	IFACEMETHODIMP	DragLeave() override;
+	IFACEMETHODIMP	Drop(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+};
+
+class CDropTarget_CEditView : public CDropTarget
+{
+private:
+	using Base = CDropTarget;
+	using Me = CDropTarget_CEditView;
+
+public:
+	// 生成関数
+	template<typename... Args>
+	static com_pointer_type make_instance(Args&&... args)
+		requires std::constructible_from<Me, Args...>
+	{
+		return Base::template make_instance<Me>(std::forward<Args>(args)...);
+	}
+
+	explicit CDropTarget_CEditView(CEditView* pcEditView)
+		: m_pcEditView(pcEditView)
+	{
+	}
+
+	IFACEMETHODIMP	DragEnter(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+	IFACEMETHODIMP	DragOver(DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+	IFACEMETHODIMP	DragLeave() override;
+	IFACEMETHODIMP	Drop(LPDATAOBJECT pDataObject, DWORD dwKeyState, POINTL pt, LPDWORD pdwEffect) override;
+
+private:
+	CEditView* m_pcEditView = nullptr;
 };
 
 class CDropSource final : public cxx::TComImpl<IDropSource> {
