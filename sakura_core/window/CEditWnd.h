@@ -48,10 +48,13 @@
 #include "view/CViewFont.h"
 #include "view/CMiniMapView.h"
 #include "window/CAppMainWnd.hpp"
+#include "window/CDropTargetWnd.hpp"
 
 #include "cxx/ResourceHolder.hpp"
 
 #include "print/CPrintPreview.h"
+
+#include <memory>
 
 static const int MENUBAR_MESSAGE_MAX_LEN = 30;
 
@@ -86,7 +89,7 @@ class CEditWnd
 {
 private:
 	using AccelHolder = cxx::ResourceHolder<&::DestroyAcceleratorTable>;
-	using CDropTargetHolder = std::unique_ptr<CDropTarget>;
+	using CDropTargetHolder = std::unique_ptr<CDropTargetWnd>;
 	using CEditViewHolder = std::unique_ptr<CEditView>;
 	using CEditViewsArray = std::array<CEditViewHolder, 4>;
 	using CPrintPreviewHolder = std::unique_ptr<CPrintPreview>;
@@ -407,7 +410,7 @@ private:
 	//D&Dフラグ
 	bool			m_bDragMode = false;
 	CMyPoint		m_ptDragPosOrg;
-	CDropTargetHolder	m_pcDropTarget = std::make_unique<CDropTarget>(this);	//!< 右ボタンドロップ用
+	CDropTargetHolder	m_pcDropTarget = std::make_unique<CDropTargetWnd>();	//!< 右ボタンドロップ用
 
 	//その他フラグ
 	EIconClickStatus	m_IconClicked = icNone;

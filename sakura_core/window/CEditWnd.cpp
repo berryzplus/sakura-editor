@@ -216,6 +216,11 @@ CViewFont* GetViewFont(bool isMiniMap)
 	return GetEditWnd().GetViewFont(isMiniMap);
 }
 
+extern template
+bool CDropTargetWnd::AttachDropTarget<CEditWnd>(
+	CEditWnd* pThis
+);
+
 //	/* メッセージループ */
 //	DWORD MessageLoop_Thread( DWORD pCEditWndObject );
 
@@ -710,7 +715,7 @@ HWND CEditWnd::Create(
 
 	// ドロップされたファイルを受け入れる
 	::DragAcceptFiles( GetHwnd(), TRUE );
-	m_pcDropTarget->Register_DropTarget( m_hWnd );	// 右ボタンドロップ用	// 2008.06.20 ryoji
+	m_pcDropTarget->AttachDropTarget(this);	// 右ボタンドロップ用
 
 	//アクティブ情報
 	m_bIsActiveApp = ( ::GetActiveWindow() == GetHwnd() );	// 2007.03.08 ryoji
@@ -1275,9 +1280,9 @@ LRESULT CEditWnd::DispatchEvent(
 		// 右ドロップファイルの受け入れ設定／解除	// 2009.01.09 ryoji
 		// Note: DragAcceptFilesを適用した左ドロップについては Enable/Disable で自動的に受け入れ設定／解除が切り替わる
 		if( (BOOL)wParam ){
-			m_pcDropTarget->Register_DropTarget( m_hWnd );
+			m_pcDropTarget->RegisterDropTarget();
 		}else{
-			m_pcDropTarget->Revoke_DropTarget();
+			m_pcDropTarget->RevokeDropTarget();
 		}
 		return 0L;
 
@@ -1541,7 +1546,7 @@ LRESULT CEditWnd::DispatchEvent(
 
 		/* ドロップされたファイルを受け入れるのを解除 */
 		::DragAcceptFiles( hwnd, FALSE );
-		m_pcDropTarget->Revoke_DropTarget();	// 右ボタンドロップ用	// 2008.06.20 ryoji
+		m_pcDropTarget = nullptr;
 
 		/* 編集ウィンドウリストからの削除 */
 		CAppNodeGroupHandle(GetHwnd()).DeleteEditWndList( GetHwnd() );

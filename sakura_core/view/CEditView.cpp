@@ -54,6 +54,11 @@ VOID CALLBACK EditViewTimerProc( HWND, UINT, UINT_PTR, DWORD );
 
 #define IDT_ROLLMOUSE	1
 
+extern template
+bool CDropTargetWnd::AttachDropTarget<CEditView>(
+	CEditView* pThis
+);
+
 /*
 || ウィンドウプロシージャ
 ||
@@ -294,8 +299,7 @@ BOOL CEditView::Create(
 	}
 
 	if( !m_bMiniMap ){
-		m_pcDropTarget = new CDropTarget( this );
-		m_pcDropTarget->Register_DropTarget( GetHwnd() );
+		m_pcDropTarget->AttachDropTarget(this);
 	}
 
 	/* 辞書Tip表示ウィンドウ作成 */
@@ -374,7 +378,6 @@ void CEditView::Close()
 	//	m_hbmpCompatBMPもここで削除される．
 	UseCompatibleDC(FALSE);
 
-	delete m_pcDropTarget;
 	m_pcDropTarget = nullptr;
 
 	delete m_cRegexKeyword;	//@@@ 2001.11.17 add MIK
@@ -731,10 +734,6 @@ LRESULT CEditView::DispatchEvent(
 		::DestroyWindow( hwnd );
 		return 0L;
 	case WM_DESTROY:
-		if( nullptr != m_pcDropTarget ){
-			m_pcDropTarget->Revoke_DropTarget();
-		}
-
 		/* タイマー終了 */
 		::KillTimer( GetHwnd(), IDT_ROLLMOUSE );
 
