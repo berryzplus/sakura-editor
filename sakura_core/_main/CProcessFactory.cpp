@@ -22,6 +22,7 @@
 #include "_main/CControlProcess.h"
 #include "_main/CControlTray.h"
 #include "_main/CNormalProcess.h"
+#include "_main/COpenFiles.hpp"
 #include "basis/primitive.h"
 
 #include "dlg/CDlgProfileMgr.h"
@@ -97,6 +98,9 @@ std::unique_ptr<CProcess> CProcessFactory::CreateInstance(
 	//
 	if( IsStartingControlProcess() ){
 		return std::make_unique<CControlProcess>(m_hInstance, std::move(cmdLineHolder));
+	}
+	else if (0 < cCommandLine.GetFileNum()) {
+		return std::make_unique<COpenFiles>(m_hInstance,  std::move(cmdLineHolder));
 	}
 	else{
 		return std::make_unique<CNormalProcess>(m_hInstance,  std::move(cmdLineHolder));

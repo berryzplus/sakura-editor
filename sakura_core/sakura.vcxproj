@@ -499,6 +499,7 @@
     <ClInclude Include="_main\CControlTray.h" />
     <ClInclude Include="_main\CMutex.h" />
     <ClInclude Include="_main\CNormalProcess.h" />
+    <ClInclude Include="_main\COpenFiles.hpp" />
     <ClInclude Include="_main\CProcess.h" />
     <ClInclude Include="_main\CProcessFactory.h" />
     <ClInclude Include="_main\global.h" />
@@ -924,6 +925,7 @@
     <ClCompile Include="_main\CControlTray.cpp" />
     <ClCompile Include="_main\CMutex.cpp" />
     <ClCompile Include="_main\CNormalProcess.cpp" />
+    <ClCompile Include="_main\COpenFiles.cpp" />
     <ClCompile Include="_main\CProcess.cpp" />
     <ClCompile Include="_main\CProcessFactory.cpp" />
     <ClCompile Include="_main\global.cpp" />

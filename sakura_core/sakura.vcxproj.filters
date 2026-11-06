@@ -169,6 +169,9 @@
     <ClInclude Include="_main\CNormalProcess.h">
       <Filter>Cpp Source Files\_main</Filter>
     </ClInclude>
+    <ClInclude Include="_main\COpenFiles.hpp">
+      <Filter>Cpp Source Files\_main</Filter>
+    </ClInclude>
     <ClInclude Include="_main\CProcess.h">
       <Filter>Cpp Source Files\_main</Filter>
     </ClInclude>
@@ -1319,6 +1322,9 @@
       <Filter>Cpp Source Files\_main</Filter>
     </ClCompile>
     <ClCompile Include="_main\CNormalProcess.cpp">
+      <Filter>Cpp Source Files\_main</Filter>
+    </ClCompile>
+    <ClCompile Include="_main\COpenFiles.cpp">
       <Filter>Cpp Source Files\_main</Filter>
     </ClCompile>
     <ClCompile Include="_main\CProcess.cpp">

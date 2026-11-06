@@ -28,6 +28,7 @@
 #include "CCommandLine.h"
 #include "CControlTray.h"
 #include "_main/CMutex.h"
+#include "_main/COpenFiles.hpp"
 #include "window/CEditWnd.h" // 2002/2/3 aroka
 #include "agent/CGrepAgent.h"
 #include "basis/make_initialization_error.hpp"
@@ -186,9 +187,6 @@ bool CNormalProcess::InitializeProcess(
 			ActivateFrameWindow( hwndOwner );
 
 			hMutex.unlock();
-
-			// 複数ファイル読み込み
-			OpenFiles( hwndOwner );
 
 			return false;
 		}
@@ -467,9 +465,6 @@ bool CNormalProcess::InitializeProcess(
 	//プラグイン：DocumentOpenイベント実行
 	CJackManager::getInstance()->InvokePlugins( PP_DOCUMENT_OPEN, &pEditWnd->GetActiveView() );
 
-	// 複数ファイル読み込み
-	OpenFiles( pEditWnd->GetHwnd() );
-
 	return pEditWnd->GetHwnd() ? true : false;
 }
 
@@ -482,11 +477,18 @@ bool CNormalProcess::InitializeProcess(
 
 	@date 2015.03.14 novice 新規作成
 */
-void CNormalProcess::OpenFiles(HWND hwnd) const
+void COpenFiles::OpenFiles() const
 {
+	HWND hwnd = nullptr;
+
 	EditInfo fi;
 	CCommandLine::getInstance()->GetEditInfo( &fi );
 	bool bViewMode = CCommandLine::getInstance()->IsViewMode();
+
+	// 同期モードでファイルを開いていく
+	if (!CControlTray::OpenNewEditor2(GetProcessInstance(), hwnd, &fi, bViewMode, true)) {
+		return;
+	}
 
 	if (auto fileNum = CCommandLine::getInstance()->GetFileNum();
 		0 < fileNum)
