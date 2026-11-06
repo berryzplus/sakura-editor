@@ -107,18 +107,18 @@ jobs:
       uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
       if: matrix.triplet == 'x64-mingw-static'
       with:
-        msystem: MINGW64
+        msystem: UCRT64
         update: true
         install: >-
-          mingw-w64-x86_64-iconv
-          mingw-w64-x86_64-gcc
-          mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-make
-          mingw-w64-x86_64-python
-          mingw-w64-x86_64-uv
-          mingw-w64-x86_64-7zip
-          mingw-w64-x86_64-gdb
-          mingw-w64-x86_64-ctags
+          mingw-w64-ucrt-x86_64-iconv
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-make
+          mingw-w64-ucrt-x86_64-python
+          mingw-w64-ucrt-x86_64-uv
+          mingw-w64-ucrt-x86_64-7zip
+          mingw-w64-ucrt-x86_64-gdb
+          mingw-w64-ucrt-x86_64-ctags
           diffutils
 
     - name: Set up Python
@@ -133,7 +133,8 @@ jobs:
       with:
         activate-environment: true
 
-    - run: uv venv
+    - name: Create MinGW virtual environment
+      run: uv venv
       if: matrix.triplet == 'x64-mingw-static'
       shell: msys2 {0}
 
