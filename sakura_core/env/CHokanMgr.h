@@ -49,7 +49,7 @@ public:
 
 	HWND DoModeless(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);/* モードレスダイアログの表示 */
 
-	void Hide( void );
+	void Hide();
 
 	/* 初期化 */
 	size_t Search(
