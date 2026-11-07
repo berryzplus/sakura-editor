@@ -97,39 +97,24 @@ CDropTarget::~CDropTarget()
 	return;
 }
 
-IFACEMETHODIMP CDropTarget::DragEnter(
-	LPDATAOBJECT pDataObject,
-	DWORD dwKeyState,
-	POINTL pt,
-	LPDWORD pdwEffect
-)
+CCaret& CDropTarget::GetCaret()
 {
-	DEBUG_TRACE( L"CDropTarget::DragEnter()\n" );
-	return m_pcEditView->DragEnter( pDataObject, dwKeyState, pt, pdwEffect );
+	return m_pcEditView->GetCaret();
 }
 
-IFACEMETHODIMP CDropTarget::DragOver(
-	DWORD dwKeyState,
-	POINTL pt,
-	LPDWORD pdwEffect
-)
+bool CDropTarget::IsDragSource() const
 {
-	return m_pcEditView->DragOver( dwKeyState, pt, pdwEffect );
+	return m_pcEditView->IsDragSource();
 }
 
-IFACEMETHODIMP CDropTarget::DragLeave()
+void CDropTarget::_SetDragMode(bool b) noexcept
 {
-	return m_pcEditView->DragLeave();
-}
+	m_pcEditView->_SetDragMode(b);
 
-IFACEMETHODIMP CDropTarget::Drop(
-	LPDATAOBJECT pDataObject,
-	DWORD dwKeyState,
-	POINTL pt,
-	LPDWORD pdwEffect
-)
-{
-	return m_pcEditView->Drop( pDataObject, dwKeyState, pt, pdwEffect );
+	// 非アクティブ時は表示状態を非アクティブに戻す	// 2007.12.09 ryoji
+	if (!b && !::GetActiveWindow()) {
+		m_pcEditView->OnKillFocus();
+	}
 }
 
 /* static */ DWORD CDropSource::DoDragDrop(
