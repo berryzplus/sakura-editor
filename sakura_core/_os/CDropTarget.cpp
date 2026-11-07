@@ -86,7 +86,6 @@ void COleLibrary::UnInitialize()
 #define DECLARE_YB_INTERFACEIMPL( BASEINTERFACE ) \
 template<> REFIID CYbInterfaceImpl<BASEINTERFACE>::m_owniid = IID_##BASEINTERFACE;
 
-DECLARE_YB_INTERFACEIMPL( IDropSource )
 DECLARE_YB_INTERFACEIMPL( IDropTarget )
 
 CDropTarget::CDropTarget( CEditWnd* pCEditWnd )
@@ -137,6 +136,29 @@ STDMETHODIMP CDropTarget::Drop( LPDATAOBJECT pDataObject, DWORD dwKeyState, POIN
 	return m_pcEditView->Drop( pDataObject, dwKeyState, pt, pdwEffect );
 }
 
+/* static */ DWORD CDropSource::DoDragDrop(
+	LPDATAOBJECT pDataObject,
+	DWORD dwDesiredEffects,
+	bool bLeft
+)
+{
+	DWORD dwEffects;
+
+	const auto dropSource = Base::make_instance<Me>(bLeft);
+
+	if (FAILED(::DoDragDrop(
+			pDataObject,
+			dropSource,
+			dwDesiredEffects,
+			&dwEffects
+		)))
+	{
+		return DROPEFFECT_NONE;
+	}
+
+	return dwEffects;
+}
+
 STDMETHODIMP CDropSource::QueryContinueDrag( BOOL bEscapePressed, DWORD dwKeyState )
 {
 	if( bEscapePressed || (dwKeyState & (m_bLeft ? MK_RBUTTON : MK_LBUTTON)) )
@@ -149,15 +171,6 @@ STDMETHODIMP CDropSource::QueryContinueDrag( BOOL bEscapePressed, DWORD dwKeySta
 STDMETHODIMP CDropSource::GiveFeedback( [[maybe_unused]] DWORD dropEffect )
 {
 	return DRAGDROP_S_USEDEFAULTCURSORS;
-}
-
-DWORD CDropSource::DoDragDrop(LPDATAOBJECT pDataObject, DWORD dwDesiredEffects)
-{
-	if (DWORD dwEffects; SUCCEEDED(::DoDragDrop(pDataObject, this, dwDesiredEffects, &dwEffects))) {
-		return dwEffects;
-	}
-
-	return DROPEFFECT_NONE;
 }
 
 CDataObject::CDataObject(
