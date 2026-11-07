@@ -61,16 +61,36 @@ LRESULT APIENTRY HokanList_SubclassProc( HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	return CallWindowProc( gm_wpHokanListProc, hwnd, uMsg, wParam, lParam);
 }
 
+bool CHokanMgr::EatMessage(const MSG& msg)
+{
+	auto& cEditWnd = GetEditWnd();
+
+	if (!cEditWnd.GetHwnd()) return false;
+
+	auto& cHokanMgr = cEditWnd.m_cHokanMgr;
+
+	// 補完ウィンドウのハンドル。未作成ならNULL。
+	const auto hWnd = cHokanMgr.GetHwnd();
+
+	// 未作成なら処理せず抜ける。
+	if (!hWnd) return false;
+
+	// 非表示なら処理せず抜ける。
+	if (!::IsWindowVisible(hWnd)) return false;
+
+	constexpr auto handled = -1;	//「KeyProcが-1を返したら処理された」とみなす
+
+	return handled == cHokanMgr.KeyProc(msg.message, msg.wParam, msg.lParam);
+}
+
 CHokanMgr::CHokanMgr()
 {
-	m_cmemCurWord.SetString(L"");
-
-	m_nCurKouhoIdx = -1;
-	m_bTimerFlag = TRUE;
+	return;
 }
 
 CHokanMgr::~CHokanMgr()
 {
+	return;
 }
 
 /* モードレスダイアログの表示 */
@@ -94,7 +114,7 @@ void CHokanMgr::ChangeView( LPARAM pcEditView )
 	return;
 }
 
-void CHokanMgr::Hide( void )
+void CHokanMgr::Hide()
 {
 	::ShowWindow( GetHwnd(), SW_HIDE );
 	m_nCurKouhoIdx = -1;
@@ -629,12 +649,11 @@ int CHokanMgr::KeyProc(
 	constexpr auto handled		= -1;	//「KeyProcが-1を返したら処理された」とみなすコードがある。
 	constexpr auto notHandled	= -2;	//「-1以外の値を返したら処理されなかった」とみなせそう。
 
-	// 補完ウィンドウのハンドル。非表示ならNULL。
+	// 補完ウィンドウのハンドル。未作成ならNULL。
 	const auto hWnd = GetHwnd();
 
-	// 非表示、WM_KEYDOWN以外、補完中でない場合、処理せず抜ける。
+	// WM_KEYDOWN以外、補完中でない場合、処理せず抜ける。
 	if (const auto& view = GetEditWnd().GetActiveView();
-		!hWnd ||
 		WM_KEYDOWN != uMsg ||
 		!view.m_bHokan)
 	{
