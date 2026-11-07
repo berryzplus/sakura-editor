@@ -2025,6 +2025,42 @@ TEST_F(EditWndTest, DiffComponents001)
 }
 
 /*!
+ * IDropTarget実装のテスト。
+ */
+TEST_F(EditWndTest, DropTarget002)
+{
+	const auto data = CDataObject::make_instance(L"data", true);
+
+	const auto target = CDropTarget::make_instance<CDropTarget_CEditWnd>();
+
+	DWORD dwKeyState = 0;
+	POINTL pt{};
+	DWORD dwEffect = DROPEFFECT_NONE;
+
+	//DragEnterのパラメーターエラー仕様をチェックする
+	EXPECT_HRESULT_EQ(target->DragEnter(nullptr, dwKeyState, pt, &dwEffect), E_UNEXPECTED);
+	EXPECT_HRESULT_EQ(target->DragEnter(data, dwKeyState, pt, nullptr), E_INVALIDARG);
+
+	dwEffect = DROPEFFECT_COPY;
+	EXPECT_HRESULT_EQ(target->DragEnter(data, dwKeyState, pt, &dwEffect), E_INVALIDARG);
+	EXPECT_THAT(dwEffect, Eq(DROPEFFECT_NONE));
+
+	//DragOverのパラメーターエラー仕様をチェックする
+	EXPECT_HRESULT_EQ(target->DragOver(dwKeyState, pt, nullptr), E_INVALIDARG);
+
+	dwEffect = DROPEFFECT_COPY | DROPEFFECT_LINK;
+	EXPECT_HRESULT_EQ(target->DragOver(dwKeyState, pt, &dwEffect), S_OK);
+	EXPECT_TRUE(dwEffect & DROPEFFECT_LINK);
+
+	//常にS_OKを返す
+	EXPECT_HRESULT_EQ(target->DragLeave(), S_OK);
+
+	//Dropのパラメーターエラー仕様をチェックする
+	EXPECT_HRESULT_EQ(target->Drop(nullptr, dwKeyState, pt, &dwEffect), E_UNEXPECTED);
+	EXPECT_HRESULT_EQ(target->Drop(data, dwKeyState, pt, nullptr), E_INVALIDARG);
+}
+
+/*!
  * 上書き保存時バックアップのテスト
  */
 TEST_F(EditWndTest, FileSaveWithBackupAgent001)
