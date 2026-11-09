@@ -1134,6 +1134,47 @@ void CEditWnd::EndLayoutBars( BOOL bAdjust/* = TRUE*/ )
 	}
 }
 
+//! メッセージ処理。なんか処理したなら true を返す。
+bool CEditWnd::EatMessage(MSG& msg) const
+{
+	// モードレスダイアログのハンドルを取得する
+	const std::array modelessDlgs = {
+		CPrintPreview::GetPrintPreviewBarHANDLE_Safe(m_pPrintPreview.get()),
+		m_cDlgFind.GetHwnd(),
+		m_cDlgFuncList.GetHwnd(),
+		m_cDlgReplace.GetHwnd(),
+		m_cHokanMgr.GetHwnd(),
+	};
+
+	bool bRet = false;
+
+	// モードレスダイアログ
+	if (const auto handled = std::ranges::any_of(modelessDlgs, [&msg] (HWND hWndDlg) {
+			return
+				hWndDlg &&
+				::IsDialogMessageW(hWndDlg, &msg);
+		});
+		handled)
+	{
+		bRet = true;
+	}
+	// ツールバーの検索ボックス
+	else if (const auto hWndSearchBox = m_cToolbar.GetSearchHwnd();
+		::IsDialogMessageW(hWndSearchBox, &msg))
+	{
+		bRet = true;
+
+		m_cToolbar.ProcSearchBox(&msg);
+	}
+	else
+	{
+		// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
+		bRet = CHokanMgr::EatMessage(msg);
+	}
+
+	return bRet;
+}
+
 /*!
  * @brief 編集ウィンドウのメッセージループ
  *
@@ -1161,25 +1202,8 @@ EAppExitCode CEditWnd::MessageLoop() const
 		//GetMessageW処理中のエラーを検出したら例外を投げる
 		if (result < 0) throw cxx::make_system_error("GetMessageW() failed");
 
-		// モードレスダイアログのハンドルを取得する
-		const std::array modelessDlgs = {
-			CPrintPreview::GetPrintPreviewBarHANDLE_Safe(m_pPrintPreview.get()),
-			m_cDlgFind.GetHwnd(),
-			m_cDlgFuncList.GetHwnd(),
-			m_cDlgReplace.GetHwnd(),
-			m_cHokanMgr.GetHwnd(),
-		};
-
-		if (const auto handled = std::ranges::any_of(modelessDlgs, [&msg] (HWND hWndDlg) {
-				return
-					hWndDlg &&
-					::IsDialogMessageW(hWndDlg, &msg);
-			});
-			handled ||
-			// ツールバーの検索ボックス
-			CMainToolBar::EatMessage(msg) ||
-			// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
-			CHokanMgr::EatMessage(msg) ||
+		if (//モードレスダイアログ
+			EatMessage(msg) ||
 			//アクセラレータ
 			m_hAccel && ::TranslateAcceleratorW(msg.hwnd, m_hAccel, &msg))
 		{

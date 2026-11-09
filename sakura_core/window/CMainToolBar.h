@@ -16,8 +16,6 @@ class CImageListMgr;
 
 class CMainToolBar{
 public:
-	static bool EatMessage(MSG& msg);
-
 	explicit CMainToolBar(
 		CEditWnd* pOwner
 	);
@@ -29,20 +27,21 @@ public:
 	void DestroyToolBar( void );	//!< ツールバー破棄
 
 	//メッセージ
-	void ProcSearchBox( MSG* );		//!< 検索コンボボックスのメッセージ処理
+	void ProcSearchBox(MSG* msg) const;		//!< 検索コンボボックスのメッセージ処理
 
 	//イベント
 	void OnToolbarTimer( void );	//!< タイマーの処理 20060128 aroka
 	void UpdateToolbar( void );		//!< ツールバーの表示を更新する		// 2008.09.23 nasukoji
 
 	//共有データとの同期
-	void AcceptSharedSearchKey();
+	void AcceptSharedSearchKey() const;
 
 	//取得
 	HWND GetToolbarHwnd() const{ return m_hwndToolBar; }
 	HWND GetRebarHwnd() const{ return m_hwndReBar; }
 	HWND GetSearchHwnd() const{ return m_hwndSearchBox; }
-	size_t GetSearchKey(std::wstring& buffer); //!< 検索キーを取得。戻り値は検索キーの文字数。
+
+	size_t GetSearchKey(std::wstring& buffer) const; //!< 検索キーを取得。戻り値は検索キーの文字数。
 
 	//操作
 	void SetFocusSearchBox( void ) const;		/* ツールバー検索ボックスへフォーカスを移動 */	// 2006.06.04 yukihane

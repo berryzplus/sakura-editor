@@ -139,6 +139,7 @@ public:
 	void OnAfterSave(const SSaveInfo& sSaveInfo) override;
 
 	//管理
+	bool EatMessage(MSG& msg) const;
 	EAppExitCode MessageLoop() const override;
 
 	LRESULT	DispatchEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;

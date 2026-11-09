@@ -31,7 +31,7 @@ void CMainToolBar::Create( CImageListMgr* pcIcons )
 }
 
 /*! 検索ボックスでの処理 */
-void CMainToolBar::ProcSearchBox( MSG *msg )
+void CMainToolBar::ProcSearchBox(MSG* msg) const
 {
 	if( msg->message == WM_KEYDOWN /* && ::GetParent( msg->hwnd ) == m_hwndSearchBox */ )
 	{
@@ -457,25 +457,6 @@ void CMainToolBar::DestroyToolBar( void )
 	return;
 }
 
-//! メッセージ処理。なんか処理したなら true を返す。
-bool CMainToolBar::EatMessage(MSG& msg)
-{
-	bool bRet = false;
-
-	auto& cToolbar = GetEditWnd().m_cToolbar;
-
-	if (const auto hWndSearchBox = cToolbar.m_hwndSearchBox;
-		hWndSearchBox &&
-		::IsDialogMessageW(hWndSearchBox, &msg))
-	{
-		cToolbar.ProcSearchBox(&msg);
-
-		bRet = true;
-	}
-
-	return bRet;
-}
-
 /*! ツールバー更新用タイマーの処理
 	@date 2002.01.03 YAZAKI m_tbMyButtonなどをCShareDataからCMenuDrawerへ移動したことによる修正。
 	@date 2003.08.29 wmlhq, ryoji nTimerCountの導入
@@ -535,7 +516,7 @@ void CMainToolBar::UpdateToolbar( void )
 }
 
 //検索ボックスを更新
-void CMainToolBar::AcceptSharedSearchKey()
+void CMainToolBar::AcceptSharedSearchKey() const
 {
 	if( m_hwndSearchBox )
 	{
@@ -569,7 +550,7 @@ void CMainToolBar::AcceptSharedSearchKey()
 	}
 }
 
-size_t CMainToolBar::GetSearchKey(std::wstring& strText)
+size_t CMainToolBar::GetSearchKey(std::wstring& strText) const
 {
 	if( m_hwndSearchBox ){
 		ApiWrap::Wnd_GetText( m_hwndSearchBox, strText );
