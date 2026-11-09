@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -16,7 +16,11 @@ class CImageListMgr;
 
 class CMainToolBar{
 public:
-	CMainToolBar(CEditWnd* pOwner);
+	static bool EatMessage(MSG& msg);
+
+	explicit CMainToolBar(
+		CEditWnd* pOwner
+	);
 
 	void Create( CImageListMgr* pcIcons );
 
@@ -25,7 +29,6 @@ public:
 	void DestroyToolBar( void );	//!< ツールバー破棄
 
 	//メッセージ
-	bool EatMessage(MSG* msg);		//!< メッセージ処理。なんか処理したなら true を返す。
 	void ProcSearchBox( MSG* );		//!< 検索コンボボックスのメッセージ処理
 
 	//イベント
@@ -62,4 +65,5 @@ private:
 	HIMAGELIST				m_hImageList = nullptr;
 	HIMAGELIST				m_hDisabledImageList = nullptr;
 };
+
 #endif /* SAKURA_CMAINTOOLBAR_FEA7E388_DFEC_4E15_94CC_90A7E779797B_H_ */

@@ -1146,9 +1146,6 @@ EAppExitCode CEditWnd::MessageLoop() const
 	const auto hWnd = GetHwnd();
 	DarkMode::setDarkWndNotifySafeEx(hWnd, false, true);
 
-	// constメソッド内では非const参照できないので無理矢理ローカル定義する
-	auto& m_cToolbar = GetEditWnd().m_cToolbar;
-
 	// メッセージを受け取るためのMSG構造体
 	MSG	msg{};
 
@@ -1180,7 +1177,7 @@ EAppExitCode CEditWnd::MessageLoop() const
 			});
 			handled ||
 			// ツールバーの検索ボックス
-			m_cToolbar.EatMessage(&msg) ||
+			CMainToolBar::EatMessage(msg) ||
 			// 補完ウィンドウが表示されているときはキーボード入力を先に処理させる（カーソル移動／決定／キャンセルの処理）
 			CHokanMgr::EatMessage(msg) ||
 			//アクセラレータ

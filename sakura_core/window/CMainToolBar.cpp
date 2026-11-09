@@ -458,13 +458,22 @@ void CMainToolBar::DestroyToolBar( void )
 }
 
 //! メッセージ処理。なんか処理したなら true を返す。
-bool CMainToolBar::EatMessage(MSG* msg)
+bool CMainToolBar::EatMessage(MSG& msg)
 {
-	if( m_hwndSearchBox && ::IsDialogMessage( m_hwndSearchBox, msg ) ){	//検索コンボボックス
-		ProcSearchBox( msg );
-		return true;
+	bool bRet = false;
+
+	auto& cToolbar = GetEditWnd().m_cToolbar;
+
+	if (const auto hWndSearchBox = cToolbar.m_hwndSearchBox;
+		hWndSearchBox &&
+		::IsDialogMessageW(hWndSearchBox, &msg))
+	{
+		cToolbar.ProcSearchBox(&msg);
+
+		bRet = true;
 	}
-	return false;
+
+	return bRet;
 }
 
 /*! ツールバー更新用タイマーの処理
