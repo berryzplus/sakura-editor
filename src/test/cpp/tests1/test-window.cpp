@@ -109,27 +109,19 @@ struct ModalDialogCloserTestPeer {
  * @note CDialogのデストラクターが意図していると思われる機能「不要になったタイミングでまだ表示中ならウィンドウを閉じて安全に破棄される」を実現する。
  * @note そのうち消す
  */
-class TestDialog
+class TestDialog : public CCustomizedWnd
 {
 private:
 	using HwndHolder = cxx::ResourceHolder<&::DestroyWindow>;
 
 	using Me = TestDialog;
+	using MePtr = Me*;
 
 	static INT_PTR CALLBACK DlgProc(
 		HWND hWndDlg,
 		UINT uMsg,
 		WPARAM wParam,
 		LPARAM lParam
-	);
-
-	static LRESULT CALLBACK SubclassProc(
-		HWND hWnd,
-		UINT uMsg,
-		WPARAM wParam,
-		LPARAM lParam,
-		UINT_PTR uIdSubclass,
-		DWORD_PTR dwRefData
 	);
 
 public:
@@ -140,7 +132,6 @@ public:
 
 private:
 	INT_PTR	DispatchDlgEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	LRESULT	DispatchEvent(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HWND			m_hWnd = nullptr;
 
@@ -169,78 +160,49 @@ private:
 	if (!hWndDlg) return FALSE;	// システムに処理させる
 
 	// WM_INITDIALOGが来たらHWNDにクラスデータを紐づける
-	if (auto pcDlg = std::bit_cast<Me*>(lParam); WM_INITDIALOG == uMsg && pcDlg) {
+	if (auto pcDlg = MePtr(lParam);
+		WM_INITDIALOG == uMsg &&
+		pcDlg)
+	{
 		// ウィンドウハンドルを格納する
 		pcDlg->m_hWnd = hWndDlg;
 
 		// lParamをユーザーデータに格納する。（格納方法は改善検討要。）
 		::SetWindowLongPtrW(hWndDlg, DWLP_USER, lParam);
 
-		// ダイアログをカスタマイズする
-		::SetWindowSubclass(hWndDlg, &SubclassProc, 0, DWORD_PTR(lParam));
+		// ウィンドウを閉じるためのスマートポインターに紐付ける
+		pcDlg->m_Holder = hWndDlg;
 	}
 
 	// HWNDに紐づいたクラスを取り出す。
-	if (auto pcDlg = std::bit_cast<Me*>(::GetWindowLongPtrW(hWndDlg, DWLP_USER))) {
-		// HWNDに紐づいたクラスにメッセージを処理させる
-		const auto ret = pcDlg->DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
-
-		if (WM_DESTROY == uMsg) {
-			// ユーザーデータの紐付けを解除する
-			::SetWindowLongPtrW(hWndDlg, DWLP_USER, 0L);
-
-			// ウィンドウハンドルの紐付けを解除する
-			pcDlg->m_hWnd = nullptr;
-		}
-
-		// 処理結果を返す。0以外ならシステムはDWLP_MSGRESULTを参照する。
-		return ret;
-	}
-
-	return FALSE;	// システムに処理させる
-}
-
-/*!
- * @brief ウィンドウプロシージャ
- *
- * @param hWnd [in] 宛先ウィンドウのハンドル
- * @param uMsg [in] メッセージコード
- * @param wParam [in, opt] 第1パラメーター
- * @param lParam [in, opt] 第2パラメーター
- * @param uIdSubclass [in] サブクラスID
- * @param dwRefData [in] サブクラスデータ
- *
- * @returns  メッセージ処理結果。値の意味はメッセージ依存。
- */
-/* static */ LRESULT CALLBACK TestDialog::SubclassProc(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam,
-	UINT_PTR uIdSubclass,
-	DWORD_PTR dwRefData
-)
-{
-	LRESULT ret = 0;
-
-	// サブクラスデータを取り出す。（格納方法は改善検討要。）
-	auto pcDlg = std::bit_cast<Me*>(dwRefData);
-	if (pcDlg) {
-		// サブクラスデータにメッセージを処理させる
-		ret = pcDlg->DispatchEvent(hWnd, uMsg, wParam, lParam);
-	}
+	auto pcDlg = MePtr(::GetWindowLongPtrW(hWndDlg, DWLP_USER));
+	if (!pcDlg) return FALSE;	// システムに処理させる
 
 	if (WM_DESTROY == uMsg) {
-		::RemoveWindowSubclass(hWnd, &SubclassProc, uIdSubclass);
-		return 0;
+		// ウィンドウの紐付けを解除する
+		pcDlg->m_Holder.release();
 	}
 
-	if (pcDlg) {
-		return ret;
+	// HWNDに紐づいたクラスにメッセージを処理させる
+	auto ret = pcDlg->DispatchDlgEvent(hWndDlg, uMsg, wParam, lParam);
+
+	if (WM_INITDIALOG == uMsg)
+	{
+		// ダイアログをカスタマイズする
+		pcDlg->AttachWnd(hWndDlg);
+	}
+	else if (WM_DESTROY == uMsg) {
+		// ユーザーデータの紐付けを解除する
+		::SetWindowLongPtrW(hWndDlg, DWLP_USER, 0L);
+
+		// ウィンドウハンドルの紐付けを解除する
+		pcDlg->m_hWnd = nullptr;
+
+		ret = FALSE;	// システムにも処理させる
 	}
 
-	//あとはデフォルトに任せる
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	// 処理結果を返す。0以外ならシステムはDWLP_MSGRESULTを参照する。
+	return ret;
 }
 
 /*!
@@ -258,7 +220,7 @@ HWND TestDialog::DoModeless(
 		CSelectLang::getLangRsrcInstance(),
 		MAKEINTRESOURCE(dialogTemplateId),
 		hWndOwnerOrParent,
-		DlgProc,
+		&DlgProc,
 		LPARAM(this)
 	);
 }
@@ -284,41 +246,10 @@ INT_PTR TestDialog::DispatchDlgEvent(
 )
 {
 	if (WM_INITDIALOG == uMsg) {
-		m_Holder = hWndDlg;
-
 		return TRUE;	// システムが設定した初期フォーカスを受け入れる
 	}
 
 	return FALSE;	// システムに処理させる
-}
-
-/*!
- * @brief 拡張ウィンドウのメッセージ配送
- *
- * @param hWndDlg [in] 宛先ウィンドウのハンドル
- * @param uMsg [in] メッセージコード
- * @param wParam [in, opt] 第1パラメーター
- * @param lParam [in, opt] 第2パラメーター
- *
- * @returns  メッセージ処理結果。値の意味はメッセージ依存。
- *
- * @note 戻り値0は「処理済み」を示すことが多いが、実装時に確認すること。
- */
-LRESULT TestDialog::DispatchEvent(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam
-)
-{
-	if (WM_DESTROY == uMsg) {
-		m_Holder = nullptr;
-
-		return 0L;
-	}
-
-	//あとはデフォルトに任せる
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 TEST(ModalDialogCloserTest, RunsActionOnActivateOnlyOnce)
@@ -391,14 +322,6 @@ TEST(ModalDialogCloserTest, HandlesMultipleEntriesInRegistrationOrder)
 TEST(CDialog, DlgProc101)
 {
 	EXPECT_THAT(CDlgInput1::DlgProc(nullptr, WM_NULL, 0L, 0L), IsFalse());
-}
-
-/*!
- * @brief カスタムウィンドウのメッセージ配送
- */
-TEST(CDialog, SubclassProc101)
-{
-	CDlgInput1::SubclassProc(nullptr, WM_NULL, 0L, 0L, 0L, 0L);
 }
 
 } // namespace dialog

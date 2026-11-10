@@ -65,7 +65,7 @@ static const DWORD p_helpids[] = {	//13000
 		::SetWindowLongPtrW(hWndDlg, DWLP_USER, lParam);
 
 		// ダイアログをカスタマイズする
-		::SetWindowSubclass(hWndDlg, &SubclassProc, 0, DWORD_PTR(lParam));
+		pcDlg->AttachWnd(hWndDlg);
 	}
 
 	// HWNDに紐づいたクラスを取り出す。
@@ -107,49 +107,6 @@ static const DWORD p_helpids[] = {	//13000
 )
 {
 	return 1;	// データを取り込んでよい
-}
-
-/*!
- * @brief ウィンドウプロシージャ
- *
- * @param hWnd [in] 宛先ウィンドウのハンドル
- * @param uMsg [in] メッセージコード
- * @param wParam [in, opt] 第1パラメーター
- * @param lParam [in, opt] 第2パラメーター
- * @param uIdSubclass [in] サブクラスID
- * @param dwRefData [in] サブクラスデータ
- *
- * @returns  メッセージ処理結果。値の意味はメッセージ依存。
- */
-/* static */ LRESULT CALLBACK CDlgInput1::SubclassProc(
-	HWND hWnd,
-	UINT uMsg,
-	WPARAM wParam,
-	LPARAM lParam,
-	UINT_PTR uIdSubclass,
-	DWORD_PTR dwRefData
-)
-{
-	LRESULT ret = 0;
-
-	// サブクラスデータを取り出す。（格納方法は改善検討要。）
-	auto pcDlg = std::bit_cast<Me*>(dwRefData);
-	if (pcDlg) {
-		// サブクラスデータにメッセージを処理させる
-		ret = pcDlg->DispatchEvent(hWnd, uMsg, wParam, lParam);
-	}
-
-	if (WM_DESTROY == uMsg) {
-		::RemoveWindowSubclass(hWnd, &SubclassProc, uIdSubclass);
-		return 0;
-	}
-
-	if (pcDlg) {
-		return ret;
-	}
-
-	//あとはデフォルトに任せる
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
@@ -366,7 +323,7 @@ LRESULT CDlgInput1::DispatchEvent(
 	}
 
 	//あとはデフォルトに任せる
-	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+	return Base::DispatchEvent(hWnd, uMsg, wParam, lParam);
 }
 
 /*!
