@@ -839,7 +839,9 @@ void CShareData_IO::ShareData_IO_Toolbar( CDataProfile& cProfile, CMenuDrawer* p
 	CommonSetting_ToolBar& toolbar = pShare->m_Common.m_sToolBar;
 
 	EFunctionCode	eFunc;
-	WCHAR			szText[MAX_PLUGIN_ID+20];
+
+	SFuncName szText{};
+
 	int				nInvalid = -1;
 
 	cProfile.IOProfileData( pszSecName, L"bToolBarIsFlat", toolbar.m_bToolBarIsFlat );
@@ -2276,7 +2278,9 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 	const WCHAR*	pszSecName = L"MainMenu";
 	CMainMenu*		pcMenu;
 	WCHAR	szKeyName[64];
-	WCHAR	szFuncName[MAX_PLUGIN_ID+20];
+
+	SFuncName szFuncName{};
+
 	EFunctionCode n;
 	int		nIdx;
 	WCHAR	szLine[1024];
@@ -2406,7 +2410,7 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 			auto_sprintf( szLine, L"%d,%d,%ls,%ls,%ls", 
 				pcMenu->m_nLevel, 
 				pcMenu->m_nType, 
-				szFuncName, 
+				szFuncName.c_str(),
 				pcMenu->m_sKey, 
 				pcMenu->m_nFunc == F_NODE ? pcMenu->m_sName : L"" );
 			cProfile.IOProfileData(pszSecName, szKeyName, StringBufferW(szLine));
