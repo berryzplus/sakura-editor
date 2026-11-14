@@ -85,6 +85,8 @@ void CLayoutMgr::Create( CEditDoc* pcEditDoc, CDocLineMgr* pcDocLineMgr )
 
 void CLayoutMgr::Init()
 {
+	std::scoped_lock lock{ m_mtxPrevRefer };
+
 	m_pLayoutTop = nullptr;
 	m_pLayoutBot = nullptr;
 	m_nPrevReferLine = CLayoutInt(0);
@@ -259,6 +261,8 @@ const CLayout* CLayoutMgr::SearchLineByLayoutY(
 //	}
 
 	/*+++++++わずかに高速版+++++++*/
+	std::scoped_lock lock{ m_mtxPrevRefer };
+
 	// 2004.03.28 Moca m_pLayoutPrevReferより、Top,Botのほうが近い場合は、そちらを利用する
 	CLayoutInt nPrevToLineNumDiff = t_abs( m_nPrevReferLine - nLineNum );
 	if( m_pLayoutPrevRefer == nullptr
@@ -549,6 +553,8 @@ CLayout* CLayoutMgr::DeleteLayoutAsLogical(
 		return nullptr;
 	}
 
+	std::scoped_lock lock{ m_mtxPrevRefer };
+
 	// 1999.11.22
 	m_pLayoutPrevRefer = pLayoutInThisArea->GetPrevLayout();
 	m_nPrevReferLine = nLineOf_pLayoutInThisArea - CLayoutInt(1);
@@ -797,6 +803,8 @@ void CLayoutMgr::LogicToLayout(
 	pptLayout->Clear();
 
 	if(GetLineCount()==0)return; //変換不可
+
+	std::scoped_lock lock{ m_mtxPrevRefer };
 
 	// サーチ開始地点 -> pLayout, nCaretPosX, nCaretPosY
 	CLayoutInt		nCaretPosX = CLayoutInt(0);

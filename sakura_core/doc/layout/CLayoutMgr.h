@@ -14,7 +14,7 @@
 	Copyright (C) 2003, genta
 	Copyright (C) 2005, Moca, genta, D.S.Koba
 	Copyright (C) 2009, nasukoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
@@ -27,6 +27,7 @@
 #include <Windows.h>// 2002/2/10 aroka
 #include <vector>
 #include <memory_resource>
+#include <mutex>
 #include <atomic>
 #include "doc/CDocListener.h"
 #include "_main/global.h"// 2002/2/10 aroka
@@ -102,7 +103,8 @@ private:
 public:
 	//生成と破棄
 	CLayoutMgr();
-	~CLayoutMgr();
+	~CLayoutMgr() override;
+
 	void Create( CEditDoc*, CDocLineMgr* );
 	void Init();
 	void _Empty();
@@ -110,7 +112,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        コンフィグ                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	//! タブ幅の取得
 	CLayoutInt GetTabSpace() const { return m_nTabSpace * m_nCharLayoutXPerKeta; }
 	CKetaXInt  GetTabSpaceKetas() const { return m_nTabSpace; }
@@ -124,7 +125,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                          参照系                             //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	//2007.10.09 kobake 関数名変更: Search → SearchLineByLayoutY
 	CLayoutInt		GetLineCount() const{ return m_nLines; }	/* 全物理行数を返す */
 	const wchar_t*	GetLineStr( CLayoutInt nLine, CLogicInt* pnLineLen ) const;	/* 指定された物理行のデータへのポインタとその長さを返す */
@@ -200,6 +200,7 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 protected:
 	int PrevOrNextWord( CLayoutInt, CLogicInt, CLayoutPoint* pptLayoutNew, BOOL, BOOL bStopsBothEnds );	/* 現在位置の左右の単語の先頭位置を調べる */
+
 public:
 	int PrevWord( CLayoutInt nLineNum, CLogicInt nIdx, CLayoutPoint* pptLayoutNew, BOOL bStopsBothEnds ){ return PrevOrNextWord(nLineNum, nIdx, pptLayoutNew, TRUE, bStopsBothEnds); }	/* 現在位置の左右の単語の先頭位置を調べる */
 	int NextWord( CLayoutInt nLineNum, CLogicInt nIdx, CLayoutPoint* pptLayoutNew, BOOL bStopsBothEnds ){ return PrevOrNextWord(nLineNum, nIdx, pptLayoutNew, FALSE, bStopsBothEnds); }	/* 現在位置の左右の単語の先頭位置を調べる */
@@ -209,7 +210,6 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                        単位の変換                           //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	//!ロジック→レイアウト
 	void LogicToLayoutEx( const CLogicPointEx& ptLogicEx, CLayoutPoint* pptLayout, CLayoutInt nLineHint = CLayoutInt(0) )
 	{
@@ -239,13 +239,11 @@ public:
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         デバッグ                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	void DUMP();	/* テスト用にレイアウト情報をダンプ */
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         編集とか                            //
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
-public:
 	/*
 	|| 更新系
 	*/
@@ -291,9 +289,9 @@ public:
 	|| 更新系
 	*/
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
-public:
 	void _DoLayout(bool bBlockingHook);	/* 現在の折り返し文字数に合わせて全データのレイアウト情報を再生成します */
 	void _DoLayoutSub(CDocLine* pDocLineBegin, const CDocLine* pDocLineEnd, int nLineIndexBegin, int nLineCount, std::atomic<bool>* pbCanceled);
+
 protected:
 	// 2005.11.21 Moca 引用符の色分け情報を引数から除去
 	// 2009.08.28 nasukoji	テキスト最大幅算出用引数追加
@@ -409,6 +407,8 @@ protected:
 	CLayoutExInfo			m_cLayoutExInfoBot;
 	CLayoutInt				m_nLines;					// 全レイアウト行数
 
+	// const関数(SearchLineByLayoutY)から更新される参照キャッシュ。更新時はm_mtxPrevReferで保護する。
+	mutable std::mutex		m_mtxPrevRefer;
 	mutable CLayoutInt		m_nPrevReferLine;
 	mutable CLayout*		m_pLayoutPrevRefer;
 	
@@ -422,4 +422,5 @@ protected:
 
 	DISALLOW_COPY_AND_ASSIGN(CLayoutMgr);
 };
+
 #endif /* SAKURA_CLAYOUTMGR_5398B1C5_280C_4D86_B7BB_C7B5C8B0403F_H_ */
