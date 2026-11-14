@@ -178,6 +178,9 @@ const CDocLine* CDocLineMgr::GetLine( CLogicInt nLine ) const
 	if( CLogicInt(0) > nLine || nLine >= m_nLines ){
 		return nullptr;
 	}
+
+	std::scoped_lock lock{ m_mtxPrevRefer };
+
 	// 2004.03.28 Moca m_pCodePrevReferより、Top,Botのほうが近い場合は、そちらを利用する
 	CLogicInt nPrevToLineNumDiff = t_abs( m_nPrevReferLine - nLine );
 	if( m_pCodePrevRefer == nullptr
@@ -261,6 +264,8 @@ const CDocLine* CDocLineMgr::GetLine( CLogicInt nLine ) const
 
 void CDocLineMgr::_Init()
 {
+	std::scoped_lock lock{ m_mtxPrevRefer };
+
 	m_pDocLineTop = nullptr;
 	m_pDocLineBot = nullptr;
 	m_nLines = CLogicInt(0);
