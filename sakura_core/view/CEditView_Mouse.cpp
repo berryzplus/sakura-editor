@@ -2234,35 +2234,28 @@ void CEditView::OnDropFiles(HWND hWnd, HDROP hDrop)
 
 	case 100:	// パス名を貼り付ける
 	case 101:	// ファイル名を貼り付ける
-	{
-		CNativeW cmemBuf;
-		UINT nFiles;
-		WCHAR szPath[_MAX_PATH];
-		WCHAR szExt[_MAX_EXT];
-		WCHAR szWork[_MAX_PATH];
+		if (cxx::GlobalDropFiles files{ hDrop };
+			files)
+		{
+			std::wstring eol{ GetDocument()->m_cDocEditor.GetNewLineCode().GetValue2()};
 
-		nFiles = ::DragQueryFile( hDrop, 0xFFFFFFFF, nullptr, 0 );
-		for( UINT i = 0; i < nFiles; i++ ){
-			::DragQueryFile( hDrop, i, szPath, int(std::size(szPath)) );
-			if( !::GetLongFileName( szPath, szWork ) )
-				continue;
-			if( nId == 100 ){	// パス名
-				::lstrcpy( szPath, szWork );
-			}else if( nId == 101 ){	// ファイル名
-				_wsplitpath_s( szWork, nullptr, 0, nullptr, 0, szPath, std::size(szPath), szExt, std::size(szExt) );
-				::wcsncat_s(szPath, szExt, _TRUNCATE);
+			std::wstring buffer;
+			for (const auto& path : files.data()) {
+				if (nId == 100) {	// パス名
+					buffer += path;
+				} else if(nId == 101) {	// ファイル名
+					buffer += path.filename();
+				}
+				buffer += eol;
 			}
-			cmemBuf.AppendString( szPath );
-			if( nFiles > 1 ){
-				cmemBuf.AppendString( m_pcEditDoc->m_cDocEditor.GetNewLineCode().GetValue2() );
+
+			if (eol.length() <= buffer.length()) {
+				buffer.resize(buffer.length() - eol.length());	// 最後の改行を削除
 			}
+
+			// ドロップされたテキストを挿入する
+			DropText(buffer);
 		}
-
-		std::wstring_view buffer{ cmemBuf.str() };
-
-		// ドロップされたテキストを挿入する
-		DropText(buffer);
-	}
 		[[fallthrough]];
 
 	default:
