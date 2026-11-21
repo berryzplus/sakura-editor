@@ -1818,7 +1818,7 @@ IFACEMETHODIMP CEditView::Drop(
 
 	// ファイルドロップは PostMyDropFiles() で処理する
 	if (IsDragFile())
-		return PostMyDropFiles( pDataObject );
+		return SendDropFiles(pDataObject);
 
 	// 外部からのドロップは以後の処理ではコピーと同様に扱う
 	const auto pcDragSourceView = GetDragSourceView();
@@ -2073,38 +2073,65 @@ IFACEMETHODIMP CEditView::Drop(
 /** 独自ドロップファイルメッセージをポストする
 	@date 2008.06.20 ryoji 新規作成
 */
-STDMETHODIMP CEditView::PostMyDropFiles( LPDATAOBJECT pDataObject )
+HRESULT CEditView::SendDropFiles(
+	LPDATAOBJECT pDataObject
+)
 {
-	HGLOBAL hData = GetGlobalData( pDataObject, CF_HDROP );
-	if( hData == nullptr )
+	STGMEDIUM me = {};
+
+	FORMATETC fe{};
+	fe.cfFormat = CF_HDROP;
+	fe.ptd = nullptr;
+	fe.dwAspect = DVASPECT_CONTENT;
+	fe.lindex = -1;
+	fe.tymed = TYMED_HGLOBAL;
+
+	if (FAILED(pDataObject->QueryGetData(&fe)) ||
+		FAILED(pDataObject->GetData(&fe, &me)))
+	{
 		return E_INVALIDARG;
-	LPVOID pData = ::GlobalLock( hData );
-	SIZE_T nSize = ::GlobalSize( hData );
-
-	// ドロップデータをコピーしてあとで独自のドロップファイル処理を行う
-	HGLOBAL hDrop = ::GlobalAlloc( GHND | GMEM_DDESHARE, nSize );
-	memcpy_raw( ::GlobalLock( hDrop ), pData, nSize );
-	::GlobalUnlock( hDrop );
-	::PostMessageAny(
-		GetHwnd(),
-		MYWM_DROPFILES,
-		(WPARAM)hDrop,
-		0
-	);
-
-	::GlobalUnlock( hData );
-	if( 0 == (GMEM_LOCKCOUNT & ::GlobalFlags( hData )) ){
-		::GlobalFree( hData );
 	}
+
+	// 取得したグローバルメモリをスマートポインターに入れる
+	cxx::GlobalData<BYTE> src{ me.hGlobal };
+	auto hDrop = static_cast<HDROP>(src.get());
+
+	// ストレージの後始末にスマートポインターを用意する
+	using MeHolder = cxx::ResourceHolder<&::ReleaseStgMedium>;
+	MeHolder meHolder{};
+
+	// 外部IDataObjectの実装がおかしい場合に備えて、ReleaseStgMediumを呼ぶ仕組みを残しておく
+	if (me.pUnkForRelease) {
+		// pUnkForReleaseがある場合は、ReleaseStgMediumを呼ぶ必要がある
+		meHolder.reset(&me);
+
+		// 独自にグローバルメモリを確保してコピーする
+		auto dst = cxx::GlobalData<BYTE>{ src.size() };
+		dst.SetData(src.data());
+
+		// スマートポインターから生ポインターを取り出す
+		hDrop = static_cast<HDROP>(dst.release());
+	}
+
+	// グローバルメモリはWM_DROPFILESハンドラで解放されるので、スマートポインターから解放しておく
+	src.release();
+
+	FORWARD_WM_DROPFILES(GetHwnd(), hDrop, DispatchEvent);
 
 	return S_OK;
 }
 
-/** 独自ドロップファイルメッセージ処理
-	@date 2008.06.20 ryoji 新規作成
-*/
-void CEditView::OnMyDropFiles( HDROP hDrop )
+/*!
+ * @brief WM_DROPFILESハンドラ
+ *
+ * ファイルがドロップされたときに送られてくる。
+ *
+ * @date 2008.06.20 ryoji 独自メッセージのハンドラとして新規作成
+ */
+void CEditView::OnDropFiles(HWND hWnd, HDROP hDrop)
 {
+	if (!hWnd || !hDrop) return;
+
 	// 普通にメニュー操作ができるように入力状態をフォアグランドウィンドウにアタッチする
 	int nTid2 = ::GetWindowThreadProcessId( ::GetForegroundWindow(), nullptr );
 	int nTid1 = ::GetCurrentThreadId();
