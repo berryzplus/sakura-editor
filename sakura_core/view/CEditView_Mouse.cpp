@@ -1784,13 +1784,11 @@ IFACEMETHODIMP CEditView::DragLeave()
 IFACEMETHODIMP CEditView::Drop(
 	LPDATAOBJECT pDataObject,
 	DWORD dwKeyState,
-	POINTL pt,
+	POINTL pt [[maybe_unused]],
 	LPDWORD pdwEffect
 )
 {
 	DEBUG_TRACE( L"CEditView::Drop()\n" );
-
-	BOOL		bMove;
 
 	CNativeW	cmemBuf;
 
@@ -1808,26 +1806,29 @@ IFACEMETHODIMP CEditView::Drop(
 
 	*pdwEffect = TranslateDropEffect(dwKeyState, *pdwEffect);
 
-	if (DROPEFFECT_NONE == *pdwEffect)
-		return E_INVALIDARG;
-
 	// ファイルドロップは WM_DROPFILESハンドラ で処理する
 	if (IsDragFile())
 		return SendDropFiles(pDataObject);
 
+	if (!(*pdwEffect & DROPEFFECT_COPY) &&
+		!(*pdwEffect & DROPEFFECT_MOVE))
+		return E_INVALIDARG;
+
+	bool bMove = false;
+
 	// 外部からのドロップは以後の処理ではコピーと同様に扱う
-	const auto pcDragSourceView = GetDragSourceView();
-	bMove = (*pdwEffect == DROPEFFECT_MOVE) && pcDragSourceView;
+	if (const auto pcDragSourceView = GetDragSourceView())
+	{
+		bMove = DROPEFFECT_MOVE == (*pdwEffect & DROPEFFECT_MOVE);
 
-	// カーソルが選択範囲内にあるときはコピー／移動しない	// 2009.06.09 ryoji
-	if( pcDragSourceView &&
-		!pcDragSourceView->IsCurrentPositionSelected( GetCaret().GetCaretLayoutPos() )
-	){
-		// DragEnter時のカーソル位置を復元
-		// Note. ドラッグ元が他ビューでもマウス移動が速いと稀にここにくる可能性がありそう
-		*pdwEffect = DROPEFFECT_NONE;
+		// カーソルが選択範囲内にあるときはコピー／移動しない	// 2009.06.09 ryoji
+		if (!pcDragSourceView->IsCurrentPositionSelected( GetCaret().GetCaretLayoutPos() )) {
+			// DragEnter時のカーソル位置を復元
+			// Note. ドラッグ元が他ビューでもマウス移動が速いと稀にここにくる可能性がありそう
+			*pdwEffect = DROPEFFECT_NONE;
 
-		return DragLeave();
+			return DragLeave();
+		}
 	}
 
 	CLIPFORMAT cf = 0;
