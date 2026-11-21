@@ -1937,41 +1937,13 @@ IFACEMETHODIMP CEditView::Drop(
 				GetSelectionInfo().DisableSelectArea( true );
 		}
 	}
-	if( !bBoxData ){	/* 矩形データ */
-		//	2004,05.14 Moca 引数に文字列長を追加
-
-		// 挿入前のキャレット位置を記憶する
-		// （キャレットが行終端より右の場合は埋め込まれる空白分だけ桁位置をシフト）
-		CLogicPoint ptCaretLogicPos_Old = GetCaret().GetCaretLogicPos();
-		const CLayout* pcLayout;
-		CLogicInt nLineLen;
-		CLayoutPoint ptCaretLayoutPos_Old = GetCaret().GetCaretLayoutPos();
-		if( m_pcEditDoc->m_cLayoutMgr.GetLineStr( ptCaretLayoutPos_Old.GetY2(), &nLineLen, &pcLayout ) ){
-			CLayoutInt nLineAllColLen;
-			LineColumnToIndex2( pcLayout, ptCaretLayoutPos_Old.GetX2(), &nLineAllColLen );
-			if( nLineAllColLen > CLayoutInt(0) ){	// 行終端より右の場合には nLineAllColLen に行全体の表示桁数が入っている
-				ptCaretLogicPos_Old.SetX(
-					ptCaretLogicPos_Old.GetX2()
-					+ (Int)(ptCaretLayoutPos_Old.GetX2() - nLineAllColLen)
-				);
-			}
-		}
-
-		GetCommander().Command_INSTEXT( true, cmemBuf.GetStringPtr(), cmemBuf.GetStringLength(), FALSE );
-
-		// 挿入前のキャレット位置から挿入後のキャレット位置までを選択範囲にする
-		CLayoutPoint ptSelectFrom;
-		m_pcEditDoc->m_cLayoutMgr.LogicToLayout(
-			ptCaretLogicPos_Old,
-			&ptSelectFrom
-		);
-		GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );	// 2009.07.25 ryoji
-	}else{
-		// 2004.07.12 Moca クリップボードを書き換えないように
-		// TRUE == bBoxSelected
-		// FALSE == GetSelectionInfo().IsBoxSelecting()
-		/* 貼り付け（クリップボードから貼り付け）*/
+	if (bBoxData) {
+		// 矩形テキストを挿入する
 		GetCommander().Command_INSBOXTEXT(cmemBuf.str());
+	}
+	else {
+		// ドロップされたテキストを挿入する
+		GetCommander().ReplaceSel(cmemBuf.str(), true);
 	}
 	if( bMove ){
 		if( bMoveToPrev ){
