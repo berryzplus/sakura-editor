@@ -52,6 +52,11 @@ auto GetDragSourceView()
 	return GetEditWnd().GetDragSourceView();
 }
 
+auto& GetLayoutMgr()
+{
+	return GetDocument()->m_cLayoutMgr;
+}
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      マウスイベント                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -2070,6 +2075,55 @@ IFACEMETHODIMP CEditView::Drop(
 	return S_OK;
 }
 
+/*!
+ * @brief テキストをドロップする
+ */
+void CEditView::DropText(
+	std::wstring_view text,
+	bool bBoxData
+)
+{
+	// 選択範囲の選択解除
+	if (GetSelectionInfo().IsTextSelected()) {
+		GetSelectionInfo().DisableSelectArea(true);
+	}
+
+	// 挿入前のキャレット位置を記憶する
+	// （キャレットが行終端より右の場合は埋め込まれる空白分だけ桁位置をシフト）
+	auto logicPos = GetCaret().GetCaretLogicPos();
+	const CLayout* pcLayout;
+	CLogicInt nLineLen;
+	if (const auto layoutPos = GetCaret().GetCaretLayoutPos();
+		GetLayoutMgr().GetLineStr(layoutPos.y, &nLineLen, &pcLayout))
+	{
+		CLayoutInt nLineAllColLen;
+		LineColumnToIndex2(pcLayout, layoutPos.x, &nLineAllColLen);
+		if (0 < nLineAllColLen) {	// 行終端より右の場合には nLineAllColLen に行全体の表示桁数が入っている
+			logicPos.x += Int(layoutPos.x - nLineAllColLen);
+		}
+	}
+
+	if (bBoxData)
+	{
+		// 矩形テキスト挿入
+		GetCommander().HandleCommand( F_INSBOXTEXT, true, LPARAM(text.data()), LPARAM(text.length()), 0L, 0L );
+	}
+	else {
+		// テキスト挿入
+		GetCommander().HandleCommand( F_INSTEXT_W, true, LPARAM(text.data()), LPARAM(text.length()), TRUE, 0L );
+
+		// 挿入前のキャレット位置から挿入後のキャレット位置までを選択範囲にする
+		CLayoutPoint ptSelectFrom;
+		GetLayoutMgr().LogicToLayout(
+			logicPos,
+			&ptSelectFrom
+		);
+
+		GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );	// 2009.07.25 ryoji
+		GetSelectionInfo().DrawSelectArea();
+	}
+}
+
 /** 独自ドロップファイルメッセージをポストする
 	@date 2008.06.20 ryoji 新規作成
 */
@@ -2203,49 +2257,19 @@ void CEditView::OnDropFiles(HWND hWnd, HDROP hDrop)
 				cmemBuf.AppendString( m_pcEditDoc->m_cDocEditor.GetNewLineCode().GetValue2() );
 			}
 		}
-		::DragFinish( hDrop );
 
-		// 選択範囲の選択解除
-		if( GetSelectionInfo().IsTextSelected() ){
-			GetSelectionInfo().DisableSelectArea( true );
-		}
+		std::wstring_view buffer{ cmemBuf.str() };
 
-		// 挿入前のキャレット位置を記憶する
-		// （キャレットが行終端より右の場合は埋め込まれる空白分だけ桁位置をシフト）
-		CLogicPoint ptCaretLogicPos_Old = GetCaret().GetCaretLogicPos();
-		const CLayout* pcLayout;
-		CLogicInt nLineLen;
-		CLayoutPoint ptCaretLayoutPos_Old = GetCaret().GetCaretLayoutPos();
-		if( m_pcEditDoc->m_cLayoutMgr.GetLineStr( ptCaretLayoutPos_Old.GetY2(), &nLineLen, &pcLayout ) ){
-			CLayoutInt nLineAllColLen;
-			LineColumnToIndex2( pcLayout, ptCaretLayoutPos_Old.GetX2(), &nLineAllColLen );
-			if( nLineAllColLen > CLayoutInt(0) ){	// 行終端より右の場合には nLineAllColLen に行全体の表示桁数が入っている
-				ptCaretLogicPos_Old.SetX(
-					ptCaretLogicPos_Old.GetX2()
-					+ (Int)(ptCaretLayoutPos_Old.GetX2() - nLineAllColLen)
-				);
-			}
-		}
-
-		// テキスト挿入
-		GetCommander().HandleCommand( F_INSTEXT_W, true, (LPARAM)cmemBuf.GetStringPtr(), cmemBuf.GetStringLength(), TRUE, 0 );
-
-		// 挿入前のキャレット位置から挿入後のキャレット位置までを選択範囲にする
-		CLayoutPoint ptSelectFrom;
-		m_pcEditDoc->m_cLayoutMgr.LogicToLayout(
-			ptCaretLogicPos_Old,
-			&ptSelectFrom
-		);
-		GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );	// 2009.07.25 ryoji
-		GetSelectionInfo().DrawSelectArea();
-		break;
+		// ドロップされたテキストを挿入する
+		DropText(buffer);
 	}
+		[[fallthrough]];
+
 	default:
+		// メモリ解放
+		::DragFinish(hDrop);
 		break;
 	}
-
-	// メモリ解放
-	::GlobalFree( hDrop );
 }
 
 DWORD CEditView::TranslateDropEffect(

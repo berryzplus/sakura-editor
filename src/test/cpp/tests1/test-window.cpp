@@ -3417,6 +3417,66 @@ TEST_F(EditWndTest, DropTarget003)
 }
 
 /*!
+ * IDropTarget実装のテスト。
+ */
+TEST_F(EditWndTest, DropTarget004)
+{
+	const auto& targetPath = dummyPath;
+
+	const auto target = CDropTarget::make_instance<CDropTarget>(&pcEditWnd->GetActiveView());
+
+	DWORD dwKeyState = MK_RBUTTON;
+	POINTL pt{};
+	DWORD dwEffect = DROPEFFECT_NONE;
+
+	cxx::com_pointer<IDataObject> hDrop;
+	EXPECT_HRESULT_SUCCEEDED(cxx::MakeDataObject(&hDrop, targetPath));
+	EXPECT_THAT(hDrop, NotNull());
+
+	auto pUser32 = (MockUser32*)User32::getInstance();
+	EXPECT_CALL(*pUser32, TrackPopupMenu(_, _, _, _, _, _, _))
+		.Times(1)
+		.WillOnce(Return(100));	// パス名を貼り付ける
+
+	//DragEnter～DragOverを実行させる
+	dwEffect = DROPEFFECT_COPY | DROPEFFECT_LINK;
+	EXPECT_HRESULT_EQ(target->DragEnter(hDrop, dwKeyState, pt, &dwEffect), S_OK);
+
+	//ドロップする
+	EXPECT_HRESULT_EQ(target->Drop(hDrop, dwKeyState, pt, &dwEffect), S_OK);
+}
+
+/*!
+ * IDropTarget実装のテスト。
+ */
+TEST_F(EditWndTest, DropTarget005)
+{
+	const auto& targetPath = dummyPath;
+
+	const auto target = CDropTarget::make_instance<CDropTarget>(&pcEditWnd->GetActiveView());
+
+	DWORD dwKeyState = MK_RBUTTON;
+	POINTL pt{};
+	DWORD dwEffect = DROPEFFECT_NONE;
+
+	cxx::com_pointer<IDataObject> hDrop;
+	EXPECT_HRESULT_SUCCEEDED(cxx::MakeDataObject(&hDrop, targetPath));
+	EXPECT_THAT(hDrop, NotNull());
+
+	auto pUser32 = (MockUser32*)User32::getInstance();
+	EXPECT_CALL(*pUser32, TrackPopupMenu(_, _, _, _, _, _, _))
+		.Times(1)
+		.WillOnce(Return(101));	// ファイル名を貼り付ける
+
+	//DragEnter～DragOverを実行させる
+	dwEffect = DROPEFFECT_COPY | DROPEFFECT_LINK;
+	EXPECT_HRESULT_EQ(target->DragEnter(hDrop, dwKeyState, pt, &dwEffect), S_OK);
+
+	//ドロップする
+	EXPECT_HRESULT_EQ(target->Drop(hDrop, dwKeyState, pt, &dwEffect), S_OK);
+}
+
+/*!
  * 上書き保存時バックアップのテスト
  */
 TEST_F(EditWndTest, FileSaveWithBackupAgent001)
