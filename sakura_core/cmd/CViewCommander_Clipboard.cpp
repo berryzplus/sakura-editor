@@ -438,10 +438,18 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 	m_pCommanderView->Redraw();			// 2002.01.25 hor
 }
 
-/*! 矩形文字列挿入
-*/
-void CViewCommander::Command_INSBOXTEXT( const wchar_t *pszPaste, int nPasteSize )
+/*!
+ * @brief 矩形文字列挿入
+ *
+ * @note HandleCommand( true, F_INSBOXTEXT, pszPaste, nPasteSize, 0L, 0L) で呼ぶためのもの。
+ */
+void CViewCommander::Command_INSBOXTEXT(
+	std::wstring_view text
+)
 {
+	const auto pszPaste = std::data(text);
+	const auto nPasteSize = std::size(text);
+
 	if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() )	// マウスによる範囲選択中
 	{
 		ErrorBeep();

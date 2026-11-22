@@ -209,7 +209,8 @@ public:
 	/* 矩形貼り付け（引数渡しでの張り付け）*/
 	void Command_PASTEBOX( const wchar_t *szPaste, size_t nPasteSize );
 	//>> 2002/03/29 Azumaiya
-	void Command_INSBOXTEXT(const wchar_t *pszPaste, int nPasteSize); // 矩形貼り付け
+
+	void Command_INSBOXTEXT(std::wstring_view text); // 矩形貼り付け
 
 	/*!
 	 * @brief テキストを貼り付け

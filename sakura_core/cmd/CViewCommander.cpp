@@ -406,7 +406,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_COPY_CRLF:				Command_COPY( false, GetDllShareData().m_Common.m_sEdit.m_bAddCRLFWhenCopy, EEolType::cr_and_lf );break;	//CRLF改行でコピー(選択範囲をクリップボードにコピー)
 	case F_PASTE:					Command_PASTE( (int)lparam1 );break;				//貼り付け(クリップボードから貼り付け)
 	case F_PASTEBOX:				Command_PASTEBOX( (int)lparam1 );break;				//矩形貼り付け(クリップボードから矩形貼り付け)
-	case F_INSBOXTEXT:				Command_INSBOXTEXT((const wchar_t*)lparam1, (int)lparam2 );break;				//矩形テキスト挿入
+	case F_INSBOXTEXT:				Command_INSBOXTEXT(std::wstring_view{ LPCWSTR(lparam1), size_t(lparam2) }); break;	//矩形テキスト挿入
 	case F_INSTEXT_W:				Command_INSTEXT( bRedraw, (const wchar_t*)lparam1, (CLogicInt)lparam2, lparam3!=FALSE );break;/* テキストを貼り付け */ // 2004.05.14 Moca 長さを示す引数追加
 	case F_ADDTAIL_W:				Command_ADDTAIL( (const wchar_t*)lparam1, (int)lparam2 );break;	/* 最後にテキストを追加 */
 	case F_COPYFNAME:				Command_COPYFILENAME();break;			//このファイル名をクリップボードにコピー / /2002/2/3 aroka
