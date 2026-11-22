@@ -12,7 +12,7 @@
 	Copyright (C) 2005, genta
 	Copyright (C) 2007, ryoji
 	Copyright (C) 2010, ryoji
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holders to use this code for other purpose.
@@ -139,6 +139,153 @@ void CViewCommander::Command_COPY(
 		}
 	}
 	return;
+}
+
+/*!
+ * @brief ドロップされたテキストを移動する
+ *
+ * 移動元テキストを選択した状態で呼ばれる。
+ * キャレットは移動先に移動している。
+ * 移動元とキャレットの位置関係により、処理順を変える。
+ */
+void CViewCommander::MoveText(
+	std::wstring_view text,
+	bool bBoxData
+)
+{
+	const auto ptCaretPos_Old = GetCaret().GetCaretLayoutPos();
+	const auto bBeginBoxSelect_Old = GetSelectionInfo().IsBoxSelecting();
+	const auto sSelectBgn_Old = GetSelectionInfo().m_sSelectBgn;
+	const auto sSelect_Old = GetSelectionInfo().m_sSelect;
+
+	bool bMoveToPrev = false;
+
+	// 位置関係を算出
+	if (bBoxData) {
+		RECT rcSel;
+		TwoPointToRect(
+			&rcSel,
+			sSelect_Old.GetFrom(),	// 範囲選択開始
+			sSelect_Old.GetTo()		// 範囲選択終了
+		);
+		++rcSel.bottom;
+
+		bMoveToPrev = ptCaretPos_Old.y < rcSel.bottom &&
+			(
+				ptCaretPos_Old.y + rcSel.bottom - rcSel.top < rcSel.top ||
+				ptCaretPos_Old.x < rcSel.left
+			);
+	}
+	else {
+		const auto ptSelectFrom = sSelect_Old.GetFrom();
+		bMoveToPrev =
+			ptCaretPos_Old.y < ptSelectFrom.y ||
+			ptSelectFrom.y == ptCaretPos_Old.y &&
+			ptCaretPos_Old.x < ptSelectFrom.x;
+	}
+
+	// 前に移動の場合、削除してから移動。
+	if (bMoveToPrev) {
+		/* 選択エリアを削除 */
+		GetSelectionInfo().DisableSelectArea( true );
+		GetSelectionInfo().SetBoxSelect( bBeginBoxSelect_Old );
+		GetSelectionInfo().m_sSelectBgn = sSelectBgn_Old;
+		GetSelectionInfo().m_sSelect = sSelect_Old;
+
+		m_pCommanderView->DeleteData( true );
+
+		GetCaret().MoveCursor( ptCaretPos_Old, true );
+	}
+
+	if (bBoxData) {
+		// 矩形テキストを挿入する
+		Command_INSBOXTEXT(text);
+	}
+	else {
+		// ドロップされたテキストを挿入する
+		ReplaceSel(text, true);
+	}
+
+	// 後ろに移動の場合、移動してから削除。
+	if (!bMoveToPrev) {
+		// 現在の選択範囲を記憶する	// 2008.03.26 ryoji
+		CLogicRange sSelLogic;
+		GetLayoutMgr().LayoutToLogic(
+			GetSelectionInfo().m_sSelect,
+			&sSelLogic
+		);
+
+		// 以前の選択範囲を記憶する	// 2008.03.26 ryoji
+		CLogicRange sDelLogic;
+		GetLayoutMgr().LayoutToLogic(
+			sSelect_Old,
+			&sDelLogic
+		);
+
+		// 現在の行数を記憶する	// 2008.03.26 ryoji
+		int nLines_Old = GetDocLineMgr().GetLineCount();
+
+		// 以前の選択範囲を選択する
+		GetSelectionInfo().SetBoxSelect( bBeginBoxSelect_Old );
+		GetSelectionInfo().m_sSelectBgn = sSelectBgn_Old;
+		GetSelectionInfo().m_sSelect = sSelect_Old;
+
+		/* 選択エリアを削除 */
+		m_pCommanderView->DeleteData( true );
+
+		// 削除前の選択範囲を復元する	// 2008.03.26 ryoji
+		auto ptCaretPos2_Old = ptCaretPos_Old;
+		if (!bBoxData) {
+			// 削除された範囲を考慮して選択範囲を調整する
+			if (sSelLogic.GetFrom().y == sDelLogic.GetTo().y) {	// 選択開始が削除末尾と同一行
+				sSelLogic.SetFromX(
+					sSelLogic.GetFrom().x
+					- (sDelLogic.GetTo().x - sDelLogic.GetFrom().x)
+				);
+			}
+			if (sSelLogic.GetTo().y == sDelLogic.GetTo().y) {	// 選択終了が削除末尾と同一行
+				sSelLogic.SetToX(
+					sSelLogic.GetTo().x
+					- (sDelLogic.GetTo().x - sDelLogic.GetFrom().x)
+				);
+			}
+			// Note.
+			// (sDelLogic.GetTo().GetY2() - sDelLogic.GetFrom().GetY2()) だと実際の削除行数と同じになる
+			// こともあるが、（削除行数－１）になることもある．
+			// 例）フリーカーソルでの行番号クリック時の１行選択
+			int nLines = GetDocLineMgr().GetLineCount();
+			sSelLogic.SetFromY( sSelLogic.GetFrom().y - (nLines_Old - nLines) );
+			sSelLogic.SetToY( sSelLogic.GetTo().y - (nLines_Old - nLines) );
+
+			// 調整後の選択範囲を設定する
+			CLayoutRange sSelect;
+			GetLayoutMgr().LogicToLayout(
+				sSelLogic,
+				&sSelect
+			);
+			GetSelectionInfo().SetSelectArea( sSelect );	// 2009.07.25 ryoji
+			ptCaretPos2_Old = GetSelectionInfo().m_sSelect.GetTo();
+		}
+
+		// キャレットを移動する
+		GetCaret().MoveCursor( ptCaretPos2_Old, true );
+		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().x;
+
+		// 削除位置から移動先へのカーソル移動をアンドゥ操作に追加する
+		CLogicPoint ptBefore;
+		GetLayoutMgr().LayoutToLogic(
+			GetSelectionInfo().m_sSelect.GetFrom(),
+			&ptBefore
+		);
+		GetOpeBlk()->AppendOpe(
+			new CMoveCaretOpe(
+				sDelLogic.GetFrom(),
+				GetCaret().GetCaretLogicPos()
+			)
+		);
+
+		GetSelectionInfo().DrawSelectArea();
+	}
 }
 
 /** 貼り付け(クリップボードから貼り付け)

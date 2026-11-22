@@ -401,6 +401,14 @@ public:
 	/* その他 */
 
 	/*!
+	 * @brief ドロップされたテキストを移動する
+	 */
+	void MoveText(
+		std::wstring_view text,
+		bool bBoxData
+	);
+
+	/*!
 	 * @brief テキストを挿入する
 	 *
 	 * 現在のキャレット位置に指定したテキストを挿入します。

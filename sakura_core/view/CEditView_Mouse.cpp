@@ -1789,15 +1789,10 @@ IFACEMETHODIMP CEditView::Drop(
 )
 {
 	DEBUG_TRACE( L"CEditView::Drop()\n" );
-	BOOL		bBoxData;
-	BOOL		bMove;
-	BOOL		bMoveToPrev = FALSE;
-	RECT		rcSel;
-	CNativeW	cmemBuf;
-	bool		bBeginBoxSelect_Old = false;
 
-	CLayoutRange sSelectBgn_Old;
-	CLayoutRange sSelect_Old;
+	BOOL		bMove;
+
+	CNativeW	cmemBuf;
 
 	// ドラッグモードを終了する
 	LeaveDragMode();
@@ -1835,8 +1830,6 @@ IFACEMETHODIMP CEditView::Drop(
 		return DragLeave();
 	}
 
-	bBoxData = m_bDragBoxData;
-
 	CLIPFORMAT cf = 0;
 
 	if (m_Formats.contains(CDataObject::cfSakuraClip)) cf = CDataObject::cfSakuraClip;
@@ -1872,161 +1865,23 @@ IFACEMETHODIMP CEditView::Drop(
 	}
 	m_cCommander.GetOpeBlk()->AddRef();
 
-	/* 移動の場合、位置関係を算出 */
-	if( bMove ){
-		if( bBoxData ){
-			/* 2点を対角とする矩形を求める */
-			TwoPointToRect(
-				&rcSel,
-				pcDragSourceView->GetSelectionInfo().m_sSelect.GetFrom(),	// 範囲選択開始
-				pcDragSourceView->GetSelectionInfo().m_sSelect.GetTo()		// 範囲選択終了
-			);
-			++rcSel.bottom;
-			if( GetCaret().GetCaretLayoutPos().GetY() >= rcSel.bottom ){
-				bMoveToPrev = FALSE;
-			}else
-			if( GetCaret().GetCaretLayoutPos().GetY() + rcSel.bottom - rcSel.top < rcSel.top ){
-				bMoveToPrev = TRUE;
-			}else
-			if( GetCaret().GetCaretLayoutPos().GetX2() < rcSel.left ){
-				bMoveToPrev = TRUE;
-			}else{
-				bMoveToPrev = FALSE;
-			}
-		}else{
-			if( pcDragSourceView->GetSelectionInfo().m_sSelect.GetFrom().y > GetCaret().GetCaretLayoutPos().GetY() ){
-				bMoveToPrev = TRUE;
-			}else
-			if( pcDragSourceView->GetSelectionInfo().m_sSelect.GetFrom().y == GetCaret().GetCaretLayoutPos().GetY() ){
-				if( pcDragSourceView->GetSelectionInfo().m_sSelect.GetFrom().x > GetCaret().GetCaretLayoutPos().GetX2() ){
-					bMoveToPrev = TRUE;
-				}else{
-					bMoveToPrev = FALSE;
-				}
-			}else{
-				bMoveToPrev = FALSE;
-			}
-		}
-	}
+	// ドロップされたテキストを挿入する
+	std::wstring_view text{ cmemBuf.str() };
 
-	CLayoutPoint ptCaretPos_Old = GetCaret().GetCaretLayoutPos();
-	if( !bMove ){
-		/* コピーモード */
-		/* 現在の選択範囲を非選択状態に戻す */
-		GetSelectionInfo().DisableSelectArea( true );
-	}else{
-		bBeginBoxSelect_Old = pcDragSourceView->GetSelectionInfo().IsBoxSelecting();
-		sSelectBgn_Old = pcDragSourceView->GetSelectionInfo().m_sSelectBgn;
-		sSelect_Old = pcDragSourceView->GetSelectionInfo().m_sSelect;
-		if( bMoveToPrev ){
-			/* 移動モード & 前に移動 */
-			/* 選択エリアを削除 */
-			if( this != pcDragSourceView ){
-				pcDragSourceView->GetSelectionInfo().DisableSelectArea( true );
-				GetSelectionInfo().DisableSelectArea( true );
-				GetSelectionInfo().SetBoxSelect( bBeginBoxSelect_Old );
-				GetSelectionInfo().m_sSelectBgn = sSelectBgn_Old;
-				GetSelectionInfo().m_sSelect = sSelect_Old;
-			}
-			DeleteData( true );
-			GetCaret().MoveCursor( ptCaretPos_Old, true );
-		}else{
-			/* 現在の選択範囲を非選択状態に戻す */
-			pcDragSourceView->GetSelectionInfo().DisableSelectArea( true );
-			if( this != pcDragSourceView )
-				GetSelectionInfo().DisableSelectArea( true );
-		}
-	}
-	if (bBoxData) {
-		// 矩形テキストを挿入する
-		GetCommander().Command_INSBOXTEXT(cmemBuf.str());
+	if (bMove) {
+		// ドロップされたテキストを移動する
+		GetCommander().MoveText(text, m_bDragBoxData);
 	}
 	else {
-		// ドロップされたテキストを挿入する
-		GetCommander().ReplaceSel(cmemBuf.str(), true);
-	}
-	if( bMove ){
-		if( bMoveToPrev ){
-		}else{
-			/* 移動モード & 後ろに移動*/
-
-			// 現在の選択範囲を記憶する	// 2008.03.26 ryoji
-			CLogicRange sSelLogic;
-			m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
-				GetSelectionInfo().m_sSelect,
-				&sSelLogic
-			);
-
-			// 以前の選択範囲を記憶する	// 2008.03.26 ryoji
-			CLogicRange sDelLogic;
-			m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
-				sSelect_Old,
-				&sDelLogic
-			);
-
-			// 現在の行数を記憶する	// 2008.03.26 ryoji
-			int nLines_Old = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
-
-			// 以前の選択範囲を選択する
-			GetSelectionInfo().SetBoxSelect( bBeginBoxSelect_Old );
-			GetSelectionInfo().m_sSelectBgn = sSelectBgn_Old;
-			GetSelectionInfo().m_sSelect = sSelect_Old;
-
-			/* 選択エリアを削除 */
-			DeleteData( true );
-
-			// 削除前の選択範囲を復元する	// 2008.03.26 ryoji
-			if( !bBoxData ){
-				// 削除された範囲を考慮して選択範囲を調整する
-				if( sSelLogic.GetFrom().GetY2() == sDelLogic.GetTo().GetY2() ){	// 選択開始が削除末尾と同一行
-					sSelLogic.SetFromX(
-						sSelLogic.GetFrom().GetX2()
-						- (sDelLogic.GetTo().GetX2() - sDelLogic.GetFrom().GetX2())
-					);
-				}
-				if( sSelLogic.GetTo().GetY2() == sDelLogic.GetTo().GetY2() ){	// 選択終了が削除末尾と同一行
-					sSelLogic.SetToX(
-						sSelLogic.GetTo().GetX2()
-						- (sDelLogic.GetTo().GetX2() - sDelLogic.GetFrom().GetX2())
-					);
-				}
-				// Note.
-				// (sDelLogic.GetTo().GetY2() - sDelLogic.GetFrom().GetY2()) だと実際の削除行数と同じになる
-				// こともあるが、（削除行数－１）になることもある．
-				// 例）フリーカーソルでの行番号クリック時の１行選択
-				int nLines = m_pcEditDoc->m_cDocLineMgr.GetLineCount();
-				sSelLogic.SetFromY( sSelLogic.GetFrom().GetY2() - (nLines_Old - nLines) );
-				sSelLogic.SetToY( sSelLogic.GetTo().GetY2() - (nLines_Old - nLines) );
-
-				// 調整後の選択範囲を設定する
-				CLayoutRange sSelect;
-				m_pcEditDoc->m_cLayoutMgr.LogicToLayout(
-					sSelLogic,
-					&sSelect
-				);
-				GetSelectionInfo().SetSelectArea( sSelect );	// 2009.07.25 ryoji
-				ptCaretPos_Old = GetSelectionInfo().m_sSelect.GetTo();
-			}
-
-			// キャレットを移動する
-			GetCaret().MoveCursor( ptCaretPos_Old, true );
-			GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
-
-			// 削除位置から移動先へのカーソル移動をアンドゥ操作に追加する	// 2008.03.26 ryoji
-			CLogicPoint ptBefore;
-			m_pcEditDoc->m_cLayoutMgr.LayoutToLogic(
-				GetSelectionInfo().m_sSelect.GetFrom(),
-				&ptBefore
-			);
-			m_cCommander.GetOpeBlk()->AppendOpe(
-				new CMoveCaretOpe(
-					sDelLogic.GetFrom(),
-					GetCaret().GetCaretLogicPos()
-				)
-			);
+		if (m_bDragBoxData) {
+			// 矩形テキストを挿入する
+			GetCommander().Command_INSBOXTEXT(text);
+		}
+		else {
+			// ドロップされたテキストを挿入する
+			GetCommander().ReplaceSel(text, true);
 		}
 	}
-	GetSelectionInfo().DrawSelectArea();
 
 	/* アンドゥバッファの処理 */
 	SetUndoBuffer();
