@@ -213,9 +213,6 @@ public:
 
 	/*!
 	 * @brief テキストを貼り付け
-	 *
-	 * 現在のキャレット位置に指定したテキストを挿入します。
-	 * Windows標準 EM_REPLACESEL に相当します。
 	 */
 	void Command_INSTEXT(
 		bool bRedraw,										//!< [in] 再描画するかどうか。🌟常にtrueとすべきです。
@@ -406,6 +403,17 @@ public:
 	void Command_ABOUT( void );			/* バージョン情報 */	//Dec. 24, 2000 JEPRO 追加
 
 	/* その他 */
+
+	/*!
+	 * @brief テキストを挿入する
+	 *
+	 * 現在のキャレット位置に指定したテキストを挿入します。
+	 * Windows標準 EM_REPLACESEL に相当します。
+	 */
+	void ReplaceSel(
+		std::wstring_view text,
+		bool bSelectInsertedText = false
+	);
 
 private:
 	void MoveViewTopLine(CLayoutInt nViewTopLine);

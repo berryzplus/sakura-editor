@@ -6,7 +6,7 @@
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
 	Copyright (C) 2002, MIK
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holders to use this code for other purpose.
@@ -25,26 +25,26 @@
 void CViewCommander::Command_INS_DATE( void )
 {
 	// 日付をフォーマット
-	WCHAR szText[1024];
+	StaticString<1024> szText{};
 	SYSTEMTIME systime;
 	::GetLocalTime( &systime );
 	CFormatManager().MyGetDateFormat( systime, szText, int(std::size(szText)) - 1 );
 
-	// テキストを貼り付け ver1
-	Command_INSTEXT( true, szText, CLogicInt(-1), TRUE );
+	// テキストを挿入する
+	ReplaceSel(szText.str());
 }
 
 //時刻挿入
 void CViewCommander::Command_INS_TIME( void )
 {
 	// 時刻をフォーマット
-	WCHAR szText[1024];
+	StaticString<1024> szText{};
 	SYSTEMTIME systime;
 	::GetLocalTime( &systime );
 	CFormatManager().MyGetTimeFormat( systime, szText, int(std::size(szText)) - 1 );
 
-	// テキストを貼り付け ver1
-	Command_INSTEXT( true, szText, CLogicInt(-1), TRUE );
+	// テキストを挿入する
+	ReplaceSel(szText.str());
 }
 
 //	from CViewCommander_New.cpp
@@ -77,7 +77,9 @@ void CViewCommander::Command_INS_FILE_USED_RECENTLY( void )
 		s += item;
 		s += eol;
 	}
-	Command_INSTEXT( true, s.c_str(), (CLogicInt)s.size(), TRUE );
+
+	// テキストを挿入する
+	ReplaceSel(s);
 }
 
 // 最近使ったフォルダー挿入
@@ -91,5 +93,56 @@ void CViewCommander::Command_INS_FOLDER_USED_RECENTLY( void )
 		s += item;
 		s += eol;
 	}
-	Command_INSTEXT( true, s.c_str(), (CLogicInt)s.size(), TRUE );
+
+	// テキストを挿入する
+	ReplaceSel(s);
+}
+
+/*!
+ * @brief テキストを挿入する
+ *
+ * 現在のキャレット位置に指定したテキストを挿入します。
+ * Windows標準 EM_REPLACESEL に相当します。
+ *
+ * @param[in] text 挿入するテキスト
+ * @param[in, opt] bSelectInsertedText 挿入したテキストを選択するかどうか。省略時は選択しない。
+ */
+void CViewCommander::ReplaceSel(
+	std::wstring_view text,		//!< [in] 挿入するテキスト
+	bool bSelectInsertedText	//!< [in, opt] 挿入したテキストを選択するかどうか。省略時は選択しない。
+)
+{
+	// 選択範囲の選択解除
+	if (bSelectInsertedText &&
+		GetSelectionInfo().IsTextSelected())
+	{
+		GetSelectionInfo().DisableSelectArea(true);
+	}
+
+	// 挿入前のキャレット位置を記憶する
+	// ドラッグ＆ドロップではキャレット位置が行終端より右側になることはない。
+	const auto logicPos = GetCaret().GetCaretLogicPos();
+
+	// テキストを貼り付け
+	Command_INSTEXT(
+		true,
+		text.data(),
+		ptrdiff_t(text.length()),
+		TRUE,
+		false,		//!< [in, opt] bLinePaste ラインモード貼り付け。🌟そのうち削除します。
+		false,		//!< [in, opt] bFastMode 高速モード🌟そのうち削除します。
+		nullptr		//!< [out, opt] psDelRangeLogicFast 高速モードのときの削除範囲ロジック単位。🌟そのうち削除します。
+	);
+
+	// 挿入したテキストを選択する
+	if (bSelectInsertedText) {
+		CLayoutPoint ptSelectFrom;
+		GetLayoutMgr().LogicToLayout(
+			logicPos,
+			&ptSelectFrom
+		);
+
+		GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );
+		GetSelectionInfo().DrawSelectArea();
+	}
 }

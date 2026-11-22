@@ -2115,45 +2115,17 @@ void CEditView::DropFiles(
 
 	buffer.resize(buffer.length() - eol.length());	// 最後の改行を削除
 
-	// ドロップされたテキストを挿入する
-	DropText(buffer);
-}
-
-/*!
- * @brief テキストをドロップする
- *
- * @param[in] text ドロップされたテキスト
- *
- * @note 仮置き
- * @note CViewCommanderに移植したほうがよいはず。
- */
-void CEditView::DropText(
-	std::wstring_view text
-)
-{
-	// 選択範囲の選択解除
-	if (GetSelectionInfo().IsTextSelected()) {
-		GetSelectionInfo().DisableSelectArea(true);
+	// アンドゥバッファの準備
+	if (!m_cCommander.GetOpeBlk()) {
+		m_cCommander.SetOpeBlk(new COpeBlk);
 	}
+	m_cCommander.GetOpeBlk()->AddRef();
 
-	auto& cLayoutMgr = GetLayoutMgr();
+	// ドロップされたテキストを挿入する
+	GetCommander().ReplaceSel(buffer, true);
 
-	// 挿入前のキャレット位置を記憶する
-	// ドラッグ＆ドロップではキャレット位置が行終端より右側になることはない。
-	const auto logicPos = GetCaret().GetCaretLogicPos();
-
-	// テキスト挿入
-	GetCommander().HandleCommand( F_INSTEXT_W, true, LPARAM(text.data()), LPARAM(text.length()), TRUE, 0L );
-
-	// 挿入したテキストを選択する
-	CLayoutPoint ptSelectFrom;
-	cLayoutMgr.LogicToLayout(
-		logicPos,
-		&ptSelectFrom
-	);
-
-	GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );
-	GetSelectionInfo().DrawSelectArea();
+	/* アンドゥバッファの処理 */
+	SetUndoBuffer();
 }
 
 /*!
