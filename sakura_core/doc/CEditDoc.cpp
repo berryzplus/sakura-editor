@@ -159,6 +159,11 @@ CDocLineMgr& GetDocLineMgr()
 	return GetEditDoc().m_cDocLineMgr;
 }
 
+CLayoutMgr& GetLayoutMgr()
+{
+	return GetEditDoc().m_cLayoutMgr;
+}
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                        生成と破棄                           //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
