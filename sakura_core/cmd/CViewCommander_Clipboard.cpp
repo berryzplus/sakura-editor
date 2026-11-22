@@ -191,16 +191,7 @@ void CViewCommander::Command_PASTE( int option )
 	if( bAutoColumnPaste ){
 		// 矩形コピーのデータなら矩形貼り付け
 		if( bColumnSelect ){
-			if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() ){
-				ErrorBeep();
-				return;
-			}
-			if( !GetDllShareData().m_Common.m_sView.m_bFontIs_FIXED_PITCH ){
-				return;
-			}
-			Command_PASTEBOX(pszText, nTextLen);
-			m_pCommanderView->AdjustScrollBars();
-			m_pCommanderView->Redraw();
+			Command_INSBOXTEXT(std::wstring_view{ pszText, nTextLen });
 			return;
 		}
 	}
@@ -231,27 +222,19 @@ void CViewCommander::Command_PASTE( int option )
 	return;
 }
 
-//<< 2002/03/28 Azumaiya
-// メモリデータを矩形貼り付け用のデータと解釈して処理する。
-//  なお、この関数は Command_PASTEBOX(void) と、
-// 2769 : GetDocument()->m_cDocEditor.SetModified(true,true);	//	Jan. 22, 2002 genta
-// から、
-// 3057 : m_pCommanderView->SetDrawSwitch(true);	// 2002.01.25 hor
-// 間まで、一緒です。
-//  ですが、コメントを削ったり、#if 0 のところを削ったりしていますので、Command_PASTEBOX(void) は
-// 残すようにしました(下にこの関数を使った使ったバージョンをコメントで書いておきました)。
-//  なお、以下にあげるように Command_PASTEBOX(void) と違うところがあるので注意してください。
-// > 呼び出し側が責任を持って、
-// ・マウスによる範囲選択中である。
-// ・現在のフォントは固定幅フォントである。
-// の 2 点をチェックする。
-// > 再描画を行わない
-// です。
-//  なお、これらを呼び出し側に期待するわけは、「すべて置換」のような何回も連続で呼び出す
-// ときに、最初に一回チェックすればよいものを何回もチェックするのは無駄と判断したためです。
-// @note 2004.06.30 現在、すべて置換では使用していない
-void CViewCommander::Command_PASTEBOX( const wchar_t *szPaste, size_t cchPaste )
+/*!
+ * @bried 矩形テキストを挿入する
+ *
+ * @date 2002/03/28 Azumaiya 矩形テキスト貼り付け機能として新規作成
+ *
+ * @note このメソッドは前提条件チェックと再描画を行わない。
+ */
+void CViewCommander::_InsertBoxText(
+	std::wstring_view text
+)
 {
+	const auto szPaste = std::data(text);
+	const auto cchPaste = std::size(text);
 	auto nPasteSize = int(cchPaste);
 
 	/* これらの動作は残しておきたいのだが、呼び出し側で責任を持ってやってもらうことに変更。
@@ -429,13 +412,8 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 		ErrorBeep();
 		return;
 	}
-	// 2004.07.13 Moca \0コピー対策
-	const size_t cchText = cmemClip.GetStringLength();
-	const wchar_t *pszText = cmemClip.GetStringPtr();
 
-	Command_PASTEBOX(pszText, cchText);
-	m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
-	m_pCommanderView->Redraw();			// 2002.01.25 hor
+	Command_INSBOXTEXT(cmemClip.str());
 }
 
 /*!
@@ -447,10 +425,7 @@ void CViewCommander::Command_INSBOXTEXT(
 	std::wstring_view text
 )
 {
-	const auto pszPaste = std::data(text);
-	const auto nPasteSize = std::size(text);
-
-	if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() )	// マウスによる範囲選択中
+	if (GetSelectionInfo().IsMouseSelecting())	// マウスによる範囲選択中
 	{
 		ErrorBeep();
 		return;
@@ -461,7 +436,9 @@ void CViewCommander::Command_INSBOXTEXT(
 		return;
 	}
 
-	Command_PASTEBOX(pszPaste, nPasteSize);
+	// 矩形テキストを挿入する
+	_InsertBoxText(text);
+
 	m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
 	m_pCommanderView->Redraw();			// 2002.01.25 hor
 }
