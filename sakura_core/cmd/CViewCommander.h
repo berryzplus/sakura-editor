@@ -205,11 +205,6 @@ public:
 	void Command_COPY( bool bIgnoreLockAndDisable, bool bAddCRLFWhenCopy, EEolType neweol = EEolType::none );/* コピー(選択範囲をクリップボードにコピー) */
 	void Command_PASTE( int option );						/* 貼り付け（クリップボードから貼り付け）*/
 	void Command_PASTEBOX( LPARAM option );					/* 矩形貼り付け（クリップボードから矩形貼り付け）*/
-	//<< 2002/03/29 Azumaiya
-	/* 矩形貼り付け（引数渡しでの張り付け）*/
-	void Command_PASTEBOX( const wchar_t *szPaste, size_t nPasteSize );
-	//>> 2002/03/29 Azumaiya
-
 	void Command_INSBOXTEXT(std::wstring_view text); // 矩形貼り付け
 
 	/*!
@@ -417,6 +412,13 @@ public:
 	);
 
 private:
+	/*!
+	 * @bried 矩形テキストを挿入する
+	 */
+	void _InsertBoxText(
+		std::wstring_view text
+	);
+
 	void MoveViewTopLine(CLayoutInt nViewTopLine);
 
 	/*!

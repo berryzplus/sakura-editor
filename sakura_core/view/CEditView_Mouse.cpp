@@ -1971,9 +1971,7 @@ IFACEMETHODIMP CEditView::Drop(
 		// TRUE == bBoxSelected
 		// FALSE == GetSelectionInfo().IsBoxSelecting()
 		/* 貼り付け（クリップボードから貼り付け）*/
-		GetCommander().Command_PASTEBOX( cmemBuf.GetStringPtr(), cmemBuf.GetStringLength() );
-		AdjustScrollBars(); // 2007.07.22 ryoji
-		Redraw();
+		GetCommander().Command_INSBOXTEXT(cmemBuf.str());
 	}
 	if( bMove ){
 		if( bMoveToPrev ){
