@@ -434,4 +434,6 @@ protected:
 	DISALLOW_COPY_AND_ASSIGN(CLayoutMgr);
 };
 
+CLayoutMgr& GetLayoutMgr();
+
 #endif /* SAKURA_CLAYOUTMGR_5398B1C5_280C_4D86_B7BB_C7B5C8B0403F_H_ */
