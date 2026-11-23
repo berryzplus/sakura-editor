@@ -142,6 +142,40 @@ void CViewCommander::Command_COPY(
 }
 
 /*!
+ * @brief ドラッグされたテキストをドロップする
+ */
+void CViewCommander::DropText(
+	std::wstring_view text,
+	bool bBoxData,
+	bool bMove
+)
+{
+	// アンドゥバッファの準備
+	if (!GetOpeBlk()) {
+		SetOpeBlk(new COpeBlk);
+	}
+	GetOpeBlk()->AddRef();
+
+	if (bMove) {
+		// ドロップされたテキストを移動する
+		MoveText(text, bBoxData);
+	}
+	else {
+		if (bBoxData) {
+			// 矩形テキストを挿入する
+			Command_INSBOXTEXT(text);
+		}
+		else {
+			// ドロップされたテキストを挿入する
+			ReplaceSel(text, true);
+		}
+	}
+
+	/* アンドゥバッファの処理 */
+	m_pCommanderView->SetUndoBuffer();
+}
+
+/*!
  * @brief ドロップされたテキストを移動する
  *
  * 移動元テキストを選択した状態で呼ばれる。

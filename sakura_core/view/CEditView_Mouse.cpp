@@ -1860,32 +1860,8 @@ IFACEMETHODIMP CEditView::Drop(
 		pcCodeBase->CodeToUnicode(*binary._GetMemory(), &cmemBuf);
 	}
 
-	// アンドゥバッファの準備
-	if( nullptr == m_cCommander.GetOpeBlk() ){
-		m_cCommander.SetOpeBlk(new COpeBlk);
-	}
-	m_cCommander.GetOpeBlk()->AddRef();
-
-	// ドロップされたテキストを挿入する
-	std::wstring_view text{ cmemBuf.str() };
-
-	if (bMove) {
-		// ドロップされたテキストを移動する
-		GetCommander().MoveText(text, m_bDragBoxData);
-	}
-	else {
-		if (m_bDragBoxData) {
-			// 矩形テキストを挿入する
-			GetCommander().Command_INSBOXTEXT(text);
-		}
-		else {
-			// ドロップされたテキストを挿入する
-			GetCommander().ReplaceSel(text, true);
-		}
-	}
-
-	/* アンドゥバッファの処理 */
-	SetUndoBuffer();
+	// ドラッグされたテキストをドロップする
+	GetCommander().DropText(cmemBuf.str(), m_bDragBoxData, bMove);
 
 	::GlobalUnlock( hData );
 	// 2004.07.12 fotomo/もか メモリリークの修正
@@ -1941,17 +1917,8 @@ void CEditView::DropFiles(
 
 	buffer.resize(buffer.length() - eol.length());	// 最後の改行を削除
 
-	// アンドゥバッファの準備
-	if (!m_cCommander.GetOpeBlk()) {
-		m_cCommander.SetOpeBlk(new COpeBlk);
-	}
-	m_cCommander.GetOpeBlk()->AddRef();
-
 	// ドロップされたテキストを挿入する
-	GetCommander().ReplaceSel(buffer, true);
-
-	/* アンドゥバッファの処理 */
-	SetUndoBuffer();
+	GetCommander().DropText(buffer);
 }
 
 /*!
