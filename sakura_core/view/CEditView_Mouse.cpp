@@ -2133,9 +2133,6 @@ void CEditView::DragSelection()
 	// 選択範囲からクリップボードデータを作成する
 	const auto data = CDataObject::make_instance(std::wstring_view(cmemCurText), GetSelectionInfo().IsBoxSelecting());
 
-	// ドラッグ開始前のドキュメント操作番号を記憶する
-	const auto nOpe = GetDocument()->m_cDocEditor.m_cOpeBuf.GetCurrentPointer();
-
 	// ドラッグ元ビューを設定する
 	GetEditWnd().SetDragSourceView(this);
 
@@ -2145,6 +2142,20 @@ void CEditView::DragSelection()
 		desiredEffects |= DROPEFFECT_MOVE;	//ムーブ可能
 	}
 
+	// ムーブが有効な場合
+	if (desiredEffects & DROPEFFECT_MOVE) {
+		// アンドゥバッファを準備する
+		if (!GetCommander().GetOpeBlk()) {
+			GetCommander().SetOpeBlk(new COpeBlk);
+		}
+		GetCommander().GetOpeBlk()->AddRef();
+	}
+
+	// ドラッグ開始前の操作ブロック格納数を記憶する
+	const auto nOpe = GetCommander().GetOpeBlk()
+		? GetCommander().GetOpeBlk()->GetNum()
+		: 0;
+
 	// ドラッグ＆ドロップを開始する
 	const auto actualEffects = CDropSource::DoDragDrop(data, desiredEffects);
 
@@ -2152,21 +2163,19 @@ void CEditView::DragSelection()
 	GetEditWnd().SetDragSourceView(nullptr);
 
 	// 切り取りされた場合、元の選択範囲を削除する。（別のエディタに移動したときなど。）
-	if (actualEffects & DROPEFFECT_MOVE && nOpe == GetDocument()->m_cDocEditor.m_cOpeBuf.GetCurrentPointer()) {
+	if (actualEffects & DROPEFFECT_MOVE &&
+		GetCommander().GetOpeBlk() &&
+		nOpe == GetCommander().GetOpeBlk()->GetNum())
+	{
 		GetEditWnd().SetActivePane(m_nMyIndex);
-
-		// 移動範囲を削除する
-		// ドロップ先が移動を処理したが自ドキュメントにここまで変更が無い
-		// →ドロップ先は外部のウィンドウである
-		if (!GetCommander().GetOpeBlk()) {
-			GetCommander().SetOpeBlk(new COpeBlk);
-		}
-		GetCommander().GetOpeBlk()->AddRef();
 
 		// 選択範囲を削除
 		DeleteData(true);
+	}
 
-		// アンドゥバッファの処理
+	// ムーブが有効だった場合
+	if (desiredEffects & DROPEFFECT_MOVE) {
+		// アンドゥバッファを始末する
 		SetUndoBuffer();
 	}
 }
