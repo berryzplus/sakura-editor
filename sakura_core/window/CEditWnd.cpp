@@ -211,6 +211,11 @@ CEditWnd& GetEditWnd()
 	return *pcEditWnd;
 }
 
+CViewSelect& GetSelectionInfo()
+{
+	return GetEditWnd().GetActiveView().m_cViewSelect;
+}
+
 CViewFont* GetViewFont(bool isMiniMap)
 {
 	return GetEditWnd().GetViewFont(isMiniMap);

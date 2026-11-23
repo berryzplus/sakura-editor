@@ -174,4 +174,6 @@ m_sSelectOldについて
 	DrawSelectArea()を呼びだすことで新しい範囲が描かれる．
 */
 
+CViewSelect& GetSelectionInfo();
+
 #endif /* SAKURA_CVIEWSELECT_08C2314F_EB28_43C0_9719_56EB5A6A95C5_H_ */
