@@ -31,7 +31,7 @@ void CViewCommander::Command_INS_DATE( void )
 	CFormatManager().MyGetDateFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	ReplaceSel(szText.str());
+	_ReplaceSel(szText.str());
 }
 
 //時刻挿入
@@ -44,7 +44,7 @@ void CViewCommander::Command_INS_TIME( void )
 	CFormatManager().MyGetTimeFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	ReplaceSel(szText.str());
+	_ReplaceSel(szText.str());
 }
 
 //	from CViewCommander_New.cpp
@@ -79,7 +79,7 @@ void CViewCommander::Command_INS_FILE_USED_RECENTLY( void )
 	}
 
 	// テキストを挿入する
-	ReplaceSel(s);
+	_ReplaceSel(s);
 }
 
 // 最近使ったフォルダー挿入
@@ -95,7 +95,7 @@ void CViewCommander::Command_INS_FOLDER_USED_RECENTLY( void )
 	}
 
 	// テキストを挿入する
-	ReplaceSel(s);
+	_ReplaceSel(s);
 }
 
 /*!
@@ -107,7 +107,7 @@ void CViewCommander::Command_INS_FOLDER_USED_RECENTLY( void )
  * @param[in] text 挿入するテキスト
  * @param[in, opt] bSelectInsertedText 挿入したテキストを選択するかどうか。省略時は選択しない。
  */
-void CViewCommander::ReplaceSel(
+void CViewCommander::_ReplaceSel(
 	std::wstring_view text,		//!< [in] 挿入するテキスト
 	bool bSelectInsertedText	//!< [in, opt] 挿入したテキストを選択するかどうか。省略時は選択しない。
 )
