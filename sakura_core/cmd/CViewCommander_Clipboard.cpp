@@ -151,7 +151,7 @@ void CViewCommander::DropText(
 )
 {
 	// この例外が出る場合、使い方が誤っているので、呼出元を修正すること。
-	if (!text.empty()) throw std::invalid_argument("text must not be empty.");
+	if (text.empty()) throw std::invalid_argument("text must not be empty.");
 
 	// アンドゥバッファの準備
 	if (!GetOpeBlk()) {
