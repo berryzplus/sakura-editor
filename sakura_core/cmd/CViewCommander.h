@@ -410,14 +410,6 @@ public:
 	);
 
 	/*!
-	 * @brief ドロップされたテキストを移動する
-	 */
-	void MoveText(
-		std::wstring_view text,
-		bool bBoxData
-	);
-
-	/*!
 	 * @brief テキストを挿入する
 	 *
 	 * 現在のキャレット位置に指定したテキストを挿入します。
@@ -434,6 +426,14 @@ private:
 	 */
 	void _InsertBoxText(
 		std::wstring_view text
+	);
+
+	/*!
+	 * @brief ドロップされたテキストを移動する
+	 */
+	void _MoveText(
+		std::wstring_view text,
+		bool bBoxData
 	);
 
 	void MoveViewTopLine(CLayoutInt nViewTopLine);
