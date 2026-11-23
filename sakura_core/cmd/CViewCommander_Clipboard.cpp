@@ -161,7 +161,7 @@ void CViewCommander::DropText(
 
 	if (bMove) {
 		// ドロップされたテキストを移動する
-		MoveText(text, bBoxData);
+		_MoveText(text, bBoxData);
 	}
 	else {
 		if (bBoxData) {
@@ -185,7 +185,7 @@ void CViewCommander::DropText(
  * キャレットは移動先に移動している。
  * 移動元とキャレットの位置関係により、処理順を変える。
  */
-void CViewCommander::MoveText(
+void CViewCommander::_MoveText(
 	std::wstring_view text,
 	bool bBoxData
 )
