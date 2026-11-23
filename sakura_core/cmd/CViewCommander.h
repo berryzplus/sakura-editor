@@ -401,6 +401,15 @@ public:
 	/* その他 */
 
 	/*!
+	 * @brief ドラッグされたテキストをドロップする
+	 */
+	void DropText(
+		std::wstring_view text,
+		bool bBoxData = false,
+		bool bMove = false
+	);
+
+	/*!
 	 * @brief ドロップされたテキストを移動する
 	 */
 	void MoveText(
