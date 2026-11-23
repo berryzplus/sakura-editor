@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -227,4 +227,7 @@ public:
 	
 	@date 2004.04.09 genta 説明文追加
 */
+
+CCaret& GetCaret();
+
 #endif /* SAKURA_CCARET_78A7C1D0_0D47_4FF9_AE73_3421E35ABCB0_H_ */
