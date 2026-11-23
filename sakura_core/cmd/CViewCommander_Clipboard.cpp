@@ -167,7 +167,7 @@ void CViewCommander::DropText(
 		}
 		else {
 			// ドロップされたテキストを挿入する
-			ReplaceSel(text, true);
+			_ReplaceSel(text, true);
 		}
 	}
 
@@ -237,7 +237,7 @@ void CViewCommander::_MoveText(
 	}
 	else {
 		// ドロップされたテキストを挿入する
-		ReplaceSel(text, true);
+		_ReplaceSel(text, true);
 	}
 
 	// 後ろに移動の場合、移動してから削除。

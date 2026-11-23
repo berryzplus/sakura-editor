@@ -409,17 +409,6 @@ public:
 		bool bMove = false
 	);
 
-	/*!
-	 * @brief テキストを挿入する
-	 *
-	 * 現在のキャレット位置に指定したテキストを挿入します。
-	 * Windows標準 EM_REPLACESEL に相当します。
-	 */
-	void ReplaceSel(
-		std::wstring_view text,
-		bool bDragAndDropText = false
-	);
-
 private:
 	/*!
 	 * @bried 矩形テキストを挿入する
@@ -434,6 +423,17 @@ private:
 	void _MoveText(
 		std::wstring_view text,
 		bool bBoxData
+	);
+
+	/*!
+	 * @brief テキストを挿入する
+	 *
+	 * 現在のキャレット位置に指定したテキストを挿入します。
+	 * Windows標準 EM_REPLACESEL に相当します。
+	 */
+	void _ReplaceSel(
+		std::wstring_view text,
+		bool bDragAndDropText = false
 	);
 
 	void MoveViewTopLine(CLayoutInt nViewTopLine);

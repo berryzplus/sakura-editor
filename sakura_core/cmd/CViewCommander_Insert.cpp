@@ -31,7 +31,7 @@ void CViewCommander::Command_INS_DATE( void )
 	CFormatManager().MyGetDateFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	ReplaceSel(szText.str());
+	_ReplaceSel(szText.str());
 }
 
 //時刻挿入
@@ -44,7 +44,7 @@ void CViewCommander::Command_INS_TIME( void )
 	CFormatManager().MyGetTimeFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	ReplaceSel(szText.str());
+	_ReplaceSel(szText.str());
 }
 
 //	from CViewCommander_New.cpp
@@ -79,7 +79,7 @@ void CViewCommander::Command_INS_FILE_USED_RECENTLY( void )
 	}
 
 	// テキストを挿入する
-	ReplaceSel(s);
+	_ReplaceSel(s);
 }
 
 // 最近使ったフォルダー挿入
@@ -95,7 +95,7 @@ void CViewCommander::Command_INS_FOLDER_USED_RECENTLY( void )
 	}
 
 	// テキストを挿入する
-	ReplaceSel(s);
+	_ReplaceSel(s);
 }
 
 /*!
@@ -104,7 +104,7 @@ void CViewCommander::Command_INS_FOLDER_USED_RECENTLY( void )
  * 現在のキャレット位置に指定したテキストを挿入します。
  * Windows標準 EM_REPLACESEL に相当します。
  */
-void CViewCommander::ReplaceSel(
+void CViewCommander::_ReplaceSel(
 	std::wstring_view text,
 	bool bDragAndDropText
 )
