@@ -216,14 +216,19 @@ CViewFont* GetViewFont(bool isMiniMap)
 	return GetEditWnd().GetViewFont(isMiniMap);
 }
 
+CEditView& GetActiveView()
+{
+	return GetEditWnd().GetActiveView();
+}
+
 CCaret& GetCaret()
 {
-	return GetEditWnd().GetActiveView().GetCaret();
+	return GetActiveView().GetCaret();
 }
 
 CViewSelect& GetSelectionInfo()
 {
-	return GetEditWnd().GetActiveView().m_cViewSelect;
+	return GetActiveView().m_cViewSelect;
 }
 
 extern template
