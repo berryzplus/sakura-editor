@@ -216,6 +216,16 @@ CViewFont* GetViewFont(bool isMiniMap)
 	return GetEditWnd().GetViewFont(isMiniMap);
 }
 
+/*!
+ * @brief 選択情報の参照を取得する
+ *
+ * @throws CEditWndが生成されていない
+ */
+CViewSelect& GetSelectionInfo()
+{
+	return GetEditWnd().GetActiveView().m_cViewSelect;
+}
+
 extern template
 bool CDropTargetWnd::AttachDropTarget<CEditWnd>(
 	CEditWnd* pThis
