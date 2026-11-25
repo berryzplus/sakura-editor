@@ -205,7 +205,13 @@ public:
 	void Command_COPY( bool bIgnoreLockAndDisable, bool bAddCRLFWhenCopy, EEolType neweol = EEolType::none );/* コピー(選択範囲をクリップボードにコピー) */
 	void Command_PASTE( int option );						/* 貼り付け（クリップボードから貼り付け）*/
 	void Command_PASTEBOX( LPARAM option );					/* 矩形貼り付け（クリップボードから矩形貼り付け）*/
-	void Command_INSBOXTEXT(std::wstring_view text); // 矩形貼り付け
+
+	void Command_INSBOXTEXT(std::wstring_view text);
+
+	void Command_INSBOXTEXT( const wchar_t* pszPaste, int nPasteSize )
+	{
+		Command_INSBOXTEXT(std::wstring_view{ pszPaste, size_t(nPasteSize) });
+	}
 
 	/*!
 	 * @brief テキストを貼り付け
