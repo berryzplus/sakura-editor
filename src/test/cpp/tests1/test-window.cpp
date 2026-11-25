@@ -3582,7 +3582,7 @@ TEST_F(EditWndTest, DropTarget004)
 		.WillOnce(Return(100));	// パス名を貼り付ける
 
 	//仮
-	GetActiveView().GetCommander().HandleCommand(F_PASTEBOX, true, LPARAM("test"), 4, 0L, 0L);
+	GetActiveView().GetCommander().Command_PASTEBOX(L"test", 4);
 
 	ResetText(L"ファイルドロップのテスト\n", CLogicPoint(9, 0));
 

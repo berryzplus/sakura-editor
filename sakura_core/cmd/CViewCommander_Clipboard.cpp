@@ -595,6 +595,21 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 	Command_INSBOXTEXT(cmemClip);
 }
 
+// 既存コード互換用
+void CViewCommander::Command_PASTEBOX( const wchar_t* pszPaste, size_t nPasteSize )
+{
+	// アンドゥバッファを準備する
+	if (!GetOpeBlk()) {
+		SetOpeBlk(new COpeBlk);
+	}
+	GetOpeBlk()->AddRef();
+
+	Command_INSBOXTEXT( pszPaste, int(nPasteSize) );
+
+	// アンドゥバッファを始末する
+	m_pCommanderView->SetUndoBuffer();
+}
+
 /*!
  * @brief 矩形文字列挿入
  *
