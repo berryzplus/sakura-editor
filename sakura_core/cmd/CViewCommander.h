@@ -211,7 +211,7 @@ public:
 	void Command_PASTEBOX( const wchar_t *szPaste, size_t nPasteSize );
 	//>> 2002/03/29 Azumaiya
 
-	void Command_INSBOXTEXT( const wchar_t* pszPaste, int nPasteSize );
+	void Command_INSBOXTEXT( const wchar_t* pszPaste, size_t nPasteSize );
 
 	template <basis::NullTerminatedStringConstructible<WCHAR> A>
 	void Command_INSBOXTEXT(
@@ -224,7 +224,7 @@ public:
 		// 文字列を渡すバージョンを呼び出す
 		return Command_INSBOXTEXT(
 			_Text.c_str(),
-			static_cast<int>(_Text.length())
+			_Text.length()
 		);
 	}
 

@@ -371,7 +371,7 @@ void CViewCommander::Command_PASTE( int option )
 	if (bAutoColumnPaste &&
 		bColumnSelect)
 	{
-		Command_INSBOXTEXT( pszText, int(nTextLen) );
+		Command_INSBOXTEXT( pszText, nTextLen );
 		return;
 	}
 
@@ -604,7 +604,7 @@ void CViewCommander::Command_PASTEBOX( const wchar_t* pszPaste, size_t nPasteSiz
 	}
 	GetOpeBlk()->AddRef();
 
-	Command_INSBOXTEXT( pszPaste, int(nPasteSize) );
+	Command_INSBOXTEXT( pszPaste, nPasteSize );
 
 	// アンドゥバッファを始末する
 	m_pCommanderView->SetUndoBuffer();
@@ -617,10 +617,10 @@ void CViewCommander::Command_PASTEBOX( const wchar_t* pszPaste, size_t nPasteSiz
  */
 void CViewCommander::Command_INSBOXTEXT(
 	const wchar_t* pszPaste,
-	int nPasteSize
+	size_t nPasteSize
 )
 {
-	std::wstring_view text{ pszPaste, size_t(nPasteSize) };
+	std::wstring_view text{ pszPaste, nPasteSize };
 
 	if (GetSelectionInfo().IsMouseSelecting())	// マウスによる範囲選択中
 	{
