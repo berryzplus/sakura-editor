@@ -2797,3 +2797,20 @@ void CEditView::SetUndoBuffer([[maybe_unused]] bool bPaintLineNumber)
 		m_cCommander.SetOpeBlk(nullptr);
 	}
 }
+
+void CEditView::SelectRange(const CLayoutRange& range)
+{
+	GetSelectionInfo().SetSelectArea(range);
+	GetSelectionInfo().DrawSelectArea();
+}
+
+void CEditView::SelectFrom(const CLogicPoint logicPos)
+{
+	CLayoutPoint ptSelectFrom;
+	GetLayoutMgr().LogicToLayout(
+		logicPos,
+		&ptSelectFrom
+	);
+
+	SelectRange( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );
+}

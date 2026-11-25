@@ -136,13 +136,6 @@ void CViewCommander::_ReplaceSel(
 
 	// 挿入したテキストを選択する
 	if (bSelectInsertedText) {
-		CLayoutPoint ptSelectFrom;
-		GetLayoutMgr().LogicToLayout(
-			logicPos,
-			&ptSelectFrom
-		);
-
-		GetSelectionInfo().SetSelectArea( CLayoutRange(ptSelectFrom, GetCaret().GetCaretLayoutPos()) );
-		GetSelectionInfo().DrawSelectArea();
+		GetActiveView().SelectFrom(logicPos);
 	}
 }
