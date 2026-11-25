@@ -102,6 +102,7 @@ namespace window {
 	// 編集ウインドウがないのでエラー
 	EXPECT_ANY_THROW(GetEditWnd());
 
+	EXPECT_ANY_THROW(GetCaret());
 #pragma endregion CanBeMove
 
 	//IO管理
@@ -137,6 +138,8 @@ namespace window {
 
 	// 編集ウインドウがあるのでエラーにならない
 	EXPECT_NO_THROW([] { GetEditWnd(); });
+
+	EXPECT_NO_THROW([] { GetCaret(); });
 
 	// 編集ウィンドウ生成後にメインウィンドウ取得を試みると、編集ウィンドウがとれる
 	EXPECT_THAT(GetAppMainWndPtr(), pcEditWnd.get());
