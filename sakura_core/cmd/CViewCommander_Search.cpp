@@ -1233,8 +1233,7 @@ void CViewCommander::Command_REPLACE_ALL()
 			}
 			else
 			{
-				// 矩形テキストを挿入する
-				_InsertBoxText(std::wstring_view{ szREPLACEKEY, size_t(nREPLACEKEY) });
+				Command_PASTEBOX(szREPLACEKEY, nREPLACEKEY);
 				// 2013.06.11 再描画しないように
 				// 再描画を行わないとどんな結果が起きているのか分からずみっともないので・・・。
 				// m_pCommanderView->AdjustScrollBars(); // 2007.07.22 ryoji
