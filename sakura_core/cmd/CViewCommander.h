@@ -430,6 +430,8 @@ public:
 		bool bMove = false
 	);
 
+	void RecordMoveCaret(CLogicPoint ptCaretBefore);
+
 private:
 	/*!
 	 * @bried 矩形テキストを挿入する

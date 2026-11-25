@@ -550,17 +550,8 @@ void CViewCommander::_InsertBoxText(
 
 	/* 挿入データの先頭位置へカーソルを移動 */
 	GetCaret().MoveCursor( ptCurOld, true );
-	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
 
-	if( !m_pCommanderView->m_bDoing_UndoRedo )	/* アンドゥ・リドゥの実行中か */
-	{
-		/* 操作の追加 */
-		GetOpeBlk()->AppendOpe( 
-			new CMoveCaretOpe(
-				GetCaret().GetCaretLogicPos()	// 操作前後のキャレット位置
-			)
-		);
-	}
+	RecordMoveCaret(GetCaret().GetCaretLogicPos());	//UNDO用記録
 
 	m_pCommanderView->SetDrawSwitch(bDrawSwitchOld);	// 2002.01.25 hor
 	return;
@@ -735,15 +726,7 @@ void CViewCommander::Command_INSTEXT(
 			// 挿入ポイントと元の位置との差分文字数
 			nPosX_PHY_Delta = ptCaretBefore.x - ptCaretAfter.x;
 
-			//UNDO用記録
-			if( !m_pCommanderView->m_bDoing_UndoRedo ){
-				GetOpeBlk()->AppendOpe(
-					new CMoveCaretOpe(
-						ptCaretBefore,	/* 操作前のキャレット位置 */
-						ptCaretAfter	/* 操作後のキャレット位置 */
-					)
-				);
-			}
+			RecordMoveCaret(ptCaretBefore);	//UNDO用記録
 		}
 
 		// 現在位置にデータを挿入
@@ -769,24 +752,31 @@ void CViewCommander::Command_INSTEXT(
 				&ptLayout
 			);
 			GetCaret().MoveCursor( ptLayout, bRedraw );					//カーソル移動
-			CLogicPoint ptCaretAfter = GetCaret().GetCaretLogicPos();	//操作後のキャレット位置
-			GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().x;
-
-			//UNDO用記録
-			if( !m_pCommanderView->m_bDoing_UndoRedo ){
-				GetOpeBlk()->AppendOpe(
-					new CMoveCaretOpe(
-						ptCaretBefore,	/* 操作前のキャレット位置Ｘ */
-						ptCaretAfter	/* 操作後のキャレット位置Ｘ */
-					)
-				);
-			}
+			RecordMoveCaret(ptCaretBefore);	//UNDO用記録
 		}
 	}
 
 end_of_func:
 
 	return;
+}
+
+void CViewCommander::RecordMoveCaret(
+	CLogicPoint ptCaretBefore
+)
+{
+	CLogicPoint ptCaretAfter = GetCaret().GetCaretLogicPos();	//操作後のキャレット位置
+	GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().x;
+
+	//UNDO用記録
+	if( !m_pCommanderView->m_bDoing_UndoRedo ){
+		GetOpeBlk()->AppendOpe(
+			new CMoveCaretOpe(
+				ptCaretBefore,	/* 操作前のキャレット位置Ｘ */
+				ptCaretAfter	/* 操作後のキャレット位置Ｘ */
+			)
+		);
+	}
 }
 
 /* 最後にテキストを追加 */
