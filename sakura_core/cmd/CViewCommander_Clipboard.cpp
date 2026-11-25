@@ -352,10 +352,6 @@ void CViewCommander::Command_PASTE( int option )
 		return;
 	}
 
-	// クリップボードデータ取得 -> pszText, nTextLen
-	size_t nTextLen = clipData.size();
-	const wchar_t*	pszText = clipData.data();
-
 	bool bConvertEol = 
 		((option & 0x01) == 0x01) ? true :
 		((option & 0x02) == 0x02) ? false :
@@ -366,13 +362,17 @@ void CViewCommander::Command_PASTE( int option )
 		((option & 0x20) == 0x20) ? false :
 		GetDllShareData().m_Common.m_sEdit.m_bAutoColumnPaste != FALSE;
 
+	// クリップボードデータ取得 -> pszText, nTextLen
+	auto pszText = clipData.data();
+	auto nTextLen = clipData.size();
+
 	// 矩形コピーのテキストは常に矩形貼り付け
-	if( bAutoColumnPaste ){
-		// 矩形コピーのデータなら矩形貼り付け
-		if( bColumnSelect ){
-			Command_INSBOXTEXT( pszText, nTextLen );
-			return;
-		}
+	// 矩形コピーのデータなら矩形貼り付け
+	if (bAutoColumnPaste &&
+		bColumnSelect)
+	{
+		Command_INSBOXTEXT( pszText, int(nTextLen) );
+		return;
 	}
 
 	// 2007.10.04 ryoji
