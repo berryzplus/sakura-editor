@@ -208,7 +208,7 @@ public:
 
 	void Command_PASTEBOX( const wchar_t* pszPaste, int nPasteSize )
 	{
-		Command_INSBOXTEXT(std::wstring_view{ pszPaste, size_t(nPasteSize) });
+		Command_INSBOXTEXT( pszPaste, nPasteSize );
 	}
 
 	void Command_INSBOXTEXT(std::wstring_view text);
