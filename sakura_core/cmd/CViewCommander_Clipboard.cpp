@@ -223,13 +223,8 @@ void CViewCommander::_MoveText(
 
 	// 前に移動の場合、削除してから移動。
 	if (bMoveToPrev) {
-		/* 選択エリアを削除 */
-		GetSelectionInfo().DisableSelectArea( true );
-		GetSelectionInfo().SetBoxSelect( bBeginBoxSelect_Old );
-		GetSelectionInfo().m_sSelectBgn = sSelectBgn_Old;
-		GetSelectionInfo().m_sSelect = sSelect_Old;
-
-		m_pCommanderView->DeleteData( true );
+		// 選択エリアを削除
+		Command_DELETE();
 
 		GetCaret().MoveCursor( ptCaretPos_Old, true );
 	}
