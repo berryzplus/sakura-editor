@@ -31,7 +31,7 @@ void CViewCommander::Command_INS_DATE( void )
 	CFormatManager().MyGetDateFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	_ReplaceSel(szText.str());
+	_ReplaceSel(szText);
 }
 
 //時刻挿入
@@ -44,7 +44,7 @@ void CViewCommander::Command_INS_TIME( void )
 	CFormatManager().MyGetTimeFormat( systime, szText, int(std::size(szText)) - 1 );
 
 	// テキストを挿入する
-	_ReplaceSel(szText.str());
+	_ReplaceSel(szText);
 }
 
 //	from CViewCommander_New.cpp

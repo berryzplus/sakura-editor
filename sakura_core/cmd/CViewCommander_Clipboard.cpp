@@ -375,7 +375,7 @@ void CViewCommander::Command_PASTE( int option )
 	if( bAutoColumnPaste ){
 		// 矩形コピーのデータなら矩形貼り付け
 		if( bColumnSelect ){
-			Command_INSBOXTEXT(std::wstring_view{ pszText, nTextLen });
+			Command_INSBOXTEXT( pszText, nTextLen );
 			return;
 		}
 	}
@@ -597,7 +597,7 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 		return;
 	}
 
-	Command_INSBOXTEXT(cmemClip.str());
+	Command_INSBOXTEXT(cmemClip);
 }
 
 /*!
@@ -606,9 +606,12 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
  * @note HandleCommand( true, F_INSBOXTEXT, pszPaste, nPasteSize, 0L, 0L) で呼ぶためのもの。
  */
 void CViewCommander::Command_INSBOXTEXT(
-	std::wstring_view text
+	const wchar_t* pszPaste,
+	int nPasteSize
 )
 {
+	std::wstring_view text{ pszPaste, size_t(nPasteSize) };
+
 	if (GetSelectionInfo().IsMouseSelecting())	// マウスによる範囲選択中
 	{
 		ErrorBeep();

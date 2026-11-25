@@ -10,6 +10,7 @@
 #pragma once
 
 #include "basis/CEol.h"
+#include "basis/primitive.h"
 #include "env/DLLSHAREDATA.h"
 #include "types/CType.h"
 #include "util/MessageBoxF.h"
@@ -211,11 +212,21 @@ public:
 		Command_INSBOXTEXT( pszPaste, nPasteSize );
 	}
 
-	void Command_INSBOXTEXT(std::wstring_view text);
+	void Command_INSBOXTEXT( const wchar_t* pszPaste, int nPasteSize );
 
-	void Command_INSBOXTEXT( const wchar_t* pszPaste, int nPasteSize )
+	template <basis::NullTerminatedStringConstructible<WCHAR> A>
+	void Command_INSBOXTEXT(
+		const A& text
+	)
 	{
-		Command_INSBOXTEXT(std::wstring_view{ pszPaste, size_t(nPasteSize) });
+		// 引数はNUL終端文字列として扱う
+		cxx::NullTerminatedString<WCHAR> _Text{ text };
+
+		// 文字列を渡すバージョンを呼び出す
+		return Command_INSBOXTEXT(
+			_Text.c_str(),
+			static_cast<int>(_Text.length())
+		);
 	}
 
 	/*!
@@ -446,6 +457,28 @@ private:
 		std::wstring_view text,
 		bool bSelectInsertedText = false
 	);
+
+	/*!
+	 * @brief テキストを挿入する
+	 *
+	 * 現在のキャレット位置に指定したテキストを挿入します。
+	 * Windows標準 EM_REPLACESEL に相当します。
+	 */
+	template <basis::NullTerminatedStringConstructible<WCHAR> A>
+		requires (!std::is_same_v<A, std::wstring_view>)
+	void _ReplaceSel(
+		const A& text
+	)
+	{
+		// 引数はNUL終端文字列として扱う
+		cxx::NullTerminatedString<WCHAR> _Text{ text };
+
+		// 文字列を渡すバージョンを呼び出す
+		return _ReplaceSel(
+			_Text.str(),
+			false
+		);
+	}
 
 	void MoveViewTopLine(CLayoutInt nViewTopLine);
 
