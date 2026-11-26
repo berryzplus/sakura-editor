@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -10,14 +10,20 @@
 #pragma once
 
 #include "doc/CDocListener.h"
+#include "cmd/COpeBlk.h"
 #include "cmd/COpeBuf.h"
+
+#include <memory>
 
 class CEditDoc;
 class CDocLineMgr;
 
 class CDocEditor : public CDocListenerEx{
+private:
+	using COpeBlkHolder = std::unique_ptr<COpeBlk>;
+
 public:
-	CDocEditor(CEditDoc* pcDoc);
+	explicit CDocEditor(CEditDoc* pcDoc);
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                         イベント                            //
@@ -67,19 +73,18 @@ public:
 	//! クリップボードから貼り付け可能か？
 	bool IsEnablePaste( void ) const;
 
-public:
 	CEditDoc*		m_pcDocRef;
 	CEol 			m_cNewLineCode;				//!< Enter押下時に挿入する改行コード種別
 	COpeBuf			m_cOpeBuf;					//!< アンドゥバッファ
-	COpeBlk*		m_pcOpeBlk;					//!< 操作ブロック
-	int				m_nOpeBlkRedawCount;		//!< OpeBlkの再描画非対象数
-	bool			m_bInsMode;					//!< 挿入・上書きモード Oct. 2, 2005 genta
-	bool			m_bIsDocModified;
+	COpeBlkHolder	m_pcOpeBlk = nullptr;		//!< 操作ブロック
+	int				m_nOpeBlkRedawCount = 0;	//!< OpeBlkの再描画非対象数
+	bool			m_bInsMode = false;			//!< 挿入・上書きモード Oct. 2, 2005 genta
+	bool			m_bIsDocModified = false;
 };
 
 class CDocEditAgent{
 public:
-	CDocEditAgent(CDocLineMgr* pcDocLineMgr) : m_pcDocLineMgr(pcDocLineMgr) { }
+	explicit CDocEditAgent(CDocLineMgr* pcDocLineMgr) : m_pcDocLineMgr(pcDocLineMgr) { }
 
 	// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 	//                           操作                              //
@@ -90,4 +95,5 @@ public:
 private:
 	CDocLineMgr* m_pcDocLineMgr;
 };
+
 #endif /* SAKURA_CDOCEDITOR_87202DA6_D60E_4235_AD2F_02507F4E101A_H_ */

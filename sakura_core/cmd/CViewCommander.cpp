@@ -759,3 +759,28 @@ ptrdiff_t CViewCommander::ConvertEol(const wchar_t* pszText, ptrdiff_t nTextLen,
 	}
 	return nConvertedTextLen;
 }
+
+void CViewCommander::ReleaseUndoBuffer()
+{
+	auto pOpeBlk = GetOpeBlk();
+	if (!pOpeBlk) return;
+
+	if (const auto refCount = pOpeBlk->Release();
+		0 < refCount)
+	{
+		return;
+	}
+
+	if (0 < pOpeBlk->GetNum()) {	/* 操作の数を返す */
+		/* 操作の追加 */
+		GetDocument()->m_cDocEditor.m_cOpeBuf.AppendOpeBlk(pOpeBlk);
+
+		if (!GetEditWnd().UpdateTextWrap() &&	// 折り返し方法関連の更新	// 2008.06.10 ryoji
+			0 < pOpeBlk->GetNum() - GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount)
+		{
+			GetEditWnd().RedrawAllViews(m_pCommanderView);	//	他のペインの表示を更新
+		}
+	}
+
+	SetOpeBlk(nullptr);
+}

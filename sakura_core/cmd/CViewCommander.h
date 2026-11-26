@@ -434,6 +434,8 @@ public:
 
 	void RecordMoveCaret(CLogicPoint ptCaretBefore);
 
+	void ReleaseUndoBuffer();
+
 private:
 	/*!
 	 * @bried 矩形テキストを挿入する

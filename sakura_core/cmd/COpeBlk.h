@@ -6,20 +6,21 @@
 */
 /*
 	Copyright (C) 1998-2001, Norio Nakatani
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	This source code is designed for sakura editor.
 	Please contact the copyright holder to use this code for other purpose.
-*/
+ */
 
 #ifndef SAKURA_COPEBLK_2A5AF589_5860_4512_9E59_51CC2ECC37C1_H_
 #define SAKURA_COPEBLK_2A5AF589_5860_4512_9E59_51CC2ECC37C1_H_
 #pragma once
 
-class COpeBlk;
-
 #include "cmd/COpe.h"
+
 #include <vector>
+
+class COpeBlk;
 
 /*-----------------------------------------------------------------------
 クラスの宣言
@@ -66,5 +67,4 @@ private:
 	int m_refCount;
 };
 
-//////////////////////////////////////////////////////////////////////12
 #endif /* SAKURA_COPEBLK_2A5AF589_5860_4512_9E59_51CC2ECC37C1_H_ */

@@ -29,11 +29,11 @@ inline HWND CViewCommander::GetMainWindow()
 }
 inline COpeBlk* CViewCommander::GetOpeBlk()
 {
-	return GetDocument()->m_cDocEditor.m_pcOpeBlk;
+	return GetDocument()->m_cDocEditor.m_pcOpeBlk.get();
 }
 inline void CViewCommander::SetOpeBlk(COpeBlk* p)
 {
-	GetDocument()->m_cDocEditor.m_pcOpeBlk = p;
+	GetDocument()->m_cDocEditor.m_pcOpeBlk.reset(p);
 	GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount = 0;
 }
 inline CLayoutRange& CViewCommander::GetSelect()
@@ -44,4 +44,5 @@ inline CCaret& CViewCommander::GetCaret()
 {
 	return m_pCommanderView->GetCaret();
 }
+
 #endif /* SAKURA_CVIEWCOMMANDER_INLINE_EF3571A1_FED4_439C_957F_E77B28E2384F_H_ */
