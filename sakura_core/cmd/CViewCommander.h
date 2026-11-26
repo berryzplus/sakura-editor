@@ -421,6 +421,8 @@ public:
 
 	/* その他 */
 
+	void AddRefUndoBuffer();
+
 	/*!
 	 * @brief ドラッグされたテキストをドロップする
 	 */

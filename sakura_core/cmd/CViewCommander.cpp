@@ -43,6 +43,15 @@ CViewCommander::CViewCommander(CEditView* pEditView) : m_pCommanderView(pEditVie
 	m_pcSMacroMgr = CEditApp::getInstance()->m_pcSMacroMgr;
 }
 
+void CViewCommander::AddRefUndoBuffer()
+{
+	// アンドゥバッファを準備する
+	if (!GetOpeBlk()) {
+		SetOpeBlk(new COpeBlk);
+	}
+	GetOpeBlk()->AddRef();
+}
+
 /*!
  * @brief コマンダービューのウィンドウハンドルを取得
  *
@@ -194,10 +203,7 @@ BOOL CViewCommander::HandleCommand(
 	//	ここより前ではUndoバッファの準備ができていないので
 	//	文書の操作を行ってはいけない
 	//@@@ 2002.2.2 YAZAKI HandleCommand内でHandleCommandを呼び出せない問題に対処（何か副作用がある？）
-	if( nullptr == GetOpeBlk() ){	/* 操作ブロック */
-		SetOpeBlk(new COpeBlk);
-	}
-	GetOpeBlk()->AddRef();	//参照カウンタ増加
+	AddRefUndoBuffer();
 
 	//	Jan. 10, 2005 genta コメント
 	//	ここより後ではswitchの後ろでUndoを正しく登録するため，

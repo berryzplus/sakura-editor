@@ -154,10 +154,7 @@ void CViewCommander::DropText(
 	if (text.empty()) throw std::invalid_argument("text must not be empty.");
 
 	// アンドゥバッファの準備
-	if (!GetOpeBlk()) {
-		SetOpeBlk(new COpeBlk);
-	}
-	GetOpeBlk()->AddRef();
+	AddRefUndoBuffer();
 
 	if (bMove) {
 		// ドロップされたテキストを移動する
@@ -590,10 +587,7 @@ void CViewCommander::Command_PASTEBOX( [[maybe_unused]] LPARAM option )
 void CViewCommander::Command_PASTEBOX( const wchar_t* pszPaste, size_t nPasteSize )
 {
 	// アンドゥバッファを準備する
-	if (!GetOpeBlk()) {
-		SetOpeBlk(new COpeBlk);
-	}
-	GetOpeBlk()->AddRef();
+	AddRefUndoBuffer();
 
 	Command_INSBOXTEXT( pszPaste, nPasteSize );
 
