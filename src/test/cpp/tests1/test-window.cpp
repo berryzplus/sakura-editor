@@ -3360,11 +3360,12 @@ TEST_F(EditWndTest, DragText001)
 			LPDWORD pdwEffect
 		)
 		{
-			*pdwEffect = DROPEFFECT_MOVE;
+			*pdwEffect = DROPEFFECT_MOVE;	// ムーブした、を返す
 
 			return DRAGDROP_S_DROP;	// ドラッグ＆ドロップが実行された
 		}));
 
+	// ドラッグ＆ドロップを実行する
 	pcEditWnd->GetActiveView().DragSelection();
 
 	EXPECT_THAT(GetAllText(), StrEq(L"テスト\n"));
