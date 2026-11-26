@@ -171,8 +171,8 @@ void CViewCommander::DropText(
 		}
 	}
 
-	/* アンドゥバッファの処理 */
-	m_pCommanderView->SetUndoBuffer();
+	// アンドゥバッファの後始末
+	ReleaseUndoBuffer();
 }
 
 /*!
