@@ -3634,6 +3634,23 @@ TEST_F(EditWndTest, DropTarget005)
 }
 
 /*!
+ * ドラッグ＆ドロップのテスト
+ */
+TEST_F(EditWndTest, DropText001)
+{
+	ResetText(L"ドラッグ＆ドロップのテスト\nドラッグ＆ドロップのテスト\n", CLogicPoint(13, 0));
+
+	GetActiveView().SelectFrom(CLogicPoint(10, 0));
+
+	GetCaret().SetCaretLogicPos(CLogicPoint(0, 2));
+
+	// ドロップを実行する
+	pcEditWnd->GetActiveView().GetCommander().DropText(L"テスト", false, true);
+
+	EXPECT_THAT(GetAllText(), StrEq(L"ドラッグ＆ドロップのテスト\nドラッグ＆ドロップのテスト\nテスト"));
+}
+
+/*!
  * 上書き保存時バックアップのテスト
  */
 TEST_F(EditWndTest, FileSaveWithBackupAgent001)
