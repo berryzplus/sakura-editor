@@ -773,13 +773,16 @@ void CViewCommander::ReleaseUndoBuffer()
 
 	if (0 < pOpeBlk->GetNum()) {	/* 操作の数を返す */
 		/* 操作の追加 */
-		GetDocument()->m_cDocEditor.m_cOpeBuf.AppendOpeBlk(pOpeBlk);
+		GetDocument()->m_cDocEditor.m_cOpeBuf.AppendOpeBlk( pOpeBlk );
 
 		if (!GetEditWnd().UpdateTextWrap() &&	// 折り返し方法関連の更新	// 2008.06.10 ryoji
 			0 < pOpeBlk->GetNum() - GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount)
 		{
-			GetEditWnd().RedrawAllViews(m_pCommanderView);	//	他のペインの表示を更新
+			GetEditWnd().RedrawAllViews( m_pCommanderView );	//	他のペインの表示を更新
 		}
+	}
+	else {
+		delete pOpeBlk;
 	}
 
 	SetOpeBlk(nullptr);

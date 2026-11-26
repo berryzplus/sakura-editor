@@ -29,11 +29,11 @@ inline HWND CViewCommander::GetMainWindow()
 }
 inline COpeBlk* CViewCommander::GetOpeBlk()
 {
-	return GetDocument()->m_cDocEditor.m_pcOpeBlk.get();
+	return GetDocument()->m_cDocEditor.m_pcOpeBlk;
 }
 inline void CViewCommander::SetOpeBlk(COpeBlk* p)
 {
-	GetDocument()->m_cDocEditor.m_pcOpeBlk.reset(p);
+	GetDocument()->m_cDocEditor.m_pcOpeBlk = p;
 	GetDocument()->m_cDocEditor.m_nOpeBlkRedawCount = 0;
 }
 inline CLayoutRange& CViewCommander::GetSelect()

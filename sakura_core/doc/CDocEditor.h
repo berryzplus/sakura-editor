@@ -19,9 +19,6 @@ class CEditDoc;
 class CDocLineMgr;
 
 class CDocEditor : public CDocListenerEx{
-private:
-	using COpeBlkHolder = std::unique_ptr<COpeBlk>;
-
 public:
 	explicit CDocEditor(CEditDoc* pcDoc);
 
@@ -76,7 +73,7 @@ public:
 	CEditDoc*		m_pcDocRef;
 	CEol 			m_cNewLineCode;				//!< Enter押下時に挿入する改行コード種別
 	COpeBuf			m_cOpeBuf;					//!< アンドゥバッファ
-	COpeBlkHolder	m_pcOpeBlk = nullptr;		//!< 操作ブロック
+	COpeBlk*		m_pcOpeBlk = nullptr;		//!< 操作ブロック
 	int				m_nOpeBlkRedawCount = 0;	//!< OpeBlkの再描画非対象数
 	bool			m_bInsMode = false;			//!< 挿入・上書きモード Oct. 2, 2005 genta
 	bool			m_bIsDocModified = false;

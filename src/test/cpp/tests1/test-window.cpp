@@ -3647,7 +3647,7 @@ TEST_F(EditWndTest, DropText001)
 	// ドロップを実行する
 	pcEditWnd->GetActiveView().GetCommander().DropText(L"テスト", false, true);
 
-	EXPECT_THAT(GetAllText(), StrEq(L"ドラッグ＆ドロップのテスト\nドラッグ＆ドロップのテスト\nテスト"));
+	EXPECT_THAT(GetAllText(), StrEq(L"ドラッグ＆ドロップのテスト\nドラッグ＆ドロップのテスト\n"));
 }
 
 /*!
