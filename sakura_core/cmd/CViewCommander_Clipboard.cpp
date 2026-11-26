@@ -142,6 +142,62 @@ void CViewCommander::Command_COPY(
 }
 
 /*!
+ * @brief 選択されたテキストのドラッグを開始する
+ */
+void CViewCommander::DragText()
+{
+	/* 選択範囲のデータを取得 */
+	std::wstring curText;
+	if (!m_pCommanderView->GetSelectedData(&curText, FALSE, nullptr, FALSE, GetDllShareData().m_Common.m_sEdit.m_bAddCRLFWhenCopy)) return;
+
+	if (curText.empty()) return;
+
+	// 選択範囲からクリップボードデータを作成する
+	const auto data = CDataObject::make_instance(curText, GetSelectionInfo().IsBoxSelecting());
+
+	// ドラッグ元ビューを設定する
+	GetEditWnd().SetDragSourceView(m_pCommanderView);
+
+	// ドロップ効果を定義する
+	DWORD desiredEffects = DROPEFFECT_COPY;	//コピー可能
+	if (GetDocument()->IsEditable()) {
+		desiredEffects |= DROPEFFECT_MOVE;	//ムーブ可能
+	}
+
+	// ムーブが有効な場合
+	if (desiredEffects & DROPEFFECT_MOVE) {
+		// アンドゥバッファを準備する
+		AddRefUndoBuffer();
+	}
+
+	// ドラッグ開始前の操作ブロック格納数を記憶する
+	const auto nOpe = GetOpeBlk()
+		? GetOpeBlk()->GetNum()
+		: 0;
+
+	// ドラッグ＆ドロップを開始する
+	const auto actualEffects = CDropSource::DoDragDrop(data, desiredEffects);
+
+	// ドラッグ元ビューの設定を解除する
+	GetEditWnd().SetDragSourceView(nullptr);
+
+	// 切り取りされた場合、元の選択範囲を削除する。（別のエディタに移動したときなど。）
+	if (actualEffects & DROPEFFECT_MOVE &&
+		GetOpeBlk() &&
+		nOpe == GetOpeBlk()->GetNum())
+	{
+		// 選択範囲を削除
+		Command_DELETE();
+	}
+
+	// ムーブが有効だった場合
+	if (desiredEffects & DROPEFFECT_MOVE) {
+		// アンドゥバッファを始末する
+		ReleaseUndoBuffer();
+	}
+}
+
+/*!
  * @brief ドラッグされたテキストをドロップする
  */
 void CViewCommander::DropText(

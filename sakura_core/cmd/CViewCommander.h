@@ -423,6 +423,8 @@ public:
 
 	void AddRefUndoBuffer();
 
+	void DragText();
+
 	/*!
 	 * @brief ドラッグされたテキストをドロップする
 	 */
