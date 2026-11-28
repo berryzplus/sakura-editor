@@ -64,6 +64,10 @@ private:
 	using Me = CClipboard;
 
 public:
+	static HRESULT GetOleDataObject(
+		_Outptr_ LPDATAOBJECT* ppDataObj
+	);
+
 	//コンストラクタ・デストラクタ
 	explicit CClipboard(HWND hwnd); //!< コンストラクタ内でクリップボードが開かれる
 	CClipboard(const Me&) = delete;

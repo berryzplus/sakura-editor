@@ -18,6 +18,16 @@
 #include "charset/CUtf8.h"
 #include "basis/CEol.h"
 #include "mem/CNativeA.h"
+#include "util/os/Ole32.hpp"
+
+/* static */ HRESULT CClipboard::GetOleDataObject(
+	_Outptr_ LPDATAOBJECT* ppDataObj
+)
+{
+	if (!ppDataObj) return E_POINTER;
+
+	return Ole32::getInstance()->OleGetClipboard(ppDataObj);
+}
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
