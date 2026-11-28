@@ -29,50 +29,30 @@
 #include "apiwrap/CommonControl.h"
 #include "_os/CClipboard.h"
 
-/** 切り取り(選択範囲をクリップボードにコピーして削除)
-
-	@date 2007.11.18 ryoji 「選択なしでコピーを可能にする」オプション処理追加
-*/
-void CViewCommander::Command_CUT( void )
+/*!
+ * @brief 切り取り(選択範囲をクリップボードにコピーして削除)
+ *
+ * @date 2007.11.18 ryoji 「選択なしでコピーを可能にする」オプション処理追加
+ */
+void CViewCommander::Command_CUT(int option)
 {
-	if( m_pCommanderView->GetSelectionInfo().IsMouseSelecting() ){	/* マウスによる範囲選択中 */
-		ErrorBeep();
-		return;
+	// モード解釈のため enum を使う
+	using enum ECopyAndPasteMode;
+
+	// オプション指定をフラグに変換
+	const auto mode = static_cast<ECopyAndPasteMode>(option);
+
+	// コピーしたら選択解除を無効にしてCopyを呼び出す
+	if (!Command_COPY(static_cast<int>(mode | DisableCopyAndDisablSelection)))
+	{
+		return;	// 必要な場合はCopy側でBeep鳴らしてるのでここでは何もしない
 	}
 
-	bool	bBeginBoxSelect;
-	/* 範囲選択がされていない */
-	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
-		/* 非選択時は、カーソル行を切り取り */
-		if( !GetDllShareData().m_Common.m_sEdit.m_bEnableNoSelectCopy ){	// 2007.11.18 ryoji
-			return;	// 何もしない（音も鳴らさない）
-		}
-		//行切り取り(折り返し単位)
-		Command_CUT_LINE();
-		return;
-	}
-	if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
-		bBeginBoxSelect = true;
-	}else{
-		bBeginBoxSelect = false;
-	}
+	// 選択エリアを削除
+	Command_DELETE();
 
-	/* 選択範囲のデータを取得 */
-	/* 正常時はTRUE,範囲未選択の場合はFALSEを返す */
-	std::wstring wstr;
-	if( !m_pCommanderView->GetSelectedData( &wstr, FALSE, nullptr, FALSE, GetDllShareData().m_Common.m_sEdit.m_bAddCRLFWhenCopy ) ){
-		ErrorBeep();
-		return;
-	}
-	/* クリップボードにデータを設定 */
-	if( !m_pCommanderView->MySetClipboardData(wstr.data(), wstr.size(), bBeginBoxSelect ) ){
-		ErrorBeep();
-		return;
-	}
-	wstr = std::wstring();
+	(void)mode;
 
-	/* カーソル位置または選択エリアを削除 */
-	m_pCommanderView->DeleteData( true );
 	return;
 }
 

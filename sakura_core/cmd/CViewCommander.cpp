@@ -435,7 +435,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_GOFILEEND_BOX:	Sub_BoxSelectLock(lparam1); this->Command_GOFILEEND( true );break;			//(矩形選択)ファイルの最後に移動
 
 	/* クリップボード系 */
-	case F_CUT:						Command_CUT();break;					//切り取り(選択範囲をクリップボードにコピーして削除)
+	case F_CUT:						Command_CUT(static_cast<int>(lparam1)); break;															//切り取り(選択範囲をクリップボードにコピーして削除)
 	case F_COPY:					Command_COPY(static_cast<int>(lparam1)); break;															//コピー(選択範囲をクリップボードにコピー)
 	case F_COPY_ADDCRLF:			Command_COPY(static_cast<int>(ECopyAndPasteMode::EnableAddCRLFWhenCopy)); break;						//折り返し位置に改行をつけてコピー(選択範囲をクリップボードにコピー)
 	case F_COPY_CRLF:				Command_COPY(static_cast<int>(ECopyAndPasteMode::EnableAddCRLFWhenCopy), EEolType::cr_and_lf); break;	//CRLF改行でコピー(選択範囲をクリップボードにコピー)

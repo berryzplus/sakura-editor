@@ -203,7 +203,7 @@ public:
 //	int Command_UP_BOX( BOOL );				/* (矩形選択)カーソル上移動 */
 
 	/* クリップボード系 */
-	void Command_CUT( void );						/* 切り取り（選択範囲をクリップボードにコピーして削除）*/
+	void Command_CUT(int option = 0);						/* 切り取り（選択範囲をクリップボードにコピーして削除）*/
 	bool Command_COPY(int option, std::optional<EEolType> optNewEol = std::nullopt);
 	void Command_PASTE( int option );						/* 貼り付け（クリップボードから貼り付け）*/
 
