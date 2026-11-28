@@ -21,6 +21,10 @@ enum class ECopyAndPasteMode : uint32_t {
 	DisableLineModePaste = 0x08,
 	EnableColumnModePaste = 0x10,
 	DisableColumnModePaste = 0x20,
+	EnableAddCRLFWhenCopy = 0x40,
+	DisableAddCRLFWhenCopy = 0x80,
+	EnableCopyAndDisablSelection = 0x100,
+	DisableCopyAndDisablSelection = 0x200,
 };
 
 // Windows SDKのマクロを使って演算子を定義する

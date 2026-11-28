@@ -76,60 +76,99 @@ void CViewCommander::Command_CUT( void )
 	return;
 }
 
-/**	選択範囲をクリップボードにコピー
-
-	@date 2007.11.18 ryoji 「選択なしでコピーを可能にする」オプション処理追加
-*/
-void CViewCommander::Command_COPY(
-	bool bIgnoreLockAndDisable [[maybe_unused]],	//!< [in] 選択範囲を解除するか？
-	bool		bAddCRLFWhenCopy,		//!< [in] 折り返し位置に改行コードを挿入するか？
-	EEolType	neweol					//!< [in] コピーするときのEOL。
+/*!
+ * @brief 選択範囲をクリップボードにコピー
+ *
+ * @param [in] option コピー時のオプション
+ *
+ * @li 0x04 ラインモード貼り付けを有効にする
+ * @li 0x08 ラインモード貼り付けを無効にする
+ * @li 0x40 折り返し行に改行を付けてコピーを有効にする
+ * @li 0x80 折り返し行に改行を付けてコピーを無効にする
+ * @li 0x100 コピーしたら選択解除を有効にする
+ * @li 0x200 コピーしたら選択解除を無効にする
+ *
+ * @date 2007.11.18 ryoji 「選択なしでコピーを可能にする」オプション処理追加
+ */
+bool CViewCommander::Command_COPY(
+	int option,
+	std::optional<EEolType> optNewEol	//!< [in] コピーするときのEOL。
 )
 {
-	bool		bBeginBoxSelect = false;
+	// モード解釈のため enum を使う
+	using enum ECopyAndPasteMode;
+
+	// オプション指定をフラグに変換
+	const auto mode = static_cast<ECopyAndPasteMode>(option);
+
+	// 編集設定を参照する
+	const auto& sEdit = GetDllShareData().m_Common.m_sEdit;
+
+	// 折り返し行に改行を付けてコピーのモードを解釈する
+	// 引数で有効指定、または、設定が有効かつ無効指定されていない
+	const auto bAddCRLFWhenCopy =
+		(mode & EnableAddCRLFWhenCopy) == EnableAddCRLFWhenCopy ||
+		sEdit.m_bAddCRLFWhenCopy && (mode & DisableAddCRLFWhenCopy) != DisableAddCRLFWhenCopy;
+
+	// コピーしたら選択解除のモードを解釈する
+	const auto bCopyAndDisablSelection =
+		(mode & EnableCopyAndDisablSelection) == EnableCopyAndDisablSelection ||
+		sEdit.m_bCopyAndDisablSelection && (mode & DisableCopyAndDisablSelection) != DisableCopyAndDisablSelection;
+
+	// ラインモード貼り付けのモードを解釈する
+	const auto bLineSelectOption =
+		(mode & EnableLineModePaste) == EnableLineModePaste ||
+		sEdit.m_bEnableLineModePaste && (mode & DisableLineModePaste) != DisableLineModePaste;
+
+	const auto neweol = optNewEol.value_or(GetDocEditor().GetNewLineCode().GetType());
+
+	const auto isTextSelected = GetSelectionInfo().IsTextSelected();
 
 	/* クリップボードに入れるべきテキストデータを、cmemBufに格納する */
-	if( !m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
-		/* 非選択時は、カーソル行をコピーする */
-		if( !GetDllShareData().m_Common.m_sEdit.m_bEnableNoSelectCopy ){	// 2007.11.18 ryoji
-			return;	// 何もしない（音も鳴らさない）
-		}
-		m_pCommanderView->CopyCurLine(
-			bAddCRLFWhenCopy,
-			neweol,
-			GetDllShareData().m_Common.m_sEdit.m_bEnableLineModePaste
-		);
-	}
-	else{
+	if (isTextSelected)
+	{
 		/* テキストが選択されているときは、選択範囲のデータを取得 */
 
 		std::wstring wstr;
-		if( m_pCommanderView->GetSelectionInfo().IsBoxSelecting() ){
-			bBeginBoxSelect = TRUE;
-		}
+		const auto bBeginBoxSelect = GetSelectionInfo().IsBoxSelecting();
+
 		/* 選択範囲のデータを取得 */
 		/* 正常時はTRUE,範囲未選択の場合はFALSEを返す */
-		if( !m_pCommanderView->GetSelectedData( &wstr, FALSE, nullptr, FALSE, bAddCRLFWhenCopy, neweol ) ){
+		if (!m_pCommanderView->GetSelectedData( &wstr, FALSE, nullptr, FALSE, bAddCRLFWhenCopy, neweol )) {
 			ErrorBeep();
-			return;
+			return false;
 		}
 
 		/* クリップボードにデータcmemBufの内容を設定 */
 		if( !m_pCommanderView->MySetClipboardData(wstr.data(), wstr.size(), bBeginBoxSelect, FALSE ) ){
 			ErrorBeep();
-			return;
+			return false;
 		}
+	}
+	else {
+		if (!sEdit.m_bEnableNoSelectCopy ||
+			!bLineSelectOption)
+		{
+			return false;	// 何もしない（音も鳴らさない）
+		}
+
+		/* 非選択時は、カーソル行をコピーする */
+		m_pCommanderView->CopyCurLine(
+			bAddCRLFWhenCopy,
+			neweol,
+			bLineSelectOption
+		);
 	}
 
-	/* 選択範囲の後片付け */
-	if( GetDllShareData().m_Common.m_sEdit.m_bCopyAndDisablSelection ){	/* コピーしたら選択解除 */
-		/* テキストが選択されているか */
-		if( m_pCommanderView->GetSelectionInfo().IsTextSelected() ){
-			/* 現在の選択範囲を非選択状態に戻す */
-			m_pCommanderView->GetSelectionInfo().DisableSelectArea( true );
-		}
+	// コピーしたら選択解除
+	if (bCopyAndDisablSelection &&
+		isTextSelected)
+	{
+		/* 現在の選択範囲を非選択状態に戻す */
+		GetSelectionInfo().DisableSelectArea(true);
 	}
-	return;
+
+	return true;
 }
 
 /*!
