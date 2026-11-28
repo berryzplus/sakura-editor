@@ -29,6 +29,119 @@
 	return Ole32::getInstance()->OleGetClipboard(ppDataObj);
 }
 
+/* static */ SCopiedText CClipboard::GetCopiedText(
+	LPDATAOBJECT pDataObject,
+	const std::set<CLIPFORMAT>& formats
+)
+{
+	if (!pDataObject) return SCopiedText{};
+
+	const auto bColumnSelect =
+		formats.contains(CDataObject::cfColumnSelect);
+
+	const auto bLineSelect =
+		formats.contains(CDataObject::cfLineSelect2) ||
+		formats.contains(CDataObject::cfLineSelect1);
+
+	std::wstring buffer;
+
+	STGMEDIUM me = {};
+
+	FORMATETC fe{};
+	fe.ptd = nullptr;
+	fe.dwAspect = DVASPECT_CONTENT;
+	fe.lindex = -1;
+	fe.tymed = TYMED_HGLOBAL;
+
+	if (formats.contains(CF_TEXT))
+	{
+		const auto lcidJaJP = MAKELCID(MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN), SORT_DEFAULT);
+
+		LCID lcid = lcidJaJP;
+
+		if (formats.contains(CF_LOCALE))
+		{
+			fe.cfFormat = CF_LOCALE;
+
+			if (SUCCEEDED(pDataObject->GetData(&fe, &me)))
+			{
+				auto mem = cxx::GlobalData<LCID>{ me.hGlobal };
+				lcid = mem.value();
+				mem.release();
+
+				// IDataObjectが確保したストレージを解放する
+				::ReleaseStgMedium(&me);
+			}
+		}
+
+		// CF_LOCALEが存在しない、または、ロケールが日本語の場合
+		if (lcidJaJP == lcid)
+		{
+			fe.cfFormat = CF_TEXT;
+
+			if (SUCCEEDED(pDataObject->GetData(&fe, &me)))
+			{
+				// CF_TEXT のみの場合は Shift_JIS として扱う
+				auto mem = cxx::GlobalString{ me.hGlobal };
+				std::string_view sjis{ mem.string() };
+				CNativeA binary{ std::data(sjis), std::size(sjis) };
+				mem.release();
+
+				// IDataObjectが確保したストレージを解放する
+				::ReleaseStgMedium(&me);
+
+				auto pcCodeBase = std::unique_ptr<CCodeBase>(CCodeFactory::CreateCodeBase(ECodeType::CODE_SJIS));
+				CNativeW cmemBuf;
+				pcCodeBase->CodeToUnicode(*binary._GetMemory(), &cmemBuf);
+
+				buffer = cmemBuf.str();
+			}
+		}
+	}
+
+	// CF_TEXTを取得できなかった、かつ、独自形式が存在する場合
+	if (buffer.empty() &&
+		formats.contains(CDataObject::cfSakuraClip))
+	{
+		fe.cfFormat = CDataObject::cfSakuraClip;
+
+		if (SUCCEEDED(pDataObject->GetData(&fe, &me)))
+		{
+			auto mem = cxx::GlobalSakura{ me.hGlobal };
+
+			if (auto clipSakura = mem.wstring();
+				!clipSakura.empty())
+			{
+				buffer = std::move(clipSakura);
+			}
+
+			// IDataObjectが確保したストレージを解放する
+			::ReleaseStgMedium(&me);
+		}
+	}
+
+	// CF_TEXTも独自形式も取得できなかった場合
+	if (buffer.empty())
+	{
+		fe.cfFormat = CF_UNICODETEXT;
+
+		if (SUCCEEDED(pDataObject->GetData(&fe, &me)))
+		{
+			auto mem = cxx::GlobalWString{ me.hGlobal };
+			buffer = mem.wstring();
+
+			// IDataObjectが確保したストレージを解放する
+			::ReleaseStgMedium(&me);
+		}
+	}
+
+	return SCopiedText{
+		std::move(buffer),
+		bColumnSelect,
+		bLineSelect
+	};
+}
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //               コンストラクタ・デストラクタ                  //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

@@ -1837,34 +1837,15 @@ IFACEMETHODIMP CEditView::Drop(
 
 	bBoxData = m_bDragBoxData;
 
-	CLIPFORMAT cf = 0;
-
-	if (m_Formats.contains(CDataObject::cfSakuraClip)) cf = CDataObject::cfSakuraClip;
-	if (0 == cf && m_Formats.contains(CF_UNICODETEXT)) cf = CF_UNICODETEXT;
-	if (0 == cf && m_Formats.contains(CF_TEXT)) cf = CF_TEXT;
-
 	// ドロップデータの取得
-	HGLOBAL hData = GetGlobalData( pDataObject, cf );
-	if (hData == nullptr)
-		return E_INVALIDARG;
-	LPVOID pData = ::GlobalLock( hData );
-	SIZE_T nSize = ::GlobalSize( hData );
-	if( cf == CClipboard::GetSakuraFormat() ){
-		using LengthField = CClipboard::SAKURAClipW_LengthFieldType;
-		if( nSize > sizeof(LengthField) ){
-			const auto nStoredLength = *(LengthField*)pData;
-			const SIZE_T nMaxLength = (nSize - sizeof(LengthField)) / sizeof(wchar_t);
-			wchar_t* pszData = (wchar_t*)((BYTE*)pData + sizeof(LengthField));
-			cmemBuf.SetString( pszData, (nStoredLength <= 0)? 0: t_min( (SIZE_T)nStoredLength, nMaxLength ) );	// 途中のNUL文字も含める
-		}
-	}else if( cf == CF_UNICODETEXT ){
-		cmemBuf.SetString( (wchar_t*)pData, wcsnlen( (wchar_t*)pData, nSize / sizeof(wchar_t) ) );
-	}else{
-		CNativeA binary;
-		binary.SetString((char*)pData, nSize / sizeof(char));
-		auto pcCodeBase = std::unique_ptr<CCodeBase>(CCodeFactory::CreateCodeBase(ECodeType::CODE_SJIS, 0));
-		pcCodeBase->CodeToUnicode(*binary._GetMemory(), &cmemBuf);
-	}
+	auto copiedText = CClipboard::GetCopiedText(
+		pDataObject,
+		m_Formats
+	);
+
+	if (!copiedText) return E_INVALIDARG;
+
+	cmemBuf.SetString(copiedText.text.c_str(), copiedText.text.length());
 
 	// アンドゥバッファの準備
 	auto undoBuffer = GetDocEditor().AllocUndoBuffer();
@@ -2057,12 +2038,6 @@ IFACEMETHODIMP CEditView::Drop(
 
 	// アンドゥバッファの後始末
 	undoBuffer = nullptr;
-
-	::GlobalUnlock( hData );
-	// 2004.07.12 fotomo/もか メモリリークの修正
-	if( 0 == (GMEM_LOCKCOUNT & ::GlobalFlags(hData)) ){
-		::GlobalFree( hData );
-	}
 
 	return S_OK;
 }

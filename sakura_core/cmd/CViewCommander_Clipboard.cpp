@@ -189,14 +189,26 @@ void CViewCommander::Command_PASTE( int option )
 		sEdit.m_bEnableLineModePaste && (mode & DisableLineModePaste) != DisableLineModePaste;
 
 	// クリップボードからデータを取得 -> clipData, bColumnSelect
-	std::wstring	clipData;
-	bool		bColumnSelect;
-	bool		bLineSelect = false;
-
-	if( !m_pCommanderView->MyGetClipboardData( clipData, &bColumnSelect, bLineSelectOption ? &bLineSelect: nullptr ) ){
+	cxx::com_pointer<IDataObject> pDataObject = nullptr;
+	if (FAILED(CClipboard::GetOleDataObject(&pDataObject)))
+	{
 		ErrorBeep();
 		return;
 	}
+
+	const auto formats = GetAvailableClipFormats(pDataObject);
+
+	auto copiedText = CClipboard::GetCopiedText(
+		pDataObject,
+		formats
+	);
+
+	if (!copiedText) return;
+
+	auto clipData{ std::move(copiedText.text) };
+
+	const auto bColumnSelect = copiedText.bColumnSelect;
+	const auto bLineSelect = copiedText.bLineSelect;
 
 	// クリップボードデータ取得 -> pszText, nTextLen
 	size_t nTextLen = clipData.size();

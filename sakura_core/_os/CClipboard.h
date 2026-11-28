@@ -1,7 +1,7 @@
 ﻿/*! @file */
 /*
 	Copyright (C) 2008, kobake
-	Copyright (C) 2018-2022, Sakura Editor Organization
+	Copyright (C) 2018-2026, Sakura Editor Organization
 
 	SPDX-License-Identifier: Zlib
 */
@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <set>
 
 #include "mem/CNativeW.h"
 
@@ -58,6 +59,27 @@ struct StdWStringBuffer : public IWBuffer {
 	std::wstring* wstr;
 };
 
+struct SCopiedText {
+	SCopiedText() = default;
+
+	SCopiedText(
+		std::wstring&& text_,
+		bool bColumnSelect_,
+		bool bLineSelect_
+	)
+		: text(std::move(text_))
+		, bColumnSelect(bColumnSelect_)
+		, bLineSelect( bLineSelect_ )
+	{
+	}
+
+	explicit operator bool() const noexcept { return !text.empty(); }
+
+	std::wstring text;
+	bool bColumnSelect = false;
+	bool bLineSelect = false;
+};
+
 //!サクラエディタ用クリップボードクラス。後々はこの中で全てのクリップボードAPIを呼ばせたい。
 class CClipboard{
 private:
@@ -66,6 +88,11 @@ private:
 public:
 	static HRESULT GetOleDataObject(
 		_Outptr_ LPDATAOBJECT* ppDataObj
+	);
+
+	static SCopiedText GetCopiedText(
+		LPDATAOBJECT pDataObj,
+		const std::set<CLIPFORMAT>& formats
 	);
 
 	//コンストラクタ・デストラクタ

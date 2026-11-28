@@ -2785,6 +2785,97 @@ TEST_F(EditWndTest, DISABLED_Command_OPEN_POWERSHELL_AS_ADMIN001)
 }
 
 /*!
+ * コマンド：貼り付け(クリップボードから貼り付け)
+ */
+TEST_F(EditWndTest, Command_PASTE001)
+{
+	Ole32::setInstance<MockOle32>();
+
+	ResetText(L"11\r\n22\r\n33\r\n", CLogicPoint(1, 1));
+
+	const auto data = CDataObject::make_instance(L"テスト\r\nテスト", false);	// 通常のテキスｔ
+
+	auto pOle32 = (MockOle32*)Ole32::getInstance();
+	EXPECT_CALL(*pOle32, OleGetClipboard(_))
+		.WillOnce(Invoke([&data] (
+			LPDATAOBJECT* ppDataObject
+		)
+		{
+			*ppDataObject = data;
+
+			data->AddRef();
+
+			return S_OK;
+		}));
+
+	const auto hWnd = pcEditWnd->GetHwnd();
+	FORWARD_WM_PASTE(hWnd, pcEditWnd->DispatchEvent);
+	EXPECT_THAT(GetAllText(), StrEq(L"11\r\n2テスト\r\nテスト2\r\n33\r\n"));
+
+	Ole32::resetInstance();
+}
+
+/*!
+ * コマンド：矩形貼り付け(クリップボードから貼り付け)
+ */
+TEST_F(EditWndTest, Command_PASTEBOX001)
+{
+	Ole32::setInstance<MockOle32>();
+
+	ResetText(L"11\r\n22\r\n33\r\n", CLogicPoint(1, 1));
+
+	const auto data = CDataObject::make_instance(L"テスト\r\nテスト", true);	// 矩形テキスト
+
+	auto pOle32 = (MockOle32*)Ole32::getInstance();
+	EXPECT_CALL(*pOle32, OleGetClipboard(_))
+		.WillOnce(Invoke([&data] (
+			LPDATAOBJECT* ppDataObject
+		)
+		{
+			*ppDataObject = data;
+
+			data->AddRef();
+
+			return S_OK;
+		}));
+
+	ExecEditorCommand(F_PASTEBOX);
+	EXPECT_THAT(GetAllText(), StrEq(L"11\r\n2テスト2\r\n3テスト3\r\n"));
+
+	Ole32::resetInstance();
+}
+
+/*!
+ * コマンド：矩形貼り付け(クリップボードから貼り付け)
+ */
+TEST_F(EditWndTest, Command_PASTEBOX002)
+{
+	Ole32::setInstance<MockOle32>();
+
+	ResetText(L"11\r\n22\r\n33\r\n", CLogicPoint(1, 1));
+
+	const auto data = CDataObject::make_instance(L"テスト\r\nテスト", false);	// 通常のテキスｔ
+
+	auto pOle32 = (MockOle32*)Ole32::getInstance();
+	EXPECT_CALL(*pOle32, OleGetClipboard(_))
+		.WillOnce(Invoke([&data] (
+			LPDATAOBJECT* ppDataObject
+		)
+		{
+			*ppDataObject = data;
+
+			data->AddRef();
+
+			return S_OK;
+		}));
+
+	ExecEditorCommand(F_PASTEBOX);
+	EXPECT_THAT(GetAllText(), StrEq(L"11\r\n2テスト\r\nテスト2\r\n33\r\n"));
+
+	Ole32::resetInstance();
+}
+
+/*!
  * コマンド：プロファイルマネージャ
  */
 TEST_F(EditWndTest, Command_PROFILEMGR101)
