@@ -21,3 +21,12 @@ HRESULT Ole32::DoDragDrop(
 		pdwEffect
 	);
 }
+
+HRESULT Ole32::OleGetClipboard(
+	_Outptr_ LPDATAOBJECT FAR* ppDataObj
+) const
+{
+	return ::OleGetClipboard(
+		ppDataObj
+	);
+}

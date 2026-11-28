@@ -22,8 +22,18 @@
 	);
 }
 
+HRESULT MockOle32::_OleGetClipboard(
+	_Outptr_ LPDATAOBJECT FAR* ppDataObj
+)
+{
+	return ::OleGetClipboard(
+		ppDataObj
+	);
+}
+
 MockOle32::MockOle32()
 {
 	// デフォルトの動作を設定する
 	ON_CALL(*this, DoDragDrop(_, _, _, _)).WillByDefault(&_DoDragDrop);
+	ON_CALL(*this, OleGetClipboard(_)).WillByDefault(&_OleGetClipboard);
 }

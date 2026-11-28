@@ -24,4 +24,8 @@ struct Ole32 : public TSakuraSingleton<Ole32>
 		IN DWORD dwOKEffects,
 		OUT LPDWORD pdwEffect
 	) const;
+
+	virtual HRESULT OleGetClipboard(
+		_Outptr_ LPDATAOBJECT FAR* ppDataObj
+	) const;
 };
